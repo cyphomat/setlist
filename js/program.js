@@ -21,6 +21,39 @@ export function initialState(config) {
   };
 }
 
+/**
+ * Sind alle Saetze einer Uebung erfasst?
+ *
+ * Bewusst eine Schleife ueber die Indizes statt `done.every(...)`: `done`
+ * ist ein duenn besetztes Array, sobald ein Satz wieder abgewaehlt wird
+ * (`delete` hinterlaesst ein Loch, ohne die Laenge zu aendern). `every` und
+ * `map` ueberspringen solche Loecher stillschweigend — die Uebung galt
+ * dadurch als vollstaendig, obwohl ein Satz fehlte, und das Loch landete
+ * als `null` im Log, wo es als erfuellt durchging. Das Gewicht stieg dann
+ * fuer einen Satz, den man gerade ausdruecklich zurueckgenommen hatte.
+ */
+export function saetzeVollstaendig(done, sets) {
+  if (!Array.isArray(done) || !(sets > 0)) return false;
+  for (let i = 0; i < sets; i++) {
+    if (done[i] === undefined || done[i] === null) return false;
+  }
+  return true;
+}
+
+/**
+ * Die erfassten Wiederholungen als dichte Liste — ein nicht erfasster Satz
+ * wird zur Null, nicht zu einem Loch. Aus demselben Grund wie oben: ueber
+ * Loecher laeuft keine Pruefung, sie faerben sich still als erfuellt.
+ */
+export function saetzeAlsListe(done, sets) {
+  const out = [];
+  for (let i = 0; i < sets; i++) {
+    const r = Array.isArray(done) ? done[i] : undefined;
+    out.push(r === undefined || r === null ? 0 : r);
+  }
+  return out;
+}
+
 /** Hat der Satz-Verlauf das Ziel erfuellt? */
 export function isSuccess(entry, target) {
   return entry.reps.length === entry.sets && entry.reps.every(r => r >= target);

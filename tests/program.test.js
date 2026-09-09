@@ -168,6 +168,59 @@ print('\n--- Unvollstaendige Konfiguration kippt die Woche nicht ---');
   eq('und traegt seine Beschriftung', w[0].label, 'Z2');
 }
 
+print('\n--- Abgewaehlter Satz hinterlaesst ein Loch ---');
+// Der Fehler aus dem Studio: alle fuenf Saetze abgehakt, dann einen wieder
+// abgewaehlt. `delete` hinterlaesst ein Loch, ohne die Laenge zu aendern —
+// und `every`/`map` ueberspringen Loecher stillschweigend. Die Uebung galt
+// dadurch als fertig, das Loch landete als null im Log und ging dort als
+// erfuellt durch: das Gewicht stieg fuer einen Satz, den man gerade
+// ausdruecklich zurueckgenommen hatte.
+{
+  const voll = [5, 5, 5, 5, 5];
+  ok('fuenf erfasste Saetze sind vollstaendig', P.saetzeVollstaendig(voll, 5));
+
+  const mitLoch = [5, 5, 5, 5, 5];
+  delete mitLoch[2];
+  ok('mit Loch NICHT vollstaendig', !P.saetzeVollstaendig(mitLoch, 5));
+  // Zur Erinnerung, warum es die Funktion ueberhaupt gibt:
+  ok('die alte Pruefung waere hier faelschlich gruen gewesen',
+    mitLoch.length === 5 && mitLoch.every(v => v !== undefined));
+
+  ok('zu wenige Saetze sind nicht vollstaendig', !P.saetzeVollstaendig([5, 5, 5], 5));
+  ok('leer ist nicht vollstaendig', !P.saetzeVollstaendig([], 5));
+  ok('undefined am Ende zaehlt nicht', !P.saetzeVollstaendig([5, 5, 5, 5, undefined], 5));
+  ok('null zaehlt ebenfalls nicht', !P.saetzeVollstaendig([5, 5, null, 5, 5], 5));
+  ok('eine Null als Wiederholungszahl ist erfasst', P.saetzeVollstaendig([0, 0, 0, 0, 0], 5));
+  ok('kein Array ist nicht vollstaendig', !P.saetzeVollstaendig(null, 5));
+  ok('ohne Satzzahl nicht vollstaendig', !P.saetzeVollstaendig([5], 0));
+  ok('mehr erfasst als gefordert reicht', P.saetzeVollstaendig([5, 5, 5, 5, 5, 5], 5));
+  ok('Einzelsatz-Uebung wie Deadlift', P.saetzeVollstaendig([5], 1));
+}
+
+print('\n--- Und was daraus ins Log geht ---');
+{
+  const mitLoch = [5, 5, 5, 5, 5];
+  delete mitLoch[2];
+  const liste = P.saetzeAlsListe(mitLoch, 5);
+  eq('das Loch wird eine echte Null', JSON.stringify(liste), '[5,5,0,5,5]');
+  ok('und faellt damit als Fehlversuch auf',
+    !P.isSuccess({ reps: liste, sets: 5 }, 5));
+  // Vorher blieb das Loch erhalten und wurde stillschweigend uebersprungen.
+  const alt = mitLoch.slice(0, 5).map(r => r ?? 0);
+  ok('die alte Zeile haette den Fehlversuch verschluckt',
+    alt.length === 5 && alt.every(r => r >= 5));
+
+  eq('fehlende Saetze am Ende werden Nullen',
+    JSON.stringify(P.saetzeAlsListe([5, 5], 5)), '[5,5,0,0,0]');
+  eq('null wird zur Null', JSON.stringify(P.saetzeAlsListe([5, null, 5], 3)), '[5,0,5]');
+  eq('kein Array ergibt lauter Nullen',
+    JSON.stringify(P.saetzeAlsListe(undefined, 3)), '[0,0,0]');
+  eq('ueberzaehlige Saetze werden abgeschnitten',
+    JSON.stringify(P.saetzeAlsListe([5, 5, 5, 5, 5, 5, 5], 5)), '[5,5,5,5,5]');
+  eq('mehr Wiederholungen als Ziel bleiben stehen',
+    JSON.stringify(P.saetzeAlsListe([5, 8, 5], 3)), '[5,8,5]');
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);
 
 print('\n--- Max-Out ist ein Test, kein Programmschritt ---');

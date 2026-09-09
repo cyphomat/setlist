@@ -10,6 +10,28 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-09-09.1
+
+### Behoben
+- **Ein abgewählter Satz wurde stillschweigend wieder mitgezählt.** Alle fünf Sätze
+  abgehakt, dann einen wieder abgewählt — die Übung galt trotzdem als fertig,
+  *Einheit abschließen* blieb aktiv, und die Pausenuhr stoppte.
+
+  Ursache: `delete` hinterlässt in `done` ein **Loch**, ohne die Länge zu ändern.
+  `Array.prototype.every` und `map` überspringen solche Löcher — die Prüfung
+  `done.length === sets && done.every(v => v !== undefined)` war deshalb grün, obwohl
+  ein Satz fehlte. Beim Abschließen blieb das Loch als `null` im Log stehen und ging
+  dort als erfüllt durch: **das Gewicht stieg für einen Satz, den man gerade
+  ausdrücklich zurückgenommen hatte.**
+
+  Die Vollständigkeitsprüfung läuft jetzt als Schleife über die Indizes
+  (`saetzeVollstaendig`), und die Wiederholungen gehen als dichte Liste ins Log
+  (`saetzeAlsListe`) — ein nicht erfasster Satz wird zur echten Null und fällt damit
+  als Fehlversuch auf, statt sich als Erfolg zu tarnen. Beide Richtungen im Browser
+  nachgestellt: vorher „immer noch abschließbar", nachher richtig gesperrt.
+
+---
+
 ## 2026-09-02.6
 
 ### Neu

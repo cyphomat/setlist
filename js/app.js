@@ -624,7 +624,7 @@ function renderSession() {
   $('session-body').querySelectorAll('.wadj button').forEach(b => {
     b.onclick = () => aendereGewicht(+b.dataset.w, +b.dataset.d);
   });
-  $('finish').disabled = !session.lifts.every(l => l.done.length === l.sets && l.done.every(v => v !== undefined));
+  $('finish').disabled = !session.lifts.every(l => P.saetzeVollstaendig(l.done, l.sets));
 }
 
 function bindSet(btn) {
@@ -649,7 +649,7 @@ function recordSet(li, si, reps) {
     l.done[si] = reps;
     // Nach dem letzten Satz der ganzen Einheit gibt es nichts mehr, wofuer
     // man pausieren wuerde — der Timer lief bisher trotzdem einfach weiter.
-    const fertig = session.lifts.every(x => x.done.length === x.sets && x.done.every(v => v !== undefined));
+    const fertig = session.lifts.every(x => P.saetzeVollstaendig(x.done, x.sets));
     if (fertig) stopRest();
     else startRest(reps >= l.reps ? config.rest.normal : config.rest.afterFail);
   }
@@ -728,7 +728,7 @@ async function finishSession() {
     started: session.started, finished: new Date().toISOString(),
     angesagt: session.angesagt,
     lifts: session.lifts.map(l => {
-      const reps = l.done.slice(0, l.sets).map(r => r ?? 0);
+      const reps = P.saetzeAlsListe(l.done, l.sets);
       return { lift: l.lift, weight: l.weight, sets: l.sets, target: l.reps, reps,
                success: reps.length === l.sets && reps.every(r => r >= l.reps) };
     })
