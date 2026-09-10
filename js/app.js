@@ -329,7 +329,7 @@ function renderProgress(f, streak) {
   $('progress').innerHTML = `
     <div class="card">
       <div class="kicker">${t('home.fortschritt.kicker')}</div>
-      <div class="name">${pct}<span style="font-size:20px">%</span></div>
+      <div class="name">${pct}<span style="font-size:1.25rem">%</span></div>
       <div class="bar gruen"><i style="width:${pct}%"></i></div>
       <p class="fine">${t('home.fortschritt.fine')} ${streak > 0
         ? `<b style="color:var(--gruen)">${t(streak === 1 ? 'home.fortschritt.serie' : 'home.fortschritt.serien', { n: streak })}</b>`
@@ -472,7 +472,7 @@ function renderBodyTrend() {
     <h2>${t('tour.koerpergewicht')}</h2>
     <div class="card">
       <div class="kicker">${t('gew.kicker', { n: trend.n })}</div>
-      <div class="name">${trend.aktuell}<span style="font-size:20px"> kg</span></div>
+      <div class="name">${trend.aktuell}<span style="font-size:1.25rem"> kg</span></div>
       ${punkte ? `<svg viewBox="0 0 300 56" preserveAspectRatio="none" aria-hidden="true"
             style="display:block;width:100%;height:56px;margin-top:10px;overflow:visible">
           <path d="${punkte.flaeche}" fill="${runter ? 'var(--tint-gruen)' : 'var(--tint-rost)'}"/>
@@ -1858,7 +1858,7 @@ function renderMaxoutErgebnis() {
   box.innerHTML = `
     <div class="card">
       <div class="kicker">${t('mo.geschaetzt', { formel })}</div>
-      <div class="name neon">${max}<span style="font-size:20px"> kg</span></div>
+      <div class="name neon">${max}<span style="font-size:1.25rem"> kg</span></div>
       ${bisher ? `<p class="fine">${max > bisher
         ? `<b style="color:var(--gruen)">${t('mo.neuerBestwert')}</b> ${t('mo.bisherKg', { kg: bisher })}`
         : t('mo.bisherigerBestwert', { kg: bisher })}</p>` : ''}
@@ -1866,7 +1866,7 @@ function renderMaxoutErgebnis() {
         <li><span>${t('mo.arbeitsgewichtFuer')}</span><span>${P.fmtWeight(vorschlag)}</span></li>
         <li><span>${t('mo.aktuellEingestellt')}</span><span>${P.fmtWeight(jetzt)}</span></li>
       </ul>
-      <label style="display:flex;gap:10px;align-items:flex-start;margin-top:12px;font-size:14px;color:var(--muted)">
+      <label style="display:flex;gap:10px;align-items:flex-start;margin-top:12px;font-size:0.875rem;color:var(--muted)">
         <input type="checkbox" id="mo-apply" style="width:auto;margin:3px 0 0">
         <span>${t('mo.uebernehmen', { kg: P.fmtWeight(vorschlag) })}</span>
       </label>
@@ -1976,7 +1976,7 @@ function renderAnsageAbgleich(logs) {
     <div class="pr" style="border-left:2px solid ${URTEIL_FARBE[e.urteil]}">
       <div class="k">${e.date.slice(8)}.${e.date.slice(5, 7)}. · Workout ${e.workout}</div>
       <div class="reihe"><span class="l">${t('ans.angesagt')}</span>
-        <span class="v"><span class="tone ${ANSAGE_TONE[e.angesagt]}" style="font-size:9.5px;padding:2px 7px">${e.angesagt}</span></span></div>
+        <span class="v"><span class="tone ${ANSAGE_TONE[e.angesagt]}" style="font-size:0.59375rem;padding:2px 7px">${e.angesagt}</span></span></div>
       <div class="reihe"><span class="l">${t('ans.gefuehlt')}</span><span class="v">${gefuehlLabel(e.gefuehlt)}</span></div>
       <div class="reihe"><span class="l">${t('ans.urteil')}</span><span class="v" style="color:${URTEIL_FARBE[e.urteil]}">${urteilText(e.urteil)}</span></div>
     </div>`).join('');
@@ -2124,7 +2124,7 @@ function renderRad() {
     <div class="stats">
       <div class="stat"><div class="n">${t('rad.fahrten')}</div><div class="v">${st.anzahl}</div>
         <div class="s">${t('rad.proWoche', { n: st.proWoche ?? '—' })}</div></div>
-      <div class="stat"><div class="n">${t('rad.imSattel')}</div><div class="v">${st.stunden}<span style="font-size:14px"> h</span></div>
+      <div class="stat"><div class="n">${t('rad.imSattel')}</div><div class="v">${st.stunden}<span style="font-size:0.875rem"> h</span></div>
         <div class="s">${st.km} km</div></div>
     </div>
     <div class="radbar">
@@ -2381,6 +2381,41 @@ document.querySelectorAll('.themen button[data-thema]').forEach(b => {
   };
 });
 
+/* ---------- Schriftgroesse ----------
+   Sitzt am <html> und wirkt ueber die rem-Angaben auf jeden Text zugleich.
+   Bewusst nur drei Stufen: eine stufenlose Regelung waere ein Schieberegler,
+   den man einmal verstellt und dann nie wieder findet.
+
+   Die Wahl bleibt im Browser. Sie beschreibt dieses Geraet und diese Augen
+   in diesem Licht — auf dem Mac am Schreibtisch will man etwas anderes als
+   auf dem Handy im Studio.                                                */
+
+const SCHRIFT_KEY = 'setlist.schrift';
+const SCHRIFT_STUFEN = ['normal', 'gross', 'sehr'];
+
+function schriftWahl() {
+  const w = localStorage.getItem(SCHRIFT_KEY);
+  return SCHRIFT_STUFEN.includes(w) ? w : 'normal';
+}
+
+function schriftAnwenden() {
+  const wahl = schriftWahl();
+  if (wahl === 'normal') document.documentElement.removeAttribute('data-schrift');
+  else document.documentElement.setAttribute('data-schrift', wahl);
+  document.querySelectorAll('.schriften button[data-schrift]').forEach(b =>
+    b.classList.toggle('an', b.dataset.schrift === wahl));
+}
+
+document.querySelectorAll('.schriften button[data-schrift]').forEach(b => {
+  b.onclick = () => {
+    localStorage.setItem(SCHRIFT_KEY, b.dataset.schrift);
+    schriftAnwenden();
+    banner(t('bs.darstellungBanner', { was: b.textContent.toUpperCase() }), 'ok', 2000);
+  };
+});
+
+schriftAnwenden();
+
 /* ================= Sprache ================= */
 
 /**
@@ -2556,7 +2591,7 @@ function zeileFuerHeute(d) {
     || (form && ['muede', 'platt'].includes(form.stufe));
   const warum = config.ziele && config.ziele.warum;
   if (schwer && warum) {
-    return `<span style="font-style:normal;color:var(--muted);font-size:12px;
+    return `<span style="font-style:normal;color:var(--muted);font-size:0.75rem;
       font-family:var(--mono);letter-spacing:.1em;display:block;margin-bottom:6px">DEIN GRUND</span>${escHtml(warum)}`;
   }
   return escHtml(d.spruch);

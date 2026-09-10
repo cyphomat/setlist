@@ -10,6 +10,52 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-09-10.1
+
+### Geändert
+- **Erklärender Text war zu leise.** `--dim` trägt fast alle Hinweiszeilen der App
+  und stand bei **2,40:1** auf `--panel` — WCAG AA verlangt für kleine Schrift
+  4,5:1. Ausgerechnet die kleinsten Stellen hingen daran: die Rekord-Beschriftung
+  (9,5 px), die Korrektur-Knöpfe (10,5 px), die *Danach*-Zeile im Unplugged, die man
+  vom Boden aus liest.
+
+  Nachgemessen und neu gesetzt, Farbton behalten, Hierarchie `fg > muted > dim`
+  bleibt erhalten:
+
+  | Variable | vorher | nachher | Kontrast (bg / panel) |
+  |---|---|---|---|
+  | `--dim` dunkel | `#57535c` | `#8a848e` | 5,37 / 4,95 |
+  | `--dim` hell | `#8b8580` | `#736d68` | 4,52 / 5,10 |
+  | `--rot` | `#c4443c` | `#d2564e` | 4,82 / 4,44 |
+  | `--line` | `#2c2a30` | `#3a373f` | Kartenkanten sichtbarer |
+
+  Zwei bewusste Ausnahmen: `--rot` bleibt auf `--panel` mit 4,44:1 knapp unter AA —
+  strikt wäre `#dd6a62`, das wirkt ausgewaschen, und Rot steht überwiegend im Banner
+  auf `--bg`. Und `--line` bleibt leise: echte 3:1 für Rahmen würde die App
+  vergittern, das ist eine Design- und keine Lesbarkeitsfrage.
+
+### Neu
+- **Schriftgröße umschaltbar** unter *Backstage → Darstellung*: Normal, Groß (+10 %),
+  Sehr groß (+20 %). Die Wahl liegt lokal (`setlist.schrift`) und gilt nur auf diesem
+  Gerät — sie geht nicht ins Repo, weil sie zum Bildschirm gehört und nicht zum
+  Training.
+
+  Dafür sind **108 feste Pixelgrößen auf `rem` umgestellt** (101 in `css/style.css`,
+  7 inline in `js/app.js`); skaliert wird an einer einzigen Stelle über
+  `html{font-size}`, gesetzt aus `js/boot.js` **vor dem ersten Bild** — sonst
+  flackert die App beim Start kurz in der falschen Größe. Dieselbe Mechanik wie beim
+  Thema.
+
+  Bei *Normal* ist `1rem = 16px`: die Darstellung ist pixelgleich zu vorher. Das ist
+  nicht behauptet, sondern geprüft — acht Bildschirme vor und nach der Umstellung
+  aufgenommen und byteweise verglichen, alle acht identisch.
+
+### Behoben
+- Der Würfelknopf im Unplugged zeigte auf einen i18n-Schlüssel, den es nicht gibt
+  (`aria.wuerfeln`) — sein Vorlese-Text blieb dadurch beim Sprachwechsel deutsch.
+
+---
+
 ## 2026-09-09.1
 
 ### Behoben

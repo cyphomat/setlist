@@ -143,6 +143,7 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 | **Selbstaktualisierend** | Prüft die Version beim Start und lädt sich genau einmal neu. |
 | **Sound und Vibration** | Ton bei Pausenende und Einheitsabschluss, zusätzlich zur Vibration — Ton respektiert den Stumm-Schalter, Vibration nicht. |
 | **Hell und dunkel** | Umschalter System / Hell / Dunkel. Zwei echte Fassungen, keine Invertierung. |
+| **Schriftgröße** | Normal / Groß / Sehr groß unter *Backstage → Darstellung*. Skaliert die ganze Oberfläche gleichmäßig, gilt nur auf diesem Gerät. |
 | **Handy und Mac** | Ab 900 px zwei Spalten, in der Tour breitere Raster — dieselbe Reihenfolge, kein Umbau. |
 | **Deutsch und Englisch** | Oberflächensprache unter Backstage umschaltbar. Trainingsinhalte bleiben vorerst deutsch. |
 

@@ -17,6 +17,12 @@
         localStorage.removeItem(k);
       }
     }
+    // Schriftgroesse zuerst: sie sitzt am <html> und bestimmt jede rem-Angabe.
+    // Wuerde das erst die App setzen, saehe man die Seite einmal in der
+    // falschen Groesse aufblitzen.
+    var gr = localStorage.getItem('setlist.schrift');
+    if (gr === 'gross' || gr === 'sehr') document.documentElement.setAttribute('data-schrift', gr);
+
     var w = localStorage.getItem('setlist.theme') || 'dunkel';
     var hell = w === 'hell' ||
       (w === 'auto' && window.matchMedia('(prefers-color-scheme: light)').matches);

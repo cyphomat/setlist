@@ -143,6 +143,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | **Self-updating** | Checks the version at start and reloads itself exactly once. |
 | **Sound and vibration** | Tone at the end of a rest and on finishing a session, on top of the vibration — the tone respects the mute switch, the vibration does not. |
 | **Light and dark** | Switch between system / light / dark. Two real designs, not an inversion. |
+| **Text size** | Normal / Large / Extra large under *Backstage → Appearance*. Scales the whole interface evenly, on this device only. |
 | **Phone and Mac** | Two columns from 900 px, wider grids in the Tour — same order, no rebuild. |
 | **German and English** | Interface language switchable under Backstage. Training content stays German for now. |
 
