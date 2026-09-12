@@ -59,6 +59,13 @@ function zahl(v) {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
+/** Wie `zahl`, aber die Null zaehlt als Angabe. */
+function nullBis(v) {
+  if (v === '' || v === null || v === undefined) return null;
+  const n = Number(v);
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
 /** JJJJ-MM-TT, oder null. Ein halbes Datum ist kein Datum. */
 function datum(v) {
   const s = String(v ?? '').trim();
@@ -127,5 +134,63 @@ export function setzeInConfig(config, { grund, rekorde }) {
     if (!Object.keys(neu.records).length) delete neu.records;
   }
 
+  return neu;
+}
+
+/* ---------------------------------------------------------------
+   Pruefwerte. Klimmzug, Dip, Front Squat und die einseitige Arbeit
+   erzeugt das Programm nicht selbst — ohne sie bleiben acht der zwoelf
+   Kraftverhaeltnisse leer. Sie aendern sich selten und werden bewusst
+   getestet, gehoeren also in die config und nicht in die Logs.        */
+
+/**
+ * Aus den Formularfeldern der Block `checks`.
+ *
+ * Ein Eintrag zaehlt nur mit Gewicht — eine Wiederholungszahl allein ist
+ * kein Wert. Fehlt die Wiederholungszahl, gilt eine: das ist die
+ * vorsichtige Annahme, denn sie rechnet den Wert am wenigsten hoch.
+ */
+export function baueChecks(eintraege, koerpergewicht = null) {
+  const out = {};
+  for (const e of eintraege || []) {
+    if (!e || !e.id) continue;
+    // Bewusst >= 0 statt > 0: bei Klimmzug und Dip traegt man den Zusatz
+    // ein, und "ohne Zusatz" ist eine Null — eine Angabe, kein Fehlen.
+    const g = nullBis(e.gewicht);
+    if (g === null) continue;
+    const c = { gewicht: g };
+    const w = zahl(e.wdh);
+    if (w && w >= 1 && w <= 12) c.wdh = Math.round(w);
+    const d = datum(e.datum);
+    if (d) c.datum = d;
+    out[e.id] = c;
+  }
+  const kg = zahl(koerpergewicht);
+  if (kg) out.koerpergewicht = kg;
+  return out;
+}
+
+/** Die gespeicherten Pruefwerte als Formularentwurf, je Uebung eine Zeile. */
+export function checkEntwurf(config, ids) {
+  const c = (config && config.checks) || {};
+  return (ids || []).map(id => {
+    const e = c[id] || {};
+    return { id, gewicht: e.gewicht ?? '', wdh: e.wdh ?? '', datum: e.datum || '' };
+  });
+}
+
+/** Das hinterlegte Koerpergewicht — nur Rueckfall, wenn keine Waage angebunden ist. */
+export function checkKoerpergewicht(config) {
+  const kg = (config && config.checks && config.checks.koerpergewicht);
+  return kg > 0 ? kg : '';
+}
+
+/** Pruefwerte in eine bestehende config einsetzen, ohne sonst etwas anzufassen. */
+export function setzeChecks(config, checks) {
+  const neu = JSON.parse(JSON.stringify(config || {}));
+  // Ausser dem Koerpergewicht nichts drin heisst: der Block kann weg.
+  const inhalt = Object.keys(checks || {}).filter(k => k !== 'koerpergewicht');
+  if (inhalt.length || (checks && checks.koerpergewicht)) neu.checks = checks;
+  else delete neu.checks;
   return neu;
 }

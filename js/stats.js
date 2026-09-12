@@ -857,10 +857,47 @@ export function ansageAbgleich(logs = []) {
  * nicht.
  */
 export const VERHAELTNIS_PAARE = [
-  { id: 'squat-deadlift', oben: 'squat',  unten: 'deadlift', ziel: 0.80, herkunft: 'tabelle' },
-  { id: 'bench-squat',    oben: 'bench',  unten: 'squat',    ziel: 0.75, herkunft: 'faustregel' },
-  { id: 'ohp-bench',      oben: 'ohp',    unten: 'bench',    ziel: 0.65, herkunft: 'faustregel' },
-  { id: 'row-bench',      oben: 'row',    unten: 'bench',    ziel: 0.90, herkunft: 'faustregel' }
+  { id: 'squat-deadlift', oben: 'squat',  unten: 'deadlift', ziel: 0.80, herkunft: 'tabelle',    gruppe: 'lifts' },
+  { id: 'bench-squat',    oben: 'bench',  unten: 'squat',    ziel: 0.75, herkunft: 'faustregel', gruppe: 'lifts' },
+  { id: 'ohp-bench',      oben: 'ohp',    unten: 'bench',    ziel: 0.65, herkunft: 'faustregel', gruppe: 'lifts' },
+  { id: 'row-bench',      oben: 'row',    unten: 'bench',    ziel: 0.90, herkunft: 'faustregel', gruppe: 'lifts' },
+
+  // Die zweite Gruppe braucht Werte, die das Programm nicht selbst
+  // erzeugt — Klimmzug, Dip, Front Squat und die einseitige Arbeit. Sie
+  // werden im Backstage eingetragen und erscheinen nur, wenn sie dastehen.
+  { id: 'ohp-pullup',        oben: 'ohp',        unten: 'pullup',         ziel: 0.66, herkunft: 'tabelle', gruppe: 'pruefung' },
+  // Der einzige Wert hier, der NICHT direkt als Verhaeltnis in der Tabelle
+  // steht: dort werden Klimmzug und Dip ueber Wiederholungen verglichen,
+  // nicht ueber Last. 1,25 ist aus ihren beiden Gewichtsangaben gebildet
+  // (150 zu 120 bei 120 Koerpergewicht) — also meine Ableitung, nicht ihre
+  // Aussage. Deshalb als Faustregel ausgewiesen und nicht als belegt.
+  { id: 'pullup-dip',        oben: 'pullup',     unten: 'dip',            ziel: 1.25, herkunft: 'faustregel', gruppe: 'pruefung' },
+  { id: 'frontsquat-squat',  oben: 'frontsquat', unten: 'squat',          ziel: 0.85, herkunft: 'tabelle', gruppe: 'pruefung' },
+  { id: 'frontsquat-dl',     oben: 'frontsquat', unten: 'deadlift',       ziel: 0.68, herkunft: 'tabelle', gruppe: 'pruefung' },
+  { id: 'sapress-bw',        oben: 'sapress',    unten: 'koerpergewicht', ziel: 0.33, herkunft: 'tabelle', gruppe: 'pruefung' },
+  { id: 'farmer-deadlift',   oben: 'farmer',     unten: 'deadlift',       ziel: 0.50, herkunft: 'tabelle', gruppe: 'pruefung' },
+  { id: 'stepup-squat',      oben: 'stepup',     unten: 'squat',          ziel: 0.45, herkunft: 'tabelle', gruppe: 'pruefung' },
+  { id: 'sldl-deadlift',     oben: 'sldl',       unten: 'deadlift',       ziel: 0.33, herkunft: 'tabelle', gruppe: 'pruefung' }
+];
+
+/**
+ * Die Pruefwerte, die das Programm nicht selbst erzeugt.
+ *
+ * `basis: 'koerper'` heisst: die Last ist das Koerpergewicht plus Zusatz,
+ * eingetragen wird nur der Zusatz. Ohne bekanntes Koerpergewicht laesst
+ * sich daraus keine Gesamtlast bilden, und das Paar entfaellt.
+ *
+ * `wdh: false` bei der Trageuebung: eine Strecke hat keine
+ * Wiederholungen, das eingetragene Gewicht IST die Maximallast.
+ */
+export const PRUEFWERTE = [
+  { id: 'pullup',     basis: 'koerper', wdh: true,  seite: false },
+  { id: 'dip',        basis: 'koerper', wdh: true,  seite: false },
+  { id: 'frontsquat', basis: 'last',    wdh: true,  seite: false },
+  { id: 'sapress',    basis: 'last',    wdh: true,  seite: true  },
+  { id: 'stepup',     basis: 'last',    wdh: true,  seite: true  },
+  { id: 'sldl',       basis: 'last',    wdh: true,  seite: true  },
+  { id: 'farmer',     basis: 'last',    wdh: false, seite: true  }
 ];
 
 // Unterhalb von 8 % ist die Abweichung kleiner als der Sprung, den eine
@@ -880,6 +917,61 @@ function arbeitsGewichte(state = {}) {
     if (l && l.weight > 0) out[id] = l.weight;
   }
   return out;
+}
+
+/** Mit wie vielen Wiederholungen ein Lift im Programm laeuft. */
+function zielWdh(config = {}, liftId) {
+  for (const teile of Object.values(config.workouts || {})) {
+    const e = (teile || []).find(x => x.lift === liftId);
+    if (e && e.reps > 0) return e.reps;
+  }
+  return 5;
+}
+
+/**
+ * Alle Werte auf EINE Basis bringen, sonst vergleicht man Ungleiches.
+ *
+ * Solange alle Lifts mit derselben Wiederholungszahl laufen, ist das
+ * Verhaeltnis zweier Arbeitsgewichte identisch mit dem ihrer e1RM — der
+ * Formelfaktor kuerzt sich heraus. Sobald aber ein Pruefwert mit einer
+ * anderen Wiederholungszahl dazukommt, stimmt das nicht mehr: 82,5 zu 105
+ * sind 0,79, aber e1RM aus fuenf Wiederholungen gegen einen gemessenen
+ * Einzelversuch sind 0,88. Zwoelf Prozent Unterschied, und niemand sieht
+ * der Zahl an, woher sie kommt.
+ *
+ * Deshalb wird ueberall e1RM gerechnet. Fuer die Grundlifts aendert das
+ * am Ergebnis nichts, fuer alles andere ist es die Voraussetzung.
+ */
+function vergleichsWerte(state = {}, config = {}, koerpergewicht = null) {
+  const werte = {}, herkunft = {};
+
+  for (const [id, w] of Object.entries(arbeitsGewichte(state))) {
+    const wert = e1rm(w, zielWdh(config, id));
+    if (wert > 0) { werte[id] = wert; herkunft[id] = { art: 'arbeit', gewicht: w, wdh: zielWdh(config, id) }; }
+  }
+
+  for (const def of PRUEFWERTE) {
+    const c = (config.checks || {})[def.id];
+    // Bei koerpergetragenen Uebungen ist eine Null gueltig: Klimmzuege
+    // ohne Zusatz sind trotzdem eine Last, naemlich der eigene Koerper.
+    const hatWert = c && (def.basis === 'koerper' ? c.gewicht >= 0 : c.gewicht > 0);
+    if (!hatWert) continue;
+    // Bei Klimmzug und Dip traegt man den Zusatz ein; bewegt wird der
+    // eigene Koerper dazu. Ohne Koerpergewicht gibt es keine Gesamtlast.
+    const last = def.basis === 'koerper'
+      ? (koerpergewicht > 0 ? koerpergewicht + c.gewicht : null)
+      : c.gewicht;
+    if (!(last > 0)) continue;
+    const wdh = def.wdh ? (c.wdh > 0 ? c.wdh : 1) : 1;
+    const wert = e1rm(last, Math.min(wdh, 12));
+    if (wert > 0) { werte[def.id] = wert; herkunft[def.id] = { art: 'check', gewicht: last, wdh, datum: c.datum || null }; }
+  }
+
+  if (koerpergewicht > 0) {
+    werte.koerpergewicht = koerpergewicht;
+    herkunft.koerpergewicht = { art: 'koerper', gewicht: koerpergewicht, wdh: 1 };
+  }
+  return { werte, herkunft };
 }
 
 /**
@@ -904,25 +996,32 @@ function maximaAus(logs = []) {
  * Wiederaufbau ist der zweite der ehrlichere — er kennt den Koerper,
  * um den es geht, und nicht den Durchschnitt aller Koerper.
  */
-export function verhaeltnisse(state = {}, config = {}, logs = []) {
-  const arbeit = arbeitsGewichte(state);
+export function verhaeltnisse(state = {}, config = {}, logs = [], wellness = []) {
+  const reihe = gewichtsReihe(wellness);
+  const bw = reihe.length ? reihe[reihe.length - 1].schnitt : ((config.checks || {}).koerpergewicht || null);
+  const { werte, herkunft } = vergleichsWerte(state, config, bw);
   const maxima = maximaAus(logs);
   const lifts = config.lifts || {};
+  const istPruefwert = id => PRUEFWERTE.some(x => x.id === id);
+  const bekannt = id => werte[id] > 0 &&
+    (id === 'koerpergewicht' || istPruefwert(id) ? true : !!lifts[id]);
 
   const paare = [];
   for (const def of VERHAELTNIS_PAARE) {
     // Ein Paar, dessen Lift es in dieser Konfiguration gar nicht gibt,
-    // entfaellt lautlos. config.lifts ist frei konfigurierbar.
-    if (!lifts[def.oben] || !lifts[def.unten]) continue;
-    const o = arbeit[def.oben], u = arbeit[def.unten];
+    // entfaellt lautlos — config.lifts ist frei konfigurierbar. Ein Lift
+    // muss dort stehen; ein Pruefwert oder das Koerpergewicht reicht,
+    // wenn ein Wert vorliegt.
+    if (!bekannt(def.oben) || !bekannt(def.unten)) continue;
+    const o = werte[def.oben], u = werte[def.unten];
     if (!(o > 0) || !(u > 0)) continue;
 
     const ist = o / u;
     const abweichung = Math.round(((ist / def.ziel) - 1) * 1000) / 10;
 
-    // Der persoenliche Massstab. Nur wenn BEIDE Referenzwerte da sind —
-    // ein halbes Verhaeltnis ist keines.
-    const ro = lifts[def.oben].reference, ru = lifts[def.unten].reference;
+    // Der persoenliche Massstab gilt nur zwischen zwei Grundlifts: fuer
+    // Pruefwerte gibt es keinen Stand vor der Pause.
+    const ro = (lifts[def.oben] || {}).reference, ru = (lifts[def.unten] || {}).reference;
     let persoenlich = null;
     if (ro > 0 && ru > 0) {
       const zielP = ro / ru;
@@ -944,15 +1043,38 @@ export function verhaeltnisse(state = {}, config = {}, logs = []) {
     }
 
     paare.push({
-      id: def.id, oben: def.oben, unten: def.unten, herkunft: def.herkunft,
+      id: def.id, oben: def.oben, unten: def.unten,
+      herkunft: def.herkunft, gruppe: def.gruppe,
       ist: Math.round(ist * 100) / 100, ziel: def.ziel,
       abweichung, stufe: stufeFuer(abweichung),
-      gewichtOben: o, gewichtUnten: u,
+      gewichtOben: herkunft[def.oben].gewicht, gewichtUnten: herkunft[def.unten].gewicht,
+      artOben: herkunft[def.oben].art, artUnten: herkunft[def.unten].art,
       persoenlich, gemessen
     });
   }
 
-  return { paare, basis: 'arbeit', ausreisser: ausreisserAus(paare) };
+  const lift = paare.filter(p => p.gruppe === 'lifts');
+  const pruefung = paare.filter(p => p.gruppe === 'pruefung');
+
+  return {
+    paare, lift, pruefung, basis: 'e1rm', koerpergewicht: bw,
+    // Die Diagnose laeuft NUR ueber die Grundlifts. Drei der
+    // Pruefwert-Paare haengen am Kreuzheben und zwei an der Kniebeuge —
+    // wer einseitige Arbeit gar nicht trainiert, wuerde dort reihenweise
+    // "Kreuzheben ist voraus" erzeugen, obwohl in Wahrheit nur die
+    // einseitige Arbeit fehlt. Das waere eine Diagnose ueber den
+    // falschen Lift.
+    ausreisser: ausreisserAus(lift),
+    // Nur Pruefwerte nennen, die selbst die schwache Seite sind. Bei
+    // "Strict Press : Klimmzug" unter dem Ziel ist der Press die schwache
+    // Seite, nicht der Klimmzug — den hier mitzuzaehlen hiesse, ihn im
+    // selben Absatz stark und schwach zu nennen. Und fuer den Press ist es
+    // keine Aussage ueber ihn: dafuer muesste er in mehreren Paaren
+    // auffallen, wie bei den Grundlifts.
+    schwach: pruefung
+      .filter(p => p.stufe === 'deutlich' && p.abweichung < 0 && istPruefwert(p.oben))
+      .map(p => p.oben)
+  };
 }
 
 /**

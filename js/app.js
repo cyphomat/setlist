@@ -1919,19 +1919,28 @@ async function commitMaxout(log) {
 /** Ein Lift-Name aus der Konfiguration, mit der Id als Rueckfall. */
 const liftName = id => (config.lifts && config.lifts[id] && config.lifts[id].name) || id;
 
+/** Wie eine Seite eines Verhaeltnisses heisst — Lift, Pruefwert oder Koerper. */
+function seitenName(id) {
+  if (config.lifts && config.lifts[id]) return config.lifts[id].name || id;
+  if (id === 'koerpergewicht') return t('chk.koerpergewicht');
+  const k = `chk.${id}`;
+  const n = t(k);
+  return n === k ? id : n;
+}
+
 // Die Stufe faerbt, was man sonst aus der Prozentzahl erst ableiten muesste.
 const STUFE_FARBE = { stimmt: 'var(--gruen)', leicht: 'var(--rost)', deutlich: 'var(--rot)' };
 const vzPro = n => `${n > 0 ? '+' : ''}${n} %`;
 
 function renderVerhaeltnisse(logs) {
-  const v = ST.verhaeltnisse(state, config, logs);
+  const v = ST.verhaeltnisse(state, config, logs, gewichtsPunkte);
   if (!v.paare.length) { $('hist-verhaeltnisse').innerHTML = ''; return; }
 
-  const zeilen = v.paare.map(p => {
+  const paarHtml = p => {
     const farbe = STUFE_FARBE[p.stufe];
     return `<div class="verh">
       <div class="vk">
-        <span class="vn">${escHtml(liftName(p.oben))} : ${escHtml(liftName(p.unten))}</span>
+        <span class="vn">${escHtml(seitenName(p.oben))} : ${escHtml(seitenName(p.unten))}</span>
         <span class="vd" style="color:${farbe}">${vzPro(p.abweichung)}</span>
       </div>
       <div class="vz">
@@ -1946,7 +1955,8 @@ function renderVerhaeltnisse(logs) {
         ist: p.gemessen.ist.toFixed(2), abw: vzPro(p.gemessen.abweichung),
         o: p.gemessen.oben, u: p.gemessen.unten }))}</div>` : ''}
     </div>`;
-  }).join('');
+  };
+  const zeilen = v.lift.map(paarHtml).join('');
 
   // Die Diagnose steht ueber den Paaren: das ist die Aussage, die Paare
   // sind die Begruendung. Andersherum liest man vier Zahlen und muss
@@ -1965,12 +1975,27 @@ function renderVerhaeltnisse(logs) {
         <button class="btn ghost small" id="verh-bib">${escHtml(t('verh.inDieBibliothek'))}</button>` : ''}
     </div>` : `<p class="fine">${escHtml(t('verh.allesRund'))}</p>`;
 
+  // Die zweite Gruppe erscheint nur, soweit Pruefwerte eingetragen sind.
+  // Fehlt alles, steht dort ein Satz, was man davon haette — und nicht
+  // eine leere Ueberschrift.
+  const offen = ST.PRUEFWERTE.filter(x => !(config.checks && config.checks[x.id])).length;
+  const pruefBlock = v.pruefung.length ? `
+    <h2>${escHtml(t('verh.pruefH'))}</h2>
+    <p class="fine">${escHtml(t('verh.pruefLead'))}${
+      offen ? ' ' + escHtml(t('verh.pruefOffen', { n: offen })) : ''}</p>
+    ${v.schwach.length ? `<p class="fine" style="color:var(--rost)">${escHtml(
+      t('verh.pruefSchwach', { namen: v.schwach.map(seitenName).join(', ') }))}</p>` : ''}
+    <div class="verh-liste">${v.pruefung.map(paarHtml).join('')}</div>` : `
+    <h2>${escHtml(t('verh.pruefH'))}</h2>
+    <p class="fine">${escHtml(t('verh.pruefLeer'))}</p>`;
+
   $('hist-verhaeltnisse').innerHTML = `
     <h2 data-i18n="verh.h">${escHtml(t('verh.h'))}</h2>
     <p class="fine">${escHtml(t('verh.lead'))}</p>
     ${diagnose}
     <div class="verh-liste">${zeilen}</div>
-    <p class="fine">${escHtml(t('verh.fine'))}</p>`;
+    <p class="fine">${escHtml(t('verh.fine'))}</p>
+    ${pruefBlock}`;
 
   const knopf = $('verh-bib');
   if (knopf) knopf.onclick = () => zeigeBibliothek('Kraft');
@@ -2325,6 +2350,45 @@ function renderPersoenlich() {
                  value="${escHtml(r.bestes5er)}" placeholder="kg"></label>
       </div>
     </div>`).join('');
+
+  renderChecks();
+}
+
+/**
+ * Die Pruefwerte. Gewicht und Wiederholungen getrennt, weil die App sonst
+ * nicht weiss, was der Wert bedeutet: fuenf Klimmzuege mit zehn Kilo sind
+ * etwas anderes als einer mit dreissig, und ohne die Wiederholungszahl
+ * liessen sich beide nicht auf dieselbe Basis bringen wie die
+ * Arbeitsgewichte.
+ */
+function renderChecks() {
+  const box = $('pers-checks');
+  if (!box) return;
+  const ids = ST.PRUEFWERTE.map(x => x.id);
+  const def = Object.fromEntries(ST.PRUEFWERTE.map(x => [x.id, x]));
+
+  box.innerHTML = PS.checkEntwurf(config, ids).map(c => `
+    <div class="pers-rekord chk" data-id="${escHtml(c.id)}">
+      <div class="n">${escHtml(t(`chk.${c.id}`))}</div>
+      <p class="fine">${escHtml(t(`chk.${c.id}.hinweis`))}</p>
+      <div class="felder">
+        <label><span>${escHtml(t(def[c.id].basis === 'koerper' ? 'chk.zusatz' : 'chk.gewicht'))}</span>
+          <input class="ck-gewicht" type="number" inputmode="decimal" step="0.5" min="0"
+                 value="${escHtml(c.gewicht)}" placeholder="kg"></label>
+        ${def[c.id].wdh ? `<label><span>${escHtml(t('chk.wdh'))}</span>
+          <input class="ck-wdh" type="number" inputmode="numeric" step="1" min="1" max="12"
+                 value="${escHtml(c.wdh)}" placeholder="1–12"></label>` : ''}
+        <label><span>${escHtml(t('pers.datum'))}</span>
+          <input class="ck-datum" type="date" value="${escHtml(c.datum)}"></label>
+      </div>
+    </div>`).join('');
+
+  $('pers-bw').value = PS.checkKoerpergewicht(config);
+  // Mit angebundener Waage ist das Feld ueberfluessig — es waere ein
+  // zweiter Ort fuer dieselbe Zahl, und zwei Orte laufen auseinander.
+  const vonWaage = gewichtsPunkte.length > 0;
+  $('pers-bw-zeile').hidden = vonWaage;
+  $('pers-bw-hinweis').hidden = vonWaage;
 }
 
 /**
@@ -2343,9 +2407,17 @@ $('pers-speichern').onclick = async () => {
       bestes5er: el.querySelector('.pr-fuenfer').value
     })));
 
+    const checks = PS.baueChecks([...$('pers-checks').querySelectorAll('.pers-rekord')].map(el => ({
+      id: el.dataset.id,
+      gewicht: el.querySelector('.ck-gewicht').value,
+      wdh: el.querySelector('.ck-wdh') ? el.querySelector('.ck-wdh').value : '',
+      datum: el.querySelector('.ck-datum').value
+    })), $('pers-bw').value);
+
     const datei = await S.readFile('config.json');
     if (!datei) throw new Error(t('msg.configNichtLesbar'));
-    const neu = PS.setzeInConfig(datei.data, { grund: $('pers-grund').value, rekorde });
+    const neu = PS.setzeChecks(
+      PS.setzeInConfig(datei.data, { grund: $('pers-grund').value, rekorde }), checks);
     await S.writeFile('config.json', neu, 'Persönliches aktualisiert', datei.sha);
     config = neu;
 

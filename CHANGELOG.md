@@ -10,6 +10,51 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-09-12.3
+
+### Neu
+- **Prüfwerte: acht weitere Kraftverhältnisse.** Die Verhältnis-Tabelle enthält
+  mehr, als sich aus dem 5×5 ableiten lässt — Klimmzug zu Dip zu Drücken und die
+  einseitige Arbeit. Diese Übungen erzeugt das Programm nicht selbst, also werden
+  sie unter *Backstage → Persönliches* eingetragen: Klimmzug, Dip, Front Squat,
+  einarmiges Drücken, Step-Up im Frontrack, einbeiniges Kreuzheben und
+  Farmer's Carry. Damit wächst die Tour von vier auf **zwölf Verhältnisse**.
+
+  Erfasst wird **Gewicht und Wiederholungszahl**, nicht nur ein Gewicht. Das ist
+  keine Bequemlichkeitsfrage: fünf Klimmzüge mit zehn Kilo sind etwas anderes als
+  einer mit dreißig, und ohne die Wiederholungszahl ließen sich beide nicht auf
+  dieselbe Basis bringen wie die Arbeitsgewichte.
+
+  Bei Klimmzug und Dip trägt man nur den **Zusatz** ein — der eigene Körper zählt
+  mit und kommt aus der Waage oder, ohne intervals.icu, aus einem Feld daneben.
+  Ohne bekanntes Körpergewicht entfallen genau die drei Paare, die es brauchen.
+
+### Geändert
+- **Gerechnet wird jetzt durchgehend auf e1RM-Basis.** Solange alle Lifts mit
+  derselben Wiederholungszahl laufen, ist das Verhältnis zweier Arbeitsgewichte
+  identisch mit dem ihrer geschätzten Maxima — der Formelfaktor kürzt sich heraus.
+  Sobald aber ein Prüfwert mit einer anderen Wiederholungszahl dazukommt, stimmt
+  das nicht mehr: 82,5 zu 105 sind 0,79, aber ein Fünfersatz gegen einen
+  gemessenen Einzelversuch sind 0,88. **Zwölf Prozent Unterschied**, und niemand
+  sieht der Zahl an, woher sie kommt. Für die vier bisherigen Verhältnisse ändert
+  sich dadurch nichts.
+- **Die Diagnose bleibt bei den Grundlifts.** Drei der neuen Paare hängen am
+  Kreuzheben und zwei an der Kniebeuge. Wer einseitige Arbeit nie trainiert, hätte
+  dort reihenweise „Kreuzheben ist voraus" erzeugt — eine Diagnose über den
+  falschen Lift. Für die Prüfwerte gibt es stattdessen eine eigene, vorsichtigere
+  Aussage: genannt wird nur, was selbst die schwache Seite eines Paars ist.
+
+### Bewusst so
+- **Ein Zusatz von null ist eine Angabe, kein fehlender Wert.** Klimmzüge ohne
+  Zusatzgewicht sind trotzdem eine Last, nämlich der eigene Körper. Die erste
+  Fassung verwarf die Null — beide Klimmzug-Paare fielen lautlos weg.
+- **Klimmzug zu Dip ist als Faustregel ausgewiesen, nicht als belegt.** Die
+  Tabelle vergleicht diese beiden über Wiederholungen, nicht über Last; der Wert
+  1,25 ist aus ihren Gewichtsangaben gebildet und damit eine Ableitung, keine
+  Aussage der Quelle. Alle anderen Zielwerte dieser Gruppe stehen dort direkt.
+
+---
+
 ## 2026-09-12.2
 
 ### Neu

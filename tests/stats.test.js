@@ -1,5 +1,6 @@
 // Ausfuehren: jsc --module-file=tests/stats.test.js
 import * as S from '../js/stats.js';
+import * as PS from '../js/persoenlich.js';
 
 let pass = 0, fail = 0;
 const ok = (n, c, x = '') => c ? (pass++, print(`  ok   ${n}`)) : (fail++, print(`  FAIL ${n} ${x}`));
@@ -610,7 +611,7 @@ print('\n--- Nie Gemessenes gegen Geschaetztes ---');
   const g = v2.paare.find(x => x.id === 'squat-deadlift').gemessen;
   ok('mit Max-Out auf beiden Seiten schon', !!g);
   eq('110/140', g.ist, 0.79);
-  eq('die Basis der Paare bleibt das Arbeitsgewicht', v2.basis, 'arbeit');
+  eq('gerechnet wird durchgehend auf e1RM-Basis', v2.basis, 'e1rm');
 }
 
 print('\n--- Was nicht da ist, wird nicht erfunden ---');
@@ -741,6 +742,120 @@ print('\n--- Wo es klemmt ---');
 
   eq('ohne Logs keine Plateaus', S.plateaus([], {}, cfg).length, 0);
   eq('ohne Konfiguration auch nicht', S.plateaus(logs, {}, {}).length, 0);
+}
+
+
+
+print('\n--- Pruefwerte: die zweite Gruppe ---');
+{
+  const checks = { pullup:{gewicht:0,wdh:6}, dip:{gewicht:10,wdh:6}, frontsquat:{gewicht:65,wdh:5},
+                   sapress:{gewicht:22,wdh:5}, stepup:{gewicht:40,wdh:5}, sldl:{gewicht:30,wdh:5},
+                   farmer:{gewicht:42} };
+  const well = [{ date:'2026-09-01', weight:84 }, { date:'2026-09-02', weight:84 }];
+  const v = S.verhaeltnisse(st5, { ...cfg5, checks }, [], well);
+  eq('acht Pruefwert-Paare', v.pruefung.length, 8);
+  eq('die vier Grundlift-Paare bleiben getrennt', v.lift.length, 4);
+  eq('zwoelf insgesamt', v.paare.length, 12);
+  eq('das Koerpergewicht kommt aus der Waage', v.koerpergewicht, 84);
+
+  // Bei Klimmzug und Dip traegt man nur den Zusatz ein. Eine Null ist dort
+  // eine Angabe ("ohne Zusatz"), kein fehlender Wert — genau daran ist die
+  // erste Fassung gescheitert: beide Paare fielen lautlos weg.
+  const pu = v.pruefung.find(p => p.id === 'ohp-pullup');
+  ok('ein Zusatz von null laesst das Paar bestehen', !!pu);
+  eq('die Last ist das Koerpergewicht', pu.gewichtUnten, 84);
+  const dip = v.pruefung.find(p => p.id === 'pullup-dip');
+  eq('und mit Zusatz kommt er obendrauf', dip.gewichtUnten, 94);
+
+  eq('ohne Koerpergewicht entfallen Klimmzug und Dip',
+     S.verhaeltnisse(st5, { ...cfg5, checks }, [], []).pruefung.filter(
+       p => p.id === 'ohp-pullup' || p.id === 'pullup-dip').length, 0);
+  // Drei Paare brauchen das Koerpergewicht: Klimmzug und Dip als Last,
+  // das einarmige Druecken als Bezugsgroesse.
+  eq('die uebrigen fuenf bleiben',
+     S.verhaeltnisse(st5, { ...cfg5, checks }, [], []).pruefung.length, 5);
+  eq('auch das einarmige Druecken faellt weg',
+     S.verhaeltnisse(st5, { ...cfg5, checks }, [], []).pruefung.filter(
+       p => p.id === 'sapress-bw').length, 0);
+
+  // Ein hinterlegtes Koerpergewicht ist der Rueckfall ohne Waage.
+  const mitBw = { ...cfg5, checks: { ...checks, koerpergewicht: 80 } };
+  eq('ersatzweise das eingetragene', S.verhaeltnisse(st5, mitBw, [], []).koerpergewicht, 80);
+  eq('die Waage geht aber vor', S.verhaeltnisse(st5, mitBw, [], well).koerpergewicht, 84);
+
+  eq('ohne Pruefwerte bleibt die Gruppe leer', S.verhaeltnisse(st5, cfg5, []).pruefung.length, 0);
+}
+
+print('\n--- Die Diagnose bleibt bei den Grundlifts ---');
+{
+  // Drei Pruefwert-Paare haengen am Kreuzheben, zwei an der Kniebeuge. Wer
+  // einseitige Arbeit nie trainiert, wuerde dort reihenweise "Kreuzheben
+  // ist voraus" erzeugen — eine Diagnose ueber den falschen Lift.
+  const schwach = { frontsquat:{gewicht:30,wdh:5}, sapress:{gewicht:8,wdh:5},
+                    stepup:{gewicht:10,wdh:5}, sldl:{gewicht:10,wdh:5}, farmer:{gewicht:15} };
+  const well = [{ date:'2026-09-01', weight:84 }, { date:'2026-09-02', weight:84 }];
+  const v = S.verhaeltnisse(st5, { ...cfg5, checks: schwach }, [], well);
+  ok('mehrere Pruefwerte fallen deutlich ab', v.schwach.length >= 3, v.schwach.join());
+  ok('genannt werden nur Pruefwerte, keine Grundlifts',
+     v.schwach.every(id => S.PRUEFWERTE.some(x => x.id === id)), v.schwach.join());
+
+  // "Strict Press : Klimmzug" unter dem Ziel heisst: der Press ist schwach.
+  // Den Klimmzug hier mitzuzaehlen hiesse, ihn im selben Absatz stark und
+  // schwach zu nennen.
+  const stark = { pullup:{gewicht:40,wdh:5}, dip:{gewicht:0,wdh:5} };
+  const vs = S.verhaeltnisse(st5, { ...cfg5, checks: stark }, [], well);
+  const pu = vs.pruefung.find(p => p.id === 'ohp-pullup');
+  ok('der Press faellt gegen einen starken Klimmzug ab', pu.abweichung < -20, pu.abweichung);
+  ok('trotzdem steht der Klimmzug nicht auf der Schwachliste',
+     !vs.schwach.includes('pullup'), vs.schwach.join());
+  eq('der Ausreisser bleibt trotzdem der Bench', v.ausreisser.lift, 'bench');
+  eq('und zwar unveraendert mit zwei Stimmen', v.ausreisser.treffer, 2);
+  ok('kein Grundlift wird durch Pruefwerte zum Ausreisser',
+     v.ausreisser.lift !== 'deadlift' && v.ausreisser.lift !== 'squat');
+}
+
+print('\n--- Gleiche Basis, auch bei verschiedenen Wiederholungen ---');
+{
+  // Der Kern des Abschnitts: ein Pruefwert aus einem Einzelversuch und ein
+  // Arbeitsgewicht aus fuenf Wiederholungen sind ohne e1RM nicht
+  // vergleichbar — der Unterschied liegt bei zwoelf Prozent.
+  const einer  = { frontsquat: { gewicht: 80, wdh: 1 } };
+  const fuenfe = { frontsquat: { gewicht: 80, wdh: 5 } };
+  const a = S.verhaeltnisse(st5, { ...cfg5, checks: einer  }, []).pruefung.find(p => p.id === 'frontsquat-squat');
+  const b = S.verhaeltnisse(st5, { ...cfg5, checks: fuenfe }, []).pruefung.find(p => p.id === 'frontsquat-squat');
+  ok('dasselbe Gewicht bei einer Wiederholung zaehlt weniger', a.ist < b.ist, `${a.ist} / ${b.ist}`);
+  eq('fuenf gegen fuenf ist das reine Gewichtsverhaeltnis', b.ist, Math.round((80/82.5)*100)/100);
+  eq('die Basis ist ausgewiesen', S.verhaeltnisse(st5, cfg5, []).basis, 'e1rm');
+}
+
+print('\n--- Pruefwerte: Formular ---');
+{
+  const c = PS.baueChecks([
+    { id:'pullup', gewicht:'0', wdh:'6', datum:'2026-09-10' },
+    { id:'dip', gewicht:'10', wdh:'' },
+    { id:'frontsquat', gewicht:'', wdh:'5' },
+    { id:'kaputt', gewicht:'-5' },
+    { id:'zuviel', gewicht:'50', wdh:'40' }
+  ], '84');
+  eq('die Null wird behalten', c.pullup.gewicht, 0);
+  eq('samt Wiederholungen und Datum', c.pullup.wdh, 6);
+  ok('ohne Wiederholungen bleibt das Feld weg', !('wdh' in c.dip));
+  ok('ein Gewicht ohne Wert zaehlt nicht', !('frontsquat' in c));
+  ok('negative Gewichte auch nicht', !('kaputt' in c));
+  ok('eine unsinnige Wiederholungszahl wird verworfen', !('wdh' in c.zuviel));
+  eq('das Koerpergewicht kommt mit', c.koerpergewicht, 84);
+
+  const cfg = PS.setzeChecks({ lifts:{} }, c);
+  ok('die Pruefwerte landen in der config', !!cfg.checks);
+  ok('sonst bleibt sie unberuehrt', !!cfg.lifts);
+  ok('ganz ohne Werte faellt der Block weg', !('checks' in PS.setzeChecks({ checks: c }, {})));
+
+  const e = PS.checkEntwurf({ checks: c }, ['pullup','farmer']);
+  eq('der Entwurf hat eine Zeile je Uebung', e.length, 2);
+  eq('bekannte Werte stehen drin', e[0].gewicht, 0);
+  eq('unbekannte bleiben leer', e[1].gewicht, '');
+  eq('das hinterlegte Koerpergewicht ist lesbar', PS.checkKoerpergewicht({ checks: c }), 84);
+  eq('ohne Eintrag kommt ein leerer String', PS.checkKoerpergewicht({}), '');
 }
 
 

@@ -745,6 +745,17 @@ h2.backstage::before{
   text-transform:uppercase;color:var(--dim);margin-bottom:3px;
 }
 .pers-rekord input{margin:0}
+/* Pruefwerte: Gewicht und Wiederholungen sind schmale Zahlenfelder und
+   passen auch auf dem Handy nebeneinander — nur das Datum braucht die
+   volle Breite. Sieben Karten mit je drei gestapelten Feldern waeren
+   sonst eine sehr lange Strecke fuer etwas, das man selten ausfuellt. */
+.pers-rekord.chk .felder{grid-template-columns:1fr 1fr}
+.pers-rekord.chk .felder label:last-child{grid-column:1 / -1}
+@media (min-width:420px){
+  .pers-rekord.chk .felder{grid-template-columns:1fr 1fr 1.3fr}
+  .pers-rekord.chk .felder label:last-child{grid-column:auto}
+}
+.pers-rekord.chk .fine{margin:-4px 0 8px}
 #pers-speichern{margin-top:14px}
 
 /* ── Ort im Kopf ──────────────────────────────────────────── */
