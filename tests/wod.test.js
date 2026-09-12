@@ -107,8 +107,6 @@ print('\n--- Notbremse: schliesst man alles aus, bleibt der volle Pool ---');
 const allesAus = { wod: { aus: W.MOVES.map(m => m.id) } };
 ok('lieber ein Workout als gar keins', W.generateWod(state, 3, allesAus).teile.length > 0);
 
-print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);
-
 print('\n--- Jede Uebung erklaert sich ---');
 eq('keine Uebung ohne Erklaerung',
    W.MOVES.filter(m => !m.erklaerung || m.erklaerung.length < 60).length, 0);
@@ -128,5 +126,23 @@ for (let s = 1; s <= 300; s++) {
   if (W.generateWod(state, s, { wod:{ aus:['pullup'] } }).teile.some(t => t.id === 'latzug')) latGesehen++;
 }
 ok('kommt trotz Klimmzug-Ausschluss vor', latGesehen > 5, latGesehen);
+
+/* Ein gebautes Teil muss den Standard SEINER Bewegung tragen. Beim ersten
+   Anlauf stand in der Bau-Funktion ein fest verdrahteter Text, sodass jede
+   Bewegung denselben Standard zeigte — im Zweifel den einer voellig anderen
+   Uebung. Ein falscher Standard ist schlimmer als gar keiner.          */
+print('\n--- Der Standard gehoert zur Bewegung, nicht zur Position ---');
+{
+  let geprueft = 0, falsch = [];
+  for (let seed = 0; seed < 60; seed++) {
+    for (const teil of W.generateWod(state, seed).teile) {
+      const quelle = W.MOVES.find(m => m.id === teil.id);
+      if (teil.standard !== (quelle.standard || '')) falsch.push(`${teil.id}`);
+      geprueft++;
+    }
+  }
+  ok(`ueber ${geprueft} gebaute Teile stimmt der Standard mit der Bewegung ueberein`,
+     falsch.length === 0, [...new Set(falsch)].join());
+}
 
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

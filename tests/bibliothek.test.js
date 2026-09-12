@@ -2,6 +2,7 @@
 import * as B from '../js/bibliothek.js';
 import { LIFT_INFO, SKILL, MOBILITY, FINISHER, WARMUP, QUELLEN } from '../js/content.js';
 import { MOVES } from '../js/wod.js';
+import { UEBUNGEN } from '../js/unplugged.js';
 
 let pass = 0, fail = 0;
 const ok = (n, c, x = '') => c ? (pass++, print(`  ok   ${n}`)) : (fail++, print(`  FAIL ${n} ${x}`));
@@ -160,5 +161,53 @@ for (const id of ['push-jerk', 'snatch-high-pull', 'paused-front-squat'])
   ok(`${id} ist da`, SKILL.some(x => x.id === id));
 ok('alle Technikuebungen haben Dosis und Begruendung',
    SKILL.every(x => x.name && x.dosis && x.warum));
+
+/* Ein Standard sagt, wann die Wiederholung zaehlt — nicht, wie sie sich
+   anfuehlt. Das ist nicht ueberall eine sinnvolle Aussage: eine Dehnung
+   hat keine gueltige Wiederholung, und bei Erg und Battle Ropes zaehlt
+   die Uhr. Ein Standard, der dort trotzdem stuende, saehe nach Sorgfalt
+   aus und waere das Gegenteil. Diese Tests halten die Entscheidung fest,
+   damit sie beim naechsten Nachtragen nicht verloren geht.            */
+print('\n--- Bewegungsstandards: wo sie stehen ---');
+ok('jeder Grundlift hat einen Standard',
+   Object.values(LIFT_INFO).every(l => l.standard));
+ok('jede Technikuebung hat einen Standard',
+   SKILL.every(x => x.standard));
+ok('KEINE Mobility-Uebung hat einen Standard',
+   MOBILITY.every(x => !x.standard),
+   MOBILITY.filter(x => x.standard).map(x => x.id).join());
+ok('jede Unplugged-Uebung hat einen Standard',
+   UEBUNGEN.every(x => x.standard),
+   UEBUNGEN.filter(x => !x.standard).map(x => x.id).join());
+
+const aufZeit = m => m.einheit === 'Sek' || m.einheit === 'm' || m.einheit === 'Kal';
+ok('jede gezaehlte Jam-Bewegung hat einen Standard',
+   MOVES.filter(m => !aufZeit(m)).every(m => m.standard),
+   MOVES.filter(m => !aufZeit(m) && !m.standard).map(m => m.id).join());
+ok('KEINE Bewegung auf Zeit oder Distanz hat einen Standard',
+   MOVES.filter(aufZeit).every(m => !m.standard),
+   MOVES.filter(m => aufZeit(m) && m.standard).map(m => m.id).join());
+
+const alleStandards = [
+  ...Object.values(LIFT_INFO), ...SKILL, ...FINISHER, ...MOVES, ...UEBUNGEN
+].map(x => x.standard).filter(Boolean);
+eq('insgesamt 60 Standards', alleStandards.length, 60);
+ok('keiner ist laenger als drei Saetze',
+   alleStandards.every(t => (t.match(/[.!?]/g) || []).length <= 3),
+   alleStandards.filter(t => (t.match(/[.!?]/g) || []).length > 3).join(' || '));
+ok('keiner endet ohne Punkt',
+   alleStandards.every(t => t.trim().endsWith('.')));
+
+print('\n--- Bewegungsstandards: in der Bibliothek ---');
+ok('der Standard kommt am Bibliothekseintrag an',
+   alles.find(u => u.id === 'lift:squat').standard.includes('Hüftfalte'));
+ok('Mobility-Eintraege bleiben ohne Standard',
+   alles.filter(u => u.kategorie === 'Mobility').every(u => !u.standard));
+const parallele = B.suche(alles, 'Hüftfalte');
+ok('man findet eine Uebung ueber ihren Standard',
+   parallele.some(u => u.id === 'lift:squat'), parallele.map(u => u.id).join());
+const abpraller = B.suche(alles, 'Abpraller');
+ok('"Abpraller" findet den Wall Ball',
+   abpraller.some(u => u.id === 'wod:wallball'), abpraller.map(u => u.id).join());
 
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

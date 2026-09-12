@@ -120,4 +120,26 @@ const l = U.label(s);
 ok('nennt die Dauer', l.includes('15 Min'));
 ok('nennt die Uebungen', s.teile.every(t => l.includes(t.name)));
 
+
+/* Hier ist der Fehler tatsaechlich passiert: die Bau-Funktion trug einen
+   fest verdrahteten Standard, sodass jede Uebung den der Sprungkniebeuge
+   anzeigte. Wer morgens im Wohnzimmer nachliest, was zaehlt, bekaeme die
+   Antwort zu einer Uebung, die er gar nicht macht.                     */
+print('\n--- Der Standard gehoert zur Uebung, nicht zur Position ---');
+{
+  let geprueft = 0; const falsch = [];
+  for (let seed = 0; seed < 40; seed++) {
+    for (const leise of [true, false]) {
+      for (const teil of U.baueSession({ seed, leise }).teile) {
+        const quelle = U.UEBUNGEN.find(u => u.id === teil.id);
+        if (teil.standard !== (quelle.standard || '')) falsch.push(teil.id);
+        geprueft++;
+      }
+    }
+  }
+  ok(`ueber ${geprueft} gebaute Teile stimmt der Standard mit der Uebung ueberein`,
+     falsch.length === 0, [...new Set(falsch)].join());
+  ok('und keiner ist leer', geprueft > 0);
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

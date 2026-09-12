@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-996%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1012%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
 </p>
@@ -152,6 +152,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | | |
 |---|---|
 | **Every exercise in one place** | Main lifts, technique, mobility, finishers and all jam movements, searchable and filterable by category. |
+| **When the rep counts** | 60 exercises carry a movement standard written as a test, not a hint: not “squat deep” but “hip crease below the kneecap, hips and knees fully extended at the top”. Shown in the jam, in Unplugged and during a live session too. Stretches and time-based machines deliberately have none — there is no valid rep to judge. |
 | **Always a random exercise** | With full detail at the top, drawn fresh on every visit — stays stable while you type or filter. |
 | **YouTube search link instead of a guessed video** | A single hard-wired video could be offline or wrong. Overridable with your own link. |
 | **Your own notes** | Land in `bibliothek.json` in `setlist-data` and grow with you — the same knowledge layer as `config.json`, but for what you learned yourself. |

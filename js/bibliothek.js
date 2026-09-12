@@ -22,6 +22,7 @@ export function alleUebungen(config = {}, state = {}) {
       dosis: '5×5',
       info: def.warum,
       cue: def.cue,
+      standard: def.standard || null,
       fehler: def.fehler,
       // Die Korrektur steht in der Bibliothek immer, unabhaengig von
       // Fehlversuchen: hier schlaegt man bewusst nach. In der laufenden
@@ -32,20 +33,20 @@ export function alleUebungen(config = {}, state = {}) {
     });
   }
   for (const s of SKILL) {
-    liste.push({ id: `skill:${s.id}`, kategorie: 'Technik', name: s.name, dosis: s.dosis, info: s.warum, cue: null, fehler: s.fehler || null, korrektur: null, quelle: s.quelle || null, aktuell: null });
+    liste.push({ id: `skill:${s.id}`, kategorie: 'Technik', name: s.name, dosis: s.dosis, info: s.warum, cue: null, fehler: s.fehler || null, standard: s.standard || null, korrektur: null, quelle: s.quelle || null, aktuell: null });
   }
   for (const m of MOBILITY) {
-    liste.push({ id: `mobility:${m.id}`, kategorie: 'Mobility', name: m.name, dosis: m.dosis, info: m.warum, cue: null, fehler: null, korrektur: null, quelle: m.quelle || null, aktuell: null });
+    liste.push({ id: `mobility:${m.id}`, kategorie: 'Mobility', name: m.name, dosis: m.dosis, info: m.warum, cue: null, fehler: null, standard: m.standard || null, korrektur: null, quelle: m.quelle || null, aktuell: null });
   }
   for (const f of FINISHER) {
-    liste.push({ id: `finisher:${f.id}`, kategorie: 'Finisher', name: f.name, dosis: f.dosis, info: f.warum, cue: null, fehler: null, korrektur: null, quelle: f.quelle || null, aktuell: null });
+    liste.push({ id: `finisher:${f.id}`, kategorie: 'Finisher', name: f.name, dosis: f.dosis, info: f.warum, cue: null, fehler: null, standard: f.standard || null, korrektur: null, quelle: f.quelle || null, aktuell: null });
   }
   for (const w of MOVES) {
     const einheit = w.einheit || 'Wdh';
     liste.push({
       id: `wod:${w.id}`, kategorie: 'Jam', name: w.name,
       dosis: `${w.reps[0]}–${w.reps[1]} ${einheit}`,
-      info: w.erklaerung, cue: w.cue, fehler: null, korrektur: null, quelle: null, aktuell: null
+      info: w.erklaerung, cue: w.cue, fehler: null, standard: w.standard || null, korrektur: null, quelle: null, aktuell: null
     });
   }
 
@@ -61,7 +62,7 @@ export function suche(liste, query = '', kategorie = null) {
   const q = query.trim().toLowerCase();
   const k = u => u.korrektur
     ? [u.korrektur.wenn, u.korrektur.warum, ...u.korrektur.uebungen.map(x => x.name)] : [];
-  const treffer = u => [u.name, u.info, u.cue, u.fehler, ...k(u)]
+  const treffer = u => [u.name, u.info, u.cue, u.fehler, u.standard, ...k(u)]
     .some(t => t && t.toLowerCase().includes(q));
   return liste.filter(u => (!kategorie || u.kategorie === kategorie) && (!q || treffer(u)));
 }

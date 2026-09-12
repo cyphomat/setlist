@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="App öffnen" src="https://img.shields.io/badge/App-öffnen-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-996%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1012%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-keiner-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Abhängigkeiten" src="https://img.shields.io/badge/Abhängigkeiten-0-a7a3ab?style=for-the-badge&labelColor=17161b">
 </p>
@@ -152,6 +152,7 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 | | |
 |---|---|
 | **Alle Übungen an einem Ort** | Grundlifts, Technik, Mobility, Finisher und alle Jam-Bewegungen, durchsuchbar und nach Kategorie filterbar. |
+| **Wann die Wiederholung zählt** | Zu 60 Übungen steht ein Bewegungsstandard als Prüfkriterium: nicht „tief in die Hocke", sondern „Hüftfalte unter der Kniescheibe, oben Hüfte und Knie ganz gestreckt". Auch im Jam, im Unplugged und in der laufenden Einheit. Dehnungen und Geräte auf Zeit bleiben bewusst ohne — dort gibt es keine gültige Wiederholung. |
 | **Immer eine zufällige Übung** | Mit vollem Detail oben, bei jedem Aufruf neu gezogen — bleibt stabil, während man tippt oder filtert. |
 | **YouTube-Suchlink statt geratenem Video** | Ein einzelnes fest verdrahtetes Video könnte offline oder falsch sein. Per eigenem Link überschreibbar. |
 | **Eigene Notizen** | Landen in `bibliothek.json` in `setlist-data` und wachsen mit — dieselbe Wissensschicht wie `config.json`, nur für das, was du selbst gelernt hast. |

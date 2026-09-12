@@ -10,6 +10,42 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-09-12.1
+
+### Neu
+- **Bewegungsstandards: wann die Wiederholung zählt.** Zu jeder Übung stand bisher
+  ein *Cue* („Ellbogen hoch halten") und eine Erklärung, warum sie im Programm ist.
+  Beides sagt, wie es sich anfühlen soll. Keines sagt, **ob der Satz gültig war** —
+  und genau das fragt man sich mitten in der Einheit, und beim Jam bei jeder
+  Bewegung, die man selten macht.
+
+  Neues Feld `standard` an **60 Übungen**, formuliert als Prüfkriterium statt als
+  Hinweis. Nicht „tief in die Hocke", sondern „Hüftfalte unter der Kniescheibe,
+  oben Hüfte und Knie ganz gestreckt". Sichtbar in der Bibliothek, im Jam-Aufklapper,
+  im Unplugged-Plan und in der laufenden Einheit — überall dort, wo Cue und
+  Erklärung schon stehen. Die Volltextsuche greift mit: wer *Lockout*, *Hüftfalte*
+  oder *Abpraller* eingibt, findet die Übung über ihr Kriterium.
+
+  **Bewusst nicht überall.** Eine Dehnung hat keine gültige Wiederholung, und bei
+  Erg und Battle Ropes zählt die Uhr. Alle zehn Mobility-Übungen, die vier
+  Mono-Geräte und die drei Seil-Einträge bleiben deshalb ohne Standard. Ein Feld,
+  das dort trotzdem stünde, sähe nach Sorgfalt aus und wäre das Gegenteil — dieselbe
+  Überlegung wie bei den Quellenangaben. Tests halten diese Entscheidung fest,
+  damit sie beim nächsten Nachtragen nicht verloren geht.
+
+### Behoben
+- **Jede Unplugged-Übung hätte denselben Standard angezeigt** — den der
+  Sprungkniebeuge, auch bei Liegestützen. Ursache war ein fest verdrahteter Text in
+  `baueSession` statt der Durchreichung aus der Übung; im Jam fiel das Feld beim
+  Bauen sogar ganz weg. Beim Gegenlesen im Browser aufgefallen, bevor es jemand
+  gesehen hat. Beide Bau-Funktionen reichen das Feld jetzt durch, und je ein Test
+  vergleicht über mehrere hundert gebaute Teile den Standard mit seiner Quelle —
+  ein falscher Standard ist schlimmer als gar keiner.
+- `tests/wod.test.js` gab mitten im Lauf eine Zwischensumme aus, die sich wie das
+  Ende las, obwohl danach noch Tests kamen.
+
+---
+
 ## 2026-09-10.1
 
 ### Geändert

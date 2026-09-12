@@ -612,6 +612,7 @@ function renderSession() {
         <div class="body">
           <p>${i.warum || ''}</p>
           <div class="kv"><span class="k">${t('ses.cue')}</span><span class="v">${i.cue || ''}</span></div>
+          ${i.standard ? `<div class="kv"><span class="k">${t('ses.standard')}</span><span class="v">${i.standard}</span></div>` : ''}
           <div class="kv"><span class="k">${t('ses.fehler')}</span><span class="v">${i.fehler || ''}</span></div>
           ${i.oly ? `<div class="kv"><span class="k">OLY</span><span class="v">${i.oly}</span></div>` : ''}
           ${korrekturHtml(i, state.lifts[l.lift])}
@@ -1158,6 +1159,8 @@ function renderUnplugged() {
       <div class="body">
         <p class="tagline"><b>${escHtml(teil.cue)}</b></p>
         <p>${escHtml(teil.erklaerung)}</p>
+        ${teil.standard ? `<div class="kv"><span class="k">${t('bib.standard')}</span>
+          <span class="v">${escHtml(teil.standard)}</span></div>` : ''}
         <div class="kv"><span class="k">${t('up.leichter')}</span>
           <span class="v">${escHtml(teil.leichter.join(' · '))}</span></div>
         <div class="kv"><span class="k">${t('up.schwerer')}</span>
@@ -1493,6 +1496,8 @@ function renderWod() {
             ${teil.last ? `<span class="last">${P.fmtWeight(teil.last)}</span>` : ''}
             <span class="c">${teil.cue}</span>
             <details class="skal"><summary>${t('wod.wasDasBringt')}</summary>
+              ${teil.standard ? `<div class="skal-titel">${t('bib.standard')}</div>
+                <p class="std">${teil.standard}</p>` : ''}
               ${teil.erklaerung ? `<p class="erkl">${teil.erklaerung}</p>` : ''}
               ${teil.skalierung && teil.skalierung.length ? `
                 <div class="skal-titel">${t('wod.leichter')}</div>
@@ -1601,6 +1606,7 @@ function bibDetailHtml(u) {
       ${u.aktuell ? `<div class="kv"><span class="k">${t('bib.aktuell')}</span><span class="v">${escHtml(u.aktuell)}</span></div>` : ''}
       ${u.info ? `<p>${escHtml(u.info)}</p>` : ''}
       ${u.cue ? `<div class="kv"><span class="k">${t('bib.cue')}</span><span class="v">${escHtml(u.cue)}</span></div>` : ''}
+      ${u.standard ? `<div class="kv"><span class="k">${t('bib.standard')}</span><span class="v">${escHtml(u.standard)}</span></div>` : ''}
       ${u.fehler ? `<div class="kv"><span class="k">${t('bib.fehler')}</span><span class="v">${escHtml(u.fehler)}</span></div>` : ''}
       ${u.korrektur ? `<div class="korrektur">
         <p class="kh">${t('bib.korrektur')}</p>

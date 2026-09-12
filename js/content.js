@@ -26,6 +26,7 @@ export const LIFT_INFO = {
     warum: 'Die größte Hebelwirkung auf deinen gesamten Körper. Beine, Rumpf, oberer Rücken — und der stärkste hormonelle Reiz, den du im Defizit kriegen kannst. Deshalb steht sie in beiden Workouts.',
     kadenz: '3 Sekunden runter, unten nicht abfedern, explosiv hoch.',
     cue: 'Bruch aus der Hüfte und den Knien gleichzeitig. Ellbogen unter die Stange, Brust bleibt offen.',
+    standard: 'Hüftfalte unter der Kniescheibe, oben Hüfte und Knie ganz gestreckt. Die Stange bleibt über der Mitte des Fußes.',
     fehler: 'Hüfte schießt zuerst hoch — dann wird aus dem Squat ein Good Morning. Zweiter Klassiker: Fersen heben ab, dann übernehmen die Zehen und die Gesäßmuskulatur steigt aus.',
     oly: 'Aus deinem Gewichtheben kennst du die aufrechte Front-Position. Halte im Back Squat denselben Oberkörperwinkel wie im Clean, dann überträgt es sich.',
     korrektur: {
@@ -44,6 +45,7 @@ export const LIFT_INFO = {
     warum: 'Horizontaler Druck. Der Gegenspieler zum Rudern — beide zusammen halten die Schulter gesund.',
     kadenz: 'Kontrolliert runter bis Brustkontakt, kurze Pause, dann drücken.',
     cue: 'Schulterblätter zusammen und in die Bank. Füße fest, leichter Bogen im unteren Rücken.',
+    standard: 'Die Stange berührt die Brust, oben sind die Ellbogen ganz gestreckt. Das Gesäß bleibt auf der Bank, und die Stange ruht sich unten nicht aus — berühren ist nicht ablegen.',
     fehler: 'Ellbogen 90 Grad abgespreizt. Etwa 45 Grad, das schont die Schulter.',
     oly: null,
     korrektur: {
@@ -62,6 +64,7 @@ export const LIFT_INFO = {
     warum: 'Zieht, was die Bank drückt. Ohne Rudern kippt dein Schultergürtel nach vorn — und dein Oberkörper ist die Basis für jedes Frontrack.',
     kadenz: 'Explosiv ziehen, betont langsam ablassen.',
     cue: 'Oberkörper knapp über parallel, Stange an den unteren Bauch. Rücken bleibt flach.',
+    standard: 'Die Stange berührt den Bauch, unten sind die Arme ganz lang. Der Oberkörperwinkel ist am Ende derselbe wie am Anfang.',
     fehler: 'Aus dem Aufrichten schwingen. Wenn du reißen musst, ist es zu schwer.',
     oly: 'Die Position ist deine Zugposition beim Clean. Betrachte jeden Satz als Positionstraining.',
     korrektur: {
@@ -80,6 +83,7 @@ export const LIFT_INFO = {
     warum: 'Ehrlichster Test für Rumpf und Schulter. Hier gibt es nichts zu schummeln — und er ist die Basis für jeden Jerk.',
     kadenz: 'Gleichmäßig hoch, kontrolliert zurück ins Rack.',
     cue: 'Gesäß und Bauch fest. Kopf leicht zurück, dann Stange am Gesicht vorbei, dann Kopf durch.',
+    standard: 'Oben sind Ellbogen und Knie ganz gestreckt und die Stange steht über der Mitte des Fußes. Unten berührt sie die Schultern. Kein Beineinsatz — sobald die Knie beugen, ist es ein Push Press.',
     fehler: 'Rücklage aus dem unteren Rücken. Wenn du dich zurücklehnen musst, ist es zu schwer.',
     oly: 'Deine Overhead-Position hier entscheidet über den Jerk. Aktive Schulter, Ohren frei.',
     korrektur: {
@@ -99,6 +103,7 @@ export const LIFT_INFO = {
     warum: 'Nur ein Satz — mit Absicht. Deadlifts kosten mehr Erholung als alles andere. Ein schwerer Satz reicht als Reiz, fünf würden deinen Squat auffressen.',
     kadenz: 'Spannung aufbauen, dann ohne Ruck. Jede Wiederholung neu ansetzen.',
     cue: 'Stange am Schienbein. Brust hoch, bevor die Hüfte kommt. Schieben, nicht ziehen.',
+    standard: 'Hüfte und Schultern steigen gleich schnell — schiebt die Hüfte vor, ist es kein gültiger Zug mehr. Oben Hüfte und Knie ganz gestreckt. Jede Wiederholung setzt am Boden neu an, nicht aus dem Abprall.',
     fehler: 'Aus dem Boden reißen. Zieh die Stange erst auf Spannung, dann kommt die Bewegung.',
     oly: 'Das ist dein erster Zug. Gleiche Position wie beim Clean bis Kniehöhe — nutze das bewusst.',
     korrektur: {
@@ -151,14 +156,14 @@ export const WARMUP = {
    Auffrischung von etwas, das du kannst, kein neuer Trainingsreiz. */
 
 export const SKILL = [
-  { id: 'snatch-balance', name: 'Snatch Balance', dosis: '3x3, leer bis leicht', warum: 'Holt dir die Overhead-Position zurück, ohne Ermüdung zu kosten.', quelle: 'everett' },
-  { id: 'hang-power-clean', name: 'Hang Power Clean', dosis: '4x2, technisch', warum: 'Explosive Hüftstreckung — der Teil, der nach einer Pause zuerst geht.', fehler: 'Die Arme beugen zu früh und ziehen die Stange hoch. Das ist kein Kraftproblem, sondern fehlendes Vertrauen in die Hüfte — die Arme sind Seile, nicht Motoren.', quelle: 'everett' },
-  { id: 'overhead-squat', name: 'Overhead Squat', dosis: '3x5, leere Stange', warum: 'Ehrliches Feedback über Mobilität. Ignorier es nicht.' },
-  { id: 'clean-pull', name: 'Clean Pull', dosis: '3x3 @ 60 %', warum: 'Erster Zug, saubere Position, keine Landung.', fehler: 'Rückenwinkel öffnet sich schon vor dem Knie. Dann kommt die Stange nach vorn, und der zweite Zug findet ohne Hüfte statt.', quelle: 'everett' },
-  { id: 'sots-press', name: 'Sots Press', dosis: '3x5, leer', warum: 'Unbequem, aber nichts öffnet die Schulter schneller.' },
-  { id: 'push-jerk', name: 'Push Jerk', dosis: '4x3, leicht', warum: 'Vertikaler Dip, gerade Hantelbahn, Schulter-Drive. Der Weg zurück zum Split Jerk führt hier vorbei — und der Lockout überträgt sich direkt auf den Strict Press.', quelle: 'everett' },
-  { id: 'snatch-high-pull', name: 'Snatch High Pull', dosis: '3x3 @ 85 %', warum: 'Explosive Hüftstreckung und Zughöhe, ohne dass die Arme die Arbeit übernehmen. Kein Unterhocken, also auch keine Technikschuld, wenn der Tag schlecht läuft.', fehler: 'Sobald du die Arme einsetzt, ist der Zweck weg. Bewusst mit langen Armen ziehen — merkst du den Bizeps, war die Hüfte zu langsam.', quelle: 'everett' },
-  { id: 'paused-front-squat', name: 'Front Squat mit Pause', dosis: '4x3, 2–3 Sek unten', warum: 'Quadrizeps-Kraft und aufrechter Rumpf genau in der Position, in der die Brust beim Umsetzen zusammenklappt. Die Pause nimmt den Sprungeffekt raus, der die Schwäche sonst überdeckt.', quelle: 'everett' }
+  { id: 'snatch-balance', name: 'Snatch Balance', dosis: '3x3, leer bis leicht', warum: 'Holt dir die Overhead-Position zurück, ohne Ermüdung zu kosten.', quelle: 'everett', standard: 'Unten voller Overhead-Squat: Hüftfalte unter dem Knie, Arme durchgestreckt, Stange über der Mitte des Fußes. Aufstehen bis zur vollen Streckung zählt dazu.' },
+  { id: 'hang-power-clean', name: 'Hang Power Clean', dosis: '4x2, technisch', warum: 'Explosive Hüftstreckung — der Teil, der nach einer Pause zuerst geht.', fehler: 'Die Arme beugen zu früh und ziehen die Stange hoch. Das ist kein Kraftproblem, sondern fehlendes Vertrauen in die Hüfte — die Arme sind Seile, nicht Motoren.', quelle: 'everett', standard: 'Start aus dem Hang, die Stange kommt nicht auf den Boden. Landung oberhalb der Parallele — sackst du tiefer, war es ein Squat Clean. Ellbogen vorn, Stange auf den Schultern, dann ganz aufstehen.' },
+  { id: 'overhead-squat', name: 'Overhead Squat', dosis: '3x5, leere Stange', warum: 'Ehrliches Feedback über Mobilität. Ignorier es nicht.', standard: 'Hüftfalte unter dem Knie, Arme über den ganzen Weg durchgestreckt, Stange über der Mitte des Fußes. Ein gebeugter Arm unten macht die Wiederholung ungültig.' },
+  { id: 'clean-pull', name: 'Clean Pull', dosis: '3x3 @ 60 %', warum: 'Erster Zug, saubere Position, keine Landung.', fehler: 'Rückenwinkel öffnet sich schon vor dem Knie. Dann kommt die Stange nach vorn, und der zweite Zug findet ohne Hüfte statt.', quelle: 'everett', standard: 'Voll geöffnete Hüfte am Ende des Zugs, Arme bleiben lang. Keine Landung, kein Umsetzen — sobald die Arme beugen, ist es ein High Pull.' },
+  { id: 'sots-press', name: 'Sots Press', dosis: '3x5, leer', warum: 'Unbequem, aber nichts öffnet die Schulter schneller.', standard: 'Aus der tiefen Hocke drücken, ohne dass die Hüfte hochkommt. Oben Arme ganz gestreckt, unten bleibt die Hocke unverändert tief.' },
+  { id: 'push-jerk', name: 'Push Jerk', dosis: '4x3, leicht', warum: 'Vertikaler Dip, gerade Hantelbahn, Schulter-Drive. Der Weg zurück zum Split Jerk führt hier vorbei — und der Lockout überträgt sich direkt auf den Strict Press.', quelle: 'everett', standard: 'Senkrechter Dip, Hüfte und Beine strecken zuerst, dann geht der Körper unter die Stange. Empfangen mit gebeugten Knien, dann bis zur vollen Streckung von Knie, Hüfte und Ellbogen aufstehen.' },
+  { id: 'snatch-high-pull', name: 'Snatch High Pull', dosis: '3x3 @ 85 %', warum: 'Explosive Hüftstreckung und Zughöhe, ohne dass die Arme die Arbeit übernehmen. Kein Unterhocken, also auch keine Technikschuld, wenn der Tag schlecht läuft.', fehler: 'Sobald du die Arme einsetzt, ist der Zweck weg. Bewusst mit langen Armen ziehen — merkst du den Bizeps, war die Hüfte zu langsam.', quelle: 'everett', standard: 'Hüfte voll geöffnet, danach Schulterzucken, danach erst die Arme — in dieser Reihenfolge. Ellbogen hoch und außen. Ziehen die Arme zuerst, zählt die Wiederholung nicht.' },
+  { id: 'paused-front-squat', name: 'Front Squat mit Pause', dosis: '4x3, 2–3 Sek unten', warum: 'Quadrizeps-Kraft und aufrechter Rumpf genau in der Position, in der die Brust beim Umsetzen zusammenklappt. Die Pause nimmt den Sprungeffekt raus, der die Schwäche sonst überdeckt.', quelle: 'everett', standard: 'Hüftfalte unter dem Knie und unten wirklich zwei bis drei Sekunden still stehen. Ellbogen bleiben hoch, oben ganz strecken. Federst du aus der Tiefe, war es kein Satz mit Pause.' }
 ];
 
 /* ---------------------------------------------------------------
@@ -186,7 +191,7 @@ export const FINISHER = [
   { id: 'ropes-waves', name: 'Battle Ropes — Waves', dosis: '8x 20 Sek an / 40 Sek Pause', warum: 'Hoher Puls, null Belastung für Knie und Wirbelsäule. Perfekt nach schwerem Beintag.' },
   { id: 'ropes-slams', name: 'Battle Ropes — Slams', dosis: '6x 15 Sek maximal', warum: 'Ganzkörper, explosiv. Der Rest vom Gewichtheber in dir.' },
   { id: 'ropes-alternating', name: 'Battle Ropes — Alternating', dosis: '5x 30 Sek', warum: 'Rumpf muss gegen die Rotation arbeiten. Unterschätzt.' },
-  { id: 'farmer-walk', name: 'Farmer Walk', dosis: '4x 40 m schwer', warum: 'Griff, Rumpf, Haltung — alles, was den Deadlift trägt. Trageübungen belasten die Lendenwirbelsäule vor allem gegen seitliches Abkippen — deshalb zählt die Haltung hier mehr als das Gewicht.', quelle: 'mcgill' },
+  { id: 'farmer-walk', name: 'Farmer Walk', dosis: '4x 40 m schwer', warum: 'Griff, Rumpf, Haltung — alles, was den Deadlift trägt. Trageübungen belasten die Lendenwirbelsäule vor allem gegen seitliches Abkippen — deshalb zählt die Haltung hier mehr als das Gewicht.', quelle: 'mcgill', standard: 'Die Strecke am Stück, ohne Absetzen. Oberkörper aufrecht, Schultern hinten — sobald die Haltung zusammenfällt, ist der Satz zu Ende, nicht die Strecke.' },
   { id: 'row-erg', name: 'Row (Erg)', dosis: '5x 250 m, 1 Min Pause', warum: 'Wenn die Seile besetzt sind.' }
 ];
 
