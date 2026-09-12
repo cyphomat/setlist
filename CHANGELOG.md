@@ -10,6 +10,40 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-09-12.4
+
+### Neu
+- **Prüfwerte lassen sich im Max-Out messen.** Bisher tippte man sie im Backstage
+  ein. Aber genau so testet man sie ohnehin — aufwärmen, herantasten, ein schwerer
+  Satz —, und ein Test ist ein Ereignis mit Datum. Der Max-Out hat deshalb eine
+  zweite Gruppe: Klimmzug, Dip, Front Squat, einarmiges Drücken, Step-Up,
+  einbeiniges Kreuzheben und Farmer's Carry.
+
+  **Gemessen schlägt eingetragen** — dieselbe Rangfolge wie bei den Bestwerten, wo
+  ein Max-Out ein `Maximum` liefert und ein Arbeitssatz nur eine `Untergrenze`. Die
+  Tour weist aus, woher der Wert kommt. Statt eines Arbeitsgewicht-Vorschlags zeigt
+  die Ergebniskarte direkt, was der Wert für die Verhältnisse bedeutet; bei
+  Klimmzug und Dip zusätzlich die bewegte Gesamtlast, damit nachvollziehbar bleibt,
+  woraus sich das Verhältnis ergibt.
+
+### Bewusst so
+- **Ein Prüfwert-Test kann die Progression per Bauart nicht anfassen.** Er trägt im
+  Log `check` statt `lift` — nicht `lift` mit einer Sonderbehandlung. Diese
+  Übungen haben kein Arbeitsgewicht, das steigen könnte, und ein Feldname, der das
+  ausdrückt, ist verlässlicher als eine Abfrage, die jemand später übersieht.
+  Arbeitsgewichte, A/B-Wechsel und Fehlversuchszähler bleiben unberührt.
+
+### Behoben
+- **Ein Klimmzug ohne Zusatzgewicht ließ sich nicht speichern.** Der Speichern-Knopf
+  blieb gesperrt, weil die Gültigkeitsprüfung am geschätzten Maximum hing und
+  `e1rm(0, 8)` nichts ergibt. Dieselbe Null-Regel hatte zuvor schon beide
+  Klimmzug-Verhältnisse lautlos verschwinden lassen — sie stand an drei Stellen im
+  Code und steht jetzt an einer (`pruefwertGueltig`).
+- Ein Prüfwert-Test erschien im Verlauf ohne Namen, weil dort ein Eintrag aus
+  `config.lifts` gesucht wurde, den es für ihn nicht gibt.
+
+---
+
 ## 2026-09-12.3
 
 ### Neu

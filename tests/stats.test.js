@@ -1,6 +1,7 @@
 // Ausfuehren: jsc --module-file=tests/stats.test.js
 import * as S from '../js/stats.js';
 import * as PS from '../js/persoenlich.js';
+import * as P from '../js/program.js';
 
 let pass = 0, fail = 0;
 const ok = (n, c, x = '') => c ? (pass++, print(`  ok   ${n}`)) : (fail++, print(`  FAIL ${n} ${x}`));
@@ -856,6 +857,76 @@ print('\n--- Pruefwerte: Formular ---');
   eq('unbekannte bleiben leer', e[1].gewicht, '');
   eq('das hinterlegte Koerpergewicht ist lesbar', PS.checkKoerpergewicht({ checks: c }), 84);
   eq('ohne Eintrag kommt ein leerer String', PS.checkKoerpergewicht({}), '');
+}
+
+
+
+print('\n--- Pruefwerte aus dem Max-Out ---');
+{
+  const cfg = { lifts:{ squat:{}, deadlift:{} }, checks:{ frontsquat:{ gewicht:60, wdh:5 } } };
+  const st  = { lifts:{ squat:{weight:82.5}, deadlift:{weight:105} } };
+  const gemessen = [{ date:'2026-09-11', type:'maxout', check:'frontsquat', weight:75, reps:3 }];
+
+  eq('ein Test wird gefunden', S.checksAusLogs(gemessen).frontsquat.gewicht, 75);
+  eq('samt Wiederholungen', S.checksAusLogs(gemessen).frontsquat.wdh, 3);
+  eq('ein Max-Out auf einen Grundlift zaehlt hier nicht',
+     Object.keys(S.checksAusLogs([{ date:'x', type:'maxout', lift:'squat', weight:100, reps:1 }])).length, 0);
+  eq('ohne Logs nichts', Object.keys(S.checksAusLogs([])).length, 0);
+
+  // Der juengste Test gewinnt, nicht der schwerste: ein Wert von heute
+  // beschreibt dich besser als ein besserer von vor einem Jahr.
+  const zwei = [{ date:'2026-01-01', type:'maxout', check:'dip', weight:30, reps:1 },
+                { date:'2026-09-01', type:'maxout', check:'dip', weight:20, reps:1 }];
+  eq('der juengste Test zaehlt', S.checksAusLogs(zwei).dip.gewicht, 20);
+
+  // Gemessen schlaegt eingetragen — dieselbe Rangfolge wie maximum gegen
+  // untergrenze bei den Bestwerten.
+  const f = v => v.pruefung.find(p => p.id === 'frontsquat-squat');
+  eq('ohne Test zaehlt die Handeingabe', f(S.verhaeltnisse(st, cfg, [])).gewichtOben, 60);
+  eq('und ist als solche ausgewiesen', f(S.verhaeltnisse(st, cfg, [])).artOben, 'check');
+  eq('mit Test zaehlt der Test', f(S.verhaeltnisse(st, cfg, gemessen)).gewichtOben, 75);
+  eq('und ist als gemessen ausgewiesen', f(S.verhaeltnisse(st, cfg, gemessen)).artOben, 'gemessen');
+
+  // Eine Null bleibt auch hier eine Angabe.
+  const ohneZusatz = [{ date:'2026-09-11', type:'maxout', check:'pullup', weight:0, reps:8 }];
+  eq('ein Klimmzug ohne Zusatz wird gemessen', S.checksAusLogs(ohneZusatz).pullup.gewicht, 0);
+}
+
+print('\n--- Die Null-Regel, an einer Stelle ---');
+{
+  const koerper = S.PRUEFWERTE.find(x => x.id === 'pullup');
+  const last    = S.PRUEFWERTE.find(x => x.id === 'frontsquat');
+  ok('bei Klimmzug ist null eine Angabe', S.pruefwertGueltig(koerper, 0));
+  ok('und ein Zusatz erst recht', S.pruefwertGueltig(koerper, 10));
+  ok('beim Front Squat ist null keine', !S.pruefwertGueltig(last, 0));
+  ok('negative Lasten nie', !S.pruefwertGueltig(koerper, -1) && !S.pruefwertGueltig(last, -1));
+  ok('ohne Definition nichts', !S.pruefwertGueltig(null, 10));
+  ok('und keine Unzahlen', !S.pruefwertGueltig(koerper, NaN) && !S.pruefwertGueltig(koerper, undefined));
+}
+
+print('\n--- Ein Pruefwert-Test ruehrt die Progression nicht an ---');
+{
+  const cfg = { bar:20, rounding:2.5, deload:{afterFails:3,factor:0.9},
+                lifts:{ squat:{increment:2.5} }, workouts:{ A:[{lift:'squat',sets:5,reps:5}] } };
+  const vor = { next:'A', derivedFrom:3, lifts:{ squat:{ weight:82.5, fails:1 } } };
+
+  // Der Unterschied liegt im Feldnamen: ein Test auf `check` hat gar kein
+  // Arbeitsgewicht, das steigen koennte.
+  const nach = P.applyLog(vor, cfg, { date:'2026-09-12', type:'maxout', check:'pullup',
+                                      weight:10, reps:5, newWorking: 200 });
+  eq('das Arbeitsgewicht bleibt', nach.lifts.squat.weight, 82.5);
+  eq('die Fehlversuche bleiben', nach.lifts.squat.fails, 1);
+  eq('der A/B-Wechsel bleibt', nach.next, 'A');
+  eq('die Ableitungszahl bleibt', nach.derivedFrom, 3);
+  const letzter = nach.history[nach.history.length - 1];
+  eq('der Verlauf merkt sich den Pruefwert', letzter.check, 'pullup');
+  ok('und traegt keinen leeren Lift', !('lift' in letzter), JSON.stringify(letzter));
+
+  // Ein Max-Out auf einen Grundlift darf weiterhin uebernehmen.
+  const lift = P.applyLog(vor, cfg, { date:'2026-09-12', type:'maxout', lift:'squat',
+                                      weight:100, reps:1, newWorking: 85 });
+  eq('dort steigt das Arbeitsgewicht wie bisher', lift.lifts.squat.weight, 85);
+  eq('und der Verlauf nennt den Lift', lift.history[lift.history.length - 1].lift, 'squat');
 }
 
 

@@ -1747,9 +1747,12 @@ function renderListe(logs) {
   const sortiert = [...logs].sort((a, b) => b.date.localeCompare(a.date));
   $('history-body').innerHTML = sortiert.length ? sortiert.map(l => {
     if (l.type === 'maxout') {
-      const name = (config.lifts[l.lift] || {}).name || l.lift;
+      // Ein Pruefwert-Test traegt `check` und steht in keiner
+      // Lift-Konfiguration — sonst staende hier "UNDEFINED".
+      const name = l.check ? t(`chk.${l.check}`) : ((config.lifts[l.lift] || {}).name || l.lift);
       return `<div class="hist maxout"><div class="d">${escHtml(l.date)} · ${t('hist.maxout')} · ${escHtml(name.toUpperCase())}</div>
-        <div class="l">${escHtml(l.weight)} kg × ${escHtml(l.reps)}${l.e1rm ? escHtml(t('hist.geschaetztesMax', { kg: l.e1rm })) : ''}</div></div>`;
+        <div class="l">${escHtml(l.weight)} kg${l.reps > 1 ? ` × ${escHtml(l.reps)}` : ''}${
+          l.e1rm && l.reps > 1 ? escHtml(t('hist.geschaetztesMax', { kg: l.e1rm })) : ''}</div></div>`;
     }
     if (l.type === 'anpassung') {
       const g = Object.entries(l.gewichte || {})
@@ -1795,41 +1798,139 @@ function aendereGewicht(li, richtung) {
 /* ================= Max-Out ================= */
 
 function starteMaxout() {
-  mo = { lift: mo.lift || 'squat' };
+  mo = { lift: mo.lift || 'squat', check: null };
   $('mo-weight').value = '';
   $('mo-reps').value = '1';
   renderMaxoutLifts();
+  renderMaxoutFelder();
   renderMaxoutErgebnis();
   show('maxout');
 }
 
+/** Der aktuell gewaehlte Pruefwert, oder null, wenn ein Grundlift laeuft. */
+const moCheckDef = () => ST.PRUEFWERTE.find(x => x.id === mo.check) || null;
+
 function renderMaxoutLifts() {
-  $('mo-lifts').innerHTML = Object.entries(config.lifts).map(([id, def]) => `
-    <div class="w waehlbar ${id === mo.lift ? 'gewaehlt' : ''}" data-lift="${id}">
+  const lifts = Object.entries(config.lifts).map(([id, def]) => `
+    <div class="w waehlbar ${!mo.check && id === mo.lift ? 'gewaehlt' : ''}" data-lift="${id}">
       <div class="n">${escHtml(def.name)}</div>
       <div class="v">${P.fmtWeight(state.lifts[id].weight)}</div>
       <div class="f" style="color:var(--dim)">${t('mo.aktuellesGewicht')}</div>
     </div>`).join('');
-  $('mo-lifts').querySelectorAll('[data-lift]').forEach(el => {
-    el.onclick = () => { mo.lift = el.dataset.lift; renderMaxoutLifts(); renderMaxoutErgebnis(); };
-  });
+
+  // Die Pruefwerte stehen hier, weil man sie genau so misst: aufwaermen,
+  // herantasten, ein schwerer Satz. Der Unterschied ist, dass danach kein
+  // Arbeitsgewicht steigt — sie haben keines.
+  const bekannt = ST.checksAusLogs(alleLogs);
+  const checks = ST.PRUEFWERTE.map(def => {
+    const c = bekannt[def.id] || (config.checks || {})[def.id];
+    const wert = c
+      ? `${P.fmtWeight(c.gewicht)}${c.wdh > 1 ? ` × ${c.wdh}` : ''}`
+      : '—';
+    return `<div class="w waehlbar ${mo.check === def.id ? 'gewaehlt' : ''}" data-check="${def.id}">
+      <div class="n">${escHtml(t(`chk.${def.id}`))}</div>
+      <div class="v">${wert}</div>
+      <div class="f" style="color:var(--dim)">${escHtml(t(c ? (bekannt[def.id] ? 'mo.zuletztGemessen' : 'mo.eingetragen') : 'mo.nochNichts'))}</div>
+    </div>`;
+  }).join('');
+
+  $('mo-lifts').innerHTML = lifts;
+  $('mo-checks').innerHTML = checks;
+
+  const waehle = (el, feld) => {
+    el.onclick = () => {
+      if (feld === 'lift') { mo.lift = el.dataset.lift; mo.check = null; }
+      else { mo.check = el.dataset.check; }
+      renderMaxoutLifts(); renderMaxoutFelder(); renderMaxoutErgebnis();
+    };
+  };
+  $('mo-lifts').querySelectorAll('[data-lift]').forEach(el => waehle(el, 'lift'));
+  $('mo-checks').querySelectorAll('[data-check]').forEach(el => waehle(el, 'check'));
+}
+
+/** Beschriftung und Wiederholungsfeld haengen an der gewaehlten Uebung. */
+function renderMaxoutFelder() {
+  const def = moCheckDef();
+  $('mo-weight-label').textContent =
+    t(def && def.basis === 'koerper' ? 'chk.zusatz' : 'mo.gewicht');
+  const ohneWdh = def && !def.wdh;
+  $('mo-reps-zeile').hidden = !!ohneWdh;
+  if (ohneWdh) $('mo-reps').value = '1';
+  $('mo-check-hinweis').innerHTML = def
+    ? `<p class="fine">${escHtml(t(`chk.${def.id}.hinweis`))}</p>` : '';
+  // Der Standardsatz spricht vom Uebernehmen des Arbeitsgewichts — bei
+  // einem Pruefwert gibt es keines, da waere er irrefuehrend.
+  $('mo-fine').textContent = t(def ? 'mo.finePruefwert' : 'mo.fine');
+}
+
+/**
+ * Die Eingabe im Max-Out, je nach gewaehlter Uebung.
+ *
+ * Die Null ist hier zum dritten Mal der Sonderfall: bei Klimmzug und Dip
+ * traegt man den Zusatz ein, und "ohne Zusatz" ist eine gueltige Angabe.
+ * `e1rm(0, 8)` ist null, deshalb darf die Gueltigkeitspruefung nicht am
+ * geschaetzten Maximum haengen.
+ */
+function moEingabe() {
+  const w = parseFloat($('mo-weight').value);
+  const def = moCheckDef();
+  const r = def && !def.wdh ? 1 : parseInt($('mo-reps').value, 10);
+  if (!Number.isFinite(w) || !Number.isFinite(r) || r < 1 || r > 12) return { gueltig: false };
+  // Ein Grundlift braucht eine echte Last, ein Pruefwert richtet sich nach
+  // seiner Art — die Regel steht in stats.js, damit sie nur einmal existiert.
+  if (def ? !ST.pruefwertGueltig(def, w) : !(w > 0)) return { gueltig: false };
+  return { gueltig: true, w, r, def };
 }
 
 function renderMaxoutErgebnis() {
-  const w = parseFloat($('mo-weight').value);
-  const r = parseInt($('mo-reps').value, 10);
-  const max = P.e1rm(w, r);
   const box = $('mo-result');
+  const ein = moEingabe();
+
+  if (!ein.gueltig) {
+    box.innerHTML = `<p class="fine">${t('mo.eingeben')}</p>`;
+    $('mo-save').disabled = true;
+    return;
+  }
+  const { w, r } = ein;
+  const max = P.e1rm(w, r);
+  const formel = P.e1rmFormel(r);
+  const cdef = ein.def;
+
+  // Ein Pruefwert hat kein Arbeitsgewicht, das steigen koennte. Statt des
+  // Vorschlags steht hier, was der Wert fuer die Verhaeltnisse bedeutet —
+  // das ist der Grund, ihn ueberhaupt zu messen.
+  if (cdef) {
+    const bisher = ST.checksAusLogs(alleLogs)[mo.check];
+    const probe = { ...config, checks: { ...(config.checks || {}), [mo.check]: { gewicht: w, wdh: r } } };
+    const v = ST.verhaeltnisse(state, probe, alleLogs.filter(l => l.check !== mo.check), gewichtsPunkte);
+    const betroffen = v.pruefung.filter(p => p.oben === mo.check || p.unten === mo.check);
+
+    box.innerHTML = `
+      <div class="card">
+        <div class="kicker">${escHtml(t('mo.pruefErgebnis'))}</div>
+        <div class="name neon">${w}<span style="font-size:1.25rem"> kg${r > 1 ? ` × ${r}` : ''}</span></div>
+        ${cdef.basis === 'koerper' ? `<p class="fine">${escHtml(
+          gewichtsPunkte.length || (config.checks && config.checks.koerpergewicht)
+            ? t('mo.gesamtlast', { kg: Math.round(((v.koerpergewicht || 0) + w) * 10) / 10 })
+            : t('mo.keinKoerpergewicht'))}</p>` : ''}
+        ${bisher ? `<p class="fine">${escHtml(t('mo.bisherGemessen',
+          { kg: bisher.gewicht, wdh: bisher.wdh, datum: bisher.datum }))}</p>` : ''}
+        ${betroffen.length ? `<ul>${betroffen.map(p => `<li>
+          <span>${escHtml(seitenName(p.oben))} : ${escHtml(seitenName(p.unten))}</span>
+          <span style="color:${STUFE_FARBE[p.stufe]}">${p.ist.toFixed(2)} · ${vzPro(p.abweichung)}</span></li>`).join('')}</ul>`
+          : `<p class="fine">${escHtml(t('mo.pruefKeinPaar'))}</p>`}
+      </div>`;
+    $('mo-save').disabled = false;
+    return;
+  }
 
   if (!max) {
     box.innerHTML = `<p class="fine">${t('mo.eingeben')}</p>`;
     $('mo-save').disabled = true;
     return;
   }
-
   const vorschlag = P.arbeitsgewichtAus(max, config.rounding, config.bar);
   const jetzt = state.lifts[mo.lift].weight;
-  const formel = P.e1rmFormel(r);
   const alt = alleLogs.length ? ST.prs(alleLogs)[mo.lift] : null;
   const bisher = alt && alt.maximum ? alt.maximum.wert : null;
 
@@ -1853,23 +1954,42 @@ function renderMaxoutErgebnis() {
 }
 
 async function speichereMaxout() {
-  const w = parseFloat($('mo-weight').value);
-  const r = parseInt($('mo-reps').value, 10);
+  const ein = moEingabe();
+  if (!ein.gueltig) return;
+  const { w, r } = ein;
   const max = P.e1rm(w, r);
-  if (!max) return;
   const uebernehmen = $('mo-apply') && $('mo-apply').checked;
 
+  const cdef = ein.def;
+  if (!cdef && !max) return;
   const log = {
     date: P.ymd(new Date()),
     type: 'maxout',
-    lift: mo.lift,
     weight: w,
     reps: r,
-    e1rm: max,
-    formel: P.e1rmFormel(r),
     finished: new Date().toISOString()
   };
-  if (uebernehmen) log.newWorking = P.arbeitsgewichtAus(max, config.rounding, config.bar);
+  // Aus einer Last von null laesst sich kein Maximum schaetzen — dann
+  // steht im Log die Messung und sonst nichts.
+  if (max) { log.e1rm = max; log.formel = P.e1rmFormel(r); }
+  if (cdef) log.check = mo.check; else log.lift = mo.lift;
+  if (!cdef && uebernehmen) log.newWorking = P.arbeitsgewichtAus(max, config.rounding, config.bar);
+
+  if (cdef) {
+    state = P.applyLog(state, config, log);
+    S.cache({ state });
+    $('done-body').innerHTML = `
+      <div class="card">
+        <div class="kicker">${escHtml(log.date)} · Max-Out · ${escHtml(t(`chk.${mo.check}`))}</div>
+        <div class="name neon">${w}${r > 1 ? ` × ${r}` : ''}</div>
+        <p class="fine">${escHtml(t('mo.pruefGespeichert'))}</p>
+      </div>
+      <p class="spruch">${t('mo.spruch')}</p>`;
+    show('done');
+    try { await commitMaxout(log); banner(t('msg.gespeichert'), 'ok'); }
+    catch { S.queue(log); banner(t('msg.keinNetz'), '', 6000); }
+    return;
+  }
 
   const vorher = state.lifts[mo.lift].weight;
   state = P.applyLog(state, config, log);
@@ -1894,10 +2014,12 @@ async function speichereMaxout() {
 }
 
 async function commitMaxout(log) {
-  let path = `${S.LOG_DIR}/${log.date}-maxout-${log.lift}.json`;
+  const kennung = log.check || log.lift;
+  const name = log.check ? t(`chk.${log.check}`) : config.lifts[log.lift].name;
+  let path = `${S.LOG_DIR}/${log.date}-maxout-${kennung}.json`;
   let n = 2;
-  while (await S.readFile(path)) path = `${S.LOG_DIR}/${log.date}-maxout-${log.lift}-${n++}.json`;
-  await S.writeFile(path, log, `Max-Out ${config.lifts[log.lift].name} am ${log.date}`);
+  while (await S.readFile(path)) path = `${S.LOG_DIR}/${log.date}-maxout-${kennung}-${n++}.json`;
+  await S.writeFile(path, log, `Max-Out ${name} am ${log.date}`);
   const cur = await S.readFile('state.json');
   await S.writeFile('state.json', state, `Zustand nach Max-Out ${log.date}`, cur ? cur.sha : stateSha);
 }

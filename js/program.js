@@ -89,14 +89,20 @@ export function applyLog(state, config, log) {
   // A/B-Wechsel nicht weiter. Nur wenn du das Ergebnis ausdruecklich
   // uebernimmst, steht das im Log — und ist damit reproduzierbar.
   if (log.type === 'maxout') {
-    const l = next.lifts[log.lift];
+    // Ein Max-Out auf einen Pruefwert traegt `check` statt `lift`: Klimmzug,
+    // Dip oder einseitige Arbeit haben kein Arbeitsgewicht, das steigen
+    // koennte. Die Unterscheidung liegt im Feldnamen und nicht in einer
+    // Abfrage, damit ein solcher Test die Progression per Bauart nicht
+    // anfassen kann.
+    const l = log.lift ? next.lifts[log.lift] : null;
     if (l && log.newWorking) {
       l.weight = Math.max(config.bar, roundTo(log.newWorking, config.rounding));
       l.fails = 0;
     }
     next.updated = new Date().toISOString();
-    next.history = [...(next.history || []),
-      { date: log.date, type: 'maxout', lift: log.lift, weight: log.weight, reps: log.reps }].slice(-100);
+    const eintrag = { date: log.date, type: 'maxout', weight: log.weight, reps: log.reps };
+    if (log.check) eintrag.check = log.check; else eintrag.lift = log.lift;
+    next.history = [...(next.history || []), eintrag].slice(-100);
     return next;
   }
 

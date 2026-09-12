@@ -219,14 +219,18 @@
     </div>
     <h2 data-i18n="mo.uebung">Übung</h2>
     <div id="mo-lifts" class="weights"></div>
+    <h2 data-i18n="mo.pruefwerte">Prüfwerte</h2>
+    <p class="fine" data-i18n="mo.pruefwerteLead">Dieselbe Art zu testen, nur ohne Folgen für die Progression — diese Übungen haben kein Arbeitsgewicht. Das Ergebnis füllt die Kraftverhältnisse in der Tour.</p>
+    <div id="mo-checks" class="weights"></div>
     <h2 data-i18n="mo.ergebnis">Ergebnis</h2>
+    <div id="mo-check-hinweis"></div>
     <div class="mo-grid">
-      <label><span data-i18n="mo.gewicht">Gewicht</span><input id="mo-weight" type="number" inputmode="decimal" step="2.5" placeholder="kg"></label>
-      <label><span data-i18n="mo.reps">Wiederholungen</span><input id="mo-reps" type="number" inputmode="numeric" step="1" min="1" max="12" placeholder="1"></label>
+      <label><span id="mo-weight-label">Gewicht</span><input id="mo-weight" type="number" inputmode="decimal" step="2.5" placeholder="kg"></label>
+      <label id="mo-reps-zeile"><span data-i18n="mo.reps">Wiederholungen</span><input id="mo-reps" type="number" inputmode="numeric" step="1" min="1" max="12" placeholder="1"></label>
     </div>
     <div id="mo-result"></div>
     <button id="mo-save" class="btn" disabled data-i18n="mo.speichern">Ergebnis speichern</button>
-    <p class="fine" data-i18n="mo.fine">Ein Max-Out dreht den A/B-Wechsel nicht weiter und verändert deine
+    <p class="fine" id="mo-fine" data-i18n="mo.fine">Ein Max-Out dreht den A/B-Wechsel nicht weiter und verändert deine
     Arbeitsgewichte nur, wenn du es ausdrücklich übernimmst.</p>
   </div>
 </section>

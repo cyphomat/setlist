@@ -942,7 +942,7 @@ function zielWdh(config = {}, liftId) {
  * Deshalb wird ueberall e1RM gerechnet. Fuer die Grundlifts aendert das
  * am Ergebnis nichts, fuer alles andere ist es die Voraussetzung.
  */
-function vergleichsWerte(state = {}, config = {}, koerpergewicht = null) {
+function vergleichsWerte(state = {}, config = {}, koerpergewicht = null, gemessen = {}) {
   const werte = {}, herkunft = {};
 
   for (const [id, w] of Object.entries(arbeitsGewichte(state))) {
@@ -951,11 +951,9 @@ function vergleichsWerte(state = {}, config = {}, koerpergewicht = null) {
   }
 
   for (const def of PRUEFWERTE) {
-    const c = (config.checks || {})[def.id];
-    // Bei koerpergetragenen Uebungen ist eine Null gueltig: Klimmzuege
-    // ohne Zusatz sind trotzdem eine Last, naemlich der eigene Koerper.
-    const hatWert = c && (def.basis === 'koerper' ? c.gewicht >= 0 : c.gewicht > 0);
-    if (!hatWert) continue;
+    // Ein gemessener Test geht der Handeingabe vor.
+    const c = gemessen[def.id] || (config.checks || {})[def.id];
+    if (!c || !pruefwertGueltig(def, c.gewicht)) continue;
     // Bei Klimmzug und Dip traegt man den Zusatz ein; bewegt wird der
     // eigene Koerper dazu. Ohne Koerpergewicht gibt es keine Gesamtlast.
     const last = def.basis === 'koerper'
@@ -964,7 +962,13 @@ function vergleichsWerte(state = {}, config = {}, koerpergewicht = null) {
     if (!(last > 0)) continue;
     const wdh = def.wdh ? (c.wdh > 0 ? c.wdh : 1) : 1;
     const wert = e1rm(last, Math.min(wdh, 12));
-    if (wert > 0) { werte[def.id] = wert; herkunft[def.id] = { art: 'check', gewicht: last, wdh, datum: c.datum || null }; }
+    if (wert > 0) {
+      werte[def.id] = wert;
+      herkunft[def.id] = {
+        art: gemessen[def.id] ? 'gemessen' : 'check',
+        gewicht: last, wdh, datum: c.datum || null
+      };
+    }
   }
 
   if (koerpergewicht > 0) {
@@ -989,6 +993,40 @@ function maximaAus(logs = []) {
 }
 
 /**
+ * Ist diese Last fuer diesen Pruefwert eine Angabe?
+ *
+ * Die Regel klingt klein und stand trotzdem dreimal im Weg: bei Klimmzug
+ * und Dip traegt man den ZUSATZ ein, und "ohne Zusatz" ist eine Null —
+ * eine Aussage, kein fehlender Wert. Sie einmal falsch zu behandeln liess
+ * erst beide Klimmzug-Verhaeltnisse lautlos verschwinden und spaeter den
+ * Speichern-Knopf im Max-Out gesperrt. Deshalb hier, an einer Stelle.
+ */
+export function pruefwertGueltig(def, gewicht) {
+  if (!def || !Number.isFinite(gewicht)) return false;
+  return def.basis === 'koerper' ? gewicht >= 0 : gewicht > 0;
+}
+
+/**
+ * Der zuletzt gemessene Pruefwert je Uebung, aus den Max-Out-Logs.
+ *
+ * Gemessen schlaegt eingetragen — dieselbe Rangfolge wie bei den
+ * Bestwerten, wo ein Max-Out ein `maximum` liefert und ein Arbeitssatz nur
+ * eine `untergrenze`. Was im Backstage steht, ist eine Angabe; was hier
+ * steht, ist ein Test mit Datum.
+ */
+export function checksAusLogs(logs = []) {
+  const out = {};
+  for (const l of logs) {
+    if (l.type !== 'maxout' || !l.check || !(l.weight >= 0)) continue;
+    const alt = out[l.check];
+    if (!alt || l.date > alt.datum) {
+      out[l.check] = { gewicht: l.weight, wdh: l.reps || 1, datum: l.date };
+    }
+  }
+  return out;
+}
+
+/**
  * Wo die Kraft schief steht.
  *
  * Zwei Massstaebe nebeneinander: die allgemeine Faustregel und der
@@ -999,7 +1037,7 @@ function maximaAus(logs = []) {
 export function verhaeltnisse(state = {}, config = {}, logs = [], wellness = []) {
   const reihe = gewichtsReihe(wellness);
   const bw = reihe.length ? reihe[reihe.length - 1].schnitt : ((config.checks || {}).koerpergewicht || null);
-  const { werte, herkunft } = vergleichsWerte(state, config, bw);
+  const { werte, herkunft } = vergleichsWerte(state, config, bw, checksAusLogs(logs));
   const maxima = maximaAus(logs);
   const lifts = config.lifts || {};
   const istPruefwert = id => PRUEFWERTE.some(x => x.id === id);
