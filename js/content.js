@@ -27,6 +27,7 @@ export const LIFT_INFO = {
     kadenz: '3 Sekunden runter, unten nicht abfedern, explosiv hoch.',
     cue: 'Bruch aus der Hüfte und den Knien gleichzeitig. Ellbogen unter die Stange, Brust bleibt offen.',
     standard: 'Hüftfalte unter der Kniescheibe, oben Hüfte und Knie ganz gestreckt. Die Stange bleibt über der Mitte des Fußes.',
+    nachholen: 'Der Squat steht in beiden Workouts und steigt darum ohnehin am schnellsten — hängt er trotzdem zurück, liegt es selten am Squat selbst, sondern an Erholung: zu wenig Schlaf, zu harte Fahrten am Vortag. Prüf das zuerst, bevor du Volumen draufpackst.',
     fehler: 'Hüfte schießt zuerst hoch — dann wird aus dem Squat ein Good Morning. Zweiter Klassiker: Fersen heben ab, dann übernehmen die Zehen und die Gesäßmuskulatur steigt aus.',
     oly: 'Aus deinem Gewichtheben kennst du die aufrechte Front-Position. Halte im Back Squat denselben Oberkörperwinkel wie im Clean, dann überträgt es sich.',
     korrektur: {
@@ -46,6 +47,7 @@ export const LIFT_INFO = {
     kadenz: 'Kontrolliert runter bis Brustkontakt, kurze Pause, dann drücken.',
     cue: 'Schulterblätter zusammen und in die Bank. Füße fest, leichter Bogen im unteren Rücken.',
     standard: 'Die Stange berührt die Brust, oben sind die Ellbogen ganz gestreckt. Das Gesäß bleibt auf der Bank, und die Stange ruht sich unten nicht aus — berühren ist nicht ablegen.',
+    nachholen: 'Horizontales Drücken verträgt mehr Frequenz, als das Programm ihm gibt: bei zwei Einheiten pro Woche kommt es nur einmal dran. Häng an den Tagen ohne Bankdrücken zwei bis drei Sätze Schrägbank oder Kurzhantel an — leicht genug, dass die Einheit danach nicht leidet.',
     fehler: 'Ellbogen 90 Grad abgespreizt. Etwa 45 Grad, das schont die Schulter.',
     oly: null,
     korrektur: {
@@ -65,6 +67,7 @@ export const LIFT_INFO = {
     kadenz: 'Explosiv ziehen, betont langsam ablassen.',
     cue: 'Oberkörper knapp über parallel, Stange an den unteren Bauch. Rücken bleibt flach.',
     standard: 'Die Stange berührt den Bauch, unten sind die Arme ganz lang. Der Oberkörperwinkel ist am Ende derselbe wie am Anfang.',
+    nachholen: 'Rudern hängt fast immer zurück, weil man es unbewusst schont — es ist die Übung, bei der niemand zuschaut. Wenn das Verhältnis kippt, ist meistens die Ausführung schneller geworden, nicht die Kraft kleiner. Geh im Gewicht zurück und lass die Stange wirklich an den Bauch kommen.',
     fehler: 'Aus dem Aufrichten schwingen. Wenn du reißen musst, ist es zu schwer.',
     oly: 'Die Position ist deine Zugposition beim Clean. Betrachte jeden Satz als Positionstraining.',
     korrektur: {
@@ -84,6 +87,7 @@ export const LIFT_INFO = {
     kadenz: 'Gleichmäßig hoch, kontrolliert zurück ins Rack.',
     cue: 'Gesäß und Bauch fest. Kopf leicht zurück, dann Stange am Gesicht vorbei, dann Kopf durch.',
     standard: 'Oben sind Ellbogen und Knie ganz gestreckt und die Stange steht über der Mitte des Fußes. Unten berührt sie die Schultern. Kein Beineinsatz — sobald die Knie beugen, ist es ein Push Press.',
+    nachholen: 'Der Strict Press ist der langsamste Lift überhaupt — ein Kilo im Monat ist hier normal und kein Rückstand. Wenn er trotzdem klar abfällt, fehlt meist Trizeps und Schulterblatt-Fixierung, nicht Kraft im Anschub.',
     fehler: 'Rücklage aus dem unteren Rücken. Wenn du dich zurücklehnen musst, ist es zu schwer.',
     oly: 'Deine Overhead-Position hier entscheidet über den Jerk. Aktive Schulter, Ohren frei.',
     korrektur: {
@@ -104,6 +108,7 @@ export const LIFT_INFO = {
     kadenz: 'Spannung aufbauen, dann ohne Ruck. Jede Wiederholung neu ansetzen.',
     cue: 'Stange am Schienbein. Brust hoch, bevor die Hüfte kommt. Schieben, nicht ziehen.',
     standard: 'Hüfte und Schultern steigen gleich schnell — schiebt die Hüfte vor, ist es kein gültiger Zug mehr. Oben Hüfte und Knie ganz gestreckt. Jede Wiederholung setzt am Boden neu an, nicht aus dem Abprall.',
+    nachholen: 'Das Kreuzheben läuft mit einem Satz statt fünf — es bekommt also am wenigsten Volumen von allen. Bleibt es zurück, ist ein zweiter schwerer Satz alle zwei Wochen der schonendste Hebel; mehr davon frisst den Squat.',
     fehler: 'Aus dem Boden reißen. Zieh die Stange erst auf Spannung, dann kommt die Bewegung.',
     oly: 'Das ist dein erster Zug. Gleiche Position wie beim Clean bis Kniehöhe — nutze das bewusst.',
     korrektur: {

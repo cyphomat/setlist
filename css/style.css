@@ -385,6 +385,37 @@ dialog::backdrop{background:var(--backdrop)}
   margin-left:auto;text-align:right;overflow-wrap:break-word}
 .pr .reihe .v small{color:var(--dim);font-weight:400;margin-left:5px}
 
+/* ── Analyse: Verhaeltnisse, Hochrechnung, Plateaus ───────── */
+/* Baut auf .pr auf: dieselbe Karte, nur mit einer zweiten Zeile fuer die
+   Zahlen. Die Diagnose steht bewusst darueber und traegt eine farbige
+   Kante — sie ist die Aussage, die Paare darunter sind die Begruendung. */
+.verh{background:var(--panel);border:1px solid var(--line);padding:10px 14px;margin-bottom:6px;border-radius:2px}
+.verh .vk{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.verh .vn{font-size:0.78125rem;letter-spacing:.1em;text-transform:uppercase;color:var(--fg)}
+.verh .vd{font-family:var(--mono);font-weight:700;font-size:0.875rem;white-space:nowrap}
+.verh .vz{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:4px;
+  font-family:var(--mono);font-size:1rem;color:var(--akzent);font-weight:700}
+.verh .vz .vs{color:var(--muted);font-weight:400;font-size:0.8125rem}
+.verh .vz .vq{color:var(--dim);font-weight:400;font-size:0.65625rem;letter-spacing:.14em;
+  text-transform:uppercase;margin-left:auto}
+.verh .fine{margin:4px 0 0}
+
+.diagnose{background:var(--panel);border:1px solid var(--line);border-left:2px solid var(--rost);
+  padding:12px 14px;margin-bottom:10px;border-radius:2px}
+.diagnose.vor{border-left-color:var(--stahl)}
+.diagnose .dl{margin:6px 0 0;color:var(--fg);font-size:0.9375rem;line-height:1.5}
+.diagnose .dn{margin:8px 0 0;color:var(--muted);font-size:0.84375rem;line-height:1.6}
+.diagnose .dz{margin-top:10px;padding-top:8px;border-top:1px solid var(--line)}
+.diagnose .btn{margin-top:10px}
+
+/* .pr setzt Versalien — richtig fuer kurze Label, falsch fuer ganze
+   Saetze: "STEHT GERADE. KEINE HOCHRECHNUNG" schreit, statt zu sagen. */
+.hoch-text{margin:2px 0 10px;font-size:0.8125rem;line-height:1.5;color:var(--muted);
+  text-transform:none;letter-spacing:normal}
+.hoch-text:last-child{margin-bottom:0}
+.spark{margin:2px 0 10px;line-height:0}
+.spark svg{max-width:100%;height:auto}
+
 /* ── Scheiben und Form ────────────────────────────────────── */
 .platten{font-family:var(--mono);font-size:0.78125rem;color:var(--muted);margin:2px 0 10px;letter-spacing:.04em}
 .platten b{color:var(--akzent)}

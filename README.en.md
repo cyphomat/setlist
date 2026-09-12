@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1012%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1083%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
 </p>
@@ -120,6 +120,10 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | **Mobility** | Five exercises, due once per calendar week — at the first session (strength or jam), whichever comes first. Own button, usable independently at any time. |
 | **Feel after the session** | Four levels (easy/normal/hard/brutal) on the done screen — makes the call verifiable in hindsight. |
 | **Call vs. feel** | In the Tour: every session with both values plus the hit rate — the call and the perceived effort side by side instead of merely asserted. |
+| **Where you are out of balance** | Four strength ratios against guidance values *and* against your own level before the layoff. When the same lift stands out in several pairs, the app names it as the cause and suggests extra work — a single skewed pair does not tell you which side causes it. Only values of equal quality are compared. |
+| **When you are back** | A projection per lift from your actual rate of increase up to your pre-layoff weight. “Reached” means lifted, not assigned. |
+| **Strength per kilo** | Working weight divided by body weight, with a trend line. In a deficit this is the honest number — holding steady is already progress. |
+| **Where it is stuck** | Plateaus before the deload counter reports them: how long a weight has stood, failed attempts, and how many individual sets landed on target. |
 
 ### Bike and conditioning
 

@@ -289,7 +289,10 @@ export function anteileAufSumme(summe, teilA, stellen = 2) {
  * zeigt die Richtung — und nur die ist zu gebrauchen.
  */
 export function gewichtsReihe(wellness = [], fenster = 7) {
-  const roh = wellness.filter(w => w.weight > 0)
+  // Auch das Datum pruefen, nicht nur die Waage: ein Wellness-Satz ohne
+  // Datum liess frueher die Sortierung werfen — und damit fiel der ganze
+  // Wellness-Block aus, also Gewichtskurve, Abnehmrate, W/kg und Form.
+  const roh = wellness.filter(w => w.weight > 0 && w.date)
     .map(w => ({ date: w.date, weight: w.weight }))
     .sort((a, b) => a.date.localeCompare(b.date));
   return roh.map((p, i) => {
@@ -825,4 +828,330 @@ export function ansageAbgleich(logs = []) {
     schwerer: eintraege.filter(e => e.urteil === 'schwerer').length,
     leichter: eintraege.filter(e => e.urteil === 'leichter').length
   };
+}
+
+/* ===================================================================
+   Kraftverhaeltnisse, Hochrechnung, Relativkraft, Plateaus.
+
+   Bis hierher beantwortet die Auswertung "wie viel" und "wohin". Was
+   fehlte, ist "wo stehst du schief" — die Frage, die man sich selbst
+   nicht beantworten kann, weil man beim eigenen Training immer nur den
+   Lift sieht, an dem man gerade steht.
+
+   Eine Warnung vorweg, die den ganzen Abschnitt traegt: ein Verhaeltnis
+   aus zwei Zahlen UNTERSCHIEDLICHER Guete beschreibt die Testhistorie,
+   nicht die Kraft. Wer den Squat einmal ausgemaxt hat und beim Deadlift
+   nur Arbeitssaetze kennt, bekommt ein Verhaeltnis, das genau das
+   aussagt — und sonst nichts. Deshalb wird hier primaer Arbeitsgewicht
+   gegen Arbeitsgewicht verglichen: alle Lifts laufen aus derselben
+   Progression, das ist dieselbe Guete. Gemischt wird nie.           */
+
+/**
+ * Die Zielwerte.
+ *
+ * `tabelle` ist der einzige Wert aus der Strength-Ratio-Tabelle, die
+ * Daniel geschickt hat (Active Life). Der Rest sind gaengige Richtwerte
+ * aus der Kraftsportliteratur — Faustregeln, keine Messwerte, und die
+ * Oberflaeche sagt das auch. Dieselbe Trennung wie bei QUELLEN in
+ * content.js: was belegt ist, wird als belegt ausgezeichnet, der Rest
+ * nicht.
+ */
+export const VERHAELTNIS_PAARE = [
+  { id: 'squat-deadlift', oben: 'squat',  unten: 'deadlift', ziel: 0.80, herkunft: 'tabelle' },
+  { id: 'bench-squat',    oben: 'bench',  unten: 'squat',    ziel: 0.75, herkunft: 'faustregel' },
+  { id: 'ohp-bench',      oben: 'ohp',    unten: 'bench',    ziel: 0.65, herkunft: 'faustregel' },
+  { id: 'row-bench',      oben: 'row',    unten: 'bench',    ziel: 0.90, herkunft: 'faustregel' }
+];
+
+// Unterhalb von 8 % ist die Abweichung kleiner als der Sprung, den eine
+// einzige Scheibe macht — darueber zu reden waere Praezision vortaeuschen.
+const VERHAELTNIS_STUFEN = { stimmt: 8, leicht: 20 };
+
+const stufeFuer = abw => {
+  const a = Math.abs(abw);
+  return a < VERHAELTNIS_STUFEN.stimmt ? 'stimmt'
+       : a < VERHAELTNIS_STUFEN.leicht ? 'leicht' : 'deutlich';
+};
+
+/** Arbeitsgewichte je Lift aus dem Zustand — die Basis mit gleicher Guete. */
+function arbeitsGewichte(state = {}) {
+  const out = {};
+  for (const [id, l] of Object.entries(state.lifts || {})) {
+    if (l && l.weight > 0) out[id] = l.weight;
+  }
+  return out;
+}
+
+/**
+ * Gemessene Maxima, aber nur als GESCHLOSSENER Satz: sobald fuer einen
+ * Lift kein Max-Out vorliegt, ist die Menge fuer Vergleiche unbrauchbar.
+ * Der Aufrufer bekommt sie trotzdem und entscheidet je Paar.
+ */
+function maximaAus(logs = []) {
+  const p = prs(logs);
+  const out = {};
+  for (const [id, e] of Object.entries(p)) {
+    if (e.maximum) out[id] = e.maximum.wert;
+  }
+  return out;
+}
+
+/**
+ * Wo die Kraft schief steht.
+ *
+ * Zwei Massstaebe nebeneinander: die allgemeine Faustregel und der
+ * eigene Stand vor der Pause aus `config.lifts[].reference`. Beim
+ * Wiederaufbau ist der zweite der ehrlichere — er kennt den Koerper,
+ * um den es geht, und nicht den Durchschnitt aller Koerper.
+ */
+export function verhaeltnisse(state = {}, config = {}, logs = []) {
+  const arbeit = arbeitsGewichte(state);
+  const maxima = maximaAus(logs);
+  const lifts = config.lifts || {};
+
+  const paare = [];
+  for (const def of VERHAELTNIS_PAARE) {
+    // Ein Paar, dessen Lift es in dieser Konfiguration gar nicht gibt,
+    // entfaellt lautlos. config.lifts ist frei konfigurierbar.
+    if (!lifts[def.oben] || !lifts[def.unten]) continue;
+    const o = arbeit[def.oben], u = arbeit[def.unten];
+    if (!(o > 0) || !(u > 0)) continue;
+
+    const ist = o / u;
+    const abweichung = Math.round(((ist / def.ziel) - 1) * 1000) / 10;
+
+    // Der persoenliche Massstab. Nur wenn BEIDE Referenzwerte da sind —
+    // ein halbes Verhaeltnis ist keines.
+    const ro = lifts[def.oben].reference, ru = lifts[def.unten].reference;
+    let persoenlich = null;
+    if (ro > 0 && ru > 0) {
+      const zielP = ro / ru;
+      const abwP = Math.round(((ist / zielP) - 1) * 1000) / 10;
+      persoenlich = { ziel: Math.round(zielP * 100) / 100, abweichung: abwP, stufe: stufeFuer(abwP) };
+    }
+
+    // Der genauere Vergleich — nur wenn fuer BEIDE Lifts ein Max-Out
+    // vorliegt. Sonst gaebe es ein Verhaeltnis aus einem gemessenen und
+    // einem hochgerechneten Wert, und das misst nichts.
+    let gemessen = null;
+    if (maxima[def.oben] > 0 && maxima[def.unten] > 0) {
+      const istM = maxima[def.oben] / maxima[def.unten];
+      const abwM = Math.round(((istM / def.ziel) - 1) * 1000) / 10;
+      gemessen = {
+        ist: Math.round(istM * 100) / 100, abweichung: abwM, stufe: stufeFuer(abwM),
+        oben: maxima[def.oben], unten: maxima[def.unten]
+      };
+    }
+
+    paare.push({
+      id: def.id, oben: def.oben, unten: def.unten, herkunft: def.herkunft,
+      ist: Math.round(ist * 100) / 100, ziel: def.ziel,
+      abweichung, stufe: stufeFuer(abweichung),
+      gewichtOben: o, gewichtUnten: u,
+      persoenlich, gemessen
+    });
+  }
+
+  return { paare, basis: 'arbeit', ausreisser: ausreisserAus(paare) };
+}
+
+/**
+ * Aus Paaren eine Diagnose machen.
+ *
+ * Ein einzelnes auffaelliges Verhaeltnis ist mehrdeutig: liegt es am
+ * Zaehler oder am Nenner? Erst wenn derselbe Lift in MEHREREN Paaren
+ * in dieselbe Richtung auffaellt, ist er die Ursache. Genau das ist der
+ * Unterschied zwischen einer Tabelle und einer Diagnose.
+ */
+export function ausreisserAus(paare = []) {
+  const stimmen = {};
+  const zaehle = (lift, richtung) => {
+    stimmen[lift] = stimmen[lift] || { zurueck: 0, vor: 0 };
+    stimmen[lift][richtung]++;
+  };
+
+  for (const p of paare) {
+    if (p.stufe === 'stimmt') continue;
+    // ist < ziel: der obere Lift haengt zurueck oder der untere ist voraus.
+    if (p.abweichung < 0) { zaehle(p.oben, 'zurueck'); zaehle(p.unten, 'vor'); }
+    else                  { zaehle(p.oben, 'vor');     zaehle(p.unten, 'zurueck'); }
+  }
+
+  let beste = null;
+  for (const [lift, s] of Object.entries(stimmen)) {
+    for (const richtung of ['zurueck', 'vor']) {
+      // Eine einzelne Stimme reicht nicht: die hat jeder Partner eines
+      // auffaelligen Paars, ohne dass etwas ueber ihn gesagt waere.
+      if (s[richtung] < 2) continue;
+      if (!beste || s[richtung] > beste.treffer) beste = { lift, richtung, treffer: s[richtung] };
+    }
+  }
+  return beste;
+}
+
+/**
+ * Kraft je Kilogramm Koerpergewicht. Im Defizit die ehrlichere Zahl:
+ * absolut zu halten ist dort schon Fortschritt, und das sieht man nur
+ * relativ.
+ */
+export function relativKraft(state = {}, wellness = []) {
+  const reihe = gewichtsReihe(wellness);
+  if (!reihe.length) return null;
+  const bw = reihe[reihe.length - 1].schnitt;
+  if (!(bw > 0)) return null;
+
+  const arbeit = arbeitsGewichte(state);
+  const werte = Object.entries(arbeit)
+    .map(([lift, w]) => ({ lift, wert: Math.round((w / bw) * 100) / 100, gewicht: w }))
+    .sort((a, b) => b.wert - a.wert);
+  return werte.length ? { koerpergewicht: Math.round(bw * 10) / 10, werte, datum: reihe[reihe.length - 1].date } : null;
+}
+
+/**
+ * Verlauf der Relativkraft je Lift: Arbeitsgewicht der Einheit geteilt
+ * durch das Koerpergewicht, das zu diesem Datum am naechsten liegt.
+ */
+export function relativReihe(logs = [], wellness = [], liftId) {
+  const reihe = gewichtsReihe(wellness);
+  if (!reihe.length) return [];
+  const punkte = [];
+  for (const l of logs.filter(istKraft).sort((a, b) => a.date.localeCompare(b.date))) {
+    const e = (l.lifts || []).find(x => x.lift === liftId);
+    if (!e || !(e.weight > 0)) continue;
+    // Naechstgelegene Wiegung statt Interpolation: die Waage misst
+    // ohnehin nur an den Tagen, an denen man draufsteht.
+    let nah = null, dist = Infinity;
+    for (const w of reihe) {
+      const d = Math.abs(new Date(w.date) - new Date(l.date));
+      if (d < dist) { dist = d; nah = w; }
+    }
+    if (!nah || !(nah.schnitt > 0) || dist > 14 * 86400000) continue;
+    punkte.push({ date: l.date, weight: Math.round((e.weight / nah.schnitt) * 1000) / 1000 });
+  }
+  return punkte;
+}
+
+/**
+ * Wann bist du wieder da, wo du vor der Pause warst.
+ *
+ * Die Rate kommt aus einer Ausgleichsgeraden ueber die letzten Wochen,
+ * nicht aus "erster gegen letzten Wert" — dieselbe Ueberlegung wie bei
+ * abnehmRate: zwei Einzelpunkte machen aus einer zaehen Woche eine
+ * Trendwende.
+ */
+export function hochrechnung(logs = [], config = {}, heute = new Date(), tage = 56, state = {}) {
+  const lifts = config.lifts || {};
+  // Der Stand kommt aus `state`, die Rate aus den Logs. Das ist kein
+  // Schoenheitsfehler, sondern die Trennung von Zustand und Verlauf: der
+  // state traegt das Gewicht, mit dem du das naechste Mal antrittst, und
+  // genau das zeigt die App auch auf dem Startbildschirm. Kaeme `aktuell`
+  // hier aus dem letzten Log, stuenden in derselben Tour zwei
+  // verschiedene Zahlen fuer dieselbe Sache.
+  const stand = arbeitsGewichte(state);
+  const ab = new Date(heute); ab.setDate(ab.getDate() - tage);
+  const kraft = logs.filter(istKraft).sort((a, b) => a.date.localeCompare(b.date));
+  if (!kraft.length) return [];
+
+  const out = [];
+  for (const [id, def] of Object.entries(lifts)) {
+    const alle = [];
+    for (const l of kraft) {
+      const e = (l.lifts || []).find(x => x.lift === id);
+      if (e && e.weight > 0) alle.push({ date: l.date, weight: e.weight });
+    }
+    if (!alle.length) continue;
+
+    const aktuell = stand[id] > 0 ? stand[id] : alle[alle.length - 1].weight;
+    const ziel = def.reference > 0 ? def.reference : null;
+
+    // "Erreicht" heisst gehoben, nicht zugeteilt. Der Automat kann ein
+    // Gewicht vergeben, das noch unter der Stange bewiesen werden muss —
+    // und nach einer Anpassung von Hand kann er weit vorauslaufen. Wer
+    // sich sagen laesst, er sei wieder bei seinem alten Bestwert, ohne
+    // ihn gehoben zu haben, bekommt ein Lob fuer nichts.
+    const erst = ziel ? alle.find(p => p.weight >= ziel) : null;
+    if (erst) {
+      out.push({ lift: id, lage: 'erreicht', aktuell, ziel, seit: erst.date });
+      continue;
+    }
+
+    const p = alle.filter(x => new Date(x.date) >= ab);
+    if (p.length < 4) { out.push({ lift: id, lage: 'zuWenig', aktuell, ziel, punkte: p.length }); continue; }
+
+    const t0 = new Date(p[0].date).getTime();
+    const xs = p.map(x => (new Date(x.date).getTime() - t0) / 86400000);
+    const ys = p.map(x => x.weight);
+    const n = xs.length;
+    const mx = xs.reduce((a, b) => a + b, 0) / n;
+    const my = ys.reduce((a, b) => a + b, 0) / n;
+    const nenner = xs.reduce((s, x) => s + (x - mx) ** 2, 0);
+    if (!nenner) { out.push({ lift: id, lage: 'zuWenig', aktuell, ziel, punkte: n }); continue; }
+    const proTag = xs.reduce((s, x, i) => s + (x - mx) * (ys[i] - my), 0) / nenner;
+    const proWoche = Math.round(proTag * 7 * 100) / 100;
+
+    if (!ziel) { out.push({ lift: id, lage: 'keinZiel', aktuell, proWoche, punkte: n }); continue; }
+    if (proWoche <= 0) { out.push({ lift: id, lage: 'steht', aktuell, ziel, proWoche, punkte: n }); continue; }
+
+    const wochen = Math.ceil((ziel - aktuell) / proWoche);
+    const wann = new Date(heute); wann.setDate(wann.getDate() + wochen * 7);
+    out.push({
+      lift: id, lage: 'laeuft', aktuell, ziel, proWoche, punkte: n,
+      wochen, datum: wann.toISOString().slice(0, 10)
+    });
+  }
+  return out;
+}
+
+/**
+ * Wo es klemmt — bevor der Deload-Zaehler es meldet.
+ *
+ * Drei Fehlversuche loesen den Deload aus. Bis dahin sieht man nur die
+ * einzelne Einheit; dass ein Gewicht seit fuenf Einheiten steht oder
+ * dass regelmaessig der letzte Satz fehlt, faellt erst im Rueckblick auf.
+ */
+export function plateaus(logs = [], state = {}, config = {}) {
+  const kraft = logs.filter(istKraft).sort((a, b) => a.date.localeCompare(b.date));
+  const out = [];
+
+  for (const id of Object.keys(config.lifts || {})) {
+    const eintraege = [];
+    for (const l of kraft) {
+      const e = (l.lifts || []).find(x => x.lift === id);
+      if (e) eintraege.push({ date: l.date, ...e });
+    }
+    if (!eintraege.length) continue;
+
+    const fehl = eintraege.filter(e => e.success === false).length;
+
+    // Bewusst ueber die einzelnen SAETZE und nicht ueber die Einheiten:
+    // "Einheit geschafft, ja oder nein" steht schon als fehlQuote da, das
+    // ein zweites Mal zu zaehlen sagt nichts Neues. Interessant ist, wie
+    // knapp es war — vier von fuenf Saetzen ist eine andere Lage als zwei
+    // von fuenf, und beides zaehlt als ein Fehlversuch.
+    let saetze = 0, getroffen = 0;
+    for (const e of eintraege) {
+      if (!Array.isArray(e.reps) || !(e.target > 0)) continue;   // alte Logs ohne Ziel
+      saetze += e.sets || e.reps.length;
+      getroffen += e.reps.filter(r => r >= e.target).length;
+    }
+
+    // Wie viele Einheiten in Folge dasselbe Gewicht steht, vom Ende her.
+    const letztes = eintraege[eintraege.length - 1].weight;
+    let steht = 0;
+    for (let i = eintraege.length - 1; i >= 0 && eintraege[i].weight === letztes; i--) steht++;
+
+    out.push({
+      lift: id,
+      einheiten: eintraege.length,
+      fehl,
+      fehlQuote: Math.round((fehl / eintraege.length) * 100),
+      saetze, getroffen,
+      satzQuote: saetze ? Math.round((getroffen / saetze) * 100) : null,
+      gewicht: letztes,
+      stehtSeit: steht,
+      offeneFails: (state.lifts && state.lifts[id] && state.lifts[id].fails) || 0,
+      seit: eintraege[eintraege.length - steht].date
+    });
+  }
+  return out.sort((a, b) => b.stehtSeit - a.stehtSeit);
 }

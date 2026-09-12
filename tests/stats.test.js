@@ -100,8 +100,6 @@ const staerker = { date:'2026-09-14', workout:'A', type:'strength', lifts:[
 const t2 = S.neuePRs(prLogs, staerker);
 ok('eine schwerere saubere Einheit schon', t2.some(t=>t.feld==='arbeit'), JSON.stringify(t2.map(x=>x.feld)));
 
-print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);
-
 print('\n--- Radfahrten zusammenfassen ---');
 const fahrten = [
   { date:'2026-08-26', name:'Zwift', minutes:50, km:15.3, load:73 },
@@ -131,8 +129,6 @@ eq('ohne Fahrten sechs leere Wochen', leereWochen.length, 6);
 eq('alle bei null', leereWochen.reduce((s,x)=>s+x.last,0), 0);
 const alt = S.radWochen([{ date:'2020-01-01', minutes:60, load:50 }], 4, new Date(2026, 7, 28));
 eq('zu alte Fahrten fallen raus', alt.reduce((s,x)=>s+x.last,0), 0);
-
-print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);
 
 print('\n--- Trainingskalender ---');
 const kLogs = [
@@ -173,8 +169,6 @@ eq('Max-Out zaehlt nicht mit', S.wochenLast([wLogs[2]], [], 4, new Date(2026,7,2
 eq('ohne Dauer keine Kraftlast',
    S.wochenLast([{date:'2026-08-26',type:'strength'}], [], 4, new Date(2026,7,28))[3].kraft, 0);
 eq('leere Daten ergeben leere Wochen', S.wochenLast([], [], 6, new Date(2026,7,28)).filter(w=>w.gesamt>0).length, 0);
-
-print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);
 
 print('\n--- Tonnage je Woche ---');
 const tLogs = [
@@ -254,7 +248,6 @@ eq('SCHWER und HART teilen sich die Stufe',
 eq('leere Liste bleibt leer', S.ansageAbgleich([]).gesamt, 0);
 eq('unbekannte Ansage wird uebersprungen',
    S.ansageAbgleich([kraftLog('2026-09-01', 'IRGENDWAS', 'normal')]).gesamt, 0);
-
 
 print('\n--- Watt pro Kilogramm ---');
 // Deine echten Werte vom 01.09.2026 als Ausgangspunkt: 136 W bei 120,5 kg.
@@ -348,7 +341,6 @@ eq('beurteilbar waren zwei', bil.beurteilt, 2);
 eq('Quote rechnet nur mit den beurteilbaren', bil.quote, 50);
 eq('ohne Eintraege keine Quote', S.abgleichBilanz([]).quote, null);
 
-
 print('\n--- Angezeigte Anteile ergeben die angezeigte Summe ---');
 // Getrennt gerundet ergaben +0,12 und +0,09 die Summe +0,22.
 const an = S.anteileAufSumme(0.216, 0.124);
@@ -359,7 +351,6 @@ ok('und beides ergibt die Summe', Math.abs(an.a + an.b - an.summe) < 1e-9);
 const neg = S.anteileAufSumme(-0.07, -0.044);
 ok('auch bei fallenden Werten', Math.abs(neg.a + neg.b - neg.summe) < 1e-9);
 eq('ohne Rest bleibt es, wie es ist', S.anteileAufSumme(0.3, 0.1).b, 0.2);
-
 
 print('\n--- Aerobe Effizienz: nur Vergleichbares vergleichen ---');
 // Harte Fahrten haben systematisch den hoeheren Effizienzfaktor: die
@@ -439,7 +430,6 @@ eq('noch nicht tragfaehig', eineLange.tragfaehig, false);
 eq('aber ein Punkt ist da', eineLange.punkte.length, 1);
 ok('und die Schwelle war nicht das Problem', eineLange.besteMinuten > eineLange.schwelle,
    `${eineLange.besteMinuten} vs ${eineLange.schwelle}`);
-
 
 print('\n--- Gewicht: der Tageswert luegt, der Schnitt nicht ---');
 // Zwei Kilo Unterschied zwischen zwei Morgen sind Wasser, nicht Fett.
@@ -530,5 +520,228 @@ eq('bei glatten 119 ist 118 dran', rund.naechstes, 118);
 eq('ohne Zielgewicht keine Restdistanz', erf.bisZiel, null);
 eq('mit Zielgewicht schon', S.gewichtsErfolge(sauber, 105).bisZiel > 0, true);
 eq('ein Punkt reicht nicht', S.gewichtsErfolge([{ date:'x', schnitt:120 }]), null);
+
+
+/* ===================================================================
+   Kraftverhaeltnisse, Hochrechnung, Relativkraft, Plateaus.
+
+   Das Risiko hier ist inhaltlich: eine falsche Diagnose ist schlimmer
+   als keine. Wenn die App sagt "dein Bench haengt 23 % zurueck", wird
+   danach trainiert. Die Tests bewachen deshalb vor allem die Faelle, in
+   denen eine Zahl entstehen KOENNTE, die nichts misst.              */
+
+const cfg5 = { lifts: {
+  squat:    { name:'Back Squat',   reference: 80 },
+  bench:    { name:'Bench Press',  reference: 60 },
+  row:      { name:'Barbell Row',  reference: 55 },
+  ohp:      { name:'Strict Press', reference: 40 },
+  deadlift: { name:'Deadlift',     reference: 100 } } };
+// Derselbe Stand, an dem die Rechnung von Hand nachgeprueft wurde.
+const st5 = { lifts: {
+  squat:{weight:82.5,fails:0}, bench:{weight:47.5,fails:0}, row:{weight:45,fails:0},
+  ohp:{weight:42.5,fails:0}, deadlift:{weight:105,fails:0} } };
+
+print('\n--- Kraftverhaeltnisse ---');
+{
+  const v = S.verhaeltnisse(st5, cfg5, []);
+  eq('vier Paare', v.paare.length, 4);
+  const p = id => v.paare.find(x => x.id === id);
+  eq('Squat:Deadlift = 82,5/105', p('squat-deadlift').ist, 0.79);
+  eq('und liegt auf der Regel', p('squat-deadlift').stufe, 'stimmt');
+  eq('Bench:Squat = 47,5/82,5', p('bench-squat').ist, 0.58);
+  eq('und weicht deutlich ab', p('bench-squat').stufe, 'deutlich');
+  ok('die Abweichung ist negativ', p('bench-squat').abweichung < -20, p('bench-squat').abweichung);
+  eq('Press:Bench weicht nach oben ab', p('ohp-bench').stufe, 'deutlich');
+  ok('nach oben heisst positiv', p('ohp-bench').abweichung > 30, p('ohp-bench').abweichung);
+  eq('Row:Bench stimmt', p('row-bench').stufe, 'stimmt');
+  eq('der Massstab ist ausgewiesen', p('squat-deadlift').herkunft, 'tabelle');
+  eq('und bei den Faustregeln auch', p('bench-squat').herkunft, 'faustregel');
+}
+
+print('\n--- Aus Paaren wird eine Diagnose ---');
+{
+  const v = S.verhaeltnisse(st5, cfg5, []);
+  ok('es gibt einen Ausreisser', !!v.ausreisser);
+  eq('und es ist der Bench', v.ausreisser.lift, 'bench');
+  eq('er haengt zurueck', v.ausreisser.richtung, 'zurueck');
+  eq('mit zwei Stimmen', v.ausreisser.treffer, 2);
+
+  // Das ist der Kern: ein EINZELNES auffaelliges Paar sagt nicht, ob es
+  // am Zaehler oder am Nenner liegt. Erst zwei Stimmen sind eine Aussage.
+  eq('ein einzelnes auffaelliges Paar reicht nicht',
+     S.ausreisserAus([{ oben:'a', unten:'b', stufe:'deutlich', abweichung:-30 }]), null);
+  eq('zwei Stimmen fuer denselben Lift schon',
+     S.ausreisserAus([
+       { oben:'bench', unten:'squat', stufe:'deutlich', abweichung:-30 },
+       { oben:'ohp', unten:'bench', stufe:'deutlich', abweichung:+30 }]).lift, 'bench');
+  eq('stimmende Paare stimmen gar nicht erst mit',
+     S.ausreisserAus([{ oben:'a', unten:'b', stufe:'stimmt', abweichung:2 },
+                      { oben:'a', unten:'c', stufe:'stimmt', abweichung:-3 }]), null);
+  eq('ohne Paare kein Ausreisser', S.ausreisserAus([]), null);
+}
+
+print('\n--- Der persoenliche Massstab ---');
+{
+  const v = S.verhaeltnisse(st5, cfg5, []);
+  const bs = v.paare.find(x => x.id === 'squat-deadlift');
+  ok('er wird gerechnet, wenn beide Referenzwerte da sind', !!bs.persoenlich);
+  eq('80/100 ergibt 0,8', bs.persoenlich.ziel, 0.8);
+
+  const halb = { lifts: { squat:{ reference: 80 }, deadlift:{} } };
+  const v2 = S.verhaeltnisse({ lifts:{ squat:{weight:80}, deadlift:{weight:100} } }, halb, []);
+  eq('fehlt einer, entfaellt der persoenliche Massstab ganz',
+     v2.paare.find(x => x.id === 'squat-deadlift').persoenlich, null);
+}
+
+print('\n--- Nie Gemessenes gegen Geschaetztes ---');
+{
+  // Nur der Squat hat ein Max-Out. Ein Verhaeltnis aus diesem gemessenen
+  // Wert und einem Arbeitsgewicht wuerde die Testhistorie beschreiben,
+  // nicht die Kraft — also darf es gar nicht erst entstehen.
+  const nurEiner = [{ date:'2026-09-01', type:'maxout', lift:'squat', weight:110, reps:1 }];
+  const v = S.verhaeltnisse(st5, cfg5, nurEiner);
+  eq('ein einseitiges Max-Out erzeugt keinen gemessenen Vergleich',
+     v.paare.find(x => x.id === 'squat-deadlift').gemessen, null);
+  eq('das Paar bleibt trotzdem da, auf Arbeitsgewichtsbasis',
+     v.paare.find(x => x.id === 'squat-deadlift').ist, 0.79);
+
+  const beide = [...nurEiner, { date:'2026-09-02', type:'maxout', lift:'deadlift', weight:140, reps:1 }];
+  const v2 = S.verhaeltnisse(st5, cfg5, beide);
+  const g = v2.paare.find(x => x.id === 'squat-deadlift').gemessen;
+  ok('mit Max-Out auf beiden Seiten schon', !!g);
+  eq('110/140', g.ist, 0.79);
+  eq('die Basis der Paare bleibt das Arbeitsgewicht', v2.basis, 'arbeit');
+}
+
+print('\n--- Was nicht da ist, wird nicht erfunden ---');
+{
+  const ohneBench = { lifts: { squat:{ reference:80 }, deadlift:{ reference:100 } } };
+  const v = S.verhaeltnisse(st5, ohneBench, []);
+  eq('Paare mit unbekanntem Lift entfallen lautlos', v.paare.length, 1);
+  ok('und es entsteht kein NaN', v.paare.every(p => Number.isFinite(p.ist) && Number.isFinite(p.abweichung)));
+
+  eq('ohne Zustand keine Paare', S.verhaeltnisse({}, cfg5, []).paare.length, 0);
+  eq('ohne Konfiguration auch nicht', S.verhaeltnisse(st5, {}, []).paare.length, 0);
+  eq('und ganz ohne alles kein Ausreisser', S.verhaeltnisse({}, {}, []).ausreisser, null);
+
+  const nullen = { lifts: { squat:{weight:0}, deadlift:{weight:0} } };
+  eq('ein Gewicht von 0 teilt nicht', S.verhaeltnisse(nullen, cfg5, []).paare.length, 0);
+}
+
+print('\n--- Hochrechnung: wann bist du wieder da ---');
+{
+  const reihe = [];
+  for (let i = 0; i < 8; i++) {
+    const d = new Date('2026-07-01'); d.setDate(d.getDate() + i * 7);
+    reihe.push({ date: d.toISOString().slice(0,10), type:'strength',
+      lifts:[{ lift:'squat', weight: 50 + i * 2.5, reps:[5,5,5,5,5], success:true }] });
+  }
+  const cfg = { lifts: { squat: { name:'Squat', reference: 90 } } };
+  const stand = { lifts: { squat: { weight: 67.5 } } };
+  const h = S.hochrechnung(reihe, cfg, new Date('2026-08-19'), 56, stand)[0];
+  eq('sie laeuft', h.lage, 'laeuft');
+  eq('Stand aus dem Zustand, nicht aus dem letzten Log', h.aktuell, 67.5);
+  eq('2,5 kg pro Woche', h.proWoche, 2.5);
+  eq('von 67,5 auf 90 sind neun Wochen', h.wochen, 9);
+  ok('mit einem Datum', /^\d{4}-\d{2}-\d{2}$/.test(h.datum), h.datum);
+
+  // "Erreicht" nur, wenn es unter der Stange war. Ein zugeteiltes Gewicht
+  // ueber dem Ziel ist kein erreichtes Ziel — sonst lobt die App fuer
+  // etwas, das nie stattgefunden hat.
+  const nurZugeteilt = S.hochrechnung(reihe, cfg, new Date('2026-08-19'), 56,
+    { lifts:{ squat:{ weight: 95 } } })[0];
+  ok('ein bloss zugeteiltes Gewicht ueber dem Ziel ist nicht erreicht',
+     nurZugeteilt.lage !== 'erreicht', nurZugeteilt.lage);
+
+  const echt = [...reihe, { date:'2026-08-18', type:'strength',
+    lifts:[{ lift:'squat', weight:92.5, reps:[5,5,5,5,5], success:true }] }];
+  const drueber = S.hochrechnung(echt, cfg, new Date('2026-08-19'), 56,
+    { lifts:{ squat:{ weight: 95 } } })[0];
+  eq('gehoben heisst erreicht', drueber.lage, 'erreicht');
+  eq('mit dem Datum, an dem es zum ersten Mal stand', drueber.seit, '2026-08-18');
+
+  // Eine Rate von null oder darunter darf KEINE Hochrechnung ergeben:
+  // "in 0 Wochen" oder eine negative Woche waere schlimmer als nichts.
+  const flach = reihe.map(l => ({ ...l, lifts:[{ ...l.lifts[0], weight: 60 }] }));
+  const st = S.hochrechnung(flach, cfg, new Date('2026-08-19'), 56, { lifts:{ squat:{ weight:60 } } })[0];
+  eq('eine flache Reihe steht', st.lage, 'steht');
+  eq('und liefert keine Wochenzahl', st.wochen, undefined);
+
+  eq('unter vier Punkten wird nicht gerechnet',
+     S.hochrechnung(reihe.slice(0,3), cfg, new Date('2026-08-19'), 56, stand)[0].lage, 'zuWenig');
+  eq('ohne Logs kommt gar nichts', S.hochrechnung([], cfg, new Date(), 56, stand).length, 0);
+  eq('ohne Referenzwert gibt es kein Ziel',
+     S.hochrechnung(reihe, { lifts:{ squat:{} } }, new Date('2026-08-19'), 56, stand)[0].lage, 'keinZiel');
+}
+
+print('\n--- Relativkraft ---');
+{
+  const well = [{ date:'2026-08-28', weight:84.5 }, { date:'2026-08-30', weight:84.0 }];
+  const r = S.relativKraft(st5, well);
+  eq('das Koerpergewicht kommt aus dem geglaetteten Schnitt', r.koerpergewicht, 84.3);
+  eq('der schwerste Lift steht oben', r.werte[0].lift, 'deadlift');
+  eq('105 / 84,25', r.werte[0].wert, 1.25);
+  eq('ohne Waage kein Block', S.relativKraft(st5, []), null);
+  eq('ohne Zustand auch nicht', S.relativKraft({}, well), null);
+
+  const punkte = S.relativReihe(logs, [{ date:'2026-09-01', weight:80 }], 'squat');
+  eq('zwei Einheiten, zwei Punkte', punkte.length, 2);
+  eq('50 / 80', punkte[0].weight, 0.625);
+  // Eine Wiegung von vor einem halben Jahr sagt nichts ueber heute.
+  eq('zu weit entfernte Wiegungen zaehlen nicht',
+     S.relativReihe(logs, [{ date:'2025-01-01', weight:80 }], 'squat').length, 0);
+  eq('ohne Waage keine Reihe', S.relativReihe(logs, [], 'squat').length, 0);
+
+  // Ein Wellness-Satz ohne Datum liess die Sortierung in gewichtsReihe
+  // werfen. Weil der ganze Wellness-Block in einem try haengt, fielen
+  // damit auch Gewichtskurve, Abnehmrate, W/kg und Form aus — ein
+  // fehlendes Feld in einer Zeile nahm vier Auswertungen mit.
+  const kaputt = [{ weight: 84 }, { date:'2026-08-30', weight: 84 }, { date: null, weight: 83 }];
+  ok('ein Satz ohne Datum wirft nicht', (() => {
+    try { S.gewichtsReihe(kaputt); return true; } catch { return false; } })());
+  eq('er wird uebersprungen', S.gewichtsReihe(kaputt).length, 1);
+  ok('und die Relativkraft laeuft trotzdem', !!S.relativKraft(st5, kaputt));
+}
+
+print('\n--- Wo es klemmt ---');
+{
+  const cfg = { lifts: { squat:{}, bench:{} } };
+  const p = S.plateaus(logs, { lifts:{ squat:{ fails:1 } } }, cfg);
+  const sq = p.find(x => x.lift === 'squat');
+  eq('zwei Einheiten mit Squat', sq.einheiten, 2);
+  eq('davon eine gescheitert', sq.fehl, 1);
+  eq('das sind 50 %', sq.fehlQuote, 50);
+  eq('offene Fehlversuche kommen aus dem Zustand', sq.offeneFails, 1);
+  // Diese Fixture stammt aus der Zeit vor `target` im Log. Ohne Ziel
+  // laesst sich keine Satzquote bilden — dann lieber null als eine Zahl,
+  // die so tut, als waere sie gemessen.
+  eq('ohne `target` im Log keine Satzquote', sq.satzQuote, null);
+
+  const mitZiel = [
+    { date:'2026-09-01', type:'strength', lifts:[{ lift:'squat', weight:50, sets:5, target:5, reps:[5,5,5,5,5], success:true }] },
+    { date:'2026-09-05', type:'strength', lifts:[{ lift:'squat', weight:52.5, sets:5, target:5, reps:[5,5,5,4,3], success:false }] }
+  ];
+  const mz = S.plateaus(mitZiel, {}, cfg)[0];
+  // Granularer als fehlQuote: zehn Saetze, acht auf dem Ziel — der eine
+  // Fehlversuch war knapp. Zwei von fuenf waeren dieselbe fehlQuote und
+  // eine voellig andere Lage.
+  eq('acht von zehn Saetzen getroffen', mz.satzQuote, 80);
+  eq('und zwar zehn Saetze insgesamt', mz.saetze, 10);
+  eq('die Einheitsquote sieht beide Faelle gleich', mz.fehlQuote, 50);
+
+  const steht = [
+    { date:'2026-09-01', type:'strength', lifts:[{ lift:'squat', weight:60, sets:5, target:5, reps:[5,5,5,5,5], success:true }] },
+    { date:'2026-09-03', type:'strength', lifts:[{ lift:'squat', weight:60, sets:5, target:5, reps:[5,5,5,5,4], success:false }] },
+    { date:'2026-09-05', type:'strength', lifts:[{ lift:'squat', weight:60, sets:5, target:5, reps:[5,5,5,5,4], success:false }] }
+  ];
+  const s2 = S.plateaus(steht, {}, cfg)[0];
+  eq('drei Einheiten auf demselben Gewicht', s2.stehtSeit, 3);
+  eq('seit dem ersten davon', s2.seit, '2026-09-01');
+  eq('das laengste Plateau steht oben', S.plateaus(steht, {}, cfg)[0].lift, 'squat');
+
+  eq('ohne Logs keine Plateaus', S.plateaus([], {}, cfg).length, 0);
+  eq('ohne Konfiguration auch nicht', S.plateaus(logs, {}, {}).length, 0);
+}
+
 
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

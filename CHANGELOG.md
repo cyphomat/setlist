@@ -10,6 +10,71 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-09-12.2
+
+### Neu
+- **Ein Analyseteil in der Tour.** Vier Blöcke, die eine Frage beantworten, die
+  man sich selbst nicht beantworten kann — beim eigenen Training sieht man immer
+  nur den Lift, an dem man gerade steht.
+
+  **Wo du schief stehst.** Vier Kraftverhältnisse mit Ist-Wert, Zielwert und
+  Abweichung. Der Zielwert für Back Squat zu Kreuzheben stammt aus einer
+  Verhältnis-Tabelle, der Rest sind gängige Faustregeln — beides ist in der
+  Anzeige unterschieden, nicht vermischt. Daneben steht ein zweiter Maßstab: dein
+  eigener Stand vor der Pause aus den `reference`-Werten. Beim Wiederaufbau ist
+  der aussagekräftiger als ein Durchschnitt über alle Körper.
+
+  Entscheidend ist aber nicht die Liste, sondern was daraus folgt: **fällt derselbe
+  Lift in mehreren Paaren auf, nennt die App ihn als Ursache.** Ein einzelnes
+  schiefes Verhältnis ist mehrdeutig — liegt es am Zähler oder am Nenner? Erst zwei
+  Stimmen sind eine Aussage. Dazu ein Vorschlag, was zu tun wäre, mit den Übungen,
+  die ohnehin schon in der Bibliothek stehen.
+
+  **Wann du wieder da bist.** Hochrechnung je Übung aus der tatsächlichen
+  Steigerungsrate (Ausgleichsgerade über acht Wochen, nicht zwei Einheiten
+  verglichen) bis zum Gewicht vor der Pause. Drei Lagen: erreicht, läuft, steht —
+  und bei einer Rate von null oder darunter *keine* Hochrechnung, denn „in null
+  Wochen" wäre schlimmer als nichts.
+
+  **Kraft je Kilo.** Arbeitsgewicht geteilt durch Körpergewicht, mit Verlaufskurve.
+  Im Defizit die ehrlichere Zahl: absolut zu halten ist dort schon Fortschritt.
+  Ohne Waagendaten entfällt der Block ganz statt eine leere Karte zu zeigen.
+
+  **Wo es klemmt.** Plateaus, bevor der Deload-Zähler sie meldet. Neu daran ist die
+  Satzquote: sie zählt einzelne Sätze statt Einheiten. Vier von fünf ist eine andere
+  Lage als zwei von fünf, und beides zählt als genau ein Fehlversuch.
+
+### Bewusst so
+- **Verglichen wird nur, was dieselbe Güte hat.** Ein Verhältnis aus einem
+  gemessenen und einem geschätzten Wert beschreibt die Testhistorie, nicht die
+  Kraft. Basis sind deshalb die Arbeitsgewichte — alle aus derselben Progression.
+  Ein Vergleich aus Max-Outs erscheint zusätzlich, aber nur wenn für **beide** Lifts
+  einer vorliegt. Gemischt wird nie.
+- **„Erreicht" heißt gehoben, nicht zugeteilt.** Der Automat kann ein Gewicht
+  vergeben, das noch unter der Stange bewiesen werden muss. Wer sich sagen lässt, er
+  sei wieder bei seinem alten Bestwert, ohne ihn gehoben zu haben, bekommt ein Lob
+  für nichts.
+- **Das Kreuzheben läuft mit einem Satz statt fünf.** Ein Einzelsatz lässt sich
+  schwerer machen, das Verhältnis Squat zu Kreuzheben fällt dadurch etwas zu
+  freundlich für die Stange aus. Das steht so in der Oberfläche, statt weggerechnet
+  zu werden.
+
+### Behoben
+- **Ein Wellness-Satz ohne Datum riss vier Auswertungen mit.** `gewichtsReihe`
+  prüfte die Waage, aber nicht das Datum, und warf beim Sortieren. Weil der ganze
+  Wellness-Block in einem `try` hängt, fielen damit Gewichtskurve, Abnehmrate,
+  Watt pro Kilo und Form gleichzeitig aus — ein fehlendes Feld in einer Zeile.
+  Beim Bauen des Relativkraft-Blocks aufgefallen, der dieselbe Funktion nutzt.
+- **Die Tour listete ihre Renderer zweimal** — einmal für den Normalfall, einmal
+  für den Offline-Stand aus dem Zwischenspeicher. Jeder neue Block wären zwei
+  Zeilen an zwei Stellen gewesen; eine davon vergisst man, und dann zeigt die Tour
+  ohne Netz etwas anderes als mit. Jetzt eine Funktion, die beide Pfade aufrufen,
+  und ein Durchlauf, der online gegen offline vergleicht.
+- Zwischensummen in `tests/stats.test.js` und `tests/wod.test.js` lasen sich wie
+  das Ende des Laufs, obwohl danach noch Hunderte Zeilen Tests kamen.
+
+---
+
 ## 2026-09-12.1
 
 ### Neu

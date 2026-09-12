@@ -882,41 +882,13 @@ async function renderHistory() {
     const logs = await S.readAllLogs();
     alleLogs = logs;
     S.cacheLogs(logs);
-    renderStats(logs);
-    renderAngeben(logs);
-    renderKalender(logs);
-    renderLast(logs);
-    renderTonnage(logs);
-    renderFormVerlauf();
-    renderAbnehmen();
-    renderWattProKg();
-    renderPRs(logs);
-    renderAnsageAbgleich(logs);
-    renderCharts(logs);
-    renderIntensitaet();
-    renderAerob();
-    renderRad();
-    renderListe(logs);
+    renderTour(logs);
   } catch (e) {
     // Lieber den letzten bekannten Stand zeigen als eine Sackgasse.
     const alt = S.cachedLogs();
     if (alt && alt.logs.length) {
       alleLogs = alt.logs;
-      renderStats(alt.logs);
-      renderAngeben(alt.logs);
-      renderKalender(alt.logs);
-      renderLast(alt.logs);
-      renderTonnage(alt.logs);
-      renderFormVerlauf();
-      renderAbnehmen();
-      renderWattProKg();
-      renderPRs(alt.logs);
-      renderAnsageAbgleich(alt.logs);
-      renderCharts(alt.logs);
-      renderIntensitaet();
-      renderAerob();
-      renderRad();
-      renderListe(alt.logs);
+      renderTour(alt.logs);
       banner(t('msg.offlineStand', { datum: new Date(alt.zeit).toLocaleDateString(locale()) }), '', 5000);
     } else {
       $('history-body').innerHTML = `<p class="lead">${escHtml(e.message)}</p>`;
@@ -1931,6 +1903,183 @@ async function commitMaxout(log) {
 }
 
 /* ================= Bestwerte ================= */
+
+/**
+ * Alle Bloecke der Tour, an einer Stelle. Der Offline-Pfad ruft dieselbe
+ * Funktion mit dem zwischengespeicherten Stand auf — vorher standen die
+ * fuenfzehn Aufrufe zweimal da, und jeder neue Block waere zwei Zeilen an
+ * zwei Stellen gewesen. Eine davon vergisst man, und dann zeigt die Tour
+ * ohne Netz etwas anderes als mit.
+ */
+/* ==================== Analyse: wo stehst du schief ====================
+   Vier Bloecke, die dieselbe Zurueckhaltung teilen: eine Karte, die
+   nichts zu sagen hat, erscheint gar nicht erst. Eine leere Ueberschrift
+   mit einem Gedankenstrich darunter ist kein Ergebnis.               */
+
+/** Ein Lift-Name aus der Konfiguration, mit der Id als Rueckfall. */
+const liftName = id => (config.lifts && config.lifts[id] && config.lifts[id].name) || id;
+
+// Die Stufe faerbt, was man sonst aus der Prozentzahl erst ableiten muesste.
+const STUFE_FARBE = { stimmt: 'var(--gruen)', leicht: 'var(--rost)', deutlich: 'var(--rot)' };
+const vzPro = n => `${n > 0 ? '+' : ''}${n} %`;
+
+function renderVerhaeltnisse(logs) {
+  const v = ST.verhaeltnisse(state, config, logs);
+  if (!v.paare.length) { $('hist-verhaeltnisse').innerHTML = ''; return; }
+
+  const zeilen = v.paare.map(p => {
+    const farbe = STUFE_FARBE[p.stufe];
+    return `<div class="verh">
+      <div class="vk">
+        <span class="vn">${escHtml(liftName(p.oben))} : ${escHtml(liftName(p.unten))}</span>
+        <span class="vd" style="color:${farbe}">${vzPro(p.abweichung)}</span>
+      </div>
+      <div class="vz">
+        <span>${p.ist.toFixed(2)}</span>
+        <span class="vs">${escHtml(t('verh.ziel'))} ${p.ziel.toFixed(2)}</span>
+        <span class="vq">${escHtml(t(p.herkunft === 'tabelle' ? 'verh.tabelle' : 'verh.faustregel'))}</span>
+      </div>
+      <div class="fine">${P.fmtWeight(p.gewichtOben)} / ${P.fmtWeight(p.gewichtUnten)}${
+        p.persoenlich ? ` · ${escHtml(t('verh.vorDerPause', {
+          ziel: p.persoenlich.ziel.toFixed(2), abw: vzPro(p.persoenlich.abweichung) }))}` : ''}</div>
+      ${p.gemessen ? `<div class="fine">${escHtml(t('verh.gemessen', {
+        ist: p.gemessen.ist.toFixed(2), abw: vzPro(p.gemessen.abweichung),
+        o: p.gemessen.oben, u: p.gemessen.unten }))}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  // Die Diagnose steht ueber den Paaren: das ist die Aussage, die Paare
+  // sind die Begruendung. Andersherum liest man vier Zahlen und muss
+  // selbst kombinieren — genau die Arbeit, die der Block abnehmen soll.
+  const a = v.ausreisser;
+  const info = a ? LIFT_INFO[a.lift] : null;
+  const diagnose = a ? `
+    <div class="diagnose ${a.richtung}">
+      <div class="kicker">${escHtml(t('verh.diagnose'))}</div>
+      <p class="dl">${escHtml(t(a.richtung === 'zurueck' ? 'verh.haengtZurueck' : 'verh.istVoraus',
+        { name: liftName(a.lift), n: a.treffer }))}</p>
+      ${info && info.nachholen ? `<p class="dn">${escHtml(info.nachholen)}</p>` : ''}
+      ${info && info.korrektur && a.richtung === 'zurueck' ? `
+        <div class="dz">${info.korrektur.uebungen.map(x =>
+          `<div class="kv"><span class="k">${escHtml(x.dosis)}</span><span class="v">${escHtml(x.name)}</span></div>`).join('')}</div>
+        <button class="btn ghost small" id="verh-bib">${escHtml(t('verh.inDieBibliothek'))}</button>` : ''}
+    </div>` : `<p class="fine">${escHtml(t('verh.allesRund'))}</p>`;
+
+  $('hist-verhaeltnisse').innerHTML = `
+    <h2 data-i18n="verh.h">${escHtml(t('verh.h'))}</h2>
+    <p class="fine">${escHtml(t('verh.lead'))}</p>
+    ${diagnose}
+    <div class="verh-liste">${zeilen}</div>
+    <p class="fine">${escHtml(t('verh.fine'))}</p>`;
+
+  const knopf = $('verh-bib');
+  if (knopf) knopf.onclick = () => zeigeBibliothek('Kraft');
+}
+
+function renderHochrechnung(logs) {
+  const h = ST.hochrechnung(logs, config, new Date(), 56, state);
+  const zeigbar = h.filter(x => x.lage !== 'zuWenig' && x.lage !== 'keinZiel');
+  if (!zeigbar.length) { $('hist-hochrechnung').innerHTML = ''; return; }
+
+  const zeilen = zeigbar.map(x => {
+    const text = {
+      erreicht: () => `<span style="color:var(--gruen)">${escHtml(t('hoch.erreicht', { datum: x.seit }))}</span>`,
+      laeuft:   () => escHtml(t('hoch.laeuft', { wochen: x.wochen, rate: x.proWoche })),
+      steht:    () => `<span style="color:var(--rost)">${escHtml(t('hoch.steht'))}</span>`
+    }[x.lage]();
+    return `<div class="reihe">
+      <span class="l">${escHtml(liftName(x.lift))}</span>
+      <span class="v">${P.fmtWeight(x.aktuell)} <small>${escHtml(t('hoch.von', { ziel: x.ziel }))}</small></span>
+    </div><div class="hoch-text">${text}</div>`;
+  }).join('');
+
+  $('hist-hochrechnung').innerHTML = `
+    <h2>${escHtml(t('hoch.h'))}</h2>
+    <div class="pr">${zeilen}</div>
+    <p class="fine">${escHtml(t('hoch.fine'))}</p>`;
+}
+
+/** Kleine Kurve aus `sparkline()`. Die Funktion liefert Pfade, kein SVG. */
+function sparkSvg(punkte, hoehe = 34) {
+  if (!punkte || punkte.length < 3) return '';
+  const sp = ST.sparkline(punkte, 300, hoehe, 3);
+  if (!sp) return '';
+  return `<div class="spark"><svg viewBox="0 0 300 ${hoehe}" preserveAspectRatio="none" aria-hidden="true">
+    <path d="${sp.flaeche}" fill="var(--tint-akzent)"/>
+    <path d="${sp.linie}" fill="none" stroke="var(--akzent)" stroke-width="1.5"
+          stroke-linejoin="round" stroke-linecap="round"/>
+  </svg></div>`;
+}
+
+function renderRelativKraft(logs) {
+  const r = ST.relativKraft(state, gewichtsPunkte);
+  // Ohne Waage entfaellt der Block ganz. Eine Ueberschrift mit dem Hinweis,
+  // dass hier nichts steht, ist schlechter als gar keine Ueberschrift.
+  if (!r) { $('hist-relativ').innerHTML = ''; return; }
+
+  const zeilen = r.werte.map(w => {
+    const punkte = ST.relativReihe(logs, gewichtsPunkte, w.lift);
+    return `<div class="reihe">
+      <span class="l">${escHtml(liftName(w.lift))}</span>
+      <span class="v">${w.wert.toFixed(2)}× <small>${P.fmtWeight(w.gewicht)}</small></span>
+    </div>${sparkSvg(punkte, 34)}`;
+  }).join('');
+
+  $('hist-relativ').innerHTML = `
+    <h2>${escHtml(t('rel.h'))}</h2>
+    <p class="fine">${escHtml(t('rel.lead', { kg: r.koerpergewicht, datum: r.datum }))}</p>
+    <div class="pr">${zeilen}</div>`;
+}
+
+function renderPlateaus(logs) {
+  const p = ST.plateaus(logs, state, config);
+  // Der Block heisst "Wo es klemmt" — also gehoert nur hinein, wo auch
+  // etwas klemmt. Ein Gewicht, das steht, waehrend alle Saetze sitzen,
+  // ist kein Plateau; es steht dann aus einem anderen Grund, und den
+  // kennt diese Auswertung nicht.
+  const auffaellig = p.filter(x =>
+    x.offeneFails > 0 || x.fehl > 0 || (x.satzQuote !== null && x.satzQuote < 95));
+  if (!auffaellig.length) { $('hist-plateaus').innerHTML = ''; return; }
+
+  // "Seit N Einheiten" steht in der Textzeile, nicht im Kopf: dort liegt
+  // es neben dem Gewicht und sprengt bei langen Lift-Namen die Zeile.
+  const zeilen = auffaellig.map(x => `
+    <div class="reihe">
+      <span class="l">${escHtml(liftName(x.lift))}</span>
+      <span class="v">${P.fmtWeight(x.gewicht)}</span>
+    </div>
+    <div class="hoch-text">${escHtml(t('plat.detail', {
+      n: x.stehtSeit, fehl: x.fehl, einheiten: x.einheiten,
+      satz: x.satzQuote === null ? '—' : `${x.satzQuote} %`
+    }))}${x.offeneFails > 0 ? ` <span style="color:var(--rost)">${escHtml(t('plat.offen', { n: x.offeneFails }))}</span>` : ''}</div>`).join('');
+
+  $('hist-plateaus').innerHTML = `
+    <h2>${escHtml(t('plat.h'))}</h2>
+    <div class="pr">${zeilen}</div>
+    <p class="fine">${escHtml(t('plat.fine'))}</p>`;
+}
+
+function renderTour(logs) {
+  renderStats(logs);
+  renderAngeben(logs);
+  renderKalender(logs);
+  renderLast(logs);
+  renderTonnage(logs);
+  renderFormVerlauf();
+  renderAbnehmen();
+  renderWattProKg();
+  renderPRs(logs);
+  renderVerhaeltnisse(logs);
+  renderHochrechnung(logs);
+  renderRelativKraft(logs);
+  renderPlateaus(logs);
+  renderAnsageAbgleich(logs);
+  renderCharts(logs);
+  renderIntensitaet();
+  renderAerob();
+  renderRad();
+  renderListe(logs);
+}
 
 function renderPRs(logs) {
   const p = ST.prs(logs);
