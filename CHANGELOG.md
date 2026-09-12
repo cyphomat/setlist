@@ -10,6 +10,30 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-09-12.5
+
+### Behoben
+- **„Steht seit 1 Einheiten."** Falscher Plural — und bei einer Einheit war die
+  Aussage ohnehin leer: das ist schlicht die letzte. Der Satzteil erscheint jetzt
+  erst ab zwei. Dasselbe beim Deload-Zähler: „noch ein Fehlversuch" statt
+  „1 offene Fehlversuche".
+- **Die Kurven bei *Kraft je Kilo* waren nicht eindeutig zuzuordnen.** Eine Übung
+  ohne genug Wiegungen bekommt keine Kurve — dadurch sah die nächste so aus, als
+  gehöre sie zur vorherigen. Zeile und Kurve stehen jetzt in einer Gruppe mit
+  Trennlinie dazwischen.
+
+### Dokumentation
+- **Vier neue Screenshots in beiden READMEs**: die Kraftverhältnisse mit Diagnose,
+  Hochrechnung samt Relativkraft und Plateaus, die Prüfwerte im Max-Out und ein
+  Bewegungsstandard in der Bibliothek. Echte Bildschirme, keine Mockups.
+- `tools/shots.mjs` kann jetzt auch Szenen aufnehmen, die einen **Verlauf**
+  brauchen: Logs über den Baum und `git/blobs`, dazu Zustand, Prüfwerte und
+  Wiegedaten. Ohne das standen die Analyse-Bildschirme auf den Startgewichten —
+  bei denen zufällig alles stimmt, und ein Bildschirm, auf dem nichts auffällt,
+  zeigt nicht, wozu er da ist.
+
+---
+
 ## 2026-09-12.4
 
 ### Neu

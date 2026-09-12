@@ -2166,10 +2166,12 @@ function renderRelativKraft(logs) {
 
   const zeilen = r.werte.map(w => {
     const punkte = ST.relativReihe(logs, gewichtsPunkte, w.lift);
-    return `<div class="reihe">
-      <span class="l">${escHtml(liftName(w.lift))}</span>
-      <span class="v">${w.wert.toFixed(2)}× <small>${P.fmtWeight(w.gewicht)}</small></span>
-    </div>${sparkSvg(punkte, 34)}`;
+    return `<div class="relz">
+      <div class="reihe">
+        <span class="l">${escHtml(liftName(w.lift))}</span>
+        <span class="v">${w.wert.toFixed(2)}× <small>${P.fmtWeight(w.gewicht)}</small></span>
+      </div>${sparkSvg(punkte, 34)}
+    </div>`;
   }).join('');
 
   $('hist-relativ').innerHTML = `
@@ -2195,10 +2197,11 @@ function renderPlateaus(logs) {
       <span class="l">${escHtml(liftName(x.lift))}</span>
       <span class="v">${P.fmtWeight(x.gewicht)}</span>
     </div>
-    <div class="hoch-text">${escHtml(t('plat.detail', {
+    <div class="hoch-text">${escHtml(t(x.stehtSeit >= 2 ? 'plat.detail' : 'plat.detailKurz', {
       n: x.stehtSeit, fehl: x.fehl, einheiten: x.einheiten,
       satz: x.satzQuote === null ? '—' : `${x.satzQuote} %`
-    }))}${x.offeneFails > 0 ? ` <span style="color:var(--rost)">${escHtml(t('plat.offen', { n: x.offeneFails }))}</span>` : ''}</div>`).join('');
+    }))}${x.offeneFails > 0 ? ` <span style="color:var(--rost)">${escHtml(
+      t(x.offeneFails === 1 ? 'plat.offen1' : 'plat.offen', { n: x.offeneFails }))}</span>` : ''}</div>`).join('');
 
   $('hist-plateaus').innerHTML = `
     <h2>${escHtml(t('plat.h'))}</h2>

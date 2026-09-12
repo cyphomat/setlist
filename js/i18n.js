@@ -504,7 +504,9 @@ export const TEXTE = {
 
     'plat.h': 'Wo es klemmt',
     'plat.detail': 'Steht seit {n} Einheiten · {fehl} Fehlversuche in {einheiten} · {satz} der Sätze auf dem Ziel',
+    'plat.detailKurz': '{fehl} Fehlversuche in {einheiten} Einheiten · {satz} der Sätze auf dem Ziel',
     'plat.offen': '· {n} offene Fehlversuche bis zum Deload',
+    'plat.offen1': '· noch ein Fehlversuch bis zum Deload',
     'plat.fine': 'Die Satzquote zählt einzelne Sätze, nicht Einheiten — vier von fünf ist eine andere Lage als zwei von fünf, und beides zählt als ein Fehlversuch.',
     'pr.mind': '┄ mind. ≈ {kg} kg',
     'pr.maxOutPunkt': '● Max-Out {kg} kg',
@@ -1102,7 +1104,9 @@ export const TEXTE = {
 
     'plat.h': 'Where it is stuck',
     'plat.detail': 'Stuck for {n} sessions · {fehl} failed attempts in {einheiten} · {satz} of sets on target',
-    'plat.offen': '· {n} failed attempts left before the deload',
+    'plat.detailKurz': '{fehl} failed attempts in {einheiten} sessions · {satz} of sets on target',
+    'plat.offen': '\u00b7 {n} failed attempts left before the deload',
+    'plat.offen1': '\u00b7 one more failed attempt before the deload',
     'plat.fine': 'The set rate counts individual sets, not sessions — four of five is a different situation from two of five, and both count as one failed attempt.',
     'pr.mind': '┄ min. ≈ {kg} kg',
     'pr.maxOutPunkt': '● Max-out {kg} kg',

@@ -413,7 +413,11 @@ dialog::backdrop{background:var(--backdrop)}
 .hoch-text{margin:2px 0 10px;font-size:0.8125rem;line-height:1.5;color:var(--muted);
   text-transform:none;letter-spacing:normal}
 .hoch-text:last-child{margin-bottom:0}
-.spark{margin:2px 0 10px;line-height:0}
+/* Zeile und Kurve als eine Einheit. Hat eine Uebung zu wenige Punkte fuer
+   eine Kurve, sah die naechste sonst aus, als gehoere sie zur vorigen. */
+.relz{padding-bottom:6px}
+.relz + .relz{border-top:1px solid var(--line);padding-top:4px}
+.spark{margin:2px 0 4px;line-height:0}
 .spark svg{max-width:100%;height:auto}
 
 /* ── Scheiben und Form ────────────────────────────────────── */

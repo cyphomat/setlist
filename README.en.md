@@ -60,6 +60,23 @@
 </tr>
 </table>
 
+**And this is what it tells you about your strength** — not just how much, but where it is out of balance:
+
+<table>
+<tr>
+<td width="25%"><img src="assets/screens/analyse-dunkel.png" alt="Strength ratios with a diagnosis"></td>
+<td width="25%"><img src="assets/screens/fortschritt-dunkel.png" alt="Projection, strength per kilo, plateaus"></td>
+<td width="25%"><img src="assets/screens/pruefwerte-dunkel.png" alt="Measuring test values in a max-out"></td>
+<td width="25%"><img src="assets/screens/standard-dunkel.png" alt="Movement standard in the library"></td>
+</tr>
+<tr>
+<td align="center"><b>Where you are out of balance</b><br><sub>The same lift in several pairs = the cause</sub></td>
+<td align="center"><b>When you are back</b><br><sub>Projection, strength per kilo, plateaus</sub></td>
+<td align="center"><b>Test values</b><br><sub>Measured in a max-out, not typed</sub></td>
+<td align="center"><b>Counts when</b><br><sub>When the rep is valid</sub></td>
+</tr>
+</table>
+
 <sub>Real screens with sample data, captured via <code>tools/shot.html</code> and <code>tools/shots.mjs</code>. Not mockups.</sub>
 
 ---

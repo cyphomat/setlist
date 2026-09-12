@@ -60,6 +60,23 @@
 </tr>
 </table>
 
+**Und das sagt sie dir über deine Kraft** — nicht nur wie viel, sondern wo sie schief steht:
+
+<table>
+<tr>
+<td width="25%"><img src="assets/screens/analyse-dunkel.png" alt="Kraftverhältnisse mit Diagnose"></td>
+<td width="25%"><img src="assets/screens/fortschritt-dunkel.png" alt="Hochrechnung, Kraft je Kilo, Plateaus"></td>
+<td width="25%"><img src="assets/screens/pruefwerte-dunkel.png" alt="Prüfwerte im Max-Out messen"></td>
+<td width="25%"><img src="assets/screens/standard-dunkel.png" alt="Bewegungsstandard in der Bibliothek"></td>
+</tr>
+<tr>
+<td align="center"><b>Wo du schief stehst</b><br><sub>Derselbe Lift in mehreren Paaren = die Ursache</sub></td>
+<td align="center"><b>Wann du wieder da bist</b><br><sub>Hochrechnung, Kraft je Kilo, Plateaus</sub></td>
+<td align="center"><b>Prüfwerte</b><br><sub>Im Max-Out gemessen statt getippt</sub></td>
+<td align="center"><b>Gültig, wenn</b><br><sub>Wann die Wiederholung zählt</sub></td>
+</tr>
+</table>
+
 <sub>Echte Bildschirme mit Beispieldaten, aufgenommen über <code>tools/shot.html</code> und <code>tools/shots.mjs</code>. Keine Mockups.</sub>
 
 ---
