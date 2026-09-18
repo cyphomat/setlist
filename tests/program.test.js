@@ -221,8 +221,6 @@ print('\n--- Und was daraus ins Log geht ---');
     JSON.stringify(P.saetzeAlsListe([5, 8, 5], 3)), '[5,8,5]');
 }
 
-print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);
-
 print('\n--- Max-Out ist ein Test, kein Programmschritt ---');
 let mo = P.initialState(config);
 mo = P.applyLog(mo, config, { date:'2026-09-10', type:'maxout', lift:'squat', weight:90, reps:1 });
@@ -267,8 +265,6 @@ eq('80 % von 100, gerundet', P.arbeitsgewichtAus(100), 80);
 eq('nie unter der Hantel', P.arbeitsgewichtAus(10), 20);
 eq('ohne Maximum nichts', P.arbeitsgewichtAus(null), null);
 
-print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);
-
 print('\n--- Plattenrechner ---');
 const cfg = { bar: 20, rounding: 2.5, plates: P.STANDARD_SCHEIBEN };
 eq('leere Stange hat keine Scheiben', JSON.stringify(P.platten(20, cfg)), '[]');
@@ -302,16 +298,12 @@ eq('bei fast leerer Stange nur die Stange', P.waermsaetze(22.5, cfg).length, 1);
 const ws2 = P.waermsaetze(47.5, cfg);
 ok('keine doppelten Gewichte', new Set(ws2.map(s=>s.weight)).size === ws2.length, JSON.stringify(ws2.map(s=>s.weight)));
 
-print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);
-
 print('\n--- Wattziele aus der FTP ---');
 eq('88 bis 93 Prozent von 240', P.wattBereich([0.88, 0.93], 240), '211–223 W');
 eq('gleiche Grenzen ergeben einen Wert', P.wattBereich([0.7, 0.7], 200), '140 W');
 eq('ohne FTP kein Ziel', P.wattBereich([0.88, 0.93], null), null);
 eq('ohne Bereich kein Ziel', P.wattBereich(null, 240), null);
 eq('unvollstaendiger Bereich ergibt nichts', P.wattBereich([0.88], 240), null);
-
-print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);
 
 print('\n--- Anpassung der Arbeitsgewichte ---');
 let ang = P.initialState(config);
@@ -345,8 +337,6 @@ eq('nur die Krafteinheit dreht den Wechsel', nachher.next, 'B');
 eq('und alles bleibt ableitbar',
    JSON.stringify(P.deriveState(config, [kette[1], kette[0]]).lifts), JSON.stringify(nachher.lifts));
 
-print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);
-
 print('\n--- Zwei Logs am selben Tag: die Uhrzeit entscheidet ---');
 const einheitFrueh = { date:'2026-08-28', workout:'A', type:'strength',
   started:'2026-08-28T08:02:27.632Z', finished:'2026-08-28T08:02:56.120Z',
@@ -362,7 +352,6 @@ eq('vollstaendig identisch', JSON.stringify(reihenfolgeA.lifts), JSON.stringify(
 
 const anpassungFrueh = { ...anpassungSpaet, finished:'2026-08-28T06:00:00.000Z' };
 eq('umgekehrt gewinnt die Einheit', P.deriveState(config, [anpassungFrueh, einheitFrueh]).lifts.squat.weight, 50);
-
 
 print('\n--- Die Radeinheit haengt am Kalender, nicht an der Historie ---');
 // Frueher zaehlte state.history.length mit: jede geloggte Krafteinheit
@@ -402,5 +391,65 @@ eq('alle vier kommen in zwei Wochen vor',
 // die Wochen vor und nach dem 25.10.2026 muessen sauber weiterzaehlen.
 eq('Sommerzeit verschiebt die Rotation nicht',
    woche(new Date(2026, 9, 20)), woche(new Date(2026, 10, 3)));
+
+
+/* Die zweite Scheibenzeile.
+
+   Anlass: die App zeigte oft "25 + 15", und an der Stange liegen in
+   vielen Studios nur 20er, 10er und 5er. Statt das je Studio einstellbar
+   zu machen — was niemand pflegt — steht die Alternative daneben.       */
+print('\n--- Scheiben: die gaengige Alternative ---');
+{
+  const cfg = { bar: 20, plates: [25, 20, 15, 10, 5, 2.5, 1.25] };
+
+  eq('100 kg sind 25+15 …', P.plattenText(100, cfg), '25 + 15');
+  eq('… oder eben zweimal 20', P.plattenGaengigText(100, cfg), '2×20');
+  eq('70 kg: 25 …', P.plattenText(70, cfg), '25');
+  eq('… oder 20+5', P.plattenGaengigText(70, cfg), '20 + 5');
+  eq('50 kg: der 15er laesst sich auch teilen', P.plattenGaengigText(50, cfg), '10 + 5');
+
+  // Kein Schwellenwert noetig: kommt die Hauptloesung ohnehin ohne 25er
+  // und 15er aus, ist die Alternative dieselbe Zeile — und entfaellt.
+  eq('40 kg braucht nur einen 10er, also keine zweite Zeile',
+     P.plattenGaengig(40, cfg), null);
+  eq('60 kg mit einem 20er ebenso', P.plattenGaengig(60, cfg), null);
+  eq('die leere Stange erst recht', P.plattenGaengig(20, cfg), null);
+  eq('und ein unmoegliches Gewicht auch', P.plattenGaengig(21, cfg), null);
+
+  // Die Reihe bleibt halbierbar: nie 25er oder 15er in der Alternative.
+  let geprueft = 0, verstoss = [];
+  for (let w = 22.5; w <= 200; w += 2.5) {
+    const a = P.plattenGaengig(w, cfg);
+    if (!a) continue;
+    geprueft++;
+    if (a.some(x => !P.GAENGIGE_SCHEIBEN.includes(x))) verstoss.push(w);
+  }
+  ok(`ueber ${geprueft} Gewichte nur gaengige Scheiben`, verstoss.length === 0, verstoss.join());
+
+  // Und sie ergibt immer dasselbe Gewicht wie die Hauptloesung.
+  let falsch = [];
+  for (let w = 22.5; w <= 200; w += 2.5) {
+    const a = P.plattenGaengig(w, cfg);
+    if (!a) continue;
+    const summe = cfg.bar + a.reduce((s2, x) => s2 + x, 0) * 2;
+    if (Math.abs(summe - w) > 1e-9) falsch.push(`${w}→${summe}`);
+  }
+  ok('und trifft jedes Mal genau das Gewicht', falsch.length === 0, falsch.join());
+}
+
+print('\n--- Scheiben: eigene Vorraete ---');
+{
+  // Wer keine gaengigen Scheiben eingetragen hat, bekommt auch keine
+  // Alternative — statt einer, die er nicht laden kann.
+  eq('ohne 20/10/5 im Vorrat keine Alternative',
+     P.plattenGaengig(100, { bar: 20, plates: [25, 15] }), null);
+  // Ein Vorrat ganz ohne 25er liefert schon als Hauptloesung nur
+  // Gaengiges — dann gibt es nichts danebenzustellen.
+  eq('ein Vorrat ohne Spezialscheiben braucht keine zweite Zeile',
+     P.plattenGaengig(100, { bar: 20, plates: [20, 10, 5, 2.5, 1.25] }), null);
+  eq('eine 15er-Stange rechnet trotzdem',
+     P.plattenGaengigText(95, { bar: 15, plates: [25, 20, 15, 10, 5, 2.5, 1.25] }), '2×20');
+}
+
 
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

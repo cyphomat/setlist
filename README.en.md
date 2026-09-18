@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1213%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1227%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
 </p>
@@ -127,7 +127,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | | |
 |---|---|
 | **5×5 automation** | Progression, failure counter, deload to 90% after three failed attempts. |
-| **Plate calculator** | Plates per side. Weights that cannot be loaded exactly are named rather than rounded. |
+| **Plate calculator** | Plates per side. Weights that cannot be loaded exactly are named rather than rounded. Below it a second line with the same load **from 20/10/5/2.5/1.25 only** — the run of plates every gym has in full. Where there are no 25s and 15s, you load `2×20` instead of `25 + 15`. It only shows when it says something different. |
 | **Soundcheck** | Warm-up sets derived from the working weight: empty bar, then 55 / 70 / 85%. Every line tickable — tapped means struck through. |
 | **Weight mid-set** | Adjustable during the session — the log reflects what actually happened. |
 | **Rest timer** | 90 s, 180 s after a failed attempt, adjustable by ±30 s while running. Ends with vibration and a tone, stops itself after the session's last set. |

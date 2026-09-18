@@ -214,6 +214,7 @@ export const TEXTE = {
     'ses.picker': '{name} · Satz {n} · Ziel {ziel}',
     'ses.verwerfen': 'Einheit verwerfen?',
     'ses.platten': 'Pro Seite:',
+    'ses.plattenOder': 'oder',
     'ses.plattenLeer': 'Leere Stange',
     'ses.plattenNicht': 'Mit deinen Scheiben nicht exakt ladbar.',
 
@@ -860,6 +861,7 @@ export const TEXTE = {
     'ses.picker': '{name} · set {n} · target {ziel}',
     'ses.verwerfen': 'Discard this session?',
     'ses.platten': 'Per side:',
+    'ses.plattenOder': 'or',
     'ses.plattenLeer': 'Empty bar',
     'ses.plattenNicht': 'Not exactly loadable with your plates.',
 

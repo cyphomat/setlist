@@ -306,6 +306,20 @@ export function arbeitsgewichtAus(max1rm, rounding = 2.5, bar = 20) {
 export const STANDARD_SCHEIBEN = [25, 20, 15, 10, 5, 2.5, 1.25];
 
 /**
+ * Die Scheiben, die ueberall liegen.
+ *
+ * 20/10/5/2,5/1,25 ist die durchgehend halbierbare Reihe — wer olympische
+ * Scheiben hat, hat diese fuenf. 25er und 15er gibt es auch, aber eben
+ * nicht in jedem Studio, und genau daran scheitert ein Plattenplan, der
+ * 25+15 sagt, wenn an der Stange nur 20er liegen.
+ *
+ * Deshalb steht die Alternative daneben, statt sie je Studio einstellbar
+ * zu machen: welche Scheiben gerade da sind, sieht man schneller, als man
+ * es pflegen wuerde.
+ */
+export const GAENGIGE_SCHEIBEN = [20, 10, 5, 2.5, 1.25];
+
+/**
  * Scheiben pro Seite, absteigend. Gibt null zurück, wenn sich das
  * Gewicht mit den vorhandenen Scheiben nicht exakt laden lässt —
  * lieber ehrlich nichts anzeigen als eine Zahl erfinden.
@@ -328,13 +342,43 @@ export function platten(gewicht, config = {}) {
 }
 
 /** "2×20 + 5 + 2,5" — kurz genug für eine Zeile unter der Übung. */
+/**
+ * Dieselbe Last nur aus den gaengigen Scheiben — oder null.
+ *
+ * Null heisst eines von beidem: Die Hauptloesung kommt ohnehin schon ohne
+ * 25er und 15er aus (dann waere eine zweite Zeile dieselbe Zeile), oder
+ * aus den vorhandenen gaengigen Scheiben laesst sich die Last gar nicht
+ * bilden. In beiden Faellen gibt es nichts zu zeigen — es braucht also
+ * keinen Schwellenwert, ab dem sich die Alternative "lohnt".
+ */
+export function plattenGaengig(gewicht, config = {}) {
+  const haupt = platten(gewicht, config);
+  if (!haupt || !haupt.length) return null;
+  const vorrat = [...(config.plates || STANDARD_SCHEIBEN)].filter(p => GAENGIGE_SCHEIBEN.includes(p));
+  if (!vorrat.length) return null;
+  const rein = platten(gewicht, { ...config, plates: vorrat });
+  if (!rein || !rein.length) return null;
+  return rein.join() === haupt.join() ? null : rein;
+}
+
+/** Text der Alternative, oder null. */
+export function plattenGaengigText(gewicht, config = {}) {
+  const p = plattenGaengig(gewicht, config);
+  return p ? alsText(p) : null;
+}
+
+/** Aus einer Scheibenliste "2×20 + 5". */
+function alsText(p) {
+  const zaehler = new Map();
+  for (const g of p) zaehler.set(g, (zaehler.get(g) || 0) + 1);
+  return [...zaehler].map(([g, n]) => (n > 1 ? `${n}×${g}` : `${g}`)).join(' + ');
+}
+
 export function plattenText(gewicht, config = {}) {
   const p = platten(gewicht, config);
   if (p === null) return null;
   if (!p.length) return 'leere Stange';
-  const zaehler = new Map();
-  for (const g of p) zaehler.set(g, (zaehler.get(g) || 0) + 1);
-  return [...zaehler].map(([g, n]) => (n > 1 ? `${n}×${g}` : `${g}`)).join(' + ');
+  return alsText(p);
 }
 
 /**

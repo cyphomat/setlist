@@ -10,6 +10,34 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-09-18.2
+
+### Neu
+- **Eine zweite Scheibenzeile.** Der Rechner zeigt gern `25 + 15` — und an der Stange
+  liegen in vielen Studios nur 20er, 10er und 5er. Darunter steht jetzt dieselbe Last
+  **nur aus 20/10/5/2,5/1,25**: die durchgehend halbierbare Reihe, die jedes Studio
+  vollständig hat. Aus `25 + 15` wird `2×20`, aus `25` wird `20 + 5`, aus `15` wird
+  `10 + 5`. Auch bei den Aufwärmsätzen, dort kompakt in derselben Zeile.
+
+  **Bewusst nicht je Studio einstellbar.** Welche Scheiben gerade herumliegen, sieht man
+  schneller, als man es pflegen würde — und eine Einstellung, die niemand pflegt, ist
+  schlechter als keine.
+
+### Bewusst so
+- **Kein Schwellenwert, ab dem sich die zweite Zeile „lohnt".** Sie erscheint genau dann,
+  wenn sie etwas anderes sagt: kommt die Hauptlösung ohnehin ohne 25er und 15er aus, wäre
+  die Alternative dieselbe Zeile und entfällt von selbst. Bei 14 von 47 geprüften
+  Gewichten ist das der Fall. Ein erster Entwurf ließ stattdessen die größte verwendete
+  Scheibe weg — der schlug bis 77,5 kg `2,5 + 2,5` statt `5` vor, also Kleinkram, den
+  jedes Studio hat.
+- **Die Alternative ist leiser gesetzt.** Sie führt nicht, sie steht daneben — auf einen
+  Blick muss klar bleiben, was der Plan ist und was das Ausweichen. Beide Farben bleiben
+  über dem AA-Kontrast (5,04:1 und 7,39:1 auf der Karte).
+- Wer keine gängigen Scheiben im Vorrat hat, bekommt keine Alternative statt einer, die
+  sich nicht laden lässt.
+
+---
+
 ## 2026-09-18.1
 
 ### Neu

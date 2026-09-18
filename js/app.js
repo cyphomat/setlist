@@ -578,9 +578,11 @@ function startSession() {
           <p class="tagline" style="margin:12px 0 4px"><b>${escHtml(l.name)}</b> → ${P.fmtWeight(l.weight)}</p>
           ${P.waermsaetze(l.weight, config).map(w => {
             const pt = P.plattenText(w.weight, config);
+            const ptAlt = P.plattenGaengigText(w.weight, config);
             return `<div class="kv">
               <span class="k">${w.saetze > 1 ? w.saetze + '×' : ''}${t('ses.wdh', { n: w.reps })}</span>
-              <span class="v"><b>${P.fmtWeight(w.weight)}</b>${pt ? ` — ${pt}` : ''}</span></div>`;
+              <span class="v"><b>${P.fmtWeight(w.weight)}</b>${pt ? ` — ${pt}` : ''}${
+                ptAlt ? `<span style="color:var(--dim)"> · ${t('ses.plattenOder')} ${ptAlt}</span>` : ''}</span></div>`;
           }).join('')}`).join('')}
         <p style="color:var(--dim);margin-top:12px">${t('ses.scheibenHinweis', { kg: config.bar })}</p>
       </div>
@@ -2431,7 +2433,11 @@ function plattenZeile(gewicht) {
   const pt = P.plattenText(gewicht, config);
   if (!pt) return `<p class="platten nicht">${t('ses.plattenNicht')}</p>`;
   if (pt === 'leere Stange') return `<p class="platten">${t('ses.plattenLeer')}</p>`;
-  return `<p class="platten">${t('ses.platten')} <b>${pt}</b></p>`;
+  // Die zweite Zeile erscheint nur, wenn sie etwas anderes sagt — kommt
+  // die erste ohnehin ohne 25er und 15er aus, gibt es nichts zu zeigen.
+  const alt = P.plattenGaengigText(gewicht, config);
+  return `<p class="platten">${t('ses.platten')} <b>${pt}</b></p>${
+    alt ? `<p class="platten alt">${t('ses.plattenOder')} <b>${alt}</b></p>` : ''}`;
 }
 
 /** Form aus intervals.icu — ein Hinweis, keine Anweisung. */

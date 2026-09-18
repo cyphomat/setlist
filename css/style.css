@@ -424,6 +424,10 @@ dialog::backdrop{background:var(--backdrop)}
 .platten{font-family:var(--mono);font-size:0.78125rem;color:var(--muted);margin:2px 0 10px;letter-spacing:.04em}
 .platten b{color:var(--akzent)}
 .platten.nicht{color:var(--rost)}
+/* Die Alternative fuehrt nicht, sie steht daneben: leiser gesetzt, damit
+   auf einen Blick klar bleibt, was der Plan ist und was das Ausweichen. */
+.platten.alt{margin-top:-6px;color:var(--dim)}
+.platten.alt b{color:var(--muted);font-weight:400}
 .formzeile{margin:12px 0 0;padding-top:10px;border-top:1px solid var(--line);display:block}
 .formzeile .fw{font-family:var(--mono);font-weight:800;font-size:0.8125rem;letter-spacing:.1em;display:block}
 .formzeile .ft{display:block;font-size:0.84375rem;color:var(--fg);margin-top:3px}
