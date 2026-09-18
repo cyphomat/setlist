@@ -760,6 +760,35 @@ h2.backstage::before{
   .pers-rekord.chk .felder label:last-child{grid-column:auto}
 }
 .pers-rekord.chk .fine{margin:-4px 0 8px}
+
+/* ── Injury Report ────────────────────────────────────────── */
+.inj{border:1px solid var(--line);background:var(--panel);padding:12px 14px;
+  margin-bottom:10px;border-radius:2px}
+.inj label{display:block;margin-bottom:8px}
+.inj label>span{display:block;font-family:var(--mono);font-size:0.59375rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--dim);margin-bottom:3px}
+.inj input,.inj textarea,.inj select{margin:0}
+.inj .felder{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.inj .felder label:last-child{grid-column:1 / -1}
+@media (min-width:420px){
+  .inj .felder{grid-template-columns:1fr 1fr 1fr}
+  .inj .felder label:last-child{grid-column:auto}
+}
+.inj .fine{margin:-4px 0 10px}
+.inj-sperre{margin:4px 0 8px}
+.inj-sperre summary{font-family:var(--mono);font-size:0.6875rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--stahl);cursor:pointer}
+.inj-gruppe{margin:10px 0 4px;font-family:var(--mono);font-size:0.59375rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--dim)}
+/* Die Auswahl ist lang — eine gesperrte Uebung muss man auf einen Blick
+   von einer freien unterscheiden koennen, nicht durch Hinsehen. */
+.inj-tog.an{border-color:var(--rot);color:var(--rot);background:var(--tint-rot,rgba(210,86,78,.12))}
+.inj-weg{margin-top:4px}
+.gefuehl.koerper{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+/* Drei Stufen sind keine Messwerte — ein Punktband sagt dasselbe wie eine
+   Kurve, ohne eine Genauigkeit vorzutaeuschen, die es nicht gibt. */
+.kband{display:flex;gap:3px;flex-wrap:wrap;margin:6px 0 4px}
+.kband .kp{width:10px;height:10px;border-radius:1px;flex:0 0 auto}
 #pers-speichern{margin-top:14px}
 
 /* ── Ort im Kopf ──────────────────────────────────────────── */

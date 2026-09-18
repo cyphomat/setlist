@@ -16,6 +16,18 @@ export function seedAus(str) {
   for (const c of String(str)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); }
   return h >>> 0;
 }
+/* Die Sperrliste direkt aus der config lesen statt js/verletzung.js zu
+   importieren: dieses Modul kennt nur Bewegungen und braucht keine
+   Kenntnis darueber, warum eine fehlt. */
+function verletzungsSperre(config) {
+  const out = [];
+  for (const v of Array.isArray(config.injuries) ? config.injuries : []) {
+    if (!v || v.status !== 'aktiv' || !Array.isArray(v.sperrt)) continue;
+    out.push(...v.sperrt);
+  }
+  return out;
+}
+
 const waehle = (arr, r) => arr[Math.floor(r() * arr.length)];
 const zwischen = (min, max, r, schritt = 1) =>
   min + Math.floor(r() * ((max - min) / schritt + 1)) * schritt;
@@ -169,8 +181,10 @@ export function generateWod(state, seed, config = {}, geraete = null) {
   const r = rng(seed);
   const format = waehle(FORMATE, r);
 
-  // Was du nicht kannst oder nicht hast, kommt gar nicht erst vor.
-  const aus = new Set((config.wod && config.wod.aus) || []);
+  // Was du nicht kannst oder nicht hast, kommt gar nicht erst vor. Dazu
+  // was eine aktive Verletzung sperrt — eine Einschraenkung, die man
+  // jedes Mal von Hand wegklicken muss, klickt man irgendwann nicht mehr.
+  const aus = new Set([...((config.wod && config.wod.aus) || []), ...verletzungsSperre(config)]);
   let erlaubt = MOVES.filter(m => !aus.has(m.id));
 
   // Und was am gewaehlten Ort nicht steht, ebenfalls nicht. `null` heisst

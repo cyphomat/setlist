@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1145%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1213%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
 </p>
@@ -136,6 +136,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | **Knowledge at the bar** | Expandable: rationale, cue, typical mistake, bridge to olympic lifting. |
 | **Mobility** | Five exercises, due once per calendar week — at the first session (strength or jam), whichever comes first. Own button, usable independently at any time. |
 | **Feel after the session** | Four levels (easy/normal/hard/brutal) on the done screen — makes the call verifiable in hindsight. |
+| **Injury report** | What is nagging, with your own treatment. Two kinds: *recurring* (comes and goes, briefly asked about after a session, can heal) and *structural* (stays, not asked about, blocks permanently). Exercises you block are not rolled by the jam, not picked by Unplugged, and left out of technique and mobility. Main lifts are only flagged, never dropped — the 5×5 mechanics hang on them. The app makes no diagnosis and suggests no treatment. |
 | **Call vs. feel** | In the Tour: every session with both values plus the hit rate — the call and the perceived effort side by side instead of merely asserted. |
 | **Where you are out of balance** | Twelve strength ratios against guidance values *and* against your own level before the layoff. When the same lift stands out in several pairs, the app names it as the cause and suggests extra work — a single skewed pair does not tell you which side causes it. Only values of equal quality are compared. |
 | **Test values** | Pull-up, dip, front squat, single-arm press, step-up, single-leg deadlift and farmer’s carry — what 5×5 does not produce on its own. Enter them in the backstage or **measure them in a max-out**; a measured test beats a typed one and is recorded with its date. They add eight more ratios, including whether your pulling matches your pressing. |

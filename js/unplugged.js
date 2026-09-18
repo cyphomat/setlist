@@ -181,9 +181,24 @@ function rng(seed) {
   };
 }
 
-/** Was heute erlaubt ist. `leise` nimmt alles Springende raus. */
-export function vorrat(leise = true) {
-  return UEBUNGEN.filter(u => !leise || !u.laut);
+/**
+ * Was heute erlaubt ist. `leise` nimmt alles Springende raus, `config`
+ * zusaetzlich alles, was eine aktive Verletzung sperrt.
+ *
+ * Die Sperre wird direkt aus der config gelesen statt js/verletzung.js zu
+ * importieren — dieses Modul kennt Uebungen und braucht nicht zu wissen,
+ * warum eine fehlt.
+ */
+export function vorrat(leise = true, config = {}) {
+  const sperre = new Set();
+  for (const v of Array.isArray(config.injuries) ? config.injuries : []) {
+    if (v && v.status === 'aktiv' && Array.isArray(v.sperrt)) v.sperrt.forEach(id => sperre.add(id));
+  }
+  const rest = UEBUNGEN.filter(u => (!leise || !u.laut) && !sperre.has(u.id));
+  // Unter vier Uebungen laesst sich keine Runde bauen. Dann lieber die
+  // Sperre fallen lassen als einen leeren Bildschirm zeigen — die
+  // Oberflaeche sagt getrennt an, dass etwas gesperrt ist.
+  return rest.length >= 4 ? rest : UEBUNGEN.filter(u => !leise || !u.laut);
 }
 
 /**
@@ -194,10 +209,10 @@ export function vorrat(leise = true) {
  * ist nur noch Verwaltung. Reicht eine Richtung nicht aus, wird aus dem
  * Rest aufgefuellt — lieber unrund als zu kurz.
  */
-export function baueSession({ minuten = 15, seed = 0, leise = true } = {}) {
+export function baueSession({ minuten = 15, seed = 0, leise = true, config = {} } = {}) {
   const laenge = LAENGEN.find(l => l.minuten === minuten) || LAENGEN[1];
   const r = rng(seed);
-  const pool = vorrat(leise);
+  const pool = vorrat(leise, config);
 
   const gewaehlt = [];
   const genommen = new Set();

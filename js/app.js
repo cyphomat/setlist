@@ -3,10 +3,11 @@ import * as S from './store.js';
 import * as ICU from './intervals.js';
 import * as C from './coach.js';
 import { LIFT_INFO, WARMUP, SKILL, MOBILITY, FINISHER, RIDE_INFO, QUELLEN } from './content.js';
+import * as VL from './verletzung.js';
 import * as WOD from './wod.js';
 import * as ST from './stats.js';
 import * as B from './bibliothek.js';
-import { t, locale, sprache, setSprache, uebersetzeStatisch } from './i18n.js';
+import { t, tn, locale, sprache, setSprache, uebersetzeStatisch } from './i18n.js';
 import * as G from './geraete.js';
 import { escHtml, sicherLink } from './sicher.js';
 import * as A from './aktualisierung.js';
@@ -296,6 +297,7 @@ function renderHome() {
     <div class="directive">
       <span class="tone ${d.intensitaet.stufe}">${d.intensitaet.label} · ${d.kopf}</span>
       <p class="txt">${d.intensitaet.text}</p>
+      ${verletzungsZeile()}
       ${abnehmZeile()}
       ${formZeile()}
       ${erholungsZeile()}
@@ -380,12 +382,61 @@ function renderWeek() {
  */
 function berechneAbnehmen() {
   const rate = ST.abnehmRate(gewichtsReihe);
-  const kraft = ST.kraftRichtung(alleLogs.length ? alleLogs : (S.cachedLogs() || {}).logs || []);
+  const kraft = ST.kraftRichtung(logsFuerAnzeige());
   abnehmen = {
     rate, kraft,
     lage: ST.abnehmLage(rate, kraft),
     erfolge: ST.gewichtsErfolge(gewichtsReihe, (config && config.ziele && config.ziele.zielGewicht) || null)
   };
+}
+
+/**
+ * Die Logs fuer eine Anzeige, die vor dem ersten Tour-Besuch schon etwas
+ * sagen soll. `alleLogs` fuellt sich erst dort; bis dahin liefert der
+ * Zwischenspeicher den letzten bekannten Stand — besser ein Tag alt als
+ * gar nicht da.
+ */
+// Bewusst eine Deklaration und keine const-Zuweisung: der erste Aufrufer
+// steht weiter oben in der Datei, und eine const waere dort noch nicht
+// initialisiert, falls die umgebende Funktion einmal frueher laeuft.
+function logsFuerAnzeige() {
+  return alleLogs.length ? alleLogs : ((S.cachedLogs() || {}).logs || []);
+}
+
+/**
+ * Was gerade zwickt — und was du selbst dagegen eingetragen hast.
+ *
+ * Steht bewusst in der Ansage und nicht in einem eigenen Kasten weiter
+ * unten: der Igelball hilft nur, wenn man an ihn denkt, bevor man losgeht.
+ * Strukturelles bekommt einen ruhigeren Ton als ein akuter Fall — es ist
+ * keine Neuigkeit, sondern eine Randbedingung.
+ */
+function verletzungsZeile() {
+  const aktiv = VL.aktive(config);
+  if (!aktiv.length) return '';
+  return aktiv.map(v => {
+    const farbe = v.art === 'strukturell' ? 'var(--stahl)' : 'var(--rost)';
+    const wie = VL.lage(logsFuerAnzeige(), v.id);
+    const trend = wie.richtung && v.art !== 'strukturell'
+      ? ` <span style="color:var(--dim)">· ${escHtml(t(`inj.trend.${wie.richtung}`))}</span>` : '';
+    return `<p class="formzeile" style="border-top-color:${farbe}">
+      <b>${escHtml(v.was)}</b>${trend}${v.behandlung
+        ? `<br><span style="color:var(--muted)">${escHtml(v.behandlung)}</span>` : ''}</p>`;
+  }).join('');
+}
+
+/**
+ * Deine eigene Behandlung als abhakbarer Punkt im Soundcheck.
+ *
+ * Bewusst am Ende und nicht oben: das Allgemeine waermt den Koerper, das
+ * hier ist der Zusatz fuer die Stelle, die zwickt. Und bewusst abhakbar —
+ * eine Erinnerung, die man nicht wegklicken kann, liest man nach drei Mal
+ * nicht mehr. Der Text kommt aus dem Injury Report, nicht von der App.
+ */
+function verletzungsWarmup() {
+  return VL.aktive(config)
+    .filter(v => v.behandlung)
+    .map(v => ({ t: t('inj.vorher'), was: v.was, detail: v.behandlung }));
 }
 
 /** Eine Zeile, nicht mehr — auf Home zählt, was heute anders wird. */
@@ -506,8 +557,8 @@ function startSession() {
     <div class="directive"><span class="tone ${d.intensitaet.stufe}">${d.intensitaet.label}</span>
     <p class="txt">${d.intensitaet.text}</p>${stoerungsZeile()}</div>`;
 
-  const skill = C.tagesAuswahl(SKILL, new Date(), 'skill');
-  const mobility = C.mobilityDran(state) ? C.tagesAuswahl(MOBILITY, new Date(), 'mob') : null;
+  const skill = C.tagesAuswahl(VL.ohneGesperrte(SKILL, config), new Date(), 'skill');
+  const mobility = C.mobilityDran(state) ? C.tagesAuswahl(VL.ohneGesperrte(MOBILITY, config), new Date(), 'mob') : null;
   // Der Rumpfblock haengt am Kreuzheben, nicht am Buchstaben des Workouts.
   // Waere er an 'B' festgemacht, wuerde er falsch stehen, sobald jemand die
   // Workouts anders zusammenstellt — und die Einheiten sind konfigurierbar.
@@ -515,7 +566,8 @@ function startSession() {
   $('warmup').innerHTML = `
     <details class="info" open><summary>${t('ses.soundcheck')}</summary>
       <div class="body">
-        ${WARMUP.allgemein.concat(WARMUP[plan.workout] || [], rumpf).map((w, i) =>
+        ${WARMUP.allgemein.concat(WARMUP[plan.workout] || [], rumpf, verletzungsWarmup())
+          .map((w, i) =>
           `<label class="kv check"><input type="checkbox" data-w="${i}">
             <span class="k">${w.t}</span><span class="v"><b>${w.was}</b> — ${w.detail}</span></label>`).join('')}
       </div>
@@ -550,7 +602,7 @@ function startSession() {
     cb.onchange = () => cb.closest('.kv').classList.toggle('erledigt', cb.checked);
   });
 
-  const fin = C.tagesAuswahl(FINISHER, new Date(), 'fin');
+  const fin = C.tagesAuswahl(VL.ohneGesperrte(FINISHER, config), new Date(), 'fin');
   $('finisher').innerHTML = `
     <details class="info"><summary>${t('ses.encore', { name: fin.name })}</summary>
       <div class="body">
@@ -806,6 +858,14 @@ function renderDone(before, log) {
           `<button data-g="${g}" disabled>${gefuehlLabel(g)}</button>`).join('')}
       </div>
     </div>
+    ${VL.zuVerfolgen(config).map(v => `
+      <div class="gefuehl koerper" data-inj="${escHtml(v.id)}">
+        <p class="tagline">${escHtml(t('done.koerperFrage', { was: v.was }))}</p>
+        <div class="chips">
+          ${VL.STUFEN.map(st =>
+            `<button data-st="${st}" disabled>${escHtml(t(`inj.stufe.${st}`))}</button>`).join('')}
+        </div>
+      </div>`).join('')}
     <p class="fine">${t('done.naechstes', { w: state.next })}${d.streak > 0 ? t(d.streak === 1 ? 'done.serie' : 'done.serien', { n: d.streak }) : ''}</p>`;
 }
 
@@ -821,6 +881,32 @@ function aktiviereGefuehlChips() {
     b.disabled = !letzterLogPfad;
     b.onclick = () => waehleGefuehl(b.dataset.g);
   });
+  document.querySelectorAll('.gefuehl.koerper').forEach(el => {
+    el.querySelectorAll('button').forEach(b => {
+      b.disabled = !letzterLogPfad;
+      b.onclick = () => waehleKoerper(el.dataset.inj, b.dataset.st, el);
+    });
+  });
+}
+
+/**
+ * Traegt eine Koerper-Rueckmeldung in die gespeicherte Einheit nach.
+ *
+ * Dieselbe Bauweise wie beim Gefuehl: ein zweiter, kleiner Schreibvorgang.
+ * Die Trainingsdaten sind schon sicher, bevor hier gefragt wird — und eine
+ * unbeantwortete Frage darf nie die Einheit aufhalten.
+ */
+async function waehleKoerper(id, wert, el) {
+  el.querySelectorAll('button').forEach(b => b.classList.toggle('an', b.dataset.st === wert));
+  try {
+    const cur = await S.readFile(letzterLogPfad);
+    if (!cur) return;
+    const log = { ...cur.data, koerper: { ...(cur.data.koerper || {}), [id]: wert } };
+    await S.writeFile(letzterLogPfad, log, `Körper: ${id} ${wert}`, cur.sha);
+    if (letzterLog) letzterLog.koerper = log.koerper;
+  } catch (e) {
+    banner(t('msg.gefuehlFehler', { msg: e.message }), 'err', 5000);
+  }
 }
 
 /**
@@ -1097,7 +1183,7 @@ const upLeise = () => localStorage.getItem(UP_LEISE_KEY) !== '0';
 
 function starteUnplugged(seed) {
   upSeed = seed >>> 0;
-  upSession = UP.baueSession({ minuten: upMinuten(), seed: upSeed, leise: upLeise() });
+  upSession = UP.baueSession({ minuten: upMinuten(), seed: upSeed, leise: upLeise(), config });
   upStopp();
   $('up-plan').hidden = false;
   $('up-lauf').hidden = true;
@@ -1455,7 +1541,7 @@ function renderWodGymHinweis() {
 function renderWod() {
   renderOrtKnopf();
   renderWodGymHinweis();
-  const mobility = C.mobilityDran(state) ? C.tagesAuswahl(MOBILITY, new Date(), 'mob') : null;
+  const mobility = C.mobilityDran(state) ? C.tagesAuswahl(VL.ohneGesperrte(MOBILITY, config), new Date(), 'mob') : null;
   $('wod-body').innerHTML = `
     <div class="card">
       <div class="kicker">${wod.dauer ? t('wod.minuten', { n: wod.dauer }) : wod.runden > 1 ? t('wod.runden', { n: wod.runden }) : t('wod.aufZeit')}</div>
@@ -2146,6 +2232,47 @@ function renderHochrechnung(logs) {
     <p class="fine">${escHtml(t('hoch.fine'))}</p>`;
 }
 
+/**
+ * Der Verlauf der wiederkehrenden Sachen.
+ *
+ * Strukturelles steht hier nicht: es gibt keinen Verlauf zu zeigen, und
+ * eine flache Linie ueber Monate saehe nach Stagnation aus, wo in
+ * Wirklichkeit gar nichts zu erwarten war.
+ */
+function renderKoerper(logs) {
+  const box = $('hist-koerper');
+  if (!box) return;
+  const mit = VL.alle(config).filter(v => v.art !== 'strukturell' && VL.reihe(logs, v.id).length);
+  if (!mit.length) { box.innerHTML = ''; return; }
+
+  const FARBE = { besser: 'var(--gruen)', gleich: 'var(--muted)', schlechter: 'var(--rot)' };
+  const zeilen = mit.map(v => {
+    const wie = VL.lage(logs, v.id);
+    const uf = VL.umfeld(logs, v.id);
+    // Punktband statt Kurve: es sind drei Stufen, keine Messwerte — eine
+    // Linie wuerde eine Genauigkeit vortaeuschen, die es nicht gibt.
+    const band = wie.reihe.slice(-20).map(pk =>
+      `<span class="kp" style="background:${FARBE[pk.stufe]}" title="${escHtml(pk.date)}"></span>`).join('');
+    return `<div class="pr">
+      <div class="reihe">
+        <span class="l">${escHtml(v.was)}</span>
+        <span class="v">${wie.richtung
+          ? `<span style="color:${FARBE[wie.richtung]}">${escHtml(t(`inj.trend.${wie.richtung}`))}</span>`
+          : '—'}</span>
+      </div>
+      <div class="kband">${band}</div>
+      <div class="hoch-text">${escHtml(tn('koerper.punkte', wie.punkte, { seit: wie.seitWann || v.seit || '—' }))}${
+        uf ? ' ' + escHtml(tn('koerper.umfeld', uf.faelle, { faelle: uf.faelle, schnitt: uf.schnitt, tage: uf.tage })) : ''}</div>
+    </div>`;
+  }).join('');
+
+  box.innerHTML = `
+    <h2>${escHtml(t('koerper.h'))}</h2>
+    <p class="fine">${escHtml(t('koerper.lead'))}</p>
+    ${zeilen}
+    <p class="fine">${escHtml(t('koerper.fine'))}</p>`;
+}
+
 /** Kleine Kurve aus `sparkline()`. Die Funktion liefert Pfade, kein SVG. */
 function sparkSvg(punkte, hoehe = 34) {
   if (!punkte || punkte.length < 3) return '';
@@ -2201,7 +2328,7 @@ function renderPlateaus(logs) {
       n: x.stehtSeit, fehl: x.fehl, einheiten: x.einheiten,
       satz: x.satzQuote === null ? '—' : `${x.satzQuote} %`
     }))}${x.offeneFails > 0 ? ` <span style="color:var(--rost)">${escHtml(
-      t(x.offeneFails === 1 ? 'plat.offen1' : 'plat.offen', { n: x.offeneFails }))}</span>` : ''}</div>`).join('');
+      tn('plat.offen', x.offeneFails))}</span>` : ''}</div>`).join('');
 
   $('hist-plateaus').innerHTML = `
     <h2>${escHtml(t('plat.h'))}</h2>
@@ -2223,6 +2350,7 @@ function renderTour(logs) {
   renderHochrechnung(logs);
   renderRelativKraft(logs);
   renderPlateaus(logs);
+  renderKoerper(logs);
   renderAnsageAbgleich(logs);
   renderCharts(logs);
   renderIntensitaet();
@@ -2477,6 +2605,7 @@ function renderPersoenlich() {
     </div>`).join('');
 
   renderChecks();
+  renderVerletzungen();
 }
 
 /**
@@ -2541,8 +2670,9 @@ $('pers-speichern').onclick = async () => {
 
     const datei = await S.readFile('config.json');
     if (!datei) throw new Error(t('msg.configNichtLesbar'));
-    const neu = PS.setzeChecks(
-      PS.setzeInConfig(datei.data, { grund: $('pers-grund').value, rekorde }), checks);
+    const verletzungen = VL.baueVerletzungen(injEntwurf || VL.entwurf(config));
+    const neu = VL.setzeInConfig(PS.setzeChecks(
+      PS.setzeInConfig(datei.data, { grund: $('pers-grund').value, rekorde }), checks), verletzungen);
     await S.writeFile('config.json', neu, 'Persönliches aktualisiert', datei.sha);
     config = neu;
 
@@ -2558,12 +2688,130 @@ $('pers-speichern').onclick = async () => {
     }
 
     S.cache({ config, stimme });
+    injEntwurf = null;          // die gespeicherten Ids uebernehmen
     renderPersoenlich();
     renderHome();
     banner(t('pers.gespeichert'), 'ok');
   } catch (e) {
     banner(e.message, 'err', 8000);
   }
+};
+
+/* ==================== Injury Report (Backstage) ====================
+   Die App dokumentiert, was hier eingetragen wird, und haelt sich daran.
+   Sie stellt keine Diagnose und schlaegt keine Behandlung vor — was unter
+   Behandlung steht, kommt vom Nutzer, seinem Arzt oder seiner Physio.  */
+
+// Der Entwurf lebt bis zum Speichern nur hier. Ein Eintrag pro Tastendruck
+// ins Repo zu schreiben waere ein Commit je Buchstabe.
+let injEntwurf = null;
+
+/** Alles, was gesperrt werden kann, nach Herkunft gruppiert. */
+function sperrbar() {
+  return [
+    { gruppe: t('inj.gruppe.kraft'),     eintraege: Object.entries(config.lifts || {}).map(([id, d]) => ({ id, name: d.name || id })) },
+    { gruppe: t('inj.gruppe.technik'),   eintraege: SKILL.map(x => ({ id: x.id, name: x.name })) },
+    { gruppe: t('inj.gruppe.jam'),       eintraege: WOD.MOVES.map(x => ({ id: x.id, name: x.name })) },
+    { gruppe: t('inj.gruppe.unplugged'), eintraege: UP.UEBUNGEN.map(x => ({ id: x.id, name: x.name })) },
+    { gruppe: t('inj.gruppe.mobility'),  eintraege: MOBILITY.map(x => ({ id: x.id, name: x.name })) },
+    { gruppe: t('inj.gruppe.finisher'),  eintraege: FINISHER.map(x => ({ id: x.id, name: x.name })) }
+  ].filter(g => g.eintraege.length);
+}
+
+function renderVerletzungen() {
+  const box = $('pers-verletzungen');
+  if (!box || !config) return;
+  if (!injEntwurf) injEntwurf = VL.entwurf(config);
+
+  const lifts = Object.keys(config.lifts || {});
+
+  box.innerHTML = injEntwurf.length ? injEntwurf.map((v, i) => {
+    const stati = v.art === 'strukturell' ? ['aktiv', 'ruhend'] : VL.STATI;
+    const betroffen = v.status === 'aktiv' ? lifts.filter(id => v.sperrt.includes(id)) : [];
+    return `<div class="inj" data-i="${i}">
+      <label><span>${escHtml(t('inj.was'))}</span>
+        <input class="inj-was" type="text" value="${escHtml(v.was)}"
+               placeholder="${escHtml(t('inj.was.ph'))}"></label>
+
+      <div class="felder">
+        <label><span>${escHtml(t('inj.art'))}</span>
+          <select class="inj-art">${VL.ARTEN.map(a =>
+            `<option value="${a}"${a === v.art ? ' selected' : ''}>${escHtml(t(`inj.art.${a}`))}</option>`).join('')}</select></label>
+        <label><span>${escHtml(t('inj.status'))}</span>
+          <select class="inj-status">${stati.map(st =>
+            `<option value="${st}"${st === v.status ? ' selected' : ''}>${escHtml(t(`inj.status.${st}`))}</option>`).join('')}</select></label>
+        <label><span>${escHtml(t('inj.seit'))}</span>
+          <input class="inj-seit" type="date" value="${escHtml(v.seit)}"></label>
+      </div>
+      <p class="fine">${escHtml(t(`inj.art.${v.art}.hinweis`))}</p>
+
+      <label><span>${escHtml(t('inj.behandlung'))}</span>
+        <textarea class="inj-behandlung" rows="3"
+                  placeholder="${escHtml(t('inj.behandlung.ph'))}">${escHtml(v.behandlung)}</textarea></label>
+      <p class="fine">${escHtml(t('inj.behandlung.hinweis'))}</p>
+
+      <details class="inj-sperre">
+        <summary>${escHtml(t('inj.sperrt', { n: v.sperrt.length }))}</summary>
+        <p class="fine">${escHtml(t('inj.sperrt.hinweis'))}</p>
+        ${sperrbar().map(g => `
+          <div class="inj-gruppe">${escHtml(g.gruppe)}</div>
+          <div class="chips">${g.eintraege.map(e =>
+            `<button type="button" class="inj-tog${v.sperrt.includes(e.id) ? ' an' : ''}"
+                     data-id="${escHtml(e.id)}">${escHtml(e.name)}</button>`).join('')}</div>`).join('')}
+      </details>
+      ${betroffen.length ? `<p class="fine" style="color:var(--rost)">${escHtml(
+        t('inj.liftHinweis', { namen: betroffen.map(id => config.lifts[id].name || id).join(', ') }))}</p>` : ''}
+
+      <button type="button" class="btn ghost small danger inj-weg">${escHtml(t('inj.entfernen'))}</button>
+    </div>`;
+  }).join('') : `<p class="fine">${escHtml(t('inj.leer'))}</p>`;
+
+  // Den Entwurf bei jeder Eingabe mitschreiben, damit ein Neuzeichnen
+  // nichts verliert.
+  box.querySelectorAll('.inj').forEach(el => {
+    const i = Number(el.dataset.i);
+    const lies = () => {
+      injEntwurf[i] = {
+        ...injEntwurf[i],
+        was: el.querySelector('.inj-was').value,
+        art: el.querySelector('.inj-art').value,
+        status: el.querySelector('.inj-status').value,
+        seit: el.querySelector('.inj-seit').value,
+        behandlung: el.querySelector('.inj-behandlung').value
+      };
+    };
+    el.querySelectorAll('input, textarea').forEach(f => { f.oninput = lies; });
+    // Art und Status entscheiden, welche Auswahl erlaubt ist — deshalb
+    // neu zeichnen statt nur mitschreiben.
+    el.querySelector('.inj-art').onchange = () => { lies(); renderVerletzungen(); };
+    el.querySelector('.inj-status').onchange = () => { lies(); renderVerletzungen(); };
+    el.querySelectorAll('.inj-tog').forEach(b => {
+      b.onclick = () => {
+        const id = b.dataset.id;
+        const drin = injEntwurf[i].sperrt.includes(id);
+        injEntwurf[i].sperrt = drin
+          ? injEntwurf[i].sperrt.filter(x => x !== id)
+          : [...injEntwurf[i].sperrt, id];
+        b.classList.toggle('an', !drin);
+        // Nur die Zusammenfassung nachziehen: ein Neuzeichnen klappte den
+        // Aufklapper bei jedem Haken zu.
+        const sum = el.querySelector('.inj-sperre summary');
+        if (sum) sum.textContent = t('inj.sperrt', { n: injEntwurf[i].sperrt.length });
+      };
+    });
+    el.querySelector('.inj-weg').onclick = () => {
+      if (!confirm(t('inj.wirklichWeg', { was: injEntwurf[i].was || '—' }))) return;
+      injEntwurf.splice(i, 1);
+      renderVerletzungen();
+    };
+  });
+}
+
+$('inj-neu').onclick = () => {
+  if (!injEntwurf) injEntwurf = VL.entwurf(config);
+  injEntwurf.push({ id: '', was: '', art: 'wiederkehrend', status: 'aktiv',
+                    seit: P.ymd(new Date()), behandlung: '', sperrt: [] });
+  renderVerletzungen();
 };
 
 /* ---------- Orte einrichten (Backstage) ----------

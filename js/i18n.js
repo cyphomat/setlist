@@ -462,6 +462,52 @@ export const TEXTE = {
     'verh.pruefSchwach': 'Deutlich unter dem Ziel: {namen}.',
     'verh.pruefLeer': 'Noch nichts eingetragen. Unter Backstage → Persönliches stehen Klimmzug, Dip, Front Squat und die einseitige Arbeit — damit kommen acht weitere Verhältnisse dazu, darunter die Frage, ob dein Ziehen zu deinem Drücken passt.',
 
+    /* --- Injury Report --- */
+    'koerper.h': 'Was der Körper sagt',
+    'koerper.lead': 'Deine Rückmeldungen nach den Einheiten, älteste links. Nur wiederkehrende Sachen — Strukturelles hat keinen Verlauf, und eine flache Linie darüber sähe nach Stagnation aus, wo nichts zu erwarten war.',
+    'koerper.punkte': '{n} Rückmeldungen seit {seit}.',
+    'koerper.punkte.eins': 'Eine Rückmeldung seit {seit}.',
+    'koerper.umfeld': 'Krafteinheiten in der Woche vor einer Verschlechterung: im Schnitt {schnitt}, aus {faelle} Fällen.',
+    'koerper.umfeld.eins': 'Krafteinheiten in der Woche vor der einen Verschlechterung: {schnitt}.',
+    'koerper.fine': 'Die Zahl neben der Verschlechterung ist eine Beobachtung, keine Ursache — dafür bräuchte es mehr als ein paar Datenpunkte. Deuten musst du sie selbst.',
+    'inj.h': 'Injury Report',
+    'inj.lead': 'Was gerade zwickt, und was dagegen hilft. Die App merkt sich beides und lässt die Übungen weg, die du hier sperrst — sie stellt keine Diagnose und schlägt keine Behandlung vor. Was unter Behandlung steht, trägst du selbst ein.',
+    'inj.neu': 'Eintrag hinzufügen',
+    'inj.leer': 'Nichts eingetragen. Gut so — und wenn doch mal etwas zwickt, steht es hier besser als im Kopf.',
+    'inj.was': 'Was',
+    'inj.was.ph': 'z. B. Plantarfaszie links',
+    'inj.art': 'Art',
+    'inj.art.wiederkehrend': 'Wiederkehrend',
+    'inj.art.strukturell': 'Strukturell',
+    'inj.art.wiederkehrend.hinweis': 'Kommt und geht. Wird nach jeder Einheit kurz abgefragt, damit ein Verlauf entsteht — und kann ausheilen.',
+    'inj.art.strukturell.hinweis': 'Bleibt. Wird nicht abgefragt, weil sich daran nichts ändert: eine tägliche Frage nach etwas Unveränderlichem ist nur Lärm. Sperrt dafür dauerhaft, was du auswählst.',
+    'inj.status': 'Status',
+    'inj.status.aktiv': 'Aktiv',
+    'inj.status.ruhend': 'Ruhend',
+    'inj.status.ausgeheilt': 'Ausgeheilt',
+    'inj.seit': 'Seit',
+    'inj.behandlung': 'Behandlung',
+    'inj.behandlung.ph': 'z. B. Morgens vor dem ersten Schritt Igelball, vor der Einheit Fuß aufwärmen.',
+    'inj.behandlung.hinweis': 'Erscheint auf dem Startbildschirm und als abhakbarer Punkt im Soundcheck, solange der Eintrag aktiv ist.',
+    'inj.sperrt': 'Gesperrte Übungen ({n})',
+    'inj.sperrt.hinweis': 'Was hier an ist, würfelt der Jam nicht, das Unplugged nimmt es nicht, und Technik, Mobility und Finisher lassen es weg. Bleibt zu wenig übrig, greift eine Notbremse und die Auswahl gilt wieder voll — ein leerer Bildschirm wäre keine Rücksicht.',
+    'inj.gruppe.kraft': 'Grundübungen',
+    'inj.gruppe.technik': 'Technik',
+    'inj.gruppe.jam': 'Jam',
+    'inj.gruppe.unplugged': 'Unplugged',
+    'inj.gruppe.mobility': 'Mobility',
+    'inj.gruppe.finisher': 'Finisher',
+    'inj.liftHinweis': 'Achtung: {namen} gehört zum Programm und wird NICHT weggelassen — daran hängen A/B-Wechsel, Steigerung und Deload. Der Eintrag ist hier nur ein Hinweis. Wenn du eine Grundübung wirklich nicht machen kannst, ändere das Programm.',
+    'inj.entfernen': 'Eintrag entfernen',
+    'inj.wirklichWeg': 'Eintrag „{was}" samt Sperren entfernen? Die bisherigen Verlaufsdaten bleiben in den Einheiten stehen.',
+    'inj.vorher': 'Vorher',
+    'inj.stufe.besser': 'Besser',
+    'inj.stufe.gleich': 'Gleich',
+    'inj.stufe.schlechter': 'Schlechter',
+    'inj.trend.besser': 'wird besser',
+    'inj.trend.gleich': 'unverändert',
+    'inj.trend.schlechter': 'wird schlechter',
+    'done.koerperFrage': 'Und {was}?',
     'chk.h': 'Prüfwerte',
     'chk.lead': 'Diese Übungen erzeugt das Programm nicht selbst — ohne sie bleiben acht der zwölf Kraftverhältnisse leer. Trag ein, was du sauber schaffst; leer lassen ist völlig in Ordnung.',
     'chk.gewicht': 'Gewicht',
@@ -506,7 +552,7 @@ export const TEXTE = {
     'plat.detail': 'Steht seit {n} Einheiten · {fehl} Fehlversuche in {einheiten} · {satz} der Sätze auf dem Ziel',
     'plat.detailKurz': '{fehl} Fehlversuche in {einheiten} Einheiten · {satz} der Sätze auf dem Ziel',
     'plat.offen': '· {n} offene Fehlversuche bis zum Deload',
-    'plat.offen1': '· noch ein Fehlversuch bis zum Deload',
+    'plat.offen.eins': '· noch ein Fehlversuch bis zum Deload',
     'plat.fine': 'Die Satzquote zählt einzelne Sätze, nicht Einheiten — vier von fünf ist eine andere Lage als zwei von fünf, und beides zählt als ein Fehlversuch.',
     'pr.mind': '┄ mind. ≈ {kg} kg',
     'pr.maxOutPunkt': '● Max-Out {kg} kg',
@@ -1062,6 +1108,52 @@ export const TEXTE = {
     'verh.pruefSchwach': 'Clearly below target: {namen}.',
     'verh.pruefLeer': 'Nothing entered yet. Under Backstage \u2192 Personal you can add pull-up, dip, front squat and the single-side work \u2014 that adds eight more ratios, including whether your pulling matches your pressing.',
 
+    /* --- Injury report --- */
+    'koerper.h': 'What your body says',
+    'koerper.lead': 'Your feedback after sessions, oldest on the left. Recurring things only \u2014 structural issues have no trend, and a flat line over them would look like stagnation where nothing was to be expected.',
+    'koerper.punkte': '{n} reports since {seit}.',
+    'koerper.punkte.eins': 'One report since {seit}.',
+    'koerper.umfeld': 'Strength sessions in the week before a setback: {schnitt} on average, across {faelle} cases.',
+    'koerper.umfeld.eins': 'Strength sessions in the week before the one setback: {schnitt}.',
+    'koerper.fine': 'The number next to a setback is an observation, not a cause \u2014 that would take more than a few data points. Reading it is up to you.',
+    'inj.h': 'Injury report',
+    'inj.lead': 'What hurts, and what helps against it. The app remembers both and leaves out the exercises you block here \u2014 it makes no diagnosis and suggests no treatment. What it says under treatment, you entered yourself.',
+    'inj.neu': 'Add an entry',
+    'inj.leer': 'Nothing entered. Good \u2014 and if something does start nagging, it is better here than in your head.',
+    'inj.was': 'What',
+    'inj.was.ph': 'e.g. left plantar fascia',
+    'inj.art': 'Kind',
+    'inj.art.wiederkehrend': 'Recurring',
+    'inj.art.strukturell': 'Structural',
+    'inj.art.wiederkehrend.hinweis': 'Comes and goes. Briefly asked about after each session so a trend builds up \u2014 and it can heal.',
+    'inj.art.strukturell.hinweis': 'Stays. Not asked about, because nothing changes: a daily question about something unchanging is just noise. Instead it permanently blocks whatever you select.',
+    'inj.status': 'Status',
+    'inj.status.aktiv': 'Active',
+    'inj.status.ruhend': 'Dormant',
+    'inj.status.ausgeheilt': 'Healed',
+    'inj.seit': 'Since',
+    'inj.behandlung': 'Treatment',
+    'inj.behandlung.ph': 'e.g. spiky ball before the first step in the morning, warm the foot up before a session.',
+    'inj.behandlung.hinweis': 'Shows on the home screen and as a tickable line in the soundcheck while the entry is active.',
+    'inj.sperrt': 'Blocked exercises ({n})',
+    'inj.sperrt.hinweis': 'Whatever is on here will not be rolled by the jam, not picked by Unplugged, and left out of technique, mobility and finishers. If too little remains, a fallback kicks in and the full selection applies again \u2014 an empty screen would not be consideration.',
+    'inj.gruppe.kraft': 'Main lifts',
+    'inj.gruppe.technik': 'Technique',
+    'inj.gruppe.jam': 'Jam',
+    'inj.gruppe.unplugged': 'Unplugged',
+    'inj.gruppe.mobility': 'Mobility',
+    'inj.gruppe.finisher': 'Finishers',
+    'inj.liftHinweis': 'Note: {namen} is part of the programme and will NOT be left out \u2014 the A/B rotation, progression and deload all hang on it. The entry here is only a reminder. If you really cannot do a main lift, change the programme.',
+    'inj.entfernen': 'Remove entry',
+    'inj.wirklichWeg': 'Remove the entry \u201c{was}\u201d and its blocks? Existing trend data stays in your sessions.',
+    'inj.vorher': 'First',
+    'inj.stufe.besser': 'Better',
+    'inj.stufe.gleich': 'Same',
+    'inj.stufe.schlechter': 'Worse',
+    'inj.trend.besser': 'improving',
+    'inj.trend.gleich': 'unchanged',
+    'inj.trend.schlechter': 'getting worse',
+    'done.koerperFrage': 'And {was}?',
     'chk.h': 'Test values',
     'chk.lead': 'The programme does not produce these on its own \u2014 without them eight of the twelve strength ratios stay empty. Enter what you can do cleanly; leaving them blank is perfectly fine.',
     'chk.gewicht': 'Weight',
@@ -1106,7 +1198,7 @@ export const TEXTE = {
     'plat.detail': 'Stuck for {n} sessions · {fehl} failed attempts in {einheiten} · {satz} of sets on target',
     'plat.detailKurz': '{fehl} failed attempts in {einheiten} sessions · {satz} of sets on target',
     'plat.offen': '\u00b7 {n} failed attempts left before the deload',
-    'plat.offen1': '\u00b7 one more failed attempt before the deload',
+    'plat.offen.eins': '\u00b7 one more failed attempt before the deload',
     'plat.fine': 'The set rate counts individual sets, not sessions — four of five is a different situation from two of five, and both count as one failed attempt.',
     'pr.mind': '┄ min. ≈ {kg} kg',
     'pr.maxOutPunkt': '● Max-out {kg} kg',
@@ -1228,6 +1320,26 @@ export function t(key, vars) {
   let txt = (TEXTE[s] && TEXTE[s][key]) ?? TEXTE.de[key] ?? key;
   if (vars) for (const [k, v] of Object.entries(vars)) txt = txt.split(`{${k}}`).join(v);
   return txt;
+}
+
+/**
+ * Wie `t`, aber mit Singular.
+ *
+ * Deutsch und Englisch brauchen genau zwei Formen, und die Zahl steckt
+ * ohnehin schon in den Variablen. Bei `n === 1` wird `<key>.eins` genommen,
+ * falls es den Schluessel gibt — sonst bleibt es beim Plural.
+ *
+ * Das hier ist nach dem vierten "1 Einheiten" entstanden: dieselbe Zeile
+ * viermal von Hand zu verzweigen ist der Weg, beim fuenften Mal wieder
+ * eine zu vergessen. Sprachen mit mehr als zwei Formen (Polnisch,
+ * Arabisch) brauchen mehr als das — dann ist hier die Stelle, an der es
+ * erweitert wird, und nicht an vier Aufrufern.
+ */
+export function tn(key, n, vars) {
+  const eins = `${key}.eins`;
+  const sp = sprache();
+  const hat = (TEXTE[sp] && TEXTE[sp][eins]) ?? TEXTE.de[eins];
+  return t(n === 1 && hat ? eins : key, { n, ...(vars || {}) });
 }
 
 /** Zahlformat der gewaehlten Sprache — 1.234 gegen 1,234. */

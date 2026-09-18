@@ -10,6 +10,60 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-09-18.1
+
+### Neu
+- **Injury Report.** Kleine Verletzungen, die wiederkommen, und solche, die bleiben —
+  beide mit deiner eigenen Behandlung daneben. Einzutragen unter
+  *Backstage → Persönliches*.
+
+  **Zwei Arten, und der Unterschied ist nicht kosmetisch.** *Wiederkehrend* kommt und
+  geht: die Plantarfaszie meldet sich, wird behandelt, wird ruhig, meldet sich wieder.
+  Sie hat einen Verlauf, der sich zu verfolgen lohnt, und wird nach jeder Einheit kurz
+  abgefragt. *Strukturell* bleibt: eine Kalkablagerung im Schultergelenk geht nicht weg,
+  weil man sie gut behandelt. Sie sperrt eine Bewegung, und das bleibt so — deshalb wird
+  hier **nicht** nach dem Verlauf gefragt. Eine tägliche Frage nach etwas, das sich nicht
+  ändert, ist Lärm.
+
+  **Was gesperrt ist, kommt nicht mehr vor.** Der Jam würfelt es nicht, das Unplugged
+  nimmt es nicht, Technik, Mobility und Finisher lassen es weg. Eine Einschränkung, die
+  man jedes Mal von Hand wegklicken muss, klickt man irgendwann nicht mehr weg. Bleibt zu
+  wenig übrig, greift eine Notbremse und die volle Auswahl gilt wieder — ein leerer
+  Bildschirm wäre keine Rücksicht, sondern ein Fehler.
+
+  **Deine Behandlung steht da, wo du sie brauchst:** in der Ansage auf dem
+  Startbildschirm und als abhakbarer Punkt im Soundcheck. Der Igelball hilft nur, wenn
+  man an ihn denkt, bevor man losgeht — und eine Erinnerung, die man nicht wegklicken
+  kann, liest man nach dem dritten Mal nicht mehr.
+
+  **In der Tour** ein Punktband je wiederkehrender Sache: besser, gleich, schlechter je
+  Einheit. Bewusst ein Band und keine Kurve — es sind drei Stufen, keine Messwerte, und
+  eine Linie würde eine Genauigkeit vortäuschen, die es nicht gibt.
+
+### Bewusst so
+- **Die App stellt keine Diagnose und schlägt keine Behandlung vor.** Sie weiß nichts
+  über Plantarfaszien. Was als Behandlung dasteht, hast du eingetragen — von deinem Arzt,
+  deiner Physiotherapie oder aus eigener Erfahrung. Die App merkt sich das und hält sich
+  daran. Das ist, was eine App leisten kann: nicht vergessen.
+- **Grundübungen werden nur angemerkt, nie weggelassen.** Kniebeuge, Bankdrücken, Rudern,
+  Drücken und Kreuzheben *sind* das Programm — an ihnen hängen A/B-Wechsel, Steigerung
+  und Deload. Fehlt eine, hat die 5×5-Mechanik nichts mehr zu rechnen. Wer eine
+  Grundübung wirklich nicht machen kann, ändert sein Programm und nicht seinen
+  Verletzungseintrag. Die Oberfläche sagt das auch so.
+- **Die Beobachtung zur Trainingslast ist keine Ursachenaussage.** Wie viele
+  Krafteinheiten in der Woche vor einer Verschlechterung lagen, steht in der Tour — mit
+  dem ausdrücklichen Hinweis, dass dafür mehr nötig wäre als ein paar Datenpunkte.
+  Deuten musst du es selbst.
+
+### Geändert
+- **`tn()` für Singular und Plural.** Nach dem vierten „1 Einheiten" in der Oberfläche
+  gibt es jetzt eine Mechanik statt vier handverzweigter Zeilen: bei `n === 1` greift
+  `<schlüssel>.eins`, falls hinterlegt, sonst bleibt es beim Plural. Ein Test hält fest,
+  dass jede Singularform auch ihre Pluralform hat — sonst stünde bei zwei Stück ein
+  Schlüsselname statt eines Satzes.
+
+---
+
 ## 2026-09-12.5
 
 ### Behoben

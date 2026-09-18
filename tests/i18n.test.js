@@ -67,4 +67,29 @@ ok('gleiche Platzhalter in beiden Sprachen', schief.length === 0, schief.join(',
 
 ok('kein Text ist leer', de.every(k => I.TEXTE.de[k].trim() && I.TEXTE.en[k].trim()));
 
+
+print('\n--- Singular und Plural ---');
+{
+  // Entstanden nach dem vierten "1 Einheiten" in der Oberflaeche. Dieselbe
+  // Zeile viermal von Hand zu verzweigen ist der Weg, beim fuenften Mal
+  // wieder eine zu vergessen.
+  eq('bei eins die Singularform', I.tn('plat.offen', 1), I.TEXTE.de['plat.offen.eins']);
+  ok('bei zwei die Plurarform mit Zahl', I.tn('plat.offen', 2).includes('2'));
+  ok('die Zahl steht ohne Zutun zur Verfuegung',
+     I.tn('koerper.punkte', 7, { seit: 'x' }).includes('7'));
+  eq('gibt es keine Singularform, bleibt es beim Plural',
+     I.tn('inj.was', 1), I.TEXTE.de['inj.was']);
+  ok('bei null der Plural', I.tn('plat.offen', 0).includes('0'));
+
+  // Jede .eins-Form braucht ihre Plurarform — sonst zeigt die App bei
+  // zwei Stueck einen Schluessel statt eines Satzes.
+  for (const sp of ['de', 'en']) {
+    const eins = Object.keys(I.TEXTE[sp]).filter(k => k.endsWith('.eins'));
+    ok(`${sp}: jede Singularform hat ihren Plural (${eins.length})`,
+       eins.every(k => k.slice(0, -5) in I.TEXTE[sp]),
+       eins.filter(k => !(k.slice(0, -5) in I.TEXTE[sp])).join());
+  }
+}
+
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);
