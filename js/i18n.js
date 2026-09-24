@@ -463,6 +463,20 @@ export const TEXTE = {
     'verh.pruefSchwach': 'Deutlich unter dem Ziel: {namen}.',
     'verh.pruefLeer': 'Noch nichts eingetragen. Unter Backstage → Persönliches stehen Klimmzug, Dip, Front Squat und die einseitige Arbeit — damit kommen acht weitere Verhältnisse dazu, darunter die Frage, ob dein Ziehen zu deinem Drücken passt.',
 
+    /* --- Deload nach einer Pause --- */
+    'pause.titel': 'Nach der Pause',
+    'pause.kopf': '{tage} Tage seit der letzten Krafteinheit.',
+    'pause.wegen': 'Eingetragen: {was}.',
+    'pause.vorschlag': 'Vorschlag: −{p} % und von da aus zurück.',
+    'pause.rueckweg': 'Bis zum Gewicht vor der Pause steigt jede erfolgreiche Einheit doppelt — verlorene Kraft kommt schneller zurück, als sie entstanden ist. Ein Fehlversuch beendet die Abkürzung.',
+    'pause.faustregel': 'Faustregel: unter 14 Tagen nichts, ab 14 Tagen −10 %, ab 21 −20 %, ab 42 −30 %. Gezählt ab der letzten Krafteinheit; Jam und Unplugged halten das Gewicht an der Stange nicht.',
+    'pause.ja': 'Übernehmen',
+    'pause.nein': 'Wie vorher',
+    'pause.uebernommen': 'Zurückgenommen um {p} % — der Rückweg läuft.',
+    'pause.home': '{tage} Tage Pause. Beim Start schlägt die App −{p} % vor.',
+    'pause.rueckwegAktiv': 'Rückweg: +{schritt} statt +{normal} bis {ziel}',
+    'pause.rueckwegDone': 'Rückweg',
+    'pause.hist': '{tage} Tage Pause — −{p} %, doppelte Schritte bis zum alten Stand.',
     /* --- Injury Report --- */
     'koerper.h': 'Was der Körper sagt',
     'koerper.lead': 'Deine Rückmeldungen nach den Einheiten, älteste links. Nur wiederkehrende Sachen — Strukturelles hat keinen Verlauf, und eine flache Linie darüber sähe nach Stagnation aus, wo nichts zu erwarten war.',
@@ -1110,6 +1124,20 @@ export const TEXTE = {
     'verh.pruefSchwach': 'Clearly below target: {namen}.',
     'verh.pruefLeer': 'Nothing entered yet. Under Backstage \u2192 Personal you can add pull-up, dip, front squat and the single-side work \u2014 that adds eight more ratios, including whether your pulling matches your pressing.',
 
+    /* --- Deload after a break --- */
+    'pause.titel': 'After the break',
+    'pause.kopf': '{tage} days since your last strength session.',
+    'pause.wegen': 'On record: {was}.',
+    'pause.vorschlag': 'Suggestion: \u2212{p} % and work back up from there.',
+    'pause.rueckweg': 'Until you are back at your pre-break weight, every successful session climbs twice as fast \u2014 lost strength returns quicker than it was built. A failed attempt ends the shortcut.',
+    'pause.faustregel': 'Rule of thumb: under 14 days nothing, from 14 days \u221210 %, from 21 \u221220 %, from 42 \u221230 %. Counted from your last strength session; jam and Unplugged do not hold the weight on the bar.',
+    'pause.ja': 'Apply',
+    'pause.nein': 'Keep as is',
+    'pause.uebernommen': 'Stepped back by {p} % \u2014 the way back is on.',
+    'pause.home': '{tage} days off. Starting will suggest \u2212{p} %.',
+    'pause.rueckwegAktiv': 'Way back: +{schritt} instead of +{normal} up to {ziel}',
+    'pause.rueckwegDone': 'way back',
+    'pause.hist': '{tage} days off \u2014 \u2212{p} %, double steps back to the old level.',
     /* --- Injury report --- */
     'koerper.h': 'What your body says',
     'koerper.lead': 'Your feedback after sessions, oldest on the left. Recurring things only \u2014 structural issues have no trend, and a flat line over them would look like stagnation where nothing was to be expected.',

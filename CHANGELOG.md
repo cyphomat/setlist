@@ -10,6 +10,60 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-09-24.1
+
+### Neu
+- **Deload nach einer Pause.** Bisher passierte bei einer Pause nichts mit den
+  Gewichten: die Ansage erkannte ab drei Wochen ein Comeback, aber an der Stange hing
+  dieselbe Last wie vorher — und der Deload nach Fehlversuchen hätte erst nach drei
+  verlorenen Einheiten gegriffen. Anlass war ein eingequetschter Finger.
+
+  | Pause | Rückschritt |
+  |---|---|
+  | unter 14 Tage | keiner — bei zweimal pro Woche ist eine verpasste Einheit schon 7–10 Tage |
+  | 14–20 Tage | −10 % (derselbe Faktor wie der Deload nach Fehlversuchen) |
+  | 21–41 Tage | −20 % |
+  | ab 42 Tagen | −30 % |
+
+  Gezählt ab der letzten **Krafteinheit** — Jam, Unplugged und Max-Out halten das
+  Gewicht an der Stange nicht. Gerundet wird abwärts: ein Deload, der durch Rundung
+  kleiner ausfällt als angesagt, ist keiner.
+
+  **Ein Vorschlag, keine stille Änderung.** Beim Tippen auf „Training starten" kommt
+  zuerst eine Karte mit den neuen Gewichten je Übung. *Übernehmen* schreibt eine
+  Anpassung ins Log, *Wie vorher* behält die Gewichte und fragt für diese Pause nicht
+  noch einmal — erst wieder, wenn sie in die nächste Stufe rutscht. Ist im Injury
+  Report etwas eingetragen, das während der Pause begann, steht es auf der Karte.
+
+  **Der Rückweg geht doppelt so schnell.** Verlorene Kraft kommt schneller zurück, als
+  sie entstanden ist. Bis zum Gewicht vor der Pause steigt jede erfolgreiche Einheit um
+  das doppelte Inkrement (Squat +5, Kreuzheben +10), gedeckelt am alten Stand. Ein
+  Fehlversuch beendet die Abkürzung, danach gilt die normale Mechanik. Bei −10 % heißt
+  das: zwei Einheiten statt vier zurück.
+
+### Bewusst so
+- **Alles liegt im Log.** Der Rückweg steht als `ziele` in der Anpassung, der Zustand
+  leitet ihn nur ab. Ein Test prüft, dass `deriveState` über Pause, doppelte Schritte
+  und einen Fehlversuch hinweg exakt denselben Zustand liefert — sonst hätte
+  „state.json neu berechnen" den Rückweg stillschweigend gelöscht.
+- **Nur einmal je Pause.** Wer übernimmt und die Einheit dann abbricht, steht beim
+  nächsten Start vor derselben Pause. Ohne Gegenregel gäbe es ein zweites Mal −10 %.
+  Eine Anpassung nach der letzten Krafteinheit gilt deshalb als erledigte Pause.
+- **Faustregeln, keine Messwerte.** Die Stufen folgen dem, was sich in der Praxis
+  bewährt hat: in den ersten zwei Wochen hält sich Maximalkraft weitgehend, danach geht
+  es spürbar bergab, nach sechs Wochen sind auch Technik und Sehnen wieder ein Thema.
+  Die Karte sagt das so.
+
+### Geändert
+- Die Comeback-Schwelle der Ansage liegt jetzt bei **14 statt 21 Tagen** und nutzt
+  dieselbe Konstante wie der Deload — die erste Einheit nach einer echten Pause ist
+  TECHNIK, egal ob um 10 oder 20 % zurückgenommen wurde.
+- Eine Testvorlage in `tests/coach.test.js` hängte den 25.08. hinter den 15.09. an und
+  lief nur, weil 21 Tage zufällig genau unter der alten Schwelle lagen. Jetzt
+  chronologisch, wie die echte Historie.
+
+---
+
 ## 2026-09-18.2
 
 ### Neu

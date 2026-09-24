@@ -290,6 +290,18 @@ dialog{
   box-shadow:var(--gb-dialog);max-width:320px;
 }
 dialog::backdrop{background:var(--backdrop)}
+/* Die Pausenkarte ist breiter als die Auswahldialoge: sie traegt eine
+   Tabelle und zwei Saetze Begruendung, und die muessen lesbar bleiben. */
+#pause-dialog{max-width:min(380px,calc(100vw - 32px))}
+#pause-title{margin:0 0 12px;font-family:var(--mono);font-size:0.75rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--akzent);text-align:center}
+.pause-kopf{margin:0 0 6px;font-size:1rem;color:var(--fg)}
+.pause-vorschlag{margin:10px 0 6px;font-family:var(--display);font-size:1.375rem;color:var(--akzent)}
+.pause-liste{margin:4px 0 10px}
+.pause-knoepfe{display:grid;gap:8px;margin-top:14px}
+.pause-knoepfe .btn{margin:0}
+.platten.rueck{margin-top:-6px;color:var(--stahl)}
+
 #picker-title,#ort-picker-title{margin:0 0 16px;font-family:var(--mono);font-size:0.75rem;letter-spacing:.18em;text-transform:uppercase;color:var(--akzent);text-align:center}
 .picker-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .picker-opts button{

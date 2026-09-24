@@ -3,7 +3,7 @@
 // etwas behauptet, das nicht aus deinen Daten folgt.
 
 import { VOICE } from './content.js';
-import { mondayOf } from './program.js';
+import { mondayOf, PAUSE_AB } from './program.js';
 
 export function daysSince(dateStr, today = new Date()) {
   if (!dateStr) return null;
@@ -81,7 +81,10 @@ export function directive(state, config, today = new Date(), letzterLog = null, 
     letzterLog.lifts.some(e => state.lifts[e.lift] && state.lifts[e.lift].weight < e.weight);
 
   let situation, kopf;
-  if (tage === null || tage > 21) {
+  // Dieselbe Schwelle wie der Deload nach einer Pause (program.js): die
+  // erste Einheit nach einer echten Pause ist TECHNIK, egal ob die Gewichte
+  // um zehn oder zwanzig Prozent zurueckgenommen wurden.
+  if (tage === null || tage >= PAUSE_AB) {
     situation = 'comeback';
     kopf = tage === null ? 'Erste Einheit' : `${tage} Tage weg`;
   } else if (deloadGerade) {

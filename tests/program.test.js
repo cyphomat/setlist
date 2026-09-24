@@ -452,4 +452,157 @@ print('\n--- Scheiben: eigene Vorraete ---');
 }
 
 
+
+/* Deload nach einer Pause.
+
+   Anlass: ein eingequetschter Finger, zwei Wochen raus. Bisher passierte
+   dabei nichts mit den Gewichten — man stand danach mit derselben Last
+   unter der Stange, und der Deload nach drei Fehlversuchen haette erst
+   nach drei verlorenen Einheiten gegriffen.                              */
+print('\n--- Pause: die Stufen ---');
+{
+  const cfg = { bar: 20, rounding: 2.5, deload: { afterFails: 3, factor: 0.9 }, firstWorkout: 'A',
+    lifts: { squat: { increment: 2.5, start: 20 }, bench: { increment: 2.5, start: 20 }, deadlift: { increment: 5, start: 40 } },
+    workouts: { A: [{ lift: 'squat', sets: 5, reps: 5 }, { lift: 'bench', sets: 5, reps: 5 }],
+                B: [{ lift: 'squat', sets: 5, reps: 5 }, { lift: 'deadlift', sets: 1, reps: 5 }] } };
+  const st = { next: 'A', lifts: { squat: { weight: 82.5, fails: 1 }, bench: { weight: 47.5, fails: 0 }, deadlift: { weight: 105, fails: 0 } },
+    history: [{ date: '2026-09-01', type: 'strength', workout: 'A' }] };
+  const am = d => P.pausenDeload(st, cfg, new Date(`${d}T09:00:00`));
+
+  eq('13 Tage: kein Vorschlag', am('2026-09-14'), null);
+  eq('14 Tage: -10 %', am('2026-09-15').prozent, 10);
+  eq('20 Tage: noch -10 %', am('2026-09-21').prozent, 10);
+  eq('21 Tage: -20 %', am('2026-09-22').prozent, 20);
+  eq('41 Tage: noch -20 %', am('2026-10-12').prozent, 20);
+  eq('42 Tage: -30 %', am('2026-10-13').prozent, 30);
+  eq('die Tage stehen im Vorschlag', am('2026-09-18').tage, 17);
+
+  // Abwaerts gerundet: 82,5 x 0,9 = 74,25 — nicht auf 75 auf-, sondern auf
+  // 72,5 abrunden. Ein Deload, der durch Rundung kleiner ausfaellt als
+  // angesagt, ist keiner.
+  eq('abwaerts gerundet', am('2026-09-18').gewichte.squat.nachher, 72.5);
+  eq('das Gewicht vorher steht dabei', am('2026-09-18').gewichte.squat.vorher, 82.5);
+
+  const leer = { ...st, lifts: { squat: { weight: 20, fails: 0 }, bench: { weight: 20, fails: 0 }, deadlift: { weight: 20, fails: 0 } } };
+  eq('an der leeren Stange gibt es nichts zurueckzunehmen',
+     P.pausenDeload(leer, cfg, new Date('2026-09-20T09:00:00')), null);
+  const knapp = { ...st, lifts: { squat: { weight: 22.5, fails: 0 } } };
+  eq('nie unter die Stange', P.pausenDeload(knapp, cfg, new Date('2026-10-20T09:00:00')).gewichte.squat.nachher, 20);
+
+  // Jam, Unplugged und Max-Out setzen keinen Reiz, der das 5x5-Gewicht haelt.
+  const mitJam = { ...st, history: [...st.history,
+    { date: '2026-09-10', type: 'wod' }, { date: '2026-09-12', type: 'unplugged' },
+    { date: '2026-09-13', type: 'maxout', check: 'pullup' }] };
+  eq('Jam, Unplugged und Max-Out verkuerzen die Pause nicht',
+     P.pausenDeload(mitJam, cfg, new Date('2026-09-18T09:00:00')).tage, 17);
+
+  eq('ohne jede Krafteinheit kein Vorschlag — die Ersteinrichtung ist keine Pause',
+     P.pausenDeload({ ...st, history: [] }, cfg, new Date('2026-12-01T09:00:00')), null);
+  eq('ohne Historie ueberhaupt auch nicht',
+     P.pausenDeload({ lifts: st.lifts }, cfg, new Date('2026-12-01T09:00:00')), null);
+}
+
+print('\n--- Pause: nur einmal je Pause ---');
+{
+  const cfg = { bar: 20, rounding: 2.5, deload: { afterFails: 3, factor: 0.9 }, firstWorkout: 'A',
+    lifts: { squat: { increment: 2.5, start: 20 } },
+    workouts: { A: [{ lift: 'squat', sets: 5, reps: 5 }], B: [{ lift: 'squat', sets: 5, reps: 5 }] } };
+  const st = { next: 'A', lifts: { squat: { weight: 82.5, fails: 0 } },
+    history: [{ date: '2026-09-01', type: 'strength', workout: 'A' }] };
+  const heute = new Date('2026-09-18T09:00:00');
+  const v = P.pausenDeload(st, cfg, heute);
+  const nach = P.applyLog(st, cfg, P.pausenAnpassung(v, heute));
+  // Wer uebernimmt und die Einheit abbricht, steht beim naechsten Start vor
+  // derselben Pause — ohne diese Regel gaebe es ein zweites Mal -10 %.
+  eq('nach dem Uebernehmen kein zweiter Vorschlag', P.pausenDeload(nach, cfg, heute), null);
+  eq('auch nicht Tage spaeter', P.pausenDeload(nach, cfg, new Date('2026-09-25T09:00:00')), null);
+  const nachEinheit = P.applyLog(nach, cfg, { date: '2026-09-18', workout: 'A',
+    lifts: [{ lift: 'squat', weight: 72.5, success: true }] });
+  ok('nach der naechsten echten Pause wieder', !!P.pausenDeload(nachEinheit, cfg, new Date('2026-10-10T09:00:00')));
+}
+
+print('\n--- Pause: der Rueckweg ---');
+{
+  const cfg = { bar: 20, rounding: 2.5, deload: { afterFails: 3, factor: 0.9 }, firstWorkout: 'A',
+    lifts: { squat: { increment: 2.5, start: 20 }, deadlift: { increment: 5, start: 40 } },
+    workouts: { A: [{ lift: 'squat', sets: 5, reps: 5 }], B: [{ lift: 'deadlift', sets: 1, reps: 5 }] } };
+  const anp = { date: '2026-09-18', type: 'anpassung', grund: 'pause', tage: 17, faktor: 0.9,
+    gewichte: { squat: 72.5, deadlift: 92.5 }, ziele: { squat: 82.5, deadlift: 105 } };
+  const start = { next: 'A', lifts: { squat: { weight: 82.5, fails: 2 }, deadlift: { weight: 105, fails: 0 } }, history: [] };
+  const a = P.applyLog(start, cfg, anp);
+  eq('die Anpassung setzt das neue Gewicht', a.lifts.squat.weight, 72.5);
+  eq('und merkt sich das Ziel', a.lifts.squat.rueckweg, 82.5);
+  eq('offene Fehlversuche sind weg', a.lifts.squat.fails, 0);
+
+  const ok1 = w => ({ date: 'x', workout: 'A', lifts: [{ lift: 'squat', weight: w, success: true }] });
+  const b = P.applyLog(a, cfg, ok1(72.5));
+  eq('auf dem Rueckweg der doppelte Schritt', b.lifts.squat.weight, 77.5);
+  ok('der Rueckweg laeuft weiter', b.lifts.squat.rueckweg === 82.5);
+  const c = P.applyLog(b, cfg, ok1(77.5));
+  eq('am Ziel angekommen', c.lifts.squat.weight, 82.5);
+  ok('dort endet der Rueckweg', !('rueckweg' in c.lifts.squat));
+  eq('danach wieder der normale Schritt', P.applyLog(c, cfg, ok1(82.5)).lifts.squat.weight, 85);
+
+  // Nie ueber das Ziel hinaus: 80 + 5 waeren 85, das Ziel ist 82,5.
+  eq('gedeckelt am Ziel', P.applyLog(a, cfg, ok1(80)).lifts.squat.weight, 82.5);
+  // Aber auch nie weniger als der normale Schritt.
+  eq('nie weniger als normal', P.applyLog(a, cfg, ok1(85)).lifts.squat.weight, 87.5);
+
+  const kreuz = P.applyLog(a, cfg, { date: 'x', workout: 'B', lifts: [{ lift: 'deadlift', weight: 92.5, success: true }] });
+  eq('beim Kreuzheben +10 statt +5', kreuz.lifts.deadlift.weight, 102.5);
+
+  const fehl = P.applyLog(a, cfg, { date: 'x', workout: 'A', lifts: [{ lift: 'squat', weight: 72.5, success: false }] });
+  ok('ein Fehlversuch beendet den Rueckweg', !('rueckweg' in fehl.lifts.squat));
+  eq('und zaehlt ganz normal', fehl.lifts.squat.fails, 1);
+  eq('danach wieder der normale Schritt', P.applyLog(fehl, cfg, ok1(72.5)).lifts.squat.weight, 75);
+
+  const mo = P.applyLog(a, cfg, { date: 'x', type: 'maxout', lift: 'squat', weight: 90, reps: 1, newWorking: 77.5 });
+  ok('eine Max-Out-Uebernahme beendet ihn', !('rueckweg' in mo.lifts.squat));
+
+  const ohneZiel = P.applyLog(a, cfg, { date: 'x', type: 'anpassung', gewichte: { squat: 70 } });
+  ok('eine Anpassung ohne Ziel beendet ihn', !('rueckweg' in ohneZiel.lifts.squat));
+  const zielDrunter = P.applyLog(start, cfg, { ...anp, ziele: { squat: 70 } });
+  ok('ein Ziel unter dem neuen Gewicht eroeffnet keinen', !('rueckweg' in zielDrunter.lifts.squat));
+}
+
+print('\n--- Pause: ableitbar aus den Logs ---');
+{
+  // Die tragende Invariante: state.json muss sich jederzeit aus den Logs neu
+  // berechnen lassen. Der Rueckweg darf deshalb nie nur im Zustand leben.
+  const cfg = { bar: 20, rounding: 2.5, deload: { afterFails: 3, factor: 0.9 }, firstWorkout: 'A',
+    lifts: { squat: { increment: 2.5, start: 60 }, bench: { increment: 2.5, start: 40 } },
+    workouts: { A: [{ lift: 'squat', sets: 5, reps: 5 }, { lift: 'bench', sets: 5, reps: 5 }],
+                B: [{ lift: 'squat', sets: 5, reps: 5 }, { lift: 'bench', sets: 5, reps: 5 }] } };
+  const logs = [
+    { date: '2026-08-01', workout: 'A', finished: '2026-08-01T10:00:00Z', lifts: [{ lift: 'squat', weight: 60, success: true }, { lift: 'bench', weight: 40, success: true }] },
+    { date: '2026-08-04', workout: 'B', finished: '2026-08-04T10:00:00Z', lifts: [{ lift: 'squat', weight: 62.5, success: true }, { lift: 'bench', weight: 42.5, success: true }] }
+  ];
+  let s = P.deriveState(cfg, logs);
+  const heute = new Date('2026-08-25T09:00:00');
+  const v = P.pausenDeload(s, cfg, heute);
+  eq('21 Tage nach der letzten Einheit: -20 %', v.prozent, 20);
+  logs.push(P.pausenAnpassung(v, heute));
+  s = P.deriveState(cfg, logs);
+  logs.push({ date: '2026-08-25', workout: 'A', finished: '2026-08-25T11:00:00Z',
+    lifts: [{ lift: 'squat', weight: s.lifts.squat.weight, success: true }, { lift: 'bench', weight: s.lifts.bench.weight, success: false }] });
+  s = P.deriveState(cfg, logs);
+  logs.push({ date: '2026-08-28', workout: 'B', finished: '2026-08-28T10:00:00Z',
+    lifts: [{ lift: 'squat', weight: s.lifts.squat.weight, success: true }, { lift: 'bench', weight: s.lifts.bench.weight, success: true }] });
+
+  // Schrittweise und am Stueck muessen dasselbe ergeben.
+  let schritt = P.initialState(cfg);
+  for (const l of logs) schritt = P.applyLog(schritt, cfg, l);
+  const neu = P.deriveState(cfg, [...logs].reverse());
+  eq('Squat stimmt', neu.lifts.squat.weight, schritt.lifts.squat.weight);
+  eq('Bench stimmt', neu.lifts.bench.weight, schritt.lifts.bench.weight);
+  eq('der Rueckweg stimmt', JSON.stringify(neu.lifts.squat.rueckweg), JSON.stringify(schritt.lifts.squat.rueckweg));
+  // 65 x 0,8 = 52 -> 50; dann +5 -> 55, +5 -> 60 (noch unter 65).
+  eq('Squat: 50 -> 55 -> 60', neu.lifts.squat.weight, 60);
+  ok('und ist noch auf dem Rueckweg', neu.lifts.squat.rueckweg === 65);
+  // Bench: 45 x 0,8 = 36 -> 35; Fehlversuch beendet den Rueckweg; dann +2,5.
+  eq('Bench: Fehlversuch, danach normal', neu.lifts.bench.weight, 37.5);
+  ok('ohne Rueckweg', !('rueckweg' in neu.lifts.bench));
+}
+
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

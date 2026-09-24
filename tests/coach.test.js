@@ -54,11 +54,21 @@ eq('Comeback heisst Technik', C.directive(s, config, HEUTE).intensitaet.stufe, '
 s = base(); s.history = [{date:'2026-06-01'}];
 eq('lange her: Comeback', C.directive(s, config, HEUTE).situation, 'comeback');
 
+// Dieselbe Schwelle wie der Deload nach einer Pause: ab 14 Tagen.
+s = base(); s.history = [{date:'2026-09-02'}];
+eq('13 Tage: noch keine Pause', C.directive(s, config, HEUTE).situation === 'comeback', false);
+s = base(); s.history = [{date:'2026-09-01'}];
+eq('14 Tage: Comeback', C.directive(s, config, HEUTE).situation, 'comeback');
+eq('und Technik', C.directive(s, config, HEUTE).intensitaet.stufe, 'technik');
+
 s = base(); s.history = [{date:'2026-09-14'}]; s.lifts.bench.fails = 1;
 eq('offener Fehlversuch schlaegt alles andere', C.directive(s, config, HEUTE).situation, 'nachFehlversuch');
 eq('und wird hart angesagt', C.directive(s, config, HEUTE).intensitaet.stufe, 'hart');
 
-s = base(); s.history = dreiWochen.concat([{date:'2026-08-25'}]);
+// Chronologisch, wie die echte Historie auch (deriveState sortiert). Die
+// fruehere Fassung haengte den 25.08. HINTER den 15.09. an und lief nur,
+// weil 21 Tage zufaellig genau unter der alten Comeback-Schwelle lagen.
+s = base(); s.history = [{date:'2026-08-25'}].concat(dreiWochen);
 Object.values(s.lifts).forEach(l => l.weight = 999);
 eq('vier Wochen am Stueck: Streak', C.directive(s, config, HEUTE).situation, 'streak');
 

@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="App öffnen" src="https://img.shields.io/badge/App-öffnen-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1227%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1272%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-keiner-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Abhängigkeiten" src="https://img.shields.io/badge/Abhängigkeiten-0-a7a3ab?style=for-the-badge&labelColor=17161b">
 </p>
@@ -127,6 +127,7 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 | | |
 |---|---|
 | **5×5-Automat** | Steigerung, Fehlerzähler, Deload auf 90 % nach drei Fehlversuchen. |
+| **Deload nach einer Pause** | Ab 14 Tagen ohne Krafteinheit schlägt die App beim Start einen Rückschritt vor: −10 %, ab 21 Tagen −20 %, ab 42 Tagen −30 %. Ein Tipp übernimmt, einer behält die alten Gewichte — nichts ändert sich ohne dich. Danach steigt jede erfolgreiche Einheit **doppelt**, bis das Gewicht vor der Pause wieder erreicht ist; ein Fehlversuch beendet die Abkürzung. Faustregeln, keine Messwerte. |
 | **Plattenrechner** | Scheiben pro Seite. Nicht exakt ladbare Gewichte werden benannt statt gerundet. Darunter eine zweite Zeile mit derselben Last **nur aus 20/10/5/2,5/1,25** — die Reihe, die in jedem Studio komplett liegt. Wo keine 25er und 15er sind, lädt man eben `2×20` statt `25 + 15`. Sie erscheint nur, wenn sie etwas anderes sagt. |
 | **Soundcheck** | Aufwärmsätze aus dem Arbeitsgewicht: leere Stange, dann 55 / 70 / 85 %. Jede Zeile abhakbar — angetippt durchgestrichen. |
 | **Gewicht im Satz** | Anpassbar während der Einheit — das Log bildet ab, was wirklich passiert ist. |

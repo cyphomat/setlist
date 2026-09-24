@@ -78,6 +78,12 @@ export function applyLog(state, config, log) {
       if (!l || !gewicht) continue;
       l.weight = Math.max(config.bar, roundTo(gewicht, config.rounding));
       l.fails = 0;
+      // Ein Ziel oberhalb des neuen Gewichts eroeffnet den Rueckweg: bis
+      // dorthin steigt jede erfolgreiche Einheit doppelt. Das Ziel steht im
+      // Log, nicht nur im Zustand — sonst ginge es beim Neuberechnen verloren.
+      const ziel = log.ziele && log.ziele[id];
+      if (ziel > l.weight) l.rueckweg = roundTo(ziel, config.rounding);
+      else delete l.rueckweg;
     }
     next.updated = new Date().toISOString();
     next.history = [...(next.history || []),
@@ -98,6 +104,7 @@ export function applyLog(state, config, log) {
     if (l && log.newWorking) {
       l.weight = Math.max(config.bar, roundTo(log.newWorking, config.rounding));
       l.fails = 0;
+      delete l.rueckweg;
     }
     next.updated = new Date().toISOString();
     const eintrag = { date: log.date, type: 'maxout', weight: log.weight, reps: log.reps };
@@ -121,9 +128,20 @@ export function applyLog(state, config, log) {
     if (!def || !cur) continue;
 
     if (entry.success) {
-      cur.weight = roundTo(entry.weight + def.increment, config.rounding);
+      // Auf dem Rueckweg nach einer Pause der doppelte Schritt, aber nie
+      // ueber das Gewicht vor der Pause hinaus: verlorene Kraft kommt
+      // schneller zurueck als neue entsteht — neue bleibt beim normalen Tempo.
+      const schritt = cur.rueckweg ? def.increment * 2 : def.increment;
+      let neu = roundTo(entry.weight + schritt, config.rounding);
+      if (cur.rueckweg) {
+        if (neu >= cur.rueckweg) { neu = Math.max(cur.rueckweg, roundTo(entry.weight + def.increment, config.rounding)); delete cur.rueckweg; }
+      }
+      cur.weight = neu;
       cur.fails = 0;
     } else {
+      // Ein Fehlversuch heisst: der Rueckweg war zu schnell. Ab hier gilt
+      // wieder die normale Mechanik mit Fehlerzaehler und Deload.
+      delete cur.rueckweg;
       cur.fails += 1;
       if (cur.fails >= config.deload.afterFails) {
         cur.weight = Math.max(config.bar, roundTo(entry.weight * config.deload.factor, config.rounding));
@@ -136,6 +154,91 @@ export function applyLog(state, config, log) {
   next.updated = new Date().toISOString();
   next.history = [...(next.history || []), { date: log.date, workout: log.workout, type: 'strength' }].slice(-100);
   return next;
+}
+
+/* ===================================================================
+   Deload nach einer Pause.
+
+   Faustregeln aus der Trainingspraxis, keine Messwerte an einer Person:
+   Maximalkraft haelt sich in den ersten zwei Wochen ohne Training
+   weitgehend, danach geht es spuerbar bergab, nach sechs Wochen sind
+   auch Technik und Sehnen wieder ein Thema. Die Stufen folgen dem.
+
+   Gezaehlt wird ab der letzten KRAFTeinheit. Jam, Unplugged und Max-Out
+   setzen keinen Reiz, der das 5x5-Gewicht an der Stange haelt.        */
+
+/** Ab so vielen Tagen gilt eine Luecke als Pause — auch fuer die Ansage. */
+export const PAUSE_AB = 14;
+
+export const PAUSE_STUFEN = [
+  { ab: 42, faktor: 0.7 },
+  { ab: 21, faktor: 0.8 },
+  { ab: PAUSE_AB, faktor: 0.9 }   // derselbe Faktor wie der Deload nach Fehlversuchen
+];
+
+const tageZwischen = (von, bis) =>
+  Math.round((Date.parse(`${bis}T00:00:00Z`) - Date.parse(`${von}T00:00:00Z`)) / 86400000);
+
+/**
+ * Der Vorschlag nach einer Pause — oder null.
+ *
+ * Null heisst: keine Krafteinheit bisher (die Ersteinrichtung ist keine
+ * Pause), die Luecke ist kuerzer als PAUSE_AB, oder fuer diese Pause wurde
+ * schon angepasst. Letzteres ist der wichtige Fall: wer den Vorschlag
+ * uebernimmt und die Einheit dann abbricht, steht beim naechsten Start vor
+ * derselben Pause und bekaeme sonst ein zweites Mal -10 %.
+ */
+export function pausenDeload(state, config, heute = new Date()) {
+  const hist = (state && state.history) || [];
+  let letzteKraft = -1;
+  for (let i = hist.length - 1; i >= 0; i--) {
+    if (hist[i].type === 'strength') { letzteKraft = i; break; }
+  }
+  if (letzteKraft < 0) return null;
+  if (hist.slice(letzteKraft + 1).some(h => h.type === 'anpassung')) return null;
+
+  const seit = hist[letzteKraft].date;
+  const tage = tageZwischen(seit, ymd(heute));
+  const stufe = PAUSE_STUFEN.find(s => tage >= s.ab);
+  if (!stufe) return null;
+
+  const bar = config.bar || 20;
+  const schritt = config.rounding || 2.5;
+  const gewichte = {};
+  for (const id of Object.keys(config.lifts || {})) {
+    const l = state.lifts && state.lifts[id];
+    if (!l || !(l.weight > 0)) continue;
+    // Abwaerts runden: ein Deload, der durch Rundung kleiner ausfaellt als
+    // angesagt, ist keiner.
+    const nachher = Math.max(bar, Math.floor((l.weight * stufe.faktor + 1e-9) / schritt) * schritt);
+    if (nachher < l.weight) gewichte[id] = { vorher: l.weight, nachher };
+  }
+  if (!Object.keys(gewichte).length) return null;
+
+  return {
+    tage, seit,
+    faktor: stufe.faktor,
+    prozent: Math.round((1 - stufe.faktor) * 100),
+    gewichte
+  };
+}
+
+/** Aus dem Vorschlag der Log-Eintrag, der ihn umsetzt. */
+export function pausenAnpassung(vorschlag, heute = new Date()) {
+  const gewichte = {}, ziele = {};
+  for (const [id, g] of Object.entries(vorschlag.gewichte)) {
+    gewichte[id] = g.nachher;
+    ziele[id] = g.vorher;
+  }
+  return {
+    date: ymd(heute),
+    type: 'anpassung',
+    grund: 'pause',
+    tage: vorschlag.tage,
+    faktor: vorschlag.faktor,
+    finished: heute.toISOString(),
+    gewichte, ziele
+  };
 }
 
 /** Vollstaendige Neuberechnung aus allen Logs — die tragende Invariante. */

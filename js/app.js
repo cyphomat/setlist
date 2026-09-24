@@ -298,6 +298,7 @@ function renderHome() {
       <span class="tone ${d.intensitaet.stufe}">${d.intensitaet.label} · ${d.kopf}</span>
       <p class="txt">${d.intensitaet.text}</p>
       ${verletzungsZeile()}
+      ${pausenZeile()}
       ${abnehmZeile()}
       ${formZeile()}
       ${erholungsZeile()}
@@ -316,7 +317,7 @@ function renderHome() {
       <li><span>${escHtml(l.name)} <span class="num">${l.sets}×${l.reps}</span></span><span>${P.fmtWeight(l.weight)}</span></li>
     `).join('')}</ul>
     <button id="start" class="btn">${t('home.starten')}</button>`;
-  $('start').onclick = startSession;
+  $('start').onclick = startMitPausenCheck;
 
   const motto = config.motto;
   $('motto').innerHTML = motto ? `<p class="motto">${escHtml(motto)}</p>` : '';
@@ -541,6 +542,95 @@ function renderBodyTrend() {
 
 /* ============================ Einheit ============================ */
 
+/* ================= Deload nach einer Pause =================
+   Die Regeln stehen in program.js (pausenDeload). Hier nur die Frage an
+   den Nutzer: ein Vorschlag vor dem Start, nie eine stille Aenderung — er
+   koennte woanders trainiert haben, ohne es einzutragen.               */
+
+const PAUSE_KEY = 'setlist.pause.abgelehnt';
+
+/** Der offene Vorschlag, oder null — auch null, wenn schon abgelehnt. */
+function pausenVorschlag() {
+  if (!config || !state) return null;
+  const v = P.pausenDeload(state, config, new Date());
+  if (!v) return null;
+  // Die Ablehnung gilt fuer diese Pause UND diese Stufe: wer bei 15 Tagen
+  // "wie vorher" sagt und dann doch noch eine Woche raus ist, wird bei der
+  // naechsten Stufe noch einmal gefragt — das ist eine andere Lage.
+  if (localStorage.getItem(PAUSE_KEY) === `${v.seit}|${v.prozent}`) return null;
+  return v;
+}
+
+function startMitPausenCheck() {
+  const v = pausenVorschlag();
+  if (!v) return startSession();
+  oeffnePauseDialog(v);
+}
+
+function oeffnePauseDialog(v) {
+  const dlg = $('pause-dialog');
+  // Eine aktive Verletzung, die waehrend der Pause begann, gehoert auf die
+  // Karte: dann erzaehlen Injury Report und Deload dieselbe Geschichte.
+  const grund = VL.aktive(config).filter(x => x.seit && x.seit >= v.seit);
+  $('pause-body').innerHTML = `
+    <p class="pause-kopf">${escHtml(t('pause.kopf', { tage: v.tage }))}</p>
+    ${grund.length ? `<p class="fine">${escHtml(t('pause.wegen', { was: grund.map(g => g.was).join(', ') }))}</p>` : ''}
+    <p class="pause-vorschlag">${escHtml(t('pause.vorschlag', { p: v.prozent }))}</p>
+    <div class="pause-liste">${Object.entries(v.gewichte).map(([id, g]) => `
+      <div class="kv"><span class="k">${escHtml((config.lifts[id] || {}).name || id)}</span>
+        <span class="v">${P.fmtWeight(g.vorher)} → <b>${P.fmtWeight(g.nachher)}</b></span></div>`).join('')}</div>
+    <p class="fine">${escHtml(t('pause.rueckweg'))}</p>
+    <p class="fine">${escHtml(t('pause.faustregel'))}</p>`;
+  $('pause-ja').onclick = () => { dlg.close(); uebernehmePause(v); };
+  $('pause-nein').onclick = () => {
+    dlg.close();
+    localStorage.setItem(PAUSE_KEY, `${v.seit}|${v.prozent}`);
+    startSession();
+  };
+  dlg.showModal();
+}
+
+/**
+ * Den Vorschlag als Anpassung ins Log. Erst lokal anwenden und die Einheit
+ * starten, dann schreiben — die Einheit soll nicht auf das Netz warten.
+ * Ohne Netz landet die Anpassung in derselben Warteschlange wie Einheiten.
+ */
+async function uebernehmePause(v) {
+  const log = P.pausenAnpassung(v, new Date());
+  state = P.applyLog(state, config, log);
+  S.cache({ state });
+  startSession();
+  try { await commitAnpassung(log); banner(t('pause.uebernommen', { p: v.prozent }), 'ok'); }
+  catch { S.queue(log); banner(t('msg.keinNetz'), '', 6000); }
+}
+
+async function commitAnpassung(log) {
+  let path = `${S.LOG_DIR}/${log.date}-anpassung.json`;
+  let n = 2;
+  while (await S.readFile(path)) path = `${S.LOG_DIR}/${log.date}-anpassung-${n++}.json`;
+  await S.writeFile(path, log, `Anpassung nach ${log.tage || '?'} Tagen Pause am ${log.date}`);
+  const cur = await S.readFile('state.json');
+  await S.writeFile('state.json', state, `Zustand nach Anpassung ${log.date}`, cur ? cur.sha : stateSha);
+  return path;
+}
+
+/** Auf dem Startbildschirm: damit die Karte beim Start keine Ueberraschung ist. */
+function pausenZeile() {
+  const v = pausenVorschlag();
+  if (!v) return '';
+  return `<p class="formzeile" style="border-top-color:var(--stahl)">${escHtml(
+    t('pause.home', { tage: v.tage, p: v.prozent }))}</p>`;
+}
+
+/** In der Einheit: ein Lift auf dem Rueckweg sagt, dass er doppelt steigt. */
+function rueckwegZeile(liftId) {
+  const l = state.lifts[liftId], def = config.lifts[liftId];
+  if (!l || !l.rueckweg || !def) return '';
+  return `<p class="platten rueck">${escHtml(t('pause.rueckwegAktiv', {
+    schritt: P.fmtWeight(def.increment * 2), normal: P.fmtWeight(def.increment),
+    ziel: P.fmtWeight(l.rueckweg) }))}</p>`;
+}
+
 function startSession() {
   const plan = P.planWorkout(state, config, workoutOverride || state.next);
   const d = C.directive(state, config, new Date(), letzterLog, stimme, erholung);
@@ -652,6 +742,7 @@ function renderSession() {
           <button data-w="${li}" data-d="1" aria-label="${t('ses.schwerer')}">+</button>
         </span></div>
       ${plattenZeile(l.weight)}
+      ${rueckwegZeile(l.lift)}
       ${l.weight !== l.planWeight
         ? `<p class="cue geaendert">${t('ses.angepasst', { kg: P.fmtWeight(l.planWeight) })}</p>`
         : (i.kadenz ? `<p class="cue">${i.kadenz}</p>` : '')}
@@ -810,6 +901,7 @@ async function finishSession() {
 /** Schreibt die Einheit weg und gibt den tatsaechlich benutzten Pfad
  * zurueck — das Gefuehl danach (siehe waehleGefuehl) muss wissen, wohin. */
 async function commit(log) {
+  if (log.type === 'anpassung') return commitAnpassung(log);
   let path = `${S.LOG_DIR}/${log.date}.json`;
   if (await S.readFile(path)) path = `${S.LOG_DIR}/${log.date}-2.json`;
   // Ohne workout — etwa bei einer Anpassung — waere hier "Einheit undefined"
@@ -846,7 +938,12 @@ function renderDone(before, log) {
       <div class="body">
         ${log.lifts.map(e => {
           const b = before.lifts[e.lift].weight, a = state.lifts[e.lift].weight;
-          const txt = a > b ? `${P.fmtWeight(a)} ▲` : a < b ? `${P.fmtWeight(a)} ▼ Deload` : t('done.bleibt');
+          // Ein doppelter Schritt auf dem Rueckweg soll auch so heissen —
+          // sonst wundert man sich, warum der Squat um 5 statt 2,5 stieg.
+          const inc = (config.lifts[e.lift] || {}).increment || 0;
+          const rueck = before.lifts[e.lift].rueckweg && a - b > inc + 1e-9;
+          const txt = a > b ? `${P.fmtWeight(a)} ▲${rueck ? ` ${t('pause.rueckwegDone')}` : ''}`
+            : a < b ? `${P.fmtWeight(a)} ▼ Deload` : t('done.bleibt');
           return `<div class="kv"><span class="k">${e.success ? '✓' : '✕'}</span>
             <span class="v">${escHtml(config.lifts[e.lift].name)} — ${txt}</span></div>`;
         }).join('')}
@@ -1845,8 +1942,13 @@ function renderListe(logs) {
     if (l.type === 'anpassung') {
       const g = Object.entries(l.gewichte || {})
         .map(([id, w]) => `${escHtml((config.lifts[id] || {}).name || id)} ${P.fmtWeight(w)}`).join(' · ');
+      // Eine Pausen-Anpassung traegt keinen getippten Grund, sondern Daten —
+      // der Text wird daraus gebildet, damit er in beiden Sprachen stimmt.
+      const grund = l.grund === 'pause'
+        ? t('pause.hist', { tage: l.tage || '?', p: Math.round((1 - (l.faktor || 1)) * 100) })
+        : l.grund;
       return `<div class="hist anpassung"><div class="d">${escHtml(l.date)} · ${t('hist.angepasst')}</div>
-        <div class="l">${g}${l.grund ? `<br><span style="color:var(--dim)">${escHtml(l.grund)}</span>` : ''}</div></div>`;
+        <div class="l">${g}${grund ? `<br><span style="color:var(--dim)">${escHtml(grund)}</span>` : ''}</div></div>`;
     }
     if (l.type && l.type !== 'strength') {
       const m = l.dauerSekunden ? `${Math.floor(l.dauerSekunden / 60)}:${String(l.dauerSekunden % 60).padStart(2, '0')}` : '—';
