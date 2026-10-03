@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1272%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1393%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
 </p>
@@ -77,6 +77,12 @@
 </tr>
 </table>
 
+**And a bit of stage** — patches, records and tour shirts, all from your sessions:
+
+<p align="center">
+  <img src="assets/screens/merch-dunkel.png" alt="The merch stand: rank and battle vest with patches" width="330">
+</p>
+
 <sub>Real screens with sample data, captured via <code>tools/shot.html</code> and <code>tools/shots.mjs</code>. Not mockups.</sub>
 
 ---
@@ -138,6 +144,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | **Mobility** | Five exercises, due once per calendar week — at the first session (strength or jam), whichever comes first. Own button, usable independently at any time. |
 | **Feel after the session** | Four levels (easy/normal/hard/brutal) on the done screen — makes the call verifiable in hindsight. |
 | **Injury report** | What is nagging, with your own treatment. Two kinds: *recurring* (comes and goes, briefly asked about after a session, can heal) and *structural* (stays, not asked about, blocks permanently). Exercises you block are not rolled by the jam, not picked by Unplugged, and left out of technique and mobility. Main lifts are only flagged, never dropped — the 5×5 mechanics hang on them. The app makes no diagnosis and suggests no treatment. |
+| **Merch stand** | A little play to match the stage: a **battle vest** with patches (plate club, 1000 lb club, bodyweight marks, comeback, streaks …), **gold and platinum** records for the weight you have moved, a **rank** from garage band to Hall of Fame, and every quarter a **tour shirt** with your training days on the back. After a session the setlist shows up as a taped paper sheet, and the home screen has a weekly dial that only goes to eleven when the plan is done **and** every set was clean. Consistency earns it, never volume: the rank counts weeks, not sessions, and a logged injury **freezes your streak** instead of breaking it. All calculated from the logs, nothing stored. |
 | **Call vs. feel** | In the Tour: every session with both values plus the hit rate — the call and the perceived effort side by side instead of merely asserted. |
 | **Where you are out of balance** | Twelve strength ratios against guidance values *and* against your own level before the layoff. When the same lift stands out in several pairs, the app names it as the cause and suggests extra work — a single skewed pair does not tell you which side causes it. Only values of equal quality are compared. |
 | **Test values** | Pull-up, dip, front squat, single-arm press, step-up, single-leg deadlift and farmer’s carry — what 5×5 does not produce on its own. Enter them in the backstage or **measure them in a max-out**; a measured test beats a typed one and is recorded with its date. They add eight more ratios, including whether your pulling matches your pressing. |
@@ -355,6 +362,8 @@ off under *Backstage → Connections*.
 | `js/einrichten.js` | Builds a valid `config.json` from a few answers. |
 | `js/persoenlich.js` | Your reason, your own lines and old personal bests. |
 | `js/unplugged.js` | Bodyweight intervals, pool and run order. |
+| `js/verletzung.js` | Injury report: blocks, history, pause windows for the streak. |
+| `js/merch.js` | Merch stand: patches, records, rank, tour shirts, weekly dial — all from the logs. |
 | `js/boot.js` | Theme and storage migration before first paint. |
 | `js/store.js` | GitHub API as storage, offline buffer. |
 | `js/intervals.js` | Reads rides and form; writes strength sessions back. |

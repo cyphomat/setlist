@@ -263,6 +263,17 @@ const SZENEN = {
     }
   },
 
+  // Der Merch-Stand: Rang, Kutte mit Aufnaehern, Gold und Platin.
+  merch: {
+    optionen: { mitVerlauf: true },
+    hoehe: 1400,
+    async fuehre(p) {
+      await p.click('#go-merch');
+      await p.waitForSelector('#merch-kutte .patch');
+      await verstecke(p, '#banner');
+    }
+  },
+
   // Der Hinweis, dass am Original weitergearbeitet wurde.
   fork: {
     optionen: { versionOben: '2026-11-14.3' },

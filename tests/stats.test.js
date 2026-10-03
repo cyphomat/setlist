@@ -226,6 +226,18 @@ eq('ohne jede Aktivitaet kein Lieblingstag', S.lieblingstag([], []), null);
 eq('drei Wochen am Stueck sind die laengste Serie', S.laengsteSerie(angebenLogs, angebenFahrten), 3);
 eq('eine einzelne Einheit ist eine Serie von einer Woche', S.laengsteSerie([angebenLogs[0]], []), 1);
 eq('ohne Daten keine Serie', S.laengsteSerie([], []), 0);
+{
+  const l = [{date:'2026-08-04'},{date:'2026-08-11'},{date:'2026-09-01'},{date:'2026-09-08'}];
+  eq('Luecke ohne Verletzung: zwei Serien zu zwei Wochen', S.laengsteSerie(l, []), 2);
+  const f = [{ von:'2026-08-15', bis:'2026-08-30' }];
+  eq('Luecke in der Verletzungspause: eine Serie, Pausenwochen zaehlen nicht', S.laengsteSerie(l, [], f), 4);
+  eq('eine Anpassung haelt keine Serie', S.laengsteSerie([{date:'2026-08-04'},{date:'2026-08-11',type:'anpassung'}], []), 1);
+  const ws = S.wochenSerie(l.map(x => x.date), f);
+  eq('Wochenverlauf vom ersten bis zum letzten Montag', ws.length, 6);
+  eq('die Pausenwoche ist markiert', ws.filter(w => w.pause).length, 2);
+  const k = S.kalender([], [], 2, new Date(2026, 7, 28), [{ von:'2026-08-26', bis:'2026-08-27' }]);
+  eq('Kalender schraffiert genau die Pausentage', k.tage.filter(t => t.pause).map(t => t.date).join(','), '2026-08-26,2026-08-27');
+}
 
 print('\n--- Ansage gegen Gefuehl ---');
 const kraftLog = (date, angesagt, gefuehlt) =>

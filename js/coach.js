@@ -3,7 +3,8 @@
 // etwas behauptet, das nicht aus deinen Daten folgt.
 
 import { VOICE } from './content.js';
-import { mondayOf, PAUSE_AB } from './program.js';
+import { mondayOf, ymd, PAUSE_AB } from './program.js';
+import { pausenFenster, wocheInPause } from './verletzung.js';
 
 export function daysSince(dateStr, today = new Date()) {
   if (!dateStr) return null;
@@ -13,18 +14,37 @@ export function daysSince(dateStr, today = new Date()) {
 }
 
 /** Wie viele Wochen am Stueck mit mindestens einer Einheit? */
-export function weekStreak(history = [], today = new Date()) {
-  if (!history.length) return 0;
-  const wochen = new Set(history.map(h => isoWeekKey(new Date(h.date + 'T00:00:00'))));
-  let streak = 0;
+export function weekStreak(history = [], today = new Date(), fenster = []) {
+  return serienStand(history, today, fenster).wochen;
+}
+
+/**
+ * Die laufende Serie und ob sie gerade pausiert.
+ *
+ * Eine Woche ohne Einheit reisst die Serie — es sei denn, sie faellt in ein
+ * Pausenfenster einer Verletzung (verletzung.js). Dann zaehlt sie nicht mit,
+ * reisst aber auch nichts. `pausiert` nennt das Fenster, wenn die Serie
+ * genau jetzt deswegen stillsteht. Eine Anpassung ist kein Training und
+ * haelt keine Serie am Leben.
+ */
+export function serienStand(history = [], today = new Date(), fenster = []) {
+  const zaehlt = history.filter(h => h && h.date && h.type !== 'anpassung');
+  if (!zaehlt.length) return { wochen: 0, pausiert: null };
+  const wochen = new Set(zaehlt.map(h => isoWeekKey(new Date(h.date + 'T00:00:00'))));
+  let n = 0, pausiert = null;
   const cursor = new Date(today);
-  // Die laufende Woche zaehlt nur mit, wenn schon trainiert wurde.
-  if (!wochen.has(isoWeekKey(cursor))) cursor.setDate(cursor.getDate() - 7);
-  while (wochen.has(isoWeekKey(cursor))) {
-    streak++;
+  // Die laufende Woche zaehlt nur mit, wenn schon trainiert wurde — fehlt
+  // sie, ist das noch keine Luecke.
+  for (let i = 0; i < 1000; i++) {
+    if (wochen.has(isoWeekKey(cursor))) n++;
+    else {
+      const p = wocheInPause(ymd(mondayOf(cursor)), fenster);
+      if (p) { if (!n && !pausiert) pausiert = p; }
+      else if (i > 0) break;
+    }
     cursor.setDate(cursor.getDate() - 7);
   }
-  return streak;
+  return { wochen: n, pausiert: n ? pausiert : null };
 }
 
 function isoWeekKey(d) {
@@ -72,7 +92,8 @@ export function directive(state, config, today = new Date(), letzterLog = null, 
   const hist = state.history || [];
   const letzte = hist.length ? hist[hist.length - 1].date : null;
   const tage = daysSince(letzte, today);
-  const streak = weekStreak(hist, today);
+  const serie = serienStand(hist, today, pausenFenster(config, ymd(today)));
+  const streak = serie.wochen;
   const fortschritt = progressToReference(state, config);
   const workout = state.next;
   const lifts = config.workouts[workout].map(s => s.lift);
@@ -113,6 +134,7 @@ export function directive(state, config, today = new Date(), letzterLog = null, 
     spruch: spruchWaehlen(situation, toKey(today), stimme && stimme.sprueche),
     intensitaet: intensitaet(situation, workout, erholung),
     streak,
+    streakPausiert: serie.pausiert,
     tageSeitLetzter: tage,
     fortschritt,
     erholung

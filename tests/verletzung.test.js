@@ -175,4 +175,41 @@ print('\n--- Umfeld einer Verschlechterung ---');
   eq('ohne Logs auch nicht', V.umfeld([], 'p'), null);
 }
 
+
+print('\n--- Pausenfenster: verschoben, nicht abgesagt ---');
+{
+  const FINGER = { id: 'finger', was: 'Finger links eingequetscht', art: 'wiederkehrend', status: 'aktiv', seit: '2026-09-20' };
+  const cfg = inj => ({ injuries: inj });
+  const f = V.pausenFenster(cfg([FINGER]), '2026-10-03');
+  eq('aktive Verletzung: ein Fenster', f.length, 1);
+  eq('es beginnt am Tag der Verletzung', f[0].von, '2026-09-20');
+  eq('und laeuft bis heute', f[0].bis, '2026-10-03');
+  eq('Strukturelles haelt keine Serie an', V.pausenFenster(cfg([SCHULTER]), '2026-10-03').length, 0);
+  eq('ohne seit kein Fenster', V.pausenFenster(cfg([{ ...FINGER, seit: undefined }]), '2026-10-03').length, 0);
+  const lang = V.pausenFenster(cfg([{ ...FINGER, seit: '2026-01-01' }]), '2026-10-03');
+  eq('hoechstens sechs Wochen je Verletzung', lang[0].bis, '2026-02-11');
+  const ruhend = V.pausenFenster(cfg([{ ...FINGER, status: 'ruhend', bis: '2026-09-28' }]), '2026-10-03');
+  eq('nach dem Ende gilt das Ende', ruhend[0].bis, '2026-09-28');
+  eq('ruhend ohne Ende: unbekannt, kein Fenster', V.pausenFenster(cfg([{ ...FINGER, status: 'ruhend' }]), '2026-10-03').length, 0);
+  eq('Ende vor dem Anfang: kein Fenster', V.pausenFenster(cfg([{ ...FINGER, status: 'ruhend', bis: '2026-09-01' }]), '2026-10-03').length, 0);
+
+  ok('Woche, die das Fenster beruehrt', !!V.wocheInPause('2026-09-14', f));   // So 20.09. gehoert dazu
+  ok('Woche danach nicht mehr', !V.wocheInPause('2026-10-05', f));
+  ok('Woche davor nicht', !V.wocheInPause('2026-09-07', f));
+
+  const gestempelt = V.stempleEnde([{ ...FINGER, status: 'ruhend' }], [FINGER], '2026-10-03');
+  eq('von aktiv weg: heute ist das Ende', gestempelt[0].bis, '2026-10-03');
+  const zurueck = V.stempleEnde([{ ...FINGER, status: 'aktiv', bis: '2026-10-01' }], [{ ...FINGER, status: 'ruhend' }], '2026-10-03');
+  eq('wieder aktiv: das Ende faellt weg', zurueck[0].bis, undefined);
+  const hand = V.stempleEnde([{ ...FINGER, status: 'ruhend', bis: '2026-09-30' }], [FINGER], '2026-10-03');
+  eq('ein Ende von Hand bleibt stehen', hand[0].bis, '2026-09-30');
+  const neu = V.stempleEnde([{ ...FINGER, status: 'ruhend' }], [], '2026-10-03');
+  eq('neu als ruhend angelegt: kein erfundenes Ende', neu[0].bis, undefined);
+
+  const gebaut = V.baueVerletzungen([{ was: 'Finger', status: 'ruhend', seit: '2026-09-20', bis: '2026-09-30' }]);
+  eq('das Ende uebersteht den Formularweg', gebaut[0].bis, '2026-09-30');
+  eq('aktiv mit Ende: das Ende faellt weg', V.baueVerletzungen([{ was: 'Finger', status: 'aktiv', bis: '2026-09-30' }])[0].bis, undefined);
+  eq('und kommt im Entwurf wieder an', V.entwurf({ injuries: gebaut })[0].bis, '2026-09-30');
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

@@ -14,6 +14,7 @@ import * as A from './aktualisierung.js';
 import * as E from './einrichten.js';
 import * as PS from './persoenlich.js';
 import * as UP from './unplugged.js';
+import * as M from './merch.js';
 
 let config = null, state = null, stateSha = null, session = null;
 let ridesByDate = new Map(), letzterLog = null, trend = null;
@@ -54,7 +55,7 @@ const $ = id => document.getElementById(id);
 uebersetzeStatisch();
 const VERSION_KEY = 'setlist.version';
 let laufendeVersion = localStorage.getItem(VERSION_KEY) || '—';
-const VIEWS = ['setup', 'einrichten', 'home', 'session', 'wod', 'unplugged', 'maxout', 'done', 'history', 'bibliothek'];
+const VIEWS = ['setup', 'einrichten', 'home', 'session', 'wod', 'unplugged', 'maxout', 'done', 'history', 'bibliothek', 'merch'];
 const show = n => { VIEWS.forEach(v => $('view-' + v).hidden = v !== n); window.scrollTo(0, 0); };
 
 let bannerTimer = null;
@@ -321,22 +322,65 @@ function renderHome() {
 
   const motto = config.motto;
   $('motto').innerHTML = motto ? `<p class="motto">${escHtml(motto)}</p>` : '';
-  renderProgress(d.fortschritt, d.streak);
+  renderProgress(d.fortschritt, d);
+  renderAmp();
   renderWeek();
   renderIcuStatus();
   renderWeights(d.fortschritt);
 }
 
-function renderProgress(f, streak) {
+function renderProgress(f, d) {
+  const streak = d.streak;
+  const pause = d.streakPausiert;
   const pct = Math.round(f.gesamt * 100);
   $('progress').innerHTML = `
     <div class="card">
       <div class="kicker">${t('home.fortschritt.kicker')}</div>
       <div class="name">${pct}<span style="font-size:1.25rem">%</span></div>
       <div class="bar gruen"><i style="width:${pct}%"></i></div>
-      <p class="fine">${t('home.fortschritt.fine')} ${streak > 0
+      <p class="fine">${t('home.fortschritt.fine')} ${streak > 0 && pause
+        // Verletzt: die Serie steht still, statt zu reissen.
+        ? `<b style="color:var(--stahl)">${escHtml(tn('home.fortschritt.pausiert', streak, { was: pause.was }))}</b>`
+        : streak > 0
         ? `<b style="color:var(--gruen)">${t(streak === 1 ? 'home.fortschritt.serie' : 'home.fortschritt.serien', { n: streak })}</b>`
         : t('home.fortschritt.keineSerie')}</p>
+      ${pct >= 100 ? `<p class="reunion">${t('home.reunion')}</p>` : ''}
+    </div>`;
+}
+
+/* ============================ Goes to eleven ============================
+   Der Wochenregler. Zehn heisst: Plan erfuellt. Elf gibt es nur, wenn
+   dabei auch jeder Satz sauber war — mehr Einheiten drehen ihn nicht
+   weiter. Die Logs kommen aus dem letzten Laden; fehlen sie fuer einen
+   Tag, bleibt es ehrlich bei zehn (merch.js).                          */
+function renderAmp() {
+  const box = $('amp');
+  if (!box || !config || !state) return;
+  const logs = alleLogs.length ? alleLogs : ((S.cachedLogs() || {}).logs || []);
+  const v = M.verstaerker(logs, config, new Date(), state.history || []);
+  if (!v) { box.innerHTML = ''; return; }
+  const punkt = (grad, r) => {
+    const a = grad * Math.PI / 180;
+    return [Math.round(Math.sin(a) * r * 100) / 100, Math.round(-Math.cos(a) * r * 100) / 100];
+  };
+  const winkel = n => -135 + n * (270 / 11);
+  const striche = Array.from({ length: 12 }, (_, n) => {
+    const [x1, y1] = punkt(winkel(n), 27), [x2, y2] = punkt(winkel(n), n === 11 ? 35 : 32);
+    return `<line class="strich${n <= v.stufe && v.stufe > 0 ? ' an' : ''}${n === 11 ? ' elf' : ''}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+  }).join('');
+  const [zx, zy] = punkt(winkel(v.stufe), 17);
+  box.innerHTML = `
+    <div class="amp${v.stufe === 11 ? ' elf' : ''}">
+      <svg viewBox="-40 -40 80 80" role="img" aria-label="${escHtml(t('amp.aria', { n: v.stufe }))}">
+        ${striche}
+        <circle class="knopf" r="21"/>
+        <line class="zeiger" x1="0" y1="0" x2="${zx}" y2="${zy}"/>
+      </svg>
+      <div class="amp-txt">
+        <div class="amp-zahl">${v.stufe}</div>
+        <div class="amp-was">${escHtml(t('amp.text', { e: v.erledigt, g: v.geplant }))}</div>
+        ${v.stufe === 11 ? `<p class="fine">${t('amp.elf')}</p>` : v.stufe === 10 ? `<p class="fine">${t('amp.zehn')}</p>` : ''}
+      </div>
     </div>`;
 }
 
@@ -695,14 +739,17 @@ function startSession() {
   });
 
   const fin = C.tagesAuswahl(VL.ohneGesperrte(FINISHER, config), new Date(), 'fin');
+  session.fin = { id: fin.id, name: fin.name };
   $('finisher').innerHTML = `
     <details class="info"><summary>${t('ses.encore', { name: fin.name })}</summary>
       <div class="body">
         <p class="tagline"><b>${fin.name}</b> · ${fin.dosis}</p>
         <p>${fin.warum}</p>
         <p style="color:var(--dim)">${t('ses.encoreHinweis')}</p>
+        <label class="zugabe-check"><input type="checkbox" id="zugabe-gespielt"> ${t('ses.zugabeGespielt')}</label>
       </div>
     </details>`;
+  $('zugabe-gespielt').onchange = e => { if (session) session.zugabe = e.target.checked; };
 
   renderSession();
   show('session');
@@ -879,6 +926,9 @@ async function finishSession() {
                success: reps.length === l.sets && reps.every(r => r >= l.reps) };
     })
   };
+  if (session.zugabe && session.fin) log.zugabe = session.fin.id;
+  const ort = ortName();
+  if (ort) log.ort = ort;
   const before = state;
   state = P.applyLog(state, config, log);
   letzterLog = log;
@@ -896,6 +946,7 @@ async function finishSession() {
   aktiviereGefuehlChips();
   session = null;
   workoutOverride = null;
+  zeigeNeueAufnaeher(log, before.history || []);
 }
 
 /** Schreibt die Einheit weg und gibt den tatsaechlich benutzten Pfad
@@ -929,6 +980,8 @@ function renderDone(before, log) {
   const rest = wins.slice(1, 5);
 
   $('done-body').innerHTML = `
+    ${setlistZettel(log)}
+    <div id="done-aufnaeher"></div>
     ${kopf ? `<div class="erfolg-kopf">
       <span class="kicker">Workout ${log.workout} · ${log.date.slice(8)}.${log.date.slice(5,7)}.</span>
       <p class="gross">${escHtml(kopf.text)}</p>
@@ -1138,6 +1191,14 @@ $('sw-toggle').onclick = () => swLaeuft ? stopUhr() : startUhr();
 $('go-history').onclick = renderHistory;
 $('hist-back').onclick = () => { renderOrtKnopf(); show('home'); };
 $('go-bibliothek').onclick = () => zeigeBibliothek();
+$('go-merch').onclick = () => zeigeMerch('home');
+$('hist-merch').onclick = () => zeigeMerch('history');
+$('merch-back').onclick = () => {
+  if (merchVon === 'history') { show('history'); return; }
+  renderOrtKnopf();
+  if (config && state) renderHome();   // der Wochenregler kennt jetzt die frischen Logs
+  show('home');
+};
 $('bib-back').onclick = () => show('home');
 $('bib-suche').oninput = renderBibliothek;
 $('rebuild').onclick = rebuild;
@@ -1391,6 +1452,9 @@ async function upFertig() {
     seed: upSession.seed,
     finished: new Date().toISOString()
   };
+  const ort = ortName();
+  if (ort) log.ort = ort;
+  const vorherHist = state.history || [];
   // Wie beim Jam: taucht in der Historie auf, ruehrt aber weder
   // Arbeitsgewichte noch den A/B-Wechsel an.
   state = P.applyLog(state, config, log);
@@ -1403,7 +1467,8 @@ async function upFertig() {
       <ul>${upSession.teile.map(teil =>
         `<li><span>${escHtml(teil.name)}</span><span>${upSession.runden}×${upSession.arbeit}s</span></li>`).join('')}</ul>
     </div>
-    <p class="spruch">${t('wod.spruch')}</p>`;
+    <p class="spruch">${t('wod.spruch')}</p>
+    <div id="done-aufnaeher"></div>`;
   show('done');
   // Der Abschlusston auch hier nur, wenn Laerm gerade in Ordnung ist.
   if (!upLeise()) toene([660, 880]);
@@ -1415,6 +1480,7 @@ async function upFertig() {
     if (ICU.pushAktiv() && ICU.isConfigured()) ICU.queuePush(log);
   } catch { S.queue(log); banner(t('msg.keinNetz'), '', 6000); }
   upSession = null;
+  zeigeNeueAufnaeher(log, vorherHist);
 }
 
 async function commitUnplugged(log) {
@@ -1710,6 +1776,9 @@ async function wodAbschliessen() {
     wod,
     finished: new Date().toISOString()
   };
+  const ort = ortName();
+  if (ort) log.ort = ort;
+  const vorherHist = state.history || [];
   state = P.applyLog(state, config, log);
   S.cache({ state });
   $('stopwatch').hidden = true;
@@ -1719,7 +1788,8 @@ async function wodAbschliessen() {
       <div class="name">${Math.floor(swSek / 60)}:${String(swSek % 60).padStart(2, '0')}</div>
       <ul>${wod.teile.map(teil => `<li><span>${teil.name}</span><span>${teil.menge ? `${teil.menge} ${teil.einheit}` : '20/10'}</span></li>`).join('')}</ul>
     </div>
-    <p class="spruch">${t('wod.spruch')}</p>`;
+    <p class="spruch">${t('wod.spruch')}</p>
+    <div id="done-aufnaeher"></div>`;
   show('done');
   toene([660, 880]);
   try {
@@ -1728,6 +1798,7 @@ async function wodAbschliessen() {
     if (ICU.pushAktiv() && ICU.isConfigured()) ICU.queuePush(log);
   } catch { S.queue(log); banner(t('msg.keinNetz'), '', 6000); }
   wod = null;
+  zeigeNeueAufnaeher(log, vorherHist);
 }
 
 async function commitWod(log) {
@@ -1865,7 +1936,7 @@ function renderAngeben(logs) {
   const s = ST.summary(logs);
   const reps = ST.wiederholungenGesamt(logs);
   const tag = ST.lieblingstag(logs, fahrten);
-  const serie = ST.laengsteSerie(logs, fahrten);
+  const serie = ST.laengsteSerie(logs, fahrten, pausenFenster());
   const stacks = Math.round(s.tonnage / MARSHALL_KG);
   box.innerHTML = `
     <div class="stats">
@@ -2778,7 +2849,10 @@ $('pers-speichern').onclick = async () => {
 
     const datei = await S.readFile('config.json');
     if (!datei) throw new Error(t('msg.configNichtLesbar'));
-    const verletzungen = VL.baueVerletzungen(injEntwurf || VL.entwurf(config));
+    // Das Ende einer Verletzung stempelt sich selbst: wer sie auf "ruhend"
+    // stellt, soll nicht zusaetzlich ein Datum eintippen muessen.
+    const verletzungen = VL.stempleEnde(VL.baueVerletzungen(injEntwurf || VL.entwurf(config)),
+      VL.alle(datei.data), P.ymd(new Date()));
     const neu = VL.setzeInConfig(PS.setzeChecks(
       PS.setzeInConfig(datei.data, { grund: $('pers-grund').value, rekorde }), checks), verletzungen);
     await S.writeFile('config.json', neu, 'Persönliches aktualisiert', datei.sha);
@@ -2850,6 +2924,8 @@ function renderVerletzungen() {
             `<option value="${st}"${st === v.status ? ' selected' : ''}>${escHtml(t(`inj.status.${st}`))}</option>`).join('')}</select></label>
         <label><span>${escHtml(t('inj.seit'))}</span>
           <input class="inj-seit" type="date" value="${escHtml(v.seit)}"></label>
+        ${v.status !== 'aktiv' ? `<label><span>${escHtml(t('inj.bis'))}</span>
+          <input class="inj-bis" type="date" value="${escHtml(v.bis || '')}"></label>` : ''}
       </div>
       <p class="fine">${escHtml(t(`inj.art.${v.art}.hinweis`))}</p>
 
@@ -2885,6 +2961,8 @@ function renderVerletzungen() {
         art: el.querySelector('.inj-art').value,
         status: el.querySelector('.inj-status').value,
         seit: el.querySelector('.inj-seit').value,
+        // Das Ende gibt es nur ohne "aktiv" — sonst bleibt der Entwurf, wie er ist.
+        ...(el.querySelector('.inj-bis') ? { bis: el.querySelector('.inj-bis').value } : {}),
         behandlung: el.querySelector('.inj-behandlung').value
       };
     };
@@ -3326,7 +3404,7 @@ function renderKalender(logs) {
   const box = $('hist-kalender');
   if (!box) return;
   const fahrten = fahrtenListe();
-  const k = ST.kalender(logs, fahrten, 26, new Date());
+  const k = ST.kalender(logs, fahrten, 26, new Date(), pausenFenster());
 
   const zellen = k.tage.map(tag => {
     const was = [];
@@ -3339,8 +3417,11 @@ function renderKalender(logs) {
       tag.heute ? 'heute' : '',
       tag.kraft ? 'kraft' : '',
       tag.wod ? 'wod' : '',
-      tag.rad ? 'rad' : ''
+      tag.rad ? 'rad' : '',
+      // Verletzungspause ohne Training: schraffiert — verschoben, nicht abgesagt
+      tag.pause && !tag.kraft && !tag.wod && !tag.rad ? 'pause' : ''
     ].filter(Boolean).join(' ');
+    if (tag.pause) was.push(t('kal.pause'));
     return `<span class="${klasse}" title="${tag.date}${was.length ? ' — ' + was.join(' + ') : ''}"></span>`;
   }).join('');
 
@@ -3358,6 +3439,7 @@ function renderKalender(logs) {
         <span><i class="kraft"></i> ${t('kal.kraft')}</span>
         <span><i class="wod"></i> ${t('kal.wod')}</span>
         <span><i class="rad"></i> ${t('kal.rad')}</span>
+        ${k.tage.some(x => x.pause) ? `<span><i class="pause"></i> ${t('kal.pause')}</span>` : ''}
         <span class="rechts">${tage.length
           ? t('kal.quote', { a: aktiv, n: tage.length, p: Math.round(aktiv / tage.length * 100) })
           : t('kal.nichts')}</span>
@@ -3673,4 +3755,199 @@ function renderFormVerlauf() {
         <span class="t" style="color:var(--stahl)">${t('form.ermuedung', { n: Math.round(jetzt.atl) })}</span>
         <span class="t">${t('form.flaeche')}</span></div>
     </div>`;
+}
+
+/* ============================== Merch ==============================
+   Kutte, Schallplatten, Rang, Tourshirts. Gerechnet wird alles in
+   merch.js aus den Logs — hier wird nur gezeichnet.                   */
+
+let merchVon = 'home';
+
+/** Die Pausenfenster aus dem Injury Report, Stand heute. */
+const pausenFenster = () => VL.pausenFenster(config, P.ymd(new Date()));
+
+/** Der Name des gewaehlten Studios, fuer den Rueckendruck des Tourshirts. */
+function ortName() {
+  const id = gymWahl();
+  const g = id && config ? G.gym(config, id) : null;
+  return g && g.name ? g.name : null;
+}
+
+const datumLang = d => new Date(d + 'T12:00:00').toLocaleDateString(locale());
+const datumKurz = d => new Date(d + 'T12:00:00').toLocaleDateString(locale(), { day: '2-digit', month: '2-digit' });
+
+/** Zahlen in den Aufnaehern im Format der Sprache: 0,75 statt 0.75. */
+function patchVars(a) {
+  const v = { ...a.vars };
+  for (const k of ['f', 'kg']) if (typeof v[k] === 'number') v[k] = v[k].toLocaleString(locale());
+  return v;
+}
+const patchName = a => typeof a.vars.n === 'number' ? tn(a.key, a.vars.n, patchVars(a)) : t(a.key, patchVars(a));
+const patchBedingung = a => t(a.key.replace('merch.p.', 'merch.pb.'), patchVars(a));
+
+function patchHtml(a) {
+  return `<div class="patch k-${a.kategorie}${a.verdient ? '' : ' offen'}" title="${escHtml(patchBedingung(a))}">
+    <b>${escHtml(patchName(a))}</b>
+    <span>${escHtml(a.verdient ? t('merch.verdient', { datum: datumLang(a.verdient) }) : patchBedingung(a))}</span>
+  </div>`;
+}
+
+/** Die Setlist des Abends: gespielt ist durchgestrichen, wie auf dem Zettel am Monitor. */
+function setlistZettel(log) {
+  const fin = session && session.fin;
+  const zugabe = fin ? `<li class="zugabe${log.zugabe ? ' gespielt' : ''}">
+      <span class="song">${escHtml(t('done.zugabe'))}: ${escHtml(fin.name)}</span></li>` : '';
+  return `<div class="zettel">
+    <div class="z-kopf">${escHtml(t('done.setlist'))} · ${escHtml(datumKurz(log.date))}${log.ort ? ` · ${escHtml(log.ort)}` : ''}</div>
+    <ol>${log.lifts.map(e => {
+      const name = (config.lifts[e.lift] || {}).name || e.lift;
+      return `<li class="${e.success ? 'gespielt' : 'offen'}">
+        <span class="song">${escHtml(name)}</span>
+        <span class="z-w">${e.sets}×${e.target} · ${P.fmtWeight(e.weight)}</span>
+        ${e.success ? '' : `<span class="z-nochmal">${escHtml(t('done.nochmal'))}</span>`}
+      </li>`;
+    }).join('')}${zugabe}</ol>
+  </div>`;
+}
+
+/**
+ * Was diese Einheit an Aufnaehern gebracht hat, auf dem Geschafft-Screen.
+ *
+ * Erst nach dem Speichern, mit frisch geladenen Logs. Ein veralteter
+ * Zwischenspeicher wuerde laengst verdiente Aufnaeher ein zweites Mal
+ * feiern — deshalb gilt er nur, wenn er jeden Tag der bisherigen
+ * Historie kennt. Sonst bleibt der Platz leer: lieber ein Aufnaeher zu
+ * spaet im Merch als ein falscher Jubel.
+ */
+async function zeigeNeueAufnaeher(log, historie) {
+  const box = $('done-aufnaeher');
+  if (!box || !config) return;
+  let logs;
+  try { logs = await S.readAllLogs(); alleLogs = logs; S.cacheLogs(logs); }
+  catch { logs = (S.cachedLogs() || {}).logs || []; }
+  const gleich = l => l.date === log.date && (l.type || 'strength') === (log.type || 'strength') &&
+    (l.finished || '') === (log.finished || '');
+  const vorher = logs.filter(l => !gleich(l));
+  const tage = new Set(vorher.map(l => l.date));
+  if (!historie.every(h => tage.has(h.date))) return;
+  const neu = M.neueAufnaeher(vorher, vorher.concat([log]), config, gewichtsPunkte, new Date());
+  if (!neu.length || !box.isConnected) return;
+  box.innerHTML = `<div class="aufnaeher-neu">
+    <span class="kicker">${escHtml(t('done.neuerAufnaeher'))}</span>
+    <div class="patches">${neu.map(patchHtml).join('')}</div>
+  </div>`;
+  renderAmp();
+}
+
+async function zeigeMerch(von = 'home') {
+  merchVon = von;
+  show('merch');
+  const leeren = () => ['merch-rang', 'merch-kutte', 'merch-platten', 'merch-shirts', 'merch-bilanz']
+    .forEach(id => { $(id).innerHTML = ''; });
+  if (!config) {
+    leeren();
+    $('merch-body').innerHTML = `<p class="lead">${t('tour.keineVerbindung')}</p>`;
+    return;
+  }
+  let logs = alleLogs.length ? alleLogs : ((S.cachedLogs() || {}).logs || []);
+  if (logs.length) { $('merch-body').innerHTML = ''; renderMerch(logs); }
+  else { leeren(); $('merch-body').innerHTML = `<p class="lead">${t('merch.laedt')}</p>`; }
+  try {
+    logs = await S.readAllLogs();
+    alleLogs = logs;
+    S.cacheLogs(logs);
+    $('merch-body').innerHTML = '';
+    renderMerch(logs);
+  } catch (e) {
+    if (!logs.length) $('merch-body').innerHTML = `<p class="lead">${escHtml(e.message)}</p>`;
+  }
+}
+
+function renderMerch(logs) {
+  const heute = new Date();
+  const liste = M.aufnaeher(logs, config, gewichtsPunkte, heute);
+
+  // Rang
+  const r = M.rang(logs);
+  $('merch-rang').innerHTML = `
+    <div class="card rang">
+      <div class="kicker">${escHtml(tn('merch.rang.wochen', r.wochen))}</div>
+      <div class="name">${escHtml(t(`merch.r.${r.id}`))}</div>
+      <div class="leiter">${M.RAENGE.map((x, i) =>
+        `<i class="${i <= r.stufe ? 'an' : ''}" title="${escHtml(t(`merch.r.${x.id}`))}"></i>`).join('')}</div>
+      <div class="bar"><i style="width:${Math.round(r.anteil * 100)}%"></i></div>
+      <p class="fine">${escHtml(r.naechste
+        ? tn('merch.rang.naechste', r.naechste.fehlt, { name: t(`merch.r.${r.naechste.id}`) })
+        : t('merch.rang.oben'))} ${t('merch.rang.fine')}</p>
+    </div>`;
+
+  // Kutte
+  const w = M.kutte(liste);
+  const zeigen = new Set(w.verdient.concat(w.naechste).map(a => a.id));
+  const teile = ['buehne', 'kraft', 'comeback', 'serie'].map(k => {
+    const hier = liste.filter(a => a.kategorie === k && zeigen.has(a.id));
+    if (!hier.length) return '';
+    return `<div class="kutte-teil">
+      <div class="kicker">${escHtml(t(`merch.k.${k}`))}</div>
+      <div class="patches">${hier.map(patchHtml).join('')}</div>
+    </div>`;
+  }).join('');
+  $('merch-kutte').innerHTML = `<div class="kutte">${teile}</div>
+    <p class="fine">${t('merch.kutte.fine')}</p>`;
+
+  // Schallplatten
+  const s = M.schallplatten(logs);
+  const t1 = n => n.toLocaleString(locale(), { maximumFractionDigits: 1 });
+  $('merch-platten').innerHTML = `
+    <div class="platten-wand">${s.stufen.map(p => `
+      <div class="scheibe s-${p.id}${p.verdient ? '' : ' offen'}">
+        <i></i>
+        <b>${escHtml(t(`merch.s.${p.id}`))}</b>
+        <span>${p.verdient ? escHtml(datumLang(p.verdient)) : escHtml(t('merch.s.ab', { t: t1(p.tonnen) }))}</span>
+      </div>`).join('')}
+    </div>
+    <p class="fine">${escHtml(t('merch.s.stand', { t: t1(s.tonnen), stacks: Math.round(s.tonnen * 1000 / MARSHALL_KG).toLocaleString(locale()) }))}
+      ${escHtml(s.naechste ? t('merch.s.naechste', { t: t1(s.naechste.fehlt), name: t(`merch.s.${s.naechste.id}`) }) : t('merch.s.alle'))}</p>
+    ${s.naechste ? `<div class="bar"><i style="width:${Math.round(s.naechste.anteil * 100)}%"></i></div>` : ''}`;
+
+  // Tourshirts
+  const touren = M.touren(logs, heute, liste);
+  const arten = g => g.arten.map(a => t(`merch.art.${a}`)).join(' + ');
+  $('merch-shirts').innerHTML = touren.length ? touren.map((tr, i) => `
+    <details class="shirt"${i === 0 ? ' open' : ''}>
+      <summary>
+        <svg class="shirt-icon" viewBox="0 0 40 36" aria-hidden="true"><path d="M13 2 L4 7 L1 15 L8 17 L8 34 L32 34 L32 17 L39 15 L36 7 L27 2 Q20 7 13 2 Z"/></svg>
+        <span class="shirt-kopf">
+          <b>${escHtml(tr.name)}</b>
+          <span>Q${tr.quartal} ${tr.jahr}${tr.laufend ? ` · ${escHtml(t('merch.shirt.laufend'))}` : ''}</span>
+          <span>${escHtml(tn('merch.shirt.gigs', tr.gigs.length))} · ${t1(tr.tonnen)} t${tr.aufnaeher ? ` · ${escHtml(tn('merch.shirt.aufnaeher', tr.aufnaeher))}` : ''}</span>
+        </span>
+      </summary>
+      <div class="rueckseite">
+        <div class="kicker">${escHtml(t('merch.shirt.rueckseite'))}</div>
+        <ol class="termine">${tr.gigs.map(g => `
+          <li><span class="d">${escHtml(datumKurz(g.date))}</span>
+            <span class="a">${escHtml(arten(g))}</span>${g.ort ? `<span class="o">${escHtml(g.ort)}</span>` : ''}</li>`).join('')}
+        </ol>
+      </div>
+    </details>`).join('') : `<p class="lead">${t('merch.shirt.leer')}</p>`;
+
+  // Tour-Bilanz: dieses und letztes Jahr
+  const jahr = heute.getFullYear();
+  const fmtKg = w => P.fmtWeight(w);
+  $('merch-bilanz').innerHTML = [jahr, jahr - 1].map(j => M.jahresBilanz(logs, config, j, { heute, liste }))
+    .filter(Boolean).map(b => `
+      <h2>${escHtml(t('merch.bilanz', { jahr: b.jahr }))}</h2>
+      <div class="stats">
+        <div class="stat"><div class="n">${t('merch.b.gigs')}</div><div class="v">${b.gigs}</div></div>
+        <div class="stat"><div class="n">${t('merch.b.wochen')}</div><div class="v">${b.wochen}</div></div>
+        <div class="stat"><div class="n">${t('merch.b.tonnen')}</div><div class="v">${t1(b.tonnen)}</div></div>
+        <div class="stat"><div class="n">${t('merch.b.serie')}</div><div class="v">${b.serie}</div></div>
+        <div class="stat"><div class="n">${t('merch.b.aufnaeher')}</div><div class="v">${b.aufnaeher}</div></div>
+      </div>
+      ${Object.keys(b.lifts).length ? `<div class="card bilanz-lifts">
+        <div class="kicker">${t('merch.b.lifts')}</div>
+        ${Object.entries(b.lifts).map(([id, l]) => `<div class="kv"><span class="k">${escHtml(liftName(id))}</span>
+          <span class="v">${fmtKg(l.von)} → ${fmtKg(l.bis)}</span></div>`).join('')}
+      </div>` : ''}`).join('');
 }

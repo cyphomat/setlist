@@ -1,6 +1,8 @@
 // Auswertung der Logs. Rein und testbar — die Historie soll etwas zeigen,
 // das man nicht schon beim Training wusste.
 
+import { wocheInPause } from './verletzung.js';
+
 const istKraft = l => (l.type || 'strength') === 'strength' && Array.isArray(l.lifts);
 
 /** Bewegtes Gesamtgewicht einer Einheit: Last x tatsaechliche Wiederholungen. */
@@ -641,7 +643,7 @@ const montagVon = d => {
   return m;
 };
 
-export function kalender(logs = [], fahrten = [], wochen = 26, heute = new Date()) {
+export function kalender(logs = [], fahrten = [], wochen = 26, heute = new Date(), fenster = []) {
   const start = montagVon(heute);
   start.setDate(start.getDate() - (wochen - 1) * 7);
 
@@ -667,6 +669,8 @@ export function kalender(logs = [], fahrten = [], wochen = 26, heute = new Date(
       kraft: kraft.has(key),
       wod: wod.has(key),
       rad: rad.has(key),
+      // Verletzungspause: im Raster schraffiert, "verschoben, nicht abgesagt"
+      pause: fenster.some(f => f.von <= key && f.bis >= key),
       zukunft: key > heuteKey,
       heute: key === heuteKey
     });
@@ -774,30 +778,45 @@ export function lieblingstag(logs = [], fahrten = []) {
 }
 
 /**
- * Laengste Serie aufeinanderfolgender Wochen mit mindestens einer Einheit,
- * ueber die gesamte Geschichte — der Rekord, nicht die laufende Serie
- * (die steht schon im Trainingskalender).
+ * Woche fuer Woche vom ersten bis zum letzten Trainingstag: trainiert,
+ * pausiert (Verletzung, siehe verletzung.js) oder Luecke — und wie lang die
+ * Serie an dieser Stelle ist. Grundlage fuer den Rekord hier und fuer die
+ * Serien-Aufnaeher im Merch.
  */
-export function laengsteSerie(logs = [], fahrten = []) {
+export function wochenSerie(daten = [], fenster = []) {
   const wochenstart = new Set();
-  const einordnen = datum => {
-    if (!datum) return;
+  for (const datum of daten) {
+    if (!datum) continue;
     const d = new Date(datum + 'T00:00:00');
     d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
     wochenstart.add(tagesKey(d));
-  };
-  for (const l of logs) einordnen(l.date);
-  for (const f of fahrten) einordnen(f.date);
-
-  const sortiert = [...wochenstart].sort();
-  let laengste = 0, laufend = 0, vorher = null;
-  for (const w of sortiert) {
-    const d = new Date(w + 'T00:00:00');
-    laufend = (vorher && d - vorher === 7 * 86400000) ? laufend + 1 : 1;
-    laengste = Math.max(laengste, laufend);
-    vorher = d;
   }
-  return laengste;
+  const sortiert = [...wochenstart].sort();
+  if (!sortiert.length) return [];
+  const out = [];
+  let laufend = 0;
+  const d = new Date(sortiert[0] + 'T12:00:00');
+  const ende = sortiert[sortiert.length - 1];
+  for (let key = tagesKey(d); key <= ende; d.setDate(d.getDate() + 7), key = tagesKey(d)) {
+    const trainiert = wochenstart.has(key);
+    const pause = !trainiert && !!wocheInPause(key, fenster);
+    if (trainiert) laufend++;
+    else if (!pause) laufend = 0;
+    out.push({ montag: key, trainiert, pause, laufend });
+  }
+  return out;
+}
+
+/**
+ * Laengste Serie aufeinanderfolgender Wochen mit mindestens einer Einheit,
+ * ueber die gesamte Geschichte — der Rekord, nicht die laufende Serie
+ * (die steht schon im Trainingskalender). Wochen in einem Pausenfenster
+ * reissen sie nicht, zaehlen aber auch nicht mit.
+ */
+export function laengsteSerie(logs = [], fahrten = [], fenster = []) {
+  const daten = logs.filter(l => l.type !== 'anpassung').map(l => l.date)
+    .concat(fahrten.map(f => f.date));
+  return wochenSerie(daten, fenster).reduce((m, w) => Math.max(m, w.laufend), 0);
 }
 
 // Ansage-Stufen aus intensitaet() in coach.js — HART und SCHWER teilen sich

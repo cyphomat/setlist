@@ -38,6 +38,28 @@ const mitLuecke = [{date:'2026-09-01'},{date:'2026-09-15'}];
 eq('Luecke bricht den Streak', C.weekStreak(mitLuecke, HEUTE), 1);
 const nurLetzteWoche = [{date:'2026-09-08'}];
 eq('laufende Woche ohne Einheit zaehlt nicht mit', C.weekStreak(nurLetzteWoche, HEUTE), 1);
+eq('eine Anpassung ist kein Training', C.weekStreak([{date:'2026-09-08'},{date:'2026-09-15',type:'anpassung'}], HEUTE), 1);
+
+print('\n--- Serie mit Verletzungspause ---');
+{
+  // Training bis 25.08., dann Finger ab 28.08. — die Wochen 31.08. und 07.09. fehlen.
+  const vorher = [{date:'2026-08-11'},{date:'2026-08-18'},{date:'2026-08-25'}];
+  const fenster = [{ id:'finger', was:'Finger', von:'2026-08-28', bis:'2026-09-15' }];
+  eq('ohne Fenster: die Luecke bricht', C.weekStreak(vorher, HEUTE), 0);
+  const s = C.serienStand(vorher, HEUTE, fenster);
+  eq('mit Fenster: die Serie haelt', s.wochen, 3);
+  eq('und steht gerade still', s.pausiert && s.pausiert.id, 'finger');
+  const weiter = C.serienStand(vorher.concat([{date:'2026-09-15'}]), HEUTE, fenster);
+  eq('wieder trainiert: die Pausenwochen zaehlen nicht mit', weiter.wochen, 4);
+  eq('und pausiert ist sie nicht mehr', weiter.pausiert, null);
+  const kurz = [{ id:'finger', was:'Finger', von:'2026-09-07', bis:'2026-09-15' }];
+  eq('eine Luecke ausserhalb des Fensters bricht trotzdem', C.weekStreak(vorher, HEUTE, kurz), 0);
+  eq('ohne Serie kein Pausenhinweis', C.serienStand([], HEUTE, fenster).pausiert, null);
+  const d = C.directive({ ...base(), history: vorher.map(h => ({ ...h, type:'strength', workout:'A' })) },
+    { ...config, injuries: [{ id:'finger', was:'Finger', art:'wiederkehrend', status:'aktiv', seit:'2026-08-28' }] }, HEUTE);
+  eq('die Ansage kennt die Pause aus dem Injury Report', d.streak, 3);
+  eq('und nennt sie', d.streakPausiert && d.streakPausiert.was, 'Finger');
+}
 
 print('\n--- Fortschritt zu den alten Arbeitsgewichten ---');
 const p = C.progressToReference(base(), config);

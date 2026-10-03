@@ -10,6 +10,61 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-03.1
+
+### Neu
+- **Der Merch-Stand.** Ein bisschen Spiel, passend zu Bühne und Eisen, erreichbar über
+  das Schallplatten-Symbol oben auf Home und über einen Link in der Tour. Alles wird aus
+  den Logs berechnet und nirgends gespeichert: wer `state.json` neu berechnet, hat danach
+  dieselbe Kutte. Die Leitregel: **belohnt wird Regelmäßigkeit und Qualität, nie Menge.**
+  Es gibt keinen Aufnäher fürs Trainieren trotz Verletzung, für mehr Einheiten als
+  geplant oder für viele Max-Outs.
+  - **Die Kutte.** Aufnäher mit dem Tag, an dem sie verdient wurden: Debüt, 10 bis 250
+    Gigs (Tage, nicht Logs), erster Jam, MTV Unplugged, Gitarrensolo (erstes Max-Out),
+    zehn Zugaben, *Tight* (zehn Einheiten mit lauter sauberen Sätzen), der
+    **Plattenclub** je Grundlift (1 bis 4 Platten je Seite), der **1000-lb-Club**,
+    Körpergewicht-Marken (nur mit Waagendaten von intervals.icu), Comeback, Rückweg,
+    Originalbesetzung und Serien von 4 bis 52 Wochen. Je Reihe steht nur der nächste
+    fehlende Aufnäher als Umriss da, nicht eine Weste voller leerer Kreise.
+  - **Gold und Platin** für das bewegte Gewicht: 50, 100, 250 und 500 Tonnen.
+  - **Der Rang**, von der Garagenband bis zur Hall of Fame. Gezählt werden Wochen mit
+    mindestens einer Einheit, nicht Einheiten, und er fällt nie.
+  - **Tourshirts.** Jedes Quartal ist eine Tour mit eigenem Namen, auf dem Rücken alle
+    Trainingstage samt Studio. Dazu die **Tour-Bilanz** des Jahres.
+- **Bühnenmomente.**
+  - Nach der Einheit kommt die **Setlist als Zettel** mit Gaffa-Tape: Geschafftes ist
+    durchgestrichen, ein Fehlversuch bekommt den Stempel *nochmal*, darunter die Zugabe.
+  - Was die Einheit an **neuen Aufnähern** gebracht hat, steht direkt darunter. Das gilt
+    auch nach Jam und Unplugged. Gerechnet wird erst nach dem Speichern mit frisch
+    geladenen Logs. Ein veralteter Zwischenspeicher würde längst Verdientes ein zweites
+    Mal feiern, deshalb bleibt der Platz dann lieber leer.
+  - **Goes to eleven:** ein Wochenregler auf Home. Zehn heißt Plan erfüllt; auf elf geht
+    er nur, wenn dabei auch jeder Satz sauber war. Mehr Einheiten als geplant drehen ihn
+    nicht weiter.
+  - **Reunion-Tour:** so heißt jetzt der Weg zurück zu den alten Arbeitsgewichten. Bei
+    100 % ist die Originalbesetzung wieder vereint.
+  - Der Finisher in der Einheit hat ein Häkchen **Zugabe gespielt**. Neue Einheiten
+    merken sich außerdem das gewählte Studio (`ort`), für den Rückendruck des Shirts.
+    Beides bleibt im privaten Repo; an intervals.icu geht davon nichts.
+- **Verletzt: die Serie wird eingefroren, nicht gerissen.** Eine Woche ohne Einheit,
+  die in die Zeit einer eingetragenen Verletzung fällt, beendet die Serie nicht, zählt
+  aber auch nicht mit. Home sagt dann „verschoben, nicht abgesagt“, der Kalender in der
+  Tour zeigt die Tage schraffiert. Damit das kein Freifahrtschein wird:
+  - Strukturelles zählt nicht. Die Schulter bleibt und würde sonst jede Lücke
+    entschuldigen.
+  - Ohne „seit“ gibt es kein Fenster.
+  - Höchstens sechs Wochen je Eintrag, so weit wie die größte Stufe des Pausen-Deloads.
+  - Das Ende stempelt sich selbst: Wer eine Verletzung auf „ruhend“ oder „ausgeheilt“
+    stellt, bekommt heute als **Bis**-Datum. Es steht dann im Formular und lässt sich
+    korrigieren.
+
+### Behoben
+- Eine Anpassung (etwa der Pausen-Deload) zählte als Trainingswoche und hielt damit
+  eine Serie am Leben. Jetzt zählt sie nicht mehr, weder in der laufenden Serie noch
+  im Rekord.
+- `js/verletzung.js` fehlte seit dem Injury Report in der Offline-Liste des Service
+  Workers. Es ist jetzt wie `js/merch.js` von Anfang an im Cache.
+
 ## 2026-09-24.1
 
 ### Neu

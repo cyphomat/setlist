@@ -148,6 +148,10 @@ export function baueVerletzungen(eintraege) {
     const v = { id, was, art, status };
     const d = datum(e.seit);
     if (d) v.seit = d;
+    // Das Ende gibt es nur, wenn die Sache nicht mehr aktiv ist — eine
+    // aktive Verletzung mit Enddatum waere ein Widerspruch.
+    const b0 = datum(e.bis);
+    if (b0 && status !== 'aktiv') v.bis = b0;
     const b = text(e.behandlung);
     if (b) v.behandlung = b;
     const sperrt = (Array.isArray(e.sperrt) ? e.sperrt : [])
@@ -165,9 +169,28 @@ export function entwurf(config) {
     art: ARTEN.includes(v.art) ? v.art : 'wiederkehrend',
     status: STATI.includes(v.status) ? v.status : 'aktiv',
     seit: v.seit || '',
+    bis: v.bis || '',
     behandlung: v.behandlung || '',
     sperrt: Array.isArray(v.sperrt) ? [...v.sperrt] : []
   }));
+}
+
+/**
+ * Das Ende einer Verletzung stempeln, ohne dass jemand es eintippen muss.
+ *
+ * Wechselt ein Eintrag von `aktiv` weg, ist heute der Tag, an dem er
+ * aufgehoert hat zu stoeren. Geht er zurueck auf `aktiv`, gilt das Ende
+ * nicht mehr. Ein von Hand gesetztes Ende bleibt stehen.
+ */
+export function stempleEnde(neu = [], alt = [], heute) {
+  const vorher = new Map((alt || []).map(v => [v.id, v]));
+  return neu.map(v => {
+    const n = { ...v };
+    if (n.status === 'aktiv') { delete n.bis; return n; }
+    const a = vorher.get(n.id);
+    if (!n.bis && a && a.status === 'aktiv') n.bis = heute;
+    return n;
+  });
 }
 
 /** In eine bestehende config einsetzen, ohne sonst etwas anzufassen. */
@@ -240,4 +263,47 @@ export function umfeld(logs = [], id, tage = 7) {
     tage,
     schnitt: Math.round((werte.reduce((s, n) => s + n, 0) / werte.length) * 10) / 10
   };
+}
+
+/* ---------------------------------------------------------------
+   Pausenfenster: "Tour verschoben, nicht abgesagt".
+
+   Wer verletzt ausfaellt, soll nicht zusaetzlich seine Serie verlieren.
+   Eine Woche ohne Einheit, die in ein solches Fenster faellt, reisst die
+   Serie nicht — sie zaehlt aber auch nicht mit. Gewonnen wird dadurch
+   nichts, es wird nur nichts verloren.
+
+   Drei Grenzen, damit das kein Freifahrtschein wird:
+   - Strukturelles zaehlt nicht. Die Kalkablagerung bleibt; sie wuerde
+     sonst jede Luecke fuer immer entschuldigen.
+   - Ohne `seit` kein Fenster. Wann es anfing, weiss nur der Nutzer.
+   - Hoechstens sechs Wochen je Eintrag — so weit reicht auch die
+     groesste Stufe des Pausen-Deloads. Eine dauerhaft aktive
+     Plantarfaszie haelt die Serie also nicht ewig am Leben.           */
+
+export const PAUSE_MAX_TAGE = 42;
+
+const plusTage = (tag, n) => {
+  const d = new Date(`${tag}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+};
+
+/** Die Zeitraeume, in denen eine Verletzung die Serie anhaelt: [{ id, was, von, bis }]. */
+export function pausenFenster(config, heute) {
+  const out = [];
+  for (const v of alle(config)) {
+    if (v.art === 'strukturell' || !datum(v.seit)) continue;
+    const ende = v.status === 'aktiv' ? heute : datum(v.bis);
+    if (!ende || ende < v.seit) continue;
+    const deckel = plusTage(v.seit, PAUSE_MAX_TAGE - 1);
+    out.push({ id: v.id, was: v.was, von: v.seit, bis: ende < deckel ? ende : deckel });
+  }
+  return out;
+}
+
+/** Beruehrt die Woche ab diesem Montag (JJJJ-MM-TT) ein Pausenfenster? */
+export function wocheInPause(montag, fenster = []) {
+  const sonntag = plusTage(montag, 6);
+  return fenster.find(f => f.von <= sonntag && f.bis >= montag) || null;
 }

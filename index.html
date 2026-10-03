@@ -92,6 +92,7 @@
     <h1><span class="glow">Setlist</span></h1>
     <button id="gym-wahl" class="icon-btn ort" data-i18n-aria="aria.ort" aria-label="Ort wechseln" hidden></button>
     <button id="go-bibliothek" class="icon-btn text" data-i18n-aria="aria.bibliothek" aria-label="Bibliothek">BIB</button>
+    <button id="go-merch" class="icon-btn platte" data-i18n-aria="aria.merch" aria-label="Merch"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2" class="mitte"/></svg></button>
     <button id="go-history" class="icon-btn" data-i18n-aria="aria.tour" aria-label="Tour">≡</button>
   </header>
   <div class="pad" style="padding-bottom:0"><div id="motto"></div></div>
@@ -108,9 +109,10 @@
       </div>
     </div>
     <div class="spalte">
-      <h2 data-i18n="home.kurs">Zurück auf Kurs</h2>
+      <h2 data-i18n="home.kurs">Reunion-Tour</h2>
       <div id="progress"></div>
       <h2 data-i18n="home.setlist">Setlist</h2>
+      <div id="amp"></div>
       <div id="week" class="week"></div>
       <div id="icu-status"></div>
       <h2 data-i18n="home.arbeitsgewichte">Arbeitsgewichte</h2>
@@ -250,6 +252,7 @@
   </header>
   <div class="pad">
     <div id="hist-summary"></div>
+    <button id="hist-merch" class="btn ghost small zum-merch" data-i18n="tour.zumMerch">Zum Merch-Stand ›</button>
     <h2 data-i18n="tour.angeben">Zum Angeben</h2>
     <div id="hist-angeben"></div>
     <h2 data-i18n="tour.regelmaessigkeit">Regelmäßigkeit · 26 Wochen</h2>
@@ -353,6 +356,27 @@
     <button id="force-update" class="btn ghost" data-i18n="bs.update">Nach Update suchen</button>
     <button id="rebuild" class="btn ghost" data-i18n="bs.rebuild">state.json neu berechnen</button>
     <button id="logout" class="btn ghost danger" data-i18n="bs.logout">Zugänge entfernen</button>
+  </div>
+</section>
+
+<!-- ============ MERCH ============ -->
+<section id="view-merch" class="view" hidden>
+  <header class="head">
+    <button id="merch-back" class="icon-btn" data-i18n-aria="aria.zurueck" aria-label="Zurück">‹</button>
+    <h1 data-i18n="merch.titel">Merch</h1>
+  </header>
+  <div class="pad">
+    <p class="lead" data-i18n="merch.lead">Alles hier wird aus deinen Einheiten berechnet. Belohnt wird Regelmäßigkeit, nicht Menge.</p>
+    <div id="merch-body"></div>
+    <h2 data-i18n="merch.rang">Rang</h2>
+    <div id="merch-rang"></div>
+    <h2 data-i18n="merch.kutte">Die Kutte</h2>
+    <div id="merch-kutte"></div>
+    <h2 data-i18n="merch.platten">Gold und Platin</h2>
+    <div id="merch-platten"></div>
+    <h2 data-i18n="merch.shirts">Tourshirts</h2>
+    <div id="merch-shirts"></div>
+    <div id="merch-bilanz"></div>
   </div>
 </section>
 
