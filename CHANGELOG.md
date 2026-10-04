@@ -10,6 +10,27 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-04.3
+
+### Geändert
+- **Tour mit Reitern, Backstage als eigener Bildschirm.** Die Tour war eine einzige
+  lange Seite: rund zwanzig Auswertungen und darunter noch alle Einstellungen. Jetzt
+  sind Daten und Einstellungen getrennt.
+  - **Tour:** fünf Reiter im Kopf. *Überblick* (Zahlen, Zum Angeben, Kalender,
+    Wochenlast, Merch-Stand), *Kraft* (Bestwerte, Verhältnisse, Hochrechnung,
+    Relativkraft, Plateaus, Ansage gegen Gefühl, Verläufe, Volumen), *Körper* (Form,
+    Gewicht, Injury-Verlauf), *Rad* (W/kg, Plan gegen Ist, Aerobe Basis, 90 Tage) und
+    *Einheiten*. Der zuletzt gewählte Reiter wird gemerkt.
+  - **Backstage:** eigener Bildschirm hinter dem ⚙ in der Tour, mit den Reitern
+    *Persönlich* (Stimme, Bestleistungen, Injury Report, Prüfwerte), *Orte*,
+    *Verbindungen* und *App* (Darstellung, Sprache, Version, Update, Neuberechnung,
+    Zugänge).
+  - Die Reiterleiste sitzt im Kopf und klebt mit ihm, auch wenn ein Banner den Kopf
+    höher macht. Passt sie nicht in die Breite (große Schrift, schmales Handy), lässt
+    sie sich wischen; eine Blende am Rand zeigt das an. Pfeiltasten wechseln den
+    Reiter, die Leiste ist als Tabliste ausgezeichnet.
+  - Hinweise, die auf „≡“ verwiesen, nennen jetzt den Weg in den Backstage.
+
 ## 2026-10-04.2
 
 ### Geändert

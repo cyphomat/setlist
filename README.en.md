@@ -22,7 +22,7 @@
   <b>English</b> · <a href="README.md">Deutsch</a> · <a href="CHANGELOG.md">Changelog</a>
 </p>
 
-> **Note on language.** The app's interface is available in German and English — switch it under **Tour → Backstage → Language**. The *training content* is still German only: the call before a session, exercise explanations, cues, mistakes, jam movements and the bike rationales. Those are technical text that needs to be translated properly rather than word-for-word, so they were deliberately left alone for now. Expect a mixed-language screen when you run the app in English.
+> **Note on language.** The app's interface is available in German and English — switch it under **Tour → ⚙ Backstage → App**. The *training content* is still German only: the call before a session, exercise explanations, cues, mistakes, jam movements and the bike rationales. Those are technical text that needs to be translated properly rather than word-for-word, so they were deliberately left alone for now. Expect a mixed-language screen when you run the app in English.
 
 ---
 
@@ -99,7 +99,7 @@ The difference from a logbook: it has an opinion about today — from data, not 
   > **From your history** — Yesterday five years ago: 140 kg back squat. Today you are at 65 kg — not because you can do less, but because you are starting again.
 
 - **Small wins** come first after every session. Not the report, but what you achieved.
-- **The voice** mixes your own lines with 52 built-in ones, roughly half and half. Editable under **Tour → Backstage → Your voice** — that is also where *your reason* lives, which only shows up on the hard days.
+- **The voice** mixes your own lines with 52 built-in ones, roughly half and half. Editable under **Tour → ⚙ Backstage → Personal** — that is also where *your reason* lives, which only shows up on the hard days.
 
 ## How it fits together
 
@@ -174,7 +174,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | **Self-updating** | Checks the version at start and reloads itself exactly once. |
 | **Sound and vibration** | Tone at the end of a rest and on finishing a session, on top of the vibration — the tone respects the mute switch, the vibration does not. |
 | **Light and dark** | Switch between system / light / dark. Two real designs, not an inversion. |
-| **Text size** | Normal / Large / Extra large under *Backstage → Appearance*. Scales the whole interface evenly, on this device only. |
+| **Text size** | Normal / Large / Extra large under *Backstage → App*. Scales the whole interface evenly, on this device only. |
 | **Phone and Mac** | Two columns from 900 px, wider grids in the Tour — same order, no rebuild. |
 | **German and English** | Interface language switchable under Backstage. Training content stays German for now. |
 

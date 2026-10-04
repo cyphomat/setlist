@@ -247,11 +247,19 @@
 
 <!-- ============ HISTORY ============ -->
 <section id="view-history" class="view" hidden>
-  <header class="head">
+  <header class="head mit-reiter">
     <button id="hist-back" class="icon-btn" data-i18n-aria="aria.zurueck" aria-label="Zurück">‹</button>
     <h1 data-i18n="tour.titel">Tour</h1>
+    <button id="go-backstage" class="icon-btn" data-i18n-aria="aria.backstage" aria-label="Backstage">⚙</button>
+    <div class="reiter" role="tablist" id="tour-reiter">
+      <button type="button" role="tab" id="tour-tab-ueberblick" aria-controls="tour-ueberblick" data-reiter="ueberblick" data-i18n="reiter.tour.ueberblick">Überblick</button>
+      <button type="button" role="tab" id="tour-tab-kraft" aria-controls="tour-kraft" data-reiter="kraft" data-i18n="reiter.tour.kraft">Kraft</button>
+      <button type="button" role="tab" id="tour-tab-koerper" aria-controls="tour-koerper" data-reiter="koerper" data-i18n="reiter.tour.koerper">Körper</button>
+      <button type="button" role="tab" id="tour-tab-rad" aria-controls="tour-rad" data-reiter="rad" data-i18n="reiter.tour.rad">Rad</button>
+      <button type="button" role="tab" id="tour-tab-einheiten" aria-controls="tour-einheiten" data-reiter="einheiten" data-i18n="reiter.tour.einheiten">Einheiten</button>
+    </div>
   </header>
-  <div class="pad">
+  <div class="pad reiter-panel" id="tour-ueberblick" role="tabpanel" aria-labelledby="tour-tab-ueberblick">
     <div id="hist-summary"></div>
     <button id="hist-merch" class="btn ghost small zum-merch" data-i18n="tour.zumMerch">Zum Merch-Stand ›</button>
     <h2 data-i18n="tour.angeben">Zum Angeben</h2>
@@ -260,15 +268,8 @@
     <div id="hist-kalender"></div>
     <h2 data-i18n="tour.wochenlast">Wochenlast · Kraft und Rad</h2>
     <div id="hist-last"></div>
-    <h2 data-i18n="tour.volumen">Volumen · 12 Wochen</h2>
-    <div id="hist-tonnage"></div>
-    <h2 data-i18n="tour.fitness">Fitness und Ermüdung</h2>
-    <div id="hist-form"></div>
-    <div id="body-trend"></div>
-    <h2 data-i18n="tour.abnehmen">Gewicht · Tempo und Preis</h2>
-    <div id="hist-abnehmen"></div>
-    <h2 data-i18n="tour.wkg">Watt pro Kilogramm</h2>
-    <div id="hist-wkg"></div>
+  </div>
+  <div class="pad reiter-panel" id="tour-kraft" role="tabpanel" aria-labelledby="tour-tab-kraft" hidden>
     <h2 data-i18n="tour.bestwerte">Bestwerte</h2>
     <div id="hist-prs"></div>
 
@@ -280,40 +281,50 @@
 
     <div id="hist-plateaus"></div>
 
-    <div id="hist-koerper"></div>
     <h2 data-i18n="tour.ansage">Ansage gegen Gefühl</h2>
     <div id="hist-ansage"></div>
     <h2 data-i18n="tour.verlaeufe">Verläufe</h2>
     <div id="hist-charts"></div>
+    <h2 data-i18n="tour.volumen">Volumen · 12 Wochen</h2>
+    <div id="hist-tonnage"></div>
+  </div>
+  <div class="pad reiter-panel" id="tour-koerper" role="tabpanel" aria-labelledby="tour-tab-koerper" hidden>
+    <h2 data-i18n="tour.fitness">Fitness und Ermüdung</h2>
+    <div id="hist-form"></div>
+    <div id="body-trend"></div>
+    <h2 data-i18n="tour.abnehmen">Gewicht · Tempo und Preis</h2>
+    <div id="hist-abnehmen"></div>
+    <div id="hist-koerper"></div>
+  </div>
+  <div class="pad reiter-panel" id="tour-rad" role="tabpanel" aria-labelledby="tour-tab-rad" hidden>
+    <h2 data-i18n="tour.wkg">Watt pro Kilogramm</h2>
+    <div id="hist-wkg"></div>
     <h2 data-i18n="tour.intensitaet">Plan gegen Ist · Rad</h2>
     <div id="hist-intensitaet"></div>
     <h2 data-i18n="tour.aerob">Aerobe Basis</h2>
     <div id="hist-aerob"></div>
     <h2 data-i18n="tour.rad">Rad · 90 Tage</h2>
     <div id="hist-rad"></div>
+  </div>
+  <div class="pad reiter-panel" id="tour-einheiten" role="tabpanel" aria-labelledby="tour-tab-einheiten" hidden>
     <h2 data-i18n="tour.einheiten">Einheiten</h2>
     <div id="history-body"></div>
   </div>
-  <div class="pad">
-    <h2 class="backstage" data-i18n="bs.backstage">Backstage</h2>
-    <h2 data-i18n="bs.verbindungen">Verbindungen</h2>
-    <div id="conn-box"></div>
-    <input id="icukey2" type="password" data-i18n-ph="setup.icukey.ph" placeholder="intervals.icu API-Key" autocomplete="off" autocapitalize="off" spellcheck="false">
-    <button id="icu-save" class="btn ghost" data-i18n="bs.icuVerbinden">intervals.icu verbinden</button>
-    <button id="icu-plan" class="btn ghost" data-i18n="bs.icuPlan">Woche in den Kalender eintragen</button>
-    <button id="icu-nachtragen" class="btn ghost" data-i18n="bs.icuNachtragen">Alte Einheiten nachtragen</button>
-    <h2 data-i18n="bs.darstellung">Darstellung</h2>
-    <div class="themen">
-      <button data-thema="auto" data-i18n="bs.thema.auto">System</button>
-      <button data-thema="hell" data-i18n="bs.thema.hell">Hell</button>
-      <button data-thema="dunkel" data-i18n="bs.thema.dunkel">Dunkel</button>
+</section>
+
+<!-- ============ BACKSTAGE ============ -->
+<section id="view-backstage" class="view" hidden>
+  <header class="head mit-reiter">
+    <button id="bs-back" class="icon-btn" data-i18n-aria="aria.zurueck" aria-label="Zurück">‹</button>
+    <h1 data-i18n="bs.backstage">Backstage</h1>
+    <div class="reiter" role="tablist" id="bs-reiter">
+      <button type="button" role="tab" id="bs-tab-persoenlich" aria-controls="bs-persoenlich" data-reiter="persoenlich" data-i18n="reiter.bs.persoenlich">Persönlich</button>
+      <button type="button" role="tab" id="bs-tab-orte" aria-controls="bs-orte" data-reiter="orte" data-i18n="reiter.bs.orte">Orte</button>
+      <button type="button" role="tab" id="bs-tab-verbindungen" aria-controls="bs-verbindungen" data-reiter="verbindungen" data-i18n="reiter.bs.verbindungen">Verbindungen</button>
+      <button type="button" role="tab" id="bs-tab-app" aria-controls="bs-app" data-reiter="app" data-i18n="reiter.bs.app">App</button>
     </div>
-    <div class="themen schriften">
-      <button data-schrift="normal" data-i18n="bs.schrift.normal">Normal</button>
-      <button data-schrift="gross" data-i18n="bs.schrift.gross">Groß</button>
-      <button data-schrift="sehr" data-i18n="bs.schrift.sehr">Sehr groß</button>
-    </div>
-    <p class="fine" data-i18n="bs.schrift.hinweis">Vergrößert alle Texte gleichmäßig. Gilt nur auf diesem Gerät.</p>
+  </header>
+  <div class="pad reiter-panel" id="bs-persoenlich" role="tabpanel" aria-labelledby="bs-tab-persoenlich">
     <h2 data-i18n="pers.titel">Deine Stimme</h2>
     <p class="fine" data-i18n="pers.hinweis">An schweren Tagen zählt dein eigener Grund mehr als jeder Spruch aus der App. Deshalb wird er genau dann gezeigt — und sonst nicht, damit er sich nicht abnutzt.</p>
     <label class="feld"><span data-i18n="pers.grund">Dein Grund</span>
@@ -339,13 +350,36 @@
     <p class="fine" id="pers-bw-hinweis" data-i18n="chk.bwHinweis">Nur nötig für Klimmzug und Dip, weil dort dein eigener Körper mitzählt. Mit verbundener Waage kommt der Wert von dort.</p>
 
     <button id="pers-speichern" class="btn" data-i18n="pers.speichern">Persönliches speichern</button>
-
+  </div>
+  <div class="pad reiter-panel" id="bs-orte" role="tabpanel" aria-labelledby="bs-tab-orte" hidden>
     <h2 data-i18n="gym.titel">Orte und Geräte</h2>
     <p class="fine" data-i18n="gym.bsHinweis">Lege Orte an und hak ab, was dort steht.</p>
     <div id="gym-liste"></div>
     <button id="gym-neu" class="btn ghost" data-i18n="gym.neu">Ort hinzufügen</button>
     <button id="gym-vorlagen" class="btn ghost" data-i18n="gym.vorlagen">Vorschläge übernehmen</button>
     <button id="gym-speichern" class="btn" data-i18n="gym.speichern">Orte speichern</button>
+  </div>
+  <div class="pad reiter-panel" id="bs-verbindungen" role="tabpanel" aria-labelledby="bs-tab-verbindungen" hidden>
+    <h2 data-i18n="bs.verbindungen">Verbindungen</h2>
+    <div id="conn-box"></div>
+    <input id="icukey2" type="password" data-i18n-ph="setup.icukey.ph" placeholder="intervals.icu API-Key" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <button id="icu-save" class="btn ghost" data-i18n="bs.icuVerbinden">intervals.icu verbinden</button>
+    <button id="icu-plan" class="btn ghost" data-i18n="bs.icuPlan">Woche in den Kalender eintragen</button>
+    <button id="icu-nachtragen" class="btn ghost" data-i18n="bs.icuNachtragen">Alte Einheiten nachtragen</button>
+  </div>
+  <div class="pad reiter-panel" id="bs-app" role="tabpanel" aria-labelledby="bs-tab-app" hidden>
+    <h2 data-i18n="bs.darstellung">Darstellung</h2>
+    <div class="themen">
+      <button data-thema="auto" data-i18n="bs.thema.auto">System</button>
+      <button data-thema="hell" data-i18n="bs.thema.hell">Hell</button>
+      <button data-thema="dunkel" data-i18n="bs.thema.dunkel">Dunkel</button>
+    </div>
+    <div class="themen schriften">
+      <button data-schrift="normal" data-i18n="bs.schrift.normal">Normal</button>
+      <button data-schrift="gross" data-i18n="bs.schrift.gross">Groß</button>
+      <button data-schrift="sehr" data-i18n="bs.schrift.sehr">Sehr groß</button>
+    </div>
+    <p class="fine" data-i18n="bs.schrift.hinweis">Vergrößert alle Texte gleichmäßig. Gilt nur auf diesem Gerät.</p>
     <h2 data-i18n="bs.sprache">Sprache</h2>
     <div class="themen sprachen">
       <button data-sprache="de" data-i18n="bs.sprache.de">Deutsch</button>

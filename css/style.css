@@ -718,12 +718,26 @@ button.raus:active{border-color:var(--rost)}
 /* ── Backstage ────────────────────────────────────────────────
    Trennt den Trainingsteil vom Maschinenraum. Zentriert statt links,
    damit es als Bruch liest und nicht als naechste Ueberschrift.        */
-h2.backstage{
-  margin-top:46px;color:var(--akzent);letter-spacing:.3em;
+/* ── Reiter ──────────────────────────────────────────────────
+   Tour und Backstage: eine feste Leiste unter dem Kopf, darunter immer
+   nur ein Panel. Waagerecht scrollbar, falls die Schrift gross ist.  */
+.head.mit-reiter{flex-wrap:wrap;padding-bottom:0}
+.head > .reiter{
+  flex:1 0 100%;order:9;margin:12px -16px 0;
+  display:flex;gap:0;overflow-x:auto;scrollbar-width:none;
+  padding:0 7px;border-top:1px solid var(--line);
 }
-h2.backstage::before{
-  content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--line));
+.head > .reiter::-webkit-scrollbar{display:none}
+.reiter.ueberlaeuft{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);
+  mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}
+.reiter [role="tab"]{
+  flex:1 0 auto;background:none;border:0;border-bottom:2px solid transparent;cursor:pointer;
+  padding:13px 9px 11px;margin-bottom:-1px;
+  font-family:var(--mono);font-size:0.6875rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);white-space:nowrap;
 }
+.reiter [role="tab"][aria-selected="true"]{color:var(--akzent);border-bottom-color:var(--akzent)}
+.reiter [role="tab"]:focus-visible{outline:none;box-shadow:inset var(--gb-fokus)}
 
 /* ── Bibliothek ───────────────────────────────────────────────
    Wachsende Wissensschicht: Grundlifts, Technik, Mobility, Finisher
@@ -1032,6 +1046,7 @@ details.shirt[open] .shirt-icon{fill:var(--akzent);stroke:var(--akzent)}
 
 @media (min-width: 900px) {
   #view-merch { max-width: 1080px; }
+  .reiter [role="tab"]{flex:none;padding:13px 16px 11px}
 }
 
 /* ═══════════════════════════════════════════════════════════

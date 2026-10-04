@@ -224,14 +224,17 @@ rahmen.addEventListener('load', async () => {
   } else if (szene === 'verlauf') {
     $('go-history').click();
     await warte(1200);
+    $('tour-tab-ueberblick').click();
     if ($('banner')) $('banner').hidden = true;
     w.scrollTo(0, 0);
   } else if (szene === 'rad') {
     $('go-history').click();
     await warte(1200);
     if ($('banner')) $('banner').hidden = true;
+    $('tour-tab-rad').click();
+    await warte(200);
     $('hist-rad').scrollIntoView();
-    w.scrollBy(0, -70);
+    w.scrollBy(0, -120);
   } else if (szene === 'wod') {
     $('go-wod').click();
     await warte(300);

@@ -192,6 +192,8 @@ const SZENEN = {
     hoehe: 1000,
     async fuehre(p) {
       await p.click('#go-history');
+      await p.click('#go-backstage');
+      await p.click('#bs-tab-orte');
       await p.waitForSelector('#gym-liste details');
       await p.click('#gym-liste details:first-child summary');
       await p.waitForTimeout(250);
@@ -214,6 +216,8 @@ const SZENEN = {
     hoehe: 1000,
     async fuehre(p) {
       await p.click('#go-history');
+      await p.click('#go-backstage');
+      await p.click('#bs-tab-persoenlich');
       await p.waitForSelector('#pers-rekorde .pers-rekord');
       await verstecke(p, '#banner');
       await scrolleZu(p, '#pers-grund', 190);
@@ -227,6 +231,7 @@ const SZENEN = {
     hoehe: 1250,
     async fuehre(p) {
       await p.click('#go-history');
+      await p.click('#tour-tab-kraft');
       await p.waitForSelector('#hist-verhaeltnisse .verh');
       await verstecke(p, '#banner');
       await scrolleZu(p, '#hist-verhaeltnisse', 110);
@@ -240,6 +245,7 @@ const SZENEN = {
     hoehe: 1150,
     async fuehre(p) {
       await p.click('#go-history');
+      await p.click('#tour-tab-kraft');
       await p.waitForSelector('#hist-hochrechnung .pr');
       await verstecke(p, '#banner');
       await scrolleZu(p, '#hist-hochrechnung', 110);
@@ -296,6 +302,8 @@ const SZENEN = {
     host: 'jens.github.io',
     async fuehre(p) {
       await p.click('#go-history');
+      await p.click('#go-backstage');
+      await p.click('#bs-tab-app');
       await p.waitForSelector('#version-box');
       await verstecke(p, '#banner');
       await scrolleZu(p, '#version-box', 150);

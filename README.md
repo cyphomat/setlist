@@ -22,7 +22,7 @@
   <b>Deutsch</b> · <a href="README.en.md">English</a> · <a href="CHANGELOG.md">Changelog</a>
 </p>
 
-> **Zur Sprache.** Die Oberfläche der App gibt es auf Deutsch und Englisch — umschaltbar unter **Tour → Backstage → Sprache**. Die *Trainingsinhalte* sind bisher nur deutsch: die Ansage vor der Einheit, Übungserklärungen, Cues, typische Fehler, Jam-Bewegungen und die Rad-Begründungen. Das ist Fachtext, der inhaltlich übersetzt werden muss statt Wort für Wort — deshalb ist er bewusst noch nicht angefasst. Im englischen Modus steht also gemischte Sprache auf dem Bildschirm.
+> **Zur Sprache.** Die Oberfläche der App gibt es auf Deutsch und Englisch — umschaltbar unter **Tour → ⚙ Backstage → App**. Die *Trainingsinhalte* sind bisher nur deutsch: die Ansage vor der Einheit, Übungserklärungen, Cues, typische Fehler, Jam-Bewegungen und die Rad-Begründungen. Das ist Fachtext, der inhaltlich übersetzt werden muss statt Wort für Wort — deshalb ist er bewusst noch nicht angefasst. Im englischen Modus steht also gemischte Sprache auf dem Bildschirm.
 
 ---
 
@@ -99,7 +99,7 @@ Der Unterschied zu einem Logbuch: sie hat eine Meinung zum heutigen Tag — aus 
   > **Aus deiner Geschichte** — Gestern vor 5 Jahren: 140 kg Back Squat. Heute stehst du bei 65 kg — nicht weil du weniger kannst, sondern weil du wieder anfängst.
 
 - **Minierfolge** stehen nach jeder Einheit ganz oben. Nicht der Bericht, sondern das Geschaffte.
-- **Die Stimme** mischt eigene Zeilen mit 52 mitgelieferten, etwa halbe halbe. Eintragbar unter **Tour → Backstage → Deine Stimme** — dort steht auch *dein Grund*, der nur an den harten Tagen erscheint.
+- **Die Stimme** mischt eigene Zeilen mit 52 mitgelieferten, etwa halbe halbe. Eintragbar unter **Tour → ⚙ Backstage → Persönlich** — dort steht auch *dein Grund*, der nur an den harten Tagen erscheint.
 
 ## Wie es zusammenhängt
 
@@ -174,7 +174,7 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 | **Selbstaktualisierend** | Prüft die Version beim Start und lädt sich genau einmal neu. |
 | **Sound und Vibration** | Ton bei Pausenende und Einheitsabschluss, zusätzlich zur Vibration — Ton respektiert den Stumm-Schalter, Vibration nicht. |
 | **Hell und dunkel** | Umschalter System / Hell / Dunkel. Zwei echte Fassungen, keine Invertierung. |
-| **Schriftgröße** | Normal / Groß / Sehr groß unter *Backstage → Darstellung*. Skaliert die ganze Oberfläche gleichmäßig, gilt nur auf diesem Gerät. |
+| **Schriftgröße** | Normal / Groß / Sehr groß unter *Backstage → App*. Skaliert die ganze Oberfläche gleichmäßig, gilt nur auf diesem Gerät. |
 | **Handy und Mac** | Ab 900 px zwei Spalten, in der Tour breitere Raster — dieselbe Reihenfolge, kein Umbau. |
 | **Deutsch und Englisch** | Oberflächensprache unter Backstage umschaltbar. Trainingsinhalte bleiben vorerst deutsch. |
 

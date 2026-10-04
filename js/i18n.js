@@ -88,7 +88,7 @@ export const TEXTE = {
     'home.achtung': 'ACHTUNG',
 
     /* ---- intervals.icu-Status ---- */
-    'icu.aus': 'Radeinheiten werden nicht abgeglichen — intervals.icu ist nicht verbunden. Unter ≡ eintragen.',
+    'icu.aus': 'Radeinheiten werden nicht abgeglichen — intervals.icu ist nicht verbunden. Im Backstage eintragen (≡, dann ⚙).',
     'icu.laedt': 'Frage intervals.icu ab…',
     'icu.keineFahrten': 'Keine Radeinheit in den letzten 90 Tagen. Die Anbindung funktioniert — es gibt schlicht nichts abzugleichen.',
     'icu.zuletzt': 'Zuletzt gefahren',
@@ -374,6 +374,16 @@ export const TEXTE = {
     'aria.abbrechen': 'Abbrechen',
     'aria.bibliothek': 'Bibliothek',
     'aria.tour': 'Tour',
+    'aria.backstage': 'Backstage',
+    'reiter.tour.ueberblick': 'Überblick',
+    'reiter.tour.kraft': 'Kraft',
+    'reiter.tour.koerper': 'Körper',
+    'reiter.tour.rad': 'Rad',
+    'reiter.tour.einheiten': 'Einheiten',
+    'reiter.bs.persoenlich': 'Persönlich',
+    'reiter.bs.orte': 'Orte',
+    'reiter.bs.verbindungen': 'Verbindungen',
+    'reiter.bs.app': 'App',
     'aria.neuWuerfeln': 'Neu würfeln',
 
     'stat.einheiten': 'Einheiten',
@@ -862,7 +872,7 @@ export const TEXTE = {
     'home.achtung': 'WATCH OUT',
 
     /* ---- intervals.icu status ---- */
-    'icu.aus': 'Bike sessions are not being synced — intervals.icu is not connected. Add it under ≡.',
+    'icu.aus': 'Bike sessions are not being synced — intervals.icu is not connected. Add it in the backstage (≡, then ⚙).',
     'icu.laedt': 'Querying intervals.icu…',
     'icu.keineFahrten': 'No bike session in the last 90 days. The connection works — there is simply nothing to sync.',
     'icu.zuletzt': 'Last ride',
@@ -1148,6 +1158,16 @@ export const TEXTE = {
     'aria.abbrechen': 'Cancel',
     'aria.bibliothek': 'Library',
     'aria.tour': 'Tour',
+    'aria.backstage': 'Backstage',
+    'reiter.tour.ueberblick': 'Overview',
+    'reiter.tour.kraft': 'Strength',
+    'reiter.tour.koerper': 'Body',
+    'reiter.tour.rad': 'Bike',
+    'reiter.tour.einheiten': 'Sessions',
+    'reiter.bs.persoenlich': 'Personal',
+    'reiter.bs.orte': 'Places',
+    'reiter.bs.verbindungen': 'Connections',
+    'reiter.bs.app': 'App',
     'aria.neuWuerfeln': 'Reroll',
 
     'stat.einheiten': 'Sessions',

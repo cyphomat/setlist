@@ -55,7 +55,7 @@ const $ = id => document.getElementById(id);
 uebersetzeStatisch();
 const VERSION_KEY = 'setlist.version';
 let laufendeVersion = localStorage.getItem(VERSION_KEY) || '—';
-const VIEWS = ['setup', 'einrichten', 'home', 'session', 'wod', 'unplugged', 'maxout', 'done', 'history', 'bibliothek', 'merch'];
+const VIEWS = ['setup', 'einrichten', 'home', 'session', 'wod', 'unplugged', 'maxout', 'done', 'history', 'bibliothek', 'merch', 'backstage'];
 const show = n => { VIEWS.forEach(v => $('view-' + v).hidden = v !== n); window.scrollTo(0, 0); };
 
 let bannerTimer = null;
@@ -135,8 +135,8 @@ async function load() {
   // dauerhaft den Stand von vorher — inklusive einer leeren Ortsliste. Er
   // wird dann aufgefrischt, aber nicht herausgerissen: ihn ungefragt auf den
   // Startbildschirm zu werfen waere schlimmer als ein Moment Warten.
-  if ($('view-history').hidden) show('home');
-  else { renderGymVerwaltung(); renderPersoenlich(); renderConnections(); }
+  if (!$('view-backstage').hidden) zeigeBackstage();
+  else if ($('view-history').hidden) show('home');
   loadIntervals();
   pruefeUrsprung();
 }
@@ -1051,10 +1051,7 @@ async function waehleGefuehl(wert) {
 
 async function renderHistory() {
   show('history');
-  renderVersion();
-  renderConnections();
-  renderGymVerwaltung();
-  renderPersoenlich();
+  waehleReiter('tour', gemerkterReiter('tour', 'ueberblick'));
   // Ohne geladene Konfiguration gibt es nichts zu zeigen — und der Zugriff
   // auf config.lifts wuerde die ganze Ansicht mit einem leeren Bildschirm
   // quittieren statt mit einer Erklaerung.
@@ -1156,6 +1153,12 @@ $('wod-reroll').onclick = () => { starteWod((wodSeed * 7919 + 13) >>> 0); };
 $('wod-finish').onclick = wodAbschliessen;
 $('sw-toggle').onclick = () => swLaeuft ? stopUhr() : startUhr();
 $('go-history').onclick = renderHistory;
+$('go-backstage').onclick = zeigeBackstage;
+// Zurueck in die Tour. War sie noch nie offen (Backstage direkt nach dem
+// Laden erreicht), wird sie jetzt erst gezeichnet.
+$('bs-back').onclick = () => { if ($('hist-summary').innerHTML) show('history'); else renderHistory(); };
+bindeReiter('tour');
+bindeReiter('bs');
 $('hist-back').onclick = () => { renderOrtKnopf(); show('home'); };
 $('go-bibliothek').onclick = () => zeigeBibliothek();
 $('go-merch').onclick = () => zeigeMerch('home');
@@ -4083,4 +4086,81 @@ function renderMerch(logs) {
         ${Object.entries(b.lifts).map(([id, l]) => `<div class="kv"><span class="k">${escHtml(liftName(id))}</span>
           <span class="v">${fmtKg(l.von)} → ${fmtKg(l.bis)}</span></div>`).join('')}
       </div>` : ''}`).join('');
+}
+
+/* ============================== Reiter ==============================
+   Tour und Backstage waren je eine endlose Seite. Jetzt traegt jede ein
+   paar Reiter; gerendert wird weiterhin alles, die Reiter blenden nur um.
+   Der zuletzt gewaehlte Reiter wird gemerkt — lokal, und ohne dass ein
+   gesperrter Speicher (privates Fenster) etwas kaputt macht.          */
+
+const reiterKey = gruppe => `setlist.${gruppe}.reiter`;
+
+function gemerkterReiter(gruppe, standard) {
+  try {
+    const r = localStorage.getItem(reiterKey(gruppe));
+    if (r && document.getElementById(`${gruppe}-${r}`)) return r;
+  } catch { /* kein Speicher, kein Gedaechtnis */ }
+  return standard;
+}
+
+/**
+ * Passt die Leiste nicht (grosse Schrift, schmales Handy), zeigt eine
+ * Blende am Rand, dass es weitergeht. Die Leiste sitzt im Kopf selbst und
+ * klebt mit ihm — so stimmt die Lage auch, wenn ein Banner den Kopf
+ * hoeher macht.
+ */
+function setzeReiterAbstand(leiste) {
+  leiste.classList.toggle('ueberlaeuft',
+    leiste.scrollLeft + leiste.clientWidth < leiste.scrollWidth - 1);
+}
+window.addEventListener('resize', () => {
+  document.querySelectorAll('.reiter').forEach(setzeReiterAbstand);
+});
+
+function waehleReiter(gruppe, id, fokus = false) {
+  const leiste = $(`${gruppe}-reiter`);
+  if (!leiste) return;
+  setzeReiterAbstand(leiste);
+  for (const b of leiste.querySelectorAll('[role="tab"]')) {
+    const an = b.dataset.reiter === id;
+    b.setAttribute('aria-selected', String(an));
+    b.tabIndex = an ? 0 : -1;
+    const panel = $(`${gruppe}-${b.dataset.reiter}`);
+    if (panel) panel.hidden = !an;
+    if (an && fokus) b.focus();
+    if (an && leiste.scrollWidth > leiste.clientWidth) b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }
+  try { localStorage.setItem(reiterKey(gruppe), id); } catch { /* egal */ }
+}
+
+function bindeReiter(gruppe) {
+  const leiste = $(`${gruppe}-reiter`);
+  if (!leiste) return;
+  const knoepfe = () => [...leiste.querySelectorAll('[role="tab"]')];
+  for (const b of knoepfe()) {
+    b.onclick = () => {
+      waehleReiter(gruppe, b.dataset.reiter);
+      window.scrollTo(0, 0);   // ein neuer Reiter beginnt oben
+    };
+  }
+  leiste.onscroll = () => setzeReiterAbstand(leiste);
+  leiste.onkeydown = e => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    const alle = knoepfe();
+    const i = alle.findIndex(b => b.getAttribute('aria-selected') === 'true');
+    const n = (i + (e.key === 'ArrowRight' ? 1 : -1) + alle.length) % alle.length;
+    waehleReiter(gruppe, alle[n].dataset.reiter, true);
+    e.preventDefault();
+  };
+}
+
+/** Der Backstage: Einstellungen und System, getrennt von den Daten der Tour. */
+function zeigeBackstage() {
+  show('backstage');
+  waehleReiter('bs', gemerkterReiter('bs', 'persoenlich'));
+  renderVersion();
+  renderConnections();
+  renderGymVerwaltung();
+  renderPersoenlich();
 }
