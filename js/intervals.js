@@ -145,6 +145,10 @@ export async function rides(from, to) {
       name: a.name || 'Fahrt',
       minutes: Math.round((a.moving_time || 0) / 60),
       km: Math.round((a.distance || 0) / 100) / 10,
+      // ACHTUNG, ungeprueft wie `entkopplung`: dass `total_elevation_gain` in
+      // Metern kommt, folgt aus dem Strava-Vorbild, nicht aus dem Schema.
+      // Beim ersten echten Wert gegen die Weboberflaeche pruefen.
+      hm: a.total_elevation_gain != null ? Math.round(a.total_elevation_gain) : null,
       load: a.icu_training_load || null,
       // Ab hier die Felder fuer die Auswertung. Namen sind nicht geraten,
       // sondern aus dem Schema unter /api/v1/docs (Activity) gelesen: es

@@ -253,4 +253,63 @@ print('\n--- Goes to eleven ---');
   eq('ohne Krafttage im Plan kein Regler', M.verstaerker([], { week: { slots: [] } }, heute), null);
 }
 
+
+print('\n--- Rad ---');
+{
+  const fahrt = (date, km, extra = {}) => ({ id: `${date}-${km}`, date, zeit: `${date}T07:00:00`, minutes: 60, km, hm: null, trainer: true, ...extra });
+  const kraftLog = kraft('2026-09-01', [satz('squat', 60)]);
+  eq('ohne Fahrten keine Rad-Reihe', M.aufnaeher([kraftLog], config, [], HEUTE).some(a => a.kategorie === 'rad'), false);
+
+  const knapp = [fahrt('2026-09-02', 60), fahrt('2026-09-04', 39.9)];
+  const a1 = M.aufnaeher([kraftLog], config, [], HEUTE, { fahrten: knapp });
+  eq('99,9 km sind noch keine 100', hat(a1, 'km-100'), null);
+  const a2 = M.aufnaeher([kraftLog], config, [], HEUTE, { fahrten: knapp.concat([fahrt('2026-09-06', 0.1)]) });
+  eq('100 km: der Tourbus am Tag der Fahrt', hat(a2, 'km-100'), '2026-09-06');
+  eq('100 km als Summe sind kein Highway Star', hat(a2, 'century'), null);
+  eq('Highway Star: 100 km am Stueck', hat(M.aufnaeher([kraftLog], config, [], HEUTE, { fahrten: [fahrt('2026-09-05', 101.2)] }), 'century'), '2026-09-05');
+
+  eq('ohne Hoehenmeter-Daten kein Stairway-Aufnaeher', a2.some(a => a.id === 'hoehe'), false);
+  const berg = [fahrt('2026-09-02', 40, { hm: 5000 }), fahrt('2026-09-09', 40, { hm: 3848 })];
+  eq('Stairway to Heaven bei 8848 hm insgesamt', hat(M.aufnaeher([kraftLog], config, [], HEUTE, { fahrten: berg }), 'hoehe'), '2026-09-09');
+
+  const draussen = Array.from({ length: 10 }, (_, i) => fahrt(P.ymd(new Date(2026, 6, 1 + i)), 30, { trainer: i === 4 }));
+  const a3 = M.aufnaeher([kraftLog], config, [], HEUTE, { fahrten: draussen.concat([fahrt('2026-07-20', 30, { trainer: false })]) });
+  eq('Open Air zaehlt die Rolle nicht mit', hat(a3, 'openair'), '2026-07-20');
+
+  // Doom: zehn Fahrten im Plan. Der Plan sagt 0,60-0,75.
+  const plan = () => ({ label: 'Z2', ftp: [0.60, 0.75] });
+  const locker = Array.from({ length: 11 }, (_, i) => fahrt(P.ymd(new Date(2026, 7, 1 + i)), 30, { intensitaet: i === 3 ? 0.9 : 0.68 }));
+  const mitRadPlan = { ...config, rides: [{ label: 'Z2' }] };
+  const a4 = M.aufnaeher([kraftLog], mitRadPlan, [], HEUTE, { fahrten: locker, planFuer: plan });
+  eq('Doom nach zehn Fahrten im Ziel — die zu harte zaehlt nicht', hat(a4, 'doom'), '2026-08-11');
+  eq('ohne Plan kein Doom-Aufnaeher', M.aufnaeher([kraftLog], config, [], HEUTE, { fahrten: locker }).some(a => a.id === 'doom'), false);
+  const ohneRadPlan = { ...config, rides: [], week: { slots: [{ day: 1, type: 'strength' }] } };
+  eq('ohne geplante Radeinheiten kein Doom', M.aufnaeher([kraftLog], ohneRadPlan, [], HEUTE, { fahrten: locker, planFuer: plan }).some(a => a.id === 'doom'), false);
+  ok('mit Radplan gibt es Doom', M.aufnaeher([kraftLog], mitRadPlan, [], HEUTE, { fahrten: locker, planFuer: plan }).some(a => a.id === 'doom'));
+
+  // Crossover: Kraft Di, Rad Do derselben Woche; Woche danach nur Rad
+  const cross = M.aufnaeher([kraft('2026-09-08', [satz('squat', 60)])], config, [], HEUTE,
+    { fahrten: [fahrt('2026-09-10', 30), fahrt('2026-09-16', 30)] });
+  eq('Crossover am spaeteren Tag der Woche', hat(cross, 'crossover-1'), '2026-09-10');
+  eq('eine Woche nur mit Rad zaehlt nicht', hat(cross, 'crossover-10'), null);
+
+  // Gigs, Rang und Serie mit Fahrten
+  const nurRad = Array.from({ length: 9 }, (_, i) => fahrt(P.ymd(new Date(2026, 5, 2 + i * 7)), 30));
+  const a5 = M.aufnaeher([kraft('2026-08-04', [satz('squat', 60)])], config, [], HEUTE, { fahrten: nurRad.concat([fahrt('2026-06-02', 20)]) });
+  eq('zwei Fahrten am selben Tag sind ein Gig: zehn Gigs am Krafttag', hat(a5, 'gigs-10'), '2026-08-04');
+  eq('Debuet: die erste Fahrt', hat(a5, 'debuet'), '2026-06-02');
+  eq('Serie aus Radwochen und Kraftwoche', hat(a5, 'serie-4'), '2026-06-23');
+  eq('Rang zaehlt Radwochen', M.rang([kraft('2026-08-04', [satz('squat', 60)])], nurRad).wochen, 10);
+  eq('ohne Fahrten bleibt es bei einer Woche', M.rang([kraft('2026-08-04', [satz('squat', 60)])]).wochen, 1);
+
+  // Tourshirt und Bilanz
+  const tr = M.touren([kraft('2026-09-08', [satz('squat', 60)])], HEUTE, [], [fahrt('2026-09-08', 42.4), fahrt('2026-09-12', 30)]);
+  eq('Kraft und Rad am selben Tag: ein Gig, beide Arten', tr[0].gigs[0].arten.join('+'), 'kraft+rad');
+  eq('ein reiner Radtag steht auch drauf', tr[0].gigs[1].arten.join('+'), 'rad');
+  eq('km je Tour', tr[0].km, 72);
+  const bil = M.jahresBilanz([], config, 2026, { heute: HEUTE, fahrten: [fahrt('2026-09-12', 30.4)] });
+  eq('ein Jahr nur mit Rad hat eine Bilanz', bil && bil.gigs, 1);
+  eq('mit Kilometern', bil.km, 30);
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

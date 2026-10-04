@@ -10,6 +10,34 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-03.2
+
+### Neu
+- **Das Rad im Merch-Stand.** Bisher kannte die Kutte nur das Eisen. Jetzt hat sie eine
+  eigene Reihe in Stahlblau, wie das Rad überall in der App:
+  - **Tourbus:** 100, 500, 1.000, 2.500 und 5.000 km insgesamt.
+  - **Stairway to Heaven:** 8.848 Höhenmeter insgesamt, einmal den Everest hoch. Den
+    Wert liefert intervals.icu (`total_elevation_gain`, neu im Abruf). Ohne
+    Höhenmeter-Daten gibt es den Aufnäher gar nicht erst.
+  - **Highway Star:** 100 km in **einer** Fahrt; zwei Fahrten zu je fünfzig zählen nicht.
+  - **Doom:** zehn Fahrten mit der Intensität im geplanten Bereich, derselbe Abgleich
+    wie in der Tour. Langsam und schwer, wenn es so geplant ist. Belohnt wird die
+    Disziplin, locker zu bleiben, nicht die Härte.
+  - **Open Air:** zehn Fahrten draußen statt auf der Rolle.
+  - **Crossover:** 1, 10 und 26 Wochen mit Krafteinheit **und** Fahrt. Kraft und Rad am
+    selben Tag werden bewusst nicht belohnt, davor warnt die App an anderer Stelle.
+- **Fahrten zählen als Gig**, seit deiner ersten Einheit in Setlist:
+  - für die Gig-Leiter, den Rang und die Serien im Merch;
+  - für die Serie auf Home (eine Woche nur auf dem Rad reißt sie nicht mehr). Home,
+    Tour-Rekord und Merch rechnen damit gleich;
+  - auf dem Tourshirt: an einem Tag mit Kraft steht „Kraft + Rad“, oben die Kilometer
+    der Tour;
+  - in der Tour-Bilanz mit eigener Kachel „Kilometer“.
+- **Fahrten seit Setlist-Start.** Die App lädt von intervals.icu sonst nur 90 Tage.
+  Der Merch-Stand holt beim Öffnen einmal alles seit der ersten Einheit und legt es
+  schlank im Zwischenspeicher ab, nur die Felder, die er rechnet. Ohne intervals.icu
+  gibt es keine Rad-Reihe, auch keine Umrisse.
+
 ## 2026-10-03.1
 
 ### Neu

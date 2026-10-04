@@ -88,11 +88,14 @@ function pick(list, seed) {
  * Die eine Aussage, die oben steht: Wo stehst du, was will der Tag,
  * und in welchem Ton wird das gesagt.
  */
-export function directive(state, config, today = new Date(), letzterLog = null, stimme = null, erholung = null) {
+export function directive(state, config, today = new Date(), letzterLog = null, stimme = null, erholung = null, fahrten = []) {
   const hist = state.history || [];
   const letzte = hist.length ? hist[hist.length - 1].date : null;
   const tage = daysSince(letzte, today);
-  const serie = serienStand(hist, today, pausenFenster(config, ymd(today)));
+  // Eine Woche nur auf dem Rad haelt die Serie genauso wie eine im Studio —
+  // dieselbe Rechnung wie der Rekord in der Tour und der Merch-Stand.
+  const radTage = (fahrten || []).filter(f => f && f.date).map(f => ({ date: f.date }));
+  const serie = serienStand(hist.concat(radTage), today, pausenFenster(config, ymd(today)));
   const streak = serie.wochen;
   const fortschritt = progressToReference(state, config);
   const workout = state.next;

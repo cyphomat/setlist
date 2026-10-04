@@ -292,7 +292,7 @@ function renderConnections() {
 
 function renderHome() {
   renderOrtKnopf();
-  const d = C.directive(state, config, new Date(), letzterLog, stimme, erholung);
+  const d = C.directive(state, config, new Date(), letzterLog, stimme, erholung, radFuerMerch());
 
   $('directive').innerHTML = `
     <div class="directive">
@@ -677,7 +677,7 @@ function rueckwegZeile(liftId) {
 
 function startSession() {
   const plan = P.planWorkout(state, config, workoutOverride || state.next);
-  const d = C.directive(state, config, new Date(), letzterLog, stimme, erholung);
+  const d = C.directive(state, config, new Date(), letzterLog, stimme, erholung, radFuerMerch());
   session = {
     date: P.ymd(new Date()), started: new Date().toISOString(),
     workout: plan.workout,
@@ -972,7 +972,7 @@ async function flushQueue() {
 }
 
 function renderDone(before, log) {
-  const d = C.directive(state, config, new Date(), log, stimme, erholung);
+  const d = C.directive(state, config, new Date(), log, stimme, erholung, radFuerMerch());
   // Erst der Erfolg, dann der Bericht. Eine Tabelle mit Pfeilen sagt, was
   // passiert ist; sie sagt nicht, dass du gerade etwas geschafft hast.
   const wins = C.erfolge(before, state, config, log, alleLogs.concat([log]), new Date());
@@ -3773,13 +3773,51 @@ function ortName() {
   return g && g.name ? g.name : null;
 }
 
+/* Das Rad im Merch-Stand. Die App laedt Fahrten sonst nur fuer 90 Tage;
+   fuer Aufnaeher braucht es alles seit der ersten Einheit. Deshalb laedt
+   der Merch-Stand einmal den ganzen Zeitraum und legt ihn schlank ab —
+   nur die Felder, die hier gerechnet werden.                          */
+const merchFahrt = f => ({
+  id: f.id, date: f.date, zeit: f.zeit || null, minutes: f.minutes || 0, km: f.km || 0,
+  hm: f.hm != null ? f.hm : null, intensitaet: f.intensitaet != null ? f.intensitaet : null,
+  trainer: !!f.trainer
+});
+const geladeneLogs = () => alleLogs.length ? alleLogs : ((S.cachedLogs() || {}).logs || []);
+/** Der erste Trainingstag in der App. Fahrten davor zaehlen nicht. */
+const ersteEinheit = logs => logs
+  .filter(l => l && l.date && M.GIG_TYPEN.includes(l.type || 'strength'))
+  .map(l => l.date).sort()[0] || null;
+
+/** Alle Fahrten seit Setlist-Start: Zwischenspeicher plus die frischen 90 Tage. */
+function radFuerMerch(logs = geladeneLogs()) {
+  if (!ICU.isConfigured()) return [];
+  // Auf Home sind die Logs oft noch nicht geladen. Dann gibt die Historie im
+  // Zustand den Start — sie ist auf hundert Eintraege gekuerzt, im Zweifel
+  // zaehlen also eher weniger Fahrten mit als zu viele.
+  const start = ersteEinheit(logs) || ersteEinheit((state && state.history) || []);
+  if (!start) return [];
+  const nachId = new Map();
+  for (const f of (S.cached().merchFahrten || [])) if (f && f.id != null) nachId.set(f.id, f);
+  for (const f of fahrtenListe()) if (f && f.id != null) nachId.set(f.id, merchFahrt(f));
+  return ICU.entdoppeln([...nachId.values()]).filter(f => f.date && f.date >= start);
+}
+
+/** Einmal den ganzen Zeitraum seit der ersten Einheit von intervals.icu holen. */
+async function ladeMerchFahrten(logs) {
+  const start = ersteEinheit(logs);
+  if (!ICU.isConfigured() || !start) return false;
+  const alle = await ICU.rides(start, P.ymd(new Date()));
+  S.cache({ merchFahrten: alle.map(merchFahrt) });
+  return true;
+}
+
 const datumLang = d => new Date(d + 'T12:00:00').toLocaleDateString(locale());
 const datumKurz = d => new Date(d + 'T12:00:00').toLocaleDateString(locale(), { day: '2-digit', month: '2-digit' });
 
 /** Zahlen in den Aufnaehern im Format der Sprache: 0,75 statt 0.75. */
 function patchVars(a) {
   const v = { ...a.vars };
-  for (const k of ['f', 'kg']) if (typeof v[k] === 'number') v[k] = v[k].toLocaleString(locale());
+  for (const k of ['f', 'kg', 'n', 'm', 'km']) if (typeof v[k] === 'number') v[k] = v[k].toLocaleString(locale());
   return v;
 }
 const patchName = a => typeof a.vars.n === 'number' ? tn(a.key, a.vars.n, patchVars(a)) : t(a.key, patchVars(a));
@@ -3830,7 +3868,8 @@ async function zeigeNeueAufnaeher(log, historie) {
   const vorher = logs.filter(l => !gleich(l));
   const tage = new Set(vorher.map(l => l.date));
   if (!historie.every(h => tage.has(h.date))) return;
-  const neu = M.neueAufnaeher(vorher, vorher.concat([log]), config, gewichtsPunkte, new Date());
+  const neu = M.neueAufnaeher(vorher, vorher.concat([log]), config, gewichtsPunkte, new Date(),
+    { fahrten: radFuerMerch(vorher), planFuer: planFuerDatum });
   if (!neu.length || !box.isConnected) return;
   box.innerHTML = `<div class="aufnaeher-neu">
     <span class="kicker">${escHtml(t('done.neuerAufnaeher'))}</span>
@@ -3861,14 +3900,19 @@ async function zeigeMerch(von = 'home') {
   } catch (e) {
     if (!logs.length) $('merch-body').innerHTML = `<p class="lead">${escHtml(e.message)}</p>`;
   }
+  // Die Fahrten danach und still: ohne sie stimmt alles andere trotzdem,
+  // nur die Rad-Aufnaeher warten auf den naechsten Besuch.
+  try { if (logs.length && await ladeMerchFahrten(logs)) renderMerch(logs); }
+  catch (e) { console.warn('intervals.icu, Fahrten fuer den Merch-Stand:', e.message); }
 }
 
 function renderMerch(logs) {
   const heute = new Date();
-  const liste = M.aufnaeher(logs, config, gewichtsPunkte, heute);
+  const fahrten = radFuerMerch(logs);
+  const liste = M.aufnaeher(logs, config, gewichtsPunkte, heute, { fahrten, planFuer: planFuerDatum });
 
   // Rang
-  const r = M.rang(logs);
+  const r = M.rang(logs, fahrten);
   $('merch-rang').innerHTML = `
     <div class="card rang">
       <div class="kicker">${escHtml(tn('merch.rang.wochen', r.wochen))}</div>
@@ -3884,7 +3928,7 @@ function renderMerch(logs) {
   // Kutte
   const w = M.kutte(liste);
   const zeigen = new Set(w.verdient.concat(w.naechste).map(a => a.id));
-  const teile = ['buehne', 'kraft', 'comeback', 'serie'].map(k => {
+  const teile = ['buehne', 'kraft', 'rad', 'comeback', 'serie'].map(k => {
     const hier = liste.filter(a => a.kategorie === k && zeigen.has(a.id));
     if (!hier.length) return '';
     return `<div class="kutte-teil">
@@ -3911,7 +3955,7 @@ function renderMerch(logs) {
     ${s.naechste ? `<div class="bar"><i style="width:${Math.round(s.naechste.anteil * 100)}%"></i></div>` : ''}`;
 
   // Tourshirts
-  const touren = M.touren(logs, heute, liste);
+  const touren = M.touren(logs, heute, liste, fahrten);
   const arten = g => g.arten.map(a => t(`merch.art.${a}`)).join(' + ');
   $('merch-shirts').innerHTML = touren.length ? touren.map((tr, i) => `
     <details class="shirt"${i === 0 ? ' open' : ''}>
@@ -3920,7 +3964,7 @@ function renderMerch(logs) {
         <span class="shirt-kopf">
           <b>${escHtml(tr.name)}</b>
           <span>Q${tr.quartal} ${tr.jahr}${tr.laufend ? ` · ${escHtml(t('merch.shirt.laufend'))}` : ''}</span>
-          <span>${escHtml(tn('merch.shirt.gigs', tr.gigs.length))} · ${t1(tr.tonnen)} t${tr.aufnaeher ? ` · ${escHtml(tn('merch.shirt.aufnaeher', tr.aufnaeher))}` : ''}</span>
+          <span>${escHtml(tn('merch.shirt.gigs', tr.gigs.length))} · ${t1(tr.tonnen)} t${tr.km ? ` · ${tr.km.toLocaleString(locale())} km` : ''}${tr.aufnaeher ? ` · ${escHtml(tn('merch.shirt.aufnaeher', tr.aufnaeher))}` : ''}</span>
         </span>
       </summary>
       <div class="rueckseite">
@@ -3935,13 +3979,14 @@ function renderMerch(logs) {
   // Tour-Bilanz: dieses und letztes Jahr
   const jahr = heute.getFullYear();
   const fmtKg = w => P.fmtWeight(w);
-  $('merch-bilanz').innerHTML = [jahr, jahr - 1].map(j => M.jahresBilanz(logs, config, j, { heute, liste }))
+  $('merch-bilanz').innerHTML = [jahr, jahr - 1].map(j => M.jahresBilanz(logs, config, j, { heute, liste, fahrten }))
     .filter(Boolean).map(b => `
       <h2>${escHtml(t('merch.bilanz', { jahr: b.jahr }))}</h2>
       <div class="stats">
         <div class="stat"><div class="n">${t('merch.b.gigs')}</div><div class="v">${b.gigs}</div></div>
         <div class="stat"><div class="n">${t('merch.b.wochen')}</div><div class="v">${b.wochen}</div></div>
         <div class="stat"><div class="n">${t('merch.b.tonnen')}</div><div class="v">${t1(b.tonnen)}</div></div>
+        ${b.km ? `<div class="stat"><div class="n">${t('merch.b.km')}</div><div class="v">${b.km.toLocaleString(locale())}</div></div>` : ''}
         <div class="stat"><div class="n">${t('merch.b.serie')}</div><div class="v">${b.serie}</div></div>
         <div class="stat"><div class="n">${t('merch.b.aufnaeher')}</div><div class="v">${b.aufnaeher}</div></div>
       </div>

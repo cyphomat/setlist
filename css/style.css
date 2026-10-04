@@ -902,7 +902,8 @@ input[type=checkbox]{accent-color:var(--akzent);width:16px;height:16px}
 .patch span{font-size:0.75rem;line-height:1.35;color:var(--muted)}
 .patch.k-kraft{--pf:var(--rost)}
 .patch.k-comeback{--pf:var(--gruen)}
-.patch.k-serie{--pf:var(--stahl)}
+.patch.k-rad{--pf:var(--stahl)}
+.patch.k-serie{--pf:var(--fg)}
 .patch.offen{border:2px dashed var(--line);background:transparent}
 .patch.offen::after{display:none}
 .patch.offen b{color:var(--muted)}

@@ -14,14 +14,16 @@
 // Reine Funktionen, kein I/O.
 
 import { applyLog, initialState, ymd } from './program.js';
-import { tonnage, gewichtsReihe, wochenSerie } from './stats.js';
+import { tonnage, gewichtsReihe, wochenSerie, intensitaetsAbgleich } from './stats.js';
 import { pausenFenster } from './verletzung.js';
 
-/** Was als Gig zaehlt: alles, wofuer man ins Studio gegangen ist. */
+/** Was als Gig zaehlt: alles, wofuer man ins Studio gegangen ist — und jede Fahrt. */
 export const GIG_TYPEN = ['strength', 'wod', 'unplugged', 'maxout'];
 const typ = l => l.type || 'strength';
 const istGig = l => l && l.date && GIG_TYPEN.includes(typ(l));
 const istKraft = l => typ(l) === 'strength' && Array.isArray(l.lifts);
+/** Fahrten kommen von intervals.icu, nicht aus den Logs. Nur die mit Datum zaehlen. */
+const mitDatum = (fahrten = []) => fahrten.filter(f => f && f.date);
 
 const zeit = l => l.finished || l.started || '';
 /** Dieselbe Reihenfolge wie deriveState — sonst rechnet die Kutte anders als das Programm. */
@@ -70,12 +72,24 @@ const WAAGE_TAGE = 14;
 
 const plattenKg = (bar, n) => bar + 2 * PLATTE_KG * n;
 
+/* Das Rad. Kilometer und Hoehenmeter sind Summen wie die Tonnen beim
+   Eisen; die uebrigen belohnen etwas anderes als Menge: eine lange Fahrt am
+   Stueck, die Disziplin, locker zu bleiben, wenn locker geplant ist, und
+   Wochen, in denen beides stattfand. Kraft und Rad am selben Tag gibt es
+   hier bewusst nicht — davor warnt die App an anderer Stelle.          */
+export const KM_STUFEN = [100, 500, 1000, 2500, 5000];
+/** Einmal den Everest hoch. */
+export const HOEHE_M = 8848;
+export const CENTURY_KM = 100;
+const DOOM_N = 10, OPENAIR_N = 10;
+const CROSSOVER_STUFEN = [1, 10, 26];
+
 /**
  * Welche Aufnaeher es fuer diese Konfiguration ueberhaupt gibt.
  * `gruppe` ist die Leiter: an der Wand steht je Gruppe nur der naechste
  * fehlende, damit keine Weste voller leerer Kreise entsteht.
  */
-export function katalog(config = {}, { mitGewicht = false } = {}) {
+export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHoehe = false, mitPlan = false } = {}) {
   const lifts = config.lifts || {};
   const bar = config.bar || 20;
   const out = [];
@@ -104,6 +118,15 @@ export function katalog(config = {}, { mitGewicht = false } = {}) {
     }
   }
 
+  if (mitRad) {
+    for (const n of KM_STUFEN) p(`km-${n}`, 'rad', 'km', 'merch.p.km', { n });
+    if (mitHoehe) p('hoehe', 'rad', 'hoehe', 'merch.p.hoehe', { m: HOEHE_M });
+    p('century', 'rad', 'century', 'merch.p.century', { km: CENTURY_KM });
+    if (mitPlan) p('doom', 'rad', 'doom', 'merch.p.doom', { n: DOOM_N });
+    p('openair', 'rad', 'openair', 'merch.p.openair', { n: OPENAIR_N });
+    for (const n of CROSSOVER_STUFEN) p(`crossover-${n}`, 'rad', 'crossover', 'merch.p.crossover', { n });
+  }
+
   p('comeback', 'comeback', 'comeback', 'merch.p.comeback');
   p('rueckweg', 'comeback', 'rueckweg', 'merch.p.rueckweg');
   if (Object.values(lifts).some(d => d && d.reference)) p('reunion', 'comeback', 'reunion', 'merch.p.reunion');
@@ -128,9 +151,15 @@ function waageFuer(reihe, datum) {
  * Alle Aufnaeher mit dem Tag, an dem sie verdient wurden (oder null).
  * "Gehoben" heisst: ein geschaffter Arbeitssatz oder ein Max-Out-Lift.
  */
-export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Date()) {
+export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Date(), { fahrten = [], planFuer = null } = {}) {
   const reihe = gewichtsReihe(wellness);
-  const kat = katalog(config, { mitGewicht: reihe.length > 0 });
+  const rad = mitDatum(fahrten);
+  const kat = katalog(config, {
+    mitGewicht: reihe.length > 0,
+    mitRad: rad.length > 0,
+    mitHoehe: rad.some(f => f.hm != null),
+    mitPlan: !!planFuer && radGeplant(config)
+  });
   const gibt = new Set(kat.map(k => k.id));
   const verdient = {};
   const setze = (id, datum) => { if (gibt.has(id) && !verdient[id]) verdient[id] = datum; };
@@ -144,11 +173,7 @@ export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Dat
 
   for (const { log, vorher, nachher } of zeitleiste(logs, config)) {
     const d = log.date;
-    if (istGig(log)) {
-      gigTage.add(d);
-      if (gigTage.size >= 1) setze('debuet', d);
-      for (const n of GIG_STUFEN) if (gigTage.size >= n) setze(`gigs-${n}`, d);
-    }
+    if (istGig(log)) gigTage.add(d);
 
     // Was an diesem Tag gehoben wurde, je Lift
     const heuteGehoben = {};
@@ -201,9 +226,16 @@ export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Dat
     }
   }
 
+  // Gigs: Tage, an denen trainiert wurde — im Studio oder auf dem Rad.
+  for (const f of rad) gigTage.add(f.date);
+  const tage = [...gigTage].sort();
+  if (tage.length) setze('debuet', tage[0]);
+  for (const n of GIG_STUFEN) if (tage.length >= n) setze(`gigs-${n}`, tage[n - 1]);
+
+  radAufnaeher(rad, logs, planFuer, setze);
+
   // Serien: dieselbe Rechnung wie der Rekord in der Tour, mit Verletzungspause.
   const fenster = pausenFenster(config, ymd(heute));
-  const tage = [...gigTage].sort();
   for (const w of wochenSerie(tage, fenster)) {
     for (const n of SERIE_STUFEN) {
       if (w.laufend >= n && w.trainiert) setze(`serie-${n}`, tage.find(t => t >= w.montag));
@@ -211,6 +243,48 @@ export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Dat
   }
 
   return kat.map(k => ({ ...k, verdient: verdient[k.id] || null }));
+}
+
+/** Plant die config ueberhaupt Radeinheiten? Sonst gibt es nichts abzugleichen. */
+function radGeplant(config) {
+  const slots = (config.week && Array.isArray(config.week.slots)) ? config.week.slots : [];
+  return Array.isArray(config.rides) && config.rides.length > 0 && slots.some(s => s && s.type === 'ride');
+}
+
+function radAufnaeher(rad, logs, planFuer, setze) {
+  if (!rad.length) return;
+  const sortiert = [...rad].sort((a, b) => String(a.zeit || a.date).localeCompare(String(b.zeit || b.date)));
+  let km = 0, hm = 0, draussen = 0;
+  for (const f of sortiert) {
+    km += f.km || 0;
+    hm += f.hm || 0;
+    for (const n of KM_STUFEN) if (km >= n - 1e-9) setze(`km-${n}`, f.date);
+    if (hm >= HOEHE_M) setze('hoehe', f.date);
+    // Eine Fahrt am Stueck — zwei Fahrten zu je fuenfzig sind keine hundert.
+    if ((f.km || 0) >= CENTURY_KM - 1e-9) setze('century', f.date);
+    if (f.trainer === false && ++draussen >= OPENAIR_N) setze('openair', f.date);
+  }
+
+  if (planFuer) {
+    const imZiel = intensitaetsAbgleich(sortiert, planFuer).filter(e => e.stufe === 'imZiel');
+    if (imZiel.length >= DOOM_N) setze('doom', imZiel[DOOM_N - 1].date);
+  }
+
+  // Crossover: Wochen mit Kraft UND Rad. Verdient an dem Tag, an dem die
+  // Woche beides hatte — also am spaeteren der beiden ersten Tage.
+  const wochen = new Map();
+  const merke = (datum, art) => {
+    const k = montagKey(datum);
+    const w = wochen.get(k) || {};
+    if (!w[art] || datum < w[art]) w[art] = datum;
+    wochen.set(k, w);
+  };
+  for (const l of logs) if (l && l.date && istKraft(l)) merke(l.date, 'kraft');
+  for (const f of rad) merke(f.date, 'rad');
+  const beide = [...wochen.entries()].filter(([, w]) => w.kraft && w.rad).sort((a, b) => a[0].localeCompare(b[0]));
+  beide.forEach(([, w], i) => {
+    for (const n of CROSSOVER_STUFEN) if (i + 1 >= n) setze(`crossover-${n}`, w.kraft > w.rad ? w.kraft : w.rad);
+  });
 }
 
 /** Was an die Weste kommt: alles Verdiente und je Leiter der naechste Schritt. */
@@ -227,9 +301,9 @@ export function kutte(liste = []) {
 }
 
 /** Was eine neue Einheit an Aufnaehern gebracht hat. */
-export function neueAufnaeher(vorherLogs = [], nachherLogs = [], config = {}, wellness = [], heute = new Date()) {
-  const alt = new Set(aufnaeher(vorherLogs, config, wellness, heute).filter(a => a.verdient).map(a => a.id));
-  return aufnaeher(nachherLogs, config, wellness, heute).filter(a => a.verdient && !alt.has(a.id));
+export function neueAufnaeher(vorherLogs = [], nachherLogs = [], config = {}, wellness = [], heute = new Date(), opts = {}) {
+  const alt = new Set(aufnaeher(vorherLogs, config, wellness, heute, opts).filter(a => a.verdient).map(a => a.id));
+  return aufnaeher(nachherLogs, config, wellness, heute, opts).filter(a => a.verdient && !alt.has(a.id));
 }
 
 /* =========================== Gold und Platin =========================== */
@@ -289,8 +363,9 @@ const montagKey = datum => {
   return ymd(d);
 };
 
-export function rang(logs = []) {
-  const wochen = new Set(logs.filter(istGig).map(l => montagKey(l.date))).size;
+export function rang(logs = [], fahrten = []) {
+  const wochen = new Set(logs.filter(istGig).map(l => l.date)
+    .concat(mitDatum(fahrten).map(f => f.date)).map(montagKey)).size;
   let i = 0;
   while (i + 1 < RAENGE.length && wochen >= RAENGE[i + 1].wochen) i++;
   const r = RAENGE[i], n = RAENGE[i + 1] || null;
@@ -321,27 +396,32 @@ export function tourName(jahr, quartal) {
 }
 
 const quartalVon = datum => Math.floor((Number(datum.slice(5, 7)) - 1) / 3) + 1;
-const ART = { strength: 'kraft', wod: 'jam', unplugged: 'unplugged', maxout: 'maxout' };
+const ART = { strength: 'kraft', wod: 'jam', unplugged: 'unplugged', maxout: 'maxout', rad: 'rad' };
 
 /**
  * Jedes Quartal mit mindestens einem Gig ist eine Tour, die neueste zuerst.
  * Ein Gig ist ein Tag — Kraft und Jam am selben Abend sind ein Konzert.
  */
-export function touren(logs = [], heute = new Date(), liste = []) {
+export function touren(logs = [], heute = new Date(), liste = [], fahrten = []) {
   const jetzt = ymd(heute);
   const map = new Map();
-  for (const l of sortiert(logs)) {
-    if (!istGig(l)) continue;
+  // Fahrten stehen als eigene Art auf dem Ruecken. An einem Tag mit Kraft
+  // heisst es dann "Kraft + Rad" — ein Gig, zwei Sets.
+  const eintraege = logs.filter(istGig)
+    .concat(mitDatum(fahrten).map(f => ({ date: f.date, type: 'rad', km: f.km || 0 })))
+    .sort((a, b) => a.date.localeCompare(b.date) || (a.type === 'rad') - (b.type === 'rad'));
+  for (const l of eintraege) {
     const jahr = Number(l.date.slice(0, 4)), q = quartalVon(l.date);
     const key = `${jahr}-Q${q}`;
-    if (!map.has(key)) map.set(key, { jahr, quartal: q, tage: new Map(), kg: 0 });
+    if (!map.has(key)) map.set(key, { jahr, quartal: q, tage: new Map(), kg: 0, km: 0 });
     const t = map.get(key);
     if (!t.tage.has(l.date)) t.tage.set(l.date, { date: l.date, arten: [], ort: null });
     const tag = t.tage.get(l.date);
     const art = ART[typ(l)];
     if (!tag.arten.includes(art)) tag.arten.push(art);
     if (!tag.ort && l.ort) tag.ort = String(l.ort);
-    t.kg += tonnage(l);
+    if (l.type === 'rad') t.km += l.km;
+    else t.kg += tonnage(l);
   }
   return [...map.values()].reverse().map(t => {
     const key = `${t.jahr}-Q${t.quartal}`;
@@ -351,6 +431,7 @@ export function touren(logs = [], heute = new Date(), liste = []) {
       laufend: Number(jetzt.slice(0, 4)) === t.jahr && quartalVon(jetzt) === t.quartal,
       gigs: [...t.tage.values()],
       tonnen: Math.round(t.kg / 100) / 10,
+      km: Math.round(t.km),
       aufnaeher: liste.filter(a => a.verdient && `${a.verdient.slice(0, 4)}-Q${quartalVon(a.verdient)}` === key).length
     };
   });
@@ -361,13 +442,14 @@ export function touren(logs = [], heute = new Date(), liste = []) {
  * und nach dem letzten Log des Jahres — beides aus dem nachgespielten
  * Zustand, damit ein Max-Out oder eine Anpassung richtig mitgerechnet wird.
  */
-export function jahresBilanz(logs = [], config = {}, jahr, { heute = new Date(), liste = [] } = {}) {
+export function jahresBilanz(logs = [], config = {}, jahr, { heute = new Date(), liste = [], fahrten = [] } = {}) {
   const imJahr = l => l.date.slice(0, 4) === String(jahr);
   const schritte = zeitleiste(logs, config).filter(z => imJahr(z.log));
   const gigs = sortiert(logs).filter(l => istGig(l) && imJahr(l));
-  if (!gigs.length) return null;
+  const rad = mitDatum(fahrten).filter(imJahr);
+  if (!gigs.length && !rad.length) return null;
 
-  const tage = [...new Set(gigs.map(l => l.date))];
+  const tage = [...new Set(gigs.map(l => l.date).concat(rad.map(f => f.date)))].sort();
   const lifts = {};
   if (schritte.length) {
     const vorher = schritte[0].vorher, nachher = schritte[schritte.length - 1].nachher;
@@ -387,6 +469,7 @@ export function jahresBilanz(logs = [], config = {}, jahr, { heute = new Date(),
     gigs: tage.length,
     wochen: new Set(tage.map(montagKey)).size,
     tonnen: Math.round(gigs.reduce((s, l) => s + tonnage(l), 0) / 100) / 10,
+    km: Math.round(rad.reduce((s, f) => s + (f.km || 0), 0)),
     serie: wochenSerie(tage, fenster).reduce((m, w) => Math.max(m, w.laufend), 0),
     lifts,
     aufnaeher: liste.filter(a => a.verdient && a.verdient.slice(0, 4) === String(jahr)).length

@@ -157,10 +157,25 @@ function routen(ctx, { configDa = true, versionOben = null, mitVerlauf = false, 
   });
 }
 
-/** Die Waage, damit Klimmzug und Dip eine Gesamtlast haben. */
-const routenIcu = ctx => ctx.route('**/intervals.icu/**', r =>
-  r.fulfill({ status: 200, contentType: 'application/json',
-              body: JSON.stringify(r.request().url().includes('wellness') ? WELLNESS : []) }));
+/* Zwei Fahrten je Woche seit dem Start, fuer die Rad-Aufnaeher im Merch.
+   Eine davon draussen, eine lange ueber hundert Kilometer.            */
+const FAHRTEN = Array.from({ length: 26 }, (_, i) => {
+  const d = new Date('2026-06-16'); d.setDate(d.getDate() + Math.floor(i / 2) * 7 + (i % 2) * 4);
+  return { id: `r${i}`, type: i % 6 === 0 ? 'Ride' : 'VirtualRide', trainer: i % 6 !== 0,
+           start_date_local: `${d.toISOString().slice(0, 10)}T07:00:00`,
+           moving_time: 3600 + (i % 3) * 900, distance: i === 15 ? 103500 : 32000 + i * 400,
+           total_elevation_gain: 420, icu_training_load: 58, icu_intensity: 69 };
+});
+
+/** Die Waage, damit Klimmzug und Dip eine Gesamtlast haben — und auf Wunsch Fahrten. */
+const routenIcu = (ctx, mitFahrten = false) => ctx.route('**/intervals.icu/**', r => {
+  const u = new URL(r.request().url());
+  const body = u.pathname.endsWith('wellness') ? WELLNESS
+    : mitFahrten && u.pathname.endsWith('/activities')
+      ? FAHRTEN.filter(f => f.start_date_local.slice(0, 10) >= u.searchParams.get('oldest'))
+      : [];
+  return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+});
 
 /* ---------- Die Szenen ---------- */
 
@@ -266,10 +281,11 @@ const SZENEN = {
   // Der Merch-Stand: Rang, Kutte mit Aufnaehern, Gold und Platin.
   merch: {
     optionen: { mitVerlauf: true },
+    icu: true, fahrten: true,
     hoehe: 1400,
     async fuehre(p) {
       await p.click('#go-merch');
-      await p.waitForSelector('#merch-kutte .patch');
+      await p.waitForSelector('#merch-kutte .patch.k-rad');
       await verstecke(p, '#banner');
     }
   },
@@ -327,7 +343,7 @@ for (const name of namen) {
     }
   }, [VERSION, !!s.icu]);
   await routen(ctx, s.optionen);
-  if (s.icu) await routenIcu(ctx);
+  if (s.icu) await routenIcu(ctx, !!s.fahrten);
 
   // Ein Fork laeuft unter fremder Adresse — nur dann fragt die App beim
   // Original nach. Dafuer wird der lokale Server unter diesem Namen

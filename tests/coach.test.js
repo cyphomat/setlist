@@ -61,6 +61,15 @@ print('\n--- Serie mit Verletzungspause ---');
   eq('und nennt sie', d.streakPausiert && d.streakPausiert.was, 'Finger');
 }
 
+print('\n--- Serie mit Radwochen ---');
+{
+  const kraftWochen = [{date:'2026-08-25', type:'strength'},{date:'2026-09-08', type:'strength'},{date:'2026-09-15', type:'strength'}];
+  const st = { ...base(), history: kraftWochen.map(h => ({ ...h, workout:'A' })) };
+  eq('ohne Fahrt reisst die Woche 31.08.', C.directive(st, config, HEUTE).streak, 2);
+  eq('eine Fahrt in der Woche haelt die Serie', C.directive(st, config, HEUTE, null, null, null, [{ date:'2026-09-02', km: 30 }]).streak, 4);
+  eq('Fahrten ohne Datum zaehlen nicht', C.directive(st, config, HEUTE, null, null, null, [{ km: 30 }]).streak, 2);
+}
+
 print('\n--- Fortschritt zu den alten Arbeitsgewichten ---');
 const p = C.progressToReference(base(), config);
 ok('Kniebeuge 47,5 von 80 sind rund 59 %', Math.abs(p.perLift.squat.anteil - 0.59375) < 1e-9);
