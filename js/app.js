@@ -232,6 +232,10 @@ function renderIcuStatus() {
   }
   const tage = C.daysSince(icu.letzte.date, new Date());
   const lange = tage > 21;
+  // Laeuft alles, steht hier nichts: die Radzeile der Woche zeigt schon, was
+  // gefahren wurde, und die volle Uebersicht liegt unter ≡. Gesprochen wird
+  // nur, wenn das Rad ruht oder Doppel zusammengefasst wurden.
+  if (!lange && !icu.doppel) { el.innerHTML = ''; return; }
   const wann = tage === 0 ? t('icu.heute') : tage === 1 ? t('icu.einTag') : t('icu.tage', { n: tage });
   el.innerHTML = `<p class="fine">
     ${tage === 0 ? t('icu.zuletzt') : t('icu.davor')} <b class="num" style="color:${lange ? 'var(--rost)' : 'var(--akzent)'}">${wann}</b>
@@ -305,30 +309,22 @@ function renderHome() {
 
   const motto = config.motto;
   $('motto').innerHTML = motto ? `<p class="motto">${escHtml(motto)}</p>` : '';
-  renderProgress(d.fortschritt, d);
+  serienKopf = { streak: d.streak, pause: d.streakPausiert };
   renderAmp();
   renderWeek();
   renderIcuStatus();
   renderWeights(d.fortschritt);
 }
 
-function renderProgress(f, d) {
-  const streak = d.streak;
-  const pause = d.streakPausiert;
-  const pct = Math.round(f.gesamt * 100);
-  $('progress').innerHTML = `
-    <div class="card">
-      <div class="kicker">${t('home.fortschritt.kicker')}</div>
-      <div class="name">${pct}<span style="font-size:1.25rem">%</span></div>
-      <div class="bar gruen"><i style="width:${pct}%"></i></div>
-      <p class="fine">${t('home.fortschritt.fine')} ${streak > 0 && pause
-        // Verletzt: die Serie steht still, statt zu reissen.
-        ? `<b style="color:var(--stahl)">${escHtml(tn('home.fortschritt.pausiert', streak, { was: pause.was }))}</b>`
-        : streak > 0
-        ? `<b style="color:var(--gruen)">${t(streak === 1 ? 'home.fortschritt.serie' : 'home.fortschritt.serien', { n: streak })}</b>`
-        : t('home.fortschritt.keineSerie')}</p>
-      ${pct >= 100 ? `<p class="reunion">${t('home.reunion')}</p>` : ''}
-    </div>`;
+/** Die laufende Serie, fuer den Kopf der Wochenkarte. Gesetzt in renderHome. */
+let serienKopf = { streak: 0, pause: null };
+
+function serienZeile() {
+  const { streak, pause } = serienKopf;
+  // Verletzt: die Serie steht still, statt zu reissen.
+  if (streak > 0 && pause) return `<p class="serie pausiert">${escHtml(tn('home.fortschritt.pausiert', streak, { was: pause.was }))}</p>`;
+  if (streak > 0) return `<p class="serie">${t(streak === 1 ? 'home.fortschritt.serie' : 'home.fortschritt.serien', { n: streak })}</p>`;
+  return `<p class="serie leer">${t('home.fortschritt.keineSerie')}</p>`;
 }
 
 /* ============================ Goes to eleven ============================
@@ -341,7 +337,7 @@ function renderAmp() {
   if (!box || !config || !state) return;
   const logs = alleLogs.length ? alleLogs : ((S.cachedLogs() || {}).logs || []);
   const v = M.verstaerker(logs, config, new Date(), state.history || []);
-  if (!v) { box.innerHTML = ''; return; }
+  if (!v) { box.innerHTML = `<div class="woche-kopf">${serienZeile()}</div>`; return; }
   const punkt = (grad, r) => {
     const a = grad * Math.PI / 180;
     return [Math.round(Math.sin(a) * r * 100) / 100, Math.round(-Math.cos(a) * r * 100) / 100];
@@ -353,30 +349,42 @@ function renderAmp() {
   }).join('');
   const [zx, zy] = punkt(winkel(v.stufe), 17);
   box.innerHTML = `
-    <div class="amp${v.stufe === 11 ? ' elf' : ''}">
+    <div class="woche-kopf amp${v.stufe === 11 ? ' elf' : ''}">
       <svg viewBox="-40 -40 80 80" role="img" aria-label="${escHtml(t('amp.aria', { n: v.stufe }))}">
         ${striche}
         <circle class="knopf" r="21"/>
         <line class="zeiger" x1="0" y1="0" x2="${zx}" y2="${zy}"/>
       </svg>
       <div class="amp-txt">
-        <div class="amp-zahl">${v.stufe}</div>
-        <div class="amp-was">${escHtml(t('amp.text', { e: v.erledigt, g: v.geplant }))}</div>
+        <div class="amp-zeile"><span class="amp-zahl">${v.stufe}</span>
+          <span class="amp-was">${escHtml(t('amp.text', { e: v.erledigt, g: v.geplant }))}</span></div>
         ${v.stufe === 11 ? `<p class="fine">${t('amp.elf')}</p>` : v.stufe === 10 ? `<p class="fine">${t('amp.zehn')}</p>` : ''}
+        ${serienZeile()}
       </div>
     </div>`;
 }
 
+/**
+ * Arbeitsgewichte als eine Liste. Der Weg zurueck (Reunion-Tour) steht als
+ * Kopf darueber, aber nur, solange er noch nicht geschafft ist — danach war
+ * "100 %" jeden Tag dieselbe Karte, und gefeiert wurde es schon beim Erreichen.
+ */
 function renderWeights(f) {
-  $('weights').innerHTML = Object.entries(config.lifts).map(([id, def]) => {
+  const pct = Math.round(f.gesamt * 100);
+  const unterwegs = Object.keys(f.perLift).length > 0 && pct < 100;
+  const kopf = unterwegs ? `<div class="reunion-kopf">
+      <div class="rk-zeile"><span class="kicker">${t('home.kurs')}</span><span class="rk-p">${pct} %</span></div>
+      <div class="bar gruen"><i style="width:${pct}%"></i></div>
+    </div>` : '';
+  $('weights').innerHTML = kopf + Object.entries(config.lifts).map(([id, def]) => {
     const s = state.lifts[id];
-    const anteil = f.perLift[id] ? Math.round(f.perLift[id].anteil * 100) : null;
-    return `<div class="w">
-      <div class="n">${escHtml(def.name)}</div>
-      <div class="v">${P.fmtWeight(s.weight)}</div>
-      ${s.fails ? `<div class="f">${t('home.offen', { n: s.fails })}</div>` : ''}
-      ${anteil !== null ? `<div class="mini"><i style="width:${anteil}%"></i></div>
-        <div class="f" style="color:var(--dim)">${t('home.vonReferenz', { p: anteil, kg: def.reference })}</div>` : ''}
+    const r = f.perLift[id];
+    const anteil = r && r.anteil < 1 ? Math.round(r.anteil * 100) : null;
+    return `<div class="gw">
+      <span class="gn">${escHtml(def.name)}</span>
+      ${s.fails ? `<span class="go">${t('home.offen', { n: s.fails })}</span>` : ''}
+      <span class="gv">${P.fmtWeight(s.weight)}</span>
+      ${anteil !== null ? `<span class="gs" title="${escHtml(t('home.vonReferenz', { p: anteil, kg: def.reference }))}"><i style="width:${anteil}%"></i></span>` : ''}
     </div>`;
   }).join('');
 }
@@ -387,17 +395,22 @@ function renderWeek() {
     const ride = s.type === 'ride' ? ridesByDate.get(s.date) : null;
     const done = s.done || !!ride;
     const info = s.type === 'ride' ? RIDE_INFO[s.label] : null;
-    return `<div class="slot ${s.isToday ? 'today-slot' : ''} ${done ? 'done' : ''}">
+    const klasse = `tag ${s.isToday ? 'heute' : ''} ${done ? 'erledigt' : ''} ${s.type === 'ride' ? 'rad' : ''}`;
+    const zeile = `
         <span class="day">${escHtml(s.tagNr === undefined ? s.day : t('tag.' + s.tagNr))}</span>
         <span class="what">${done ? '✓ ' : ''}${escHtml(s.label)}
           <span class="detail">${ride
             ? `<span class="ride-done">${escHtml(ride.minutes)} MIN · ${escHtml(ride.km)} KM${ride.load ? ` · LOAD ${escHtml(ride.load)}` : ''}</span>`
             : escHtml(s.detail) + wattZiel(s.label)}</span>
-        </span>
-      </div>
-      ${info && !done ? `<details class="info"><summary>${t('home.warumEinheit')}</summary>
-        <div class="body"><p>${info.warum}</p>
-        <div class="kv"><span class="k">${t('home.achtung')}</span><span class="v">${info.achtung}</span></div></div></details>` : ''}`;
+        </span>`;
+    // Eine Radeinheit, die noch ansteht, traegt ihr Warum selbst: Antippen
+    // klappt es unter der Zeile auf, statt als eigener Kasten dazwischen.
+    if (info && !done) {
+      return `<details class="${klasse}"><summary>${zeile}</summary>
+        <div class="tag-info"><p>${info.warum}</p>
+        <div class="kv"><span class="k">${t('home.achtung')}</span><span class="v">${info.achtung}</span></div></div></details>`;
+    }
+    return `<div class="${klasse}">${zeile}</div>`;
   }).join('');
 }
 
@@ -431,14 +444,6 @@ function logsFuerAnzeige() {
   return alleLogs.length ? alleLogs : ((S.cachedLogs() || {}).logs || []);
 }
 
-/**
- * Was gerade zwickt — und was du selbst dagegen eingetragen hast.
- *
- * Steht bewusst in der Ansage und nicht in einem eigenen Kasten weiter
- * unten: der Igelball hilft nur, wenn man an ihn denkt, bevor man losgeht.
- * Strukturelles bekommt einen ruhigeren Ton als ein akuter Fall — es ist
- * keine Neuigkeit, sondern eine Randbedingung.
- */
 /**
  * Deine eigene Behandlung als abhakbarer Punkt im Soundcheck.
  *
@@ -3375,12 +3380,13 @@ function meilensteinKarte() {
 
 function plakatHtml(d, plan) {
   // "Do 01.10." statt "Do., 01.10." — der Kicker ist ein Plakatkopf, kein Brief.
+  // Die Serie steht im Kopf der Wochenkarte; hier waere sie doppelt.
   const jetzt = new Date();
   const heute = `${jetzt.toLocaleDateString(locale(), { weekday: 'short' }).replace(/\.$/, '')} ${
     jetzt.toLocaleDateString(locale(), { day: '2-digit', month: '2-digit' })}`;
   const hinweise = ausnahmenHtml();
   return `
-    <div class="kicker">${escHtml(heute)} · ${escHtml(d.kopf)}</div>
+    <div class="kicker">${escHtml(heute)}${d.situation === 'streak' ? '' : ` · ${escHtml(d.kopf)}`}</div>
     <div class="tageswort">${escHtml(d.intensitaet.label)}</div>
     <p class="tagessatz">${escHtml(d.intensitaet.text)}</p>
     ${hinweise ? `<div class="hinweise">${hinweise}</div>` : ''}

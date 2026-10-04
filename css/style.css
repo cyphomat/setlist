@@ -183,21 +183,41 @@ code{background:var(--sunken);color:var(--akzent);padding:2px 6px;border-radius:
 .bar.gruen i{background:linear-gradient(90deg,var(--gruen),var(--akzent))}
 
 /* ── Woche ────────────────────────────────────────────────── */
-.week{display:flex;flex-direction:column;gap:8px}
-.slot{
-  background:var(--panel);border:1px solid var(--line);padding:13px 15px;
-  display:flex;gap:14px;align-items:baseline;
-  border-radius:2px;
-}
-.slot.today-slot{border-color:var(--line);border-left:3px solid var(--akzent);background:var(--tint-akzent)}
-.slot.done{opacity:.42}
-.slot .day{font-weight:800;width:32px;flex:none;font-family:var(--mono);color:var(--muted);font-size:0.8125rem;letter-spacing:.08em}
-.slot.today-slot .day{color:var(--akzent)}
-.slot .what{flex:1}
-.slot .detail{display:block;color:var(--muted);font-size:0.8125rem;margin-top:2px}
+.woche-karte{background:var(--panel);border:1px solid var(--line);border-radius:2px}
+.week{display:flex;flex-direction:column}
+.tag{border-top:1px solid var(--line)}
+.tag, .tag > summary{display:flex;gap:14px;align-items:baseline;padding:12px 15px 12px 12px;border-left:3px solid transparent}
+details.tag{display:block;padding:0}
+.tag > summary{cursor:pointer;list-style:none}
+.tag > summary::-webkit-details-marker{display:none}
+.tag > summary::after{content:'▸';margin-left:auto;color:var(--dim);font-size:0.75rem}
+details.tag[open] > summary::after{content:'▾'}
+.tag.heute, details.tag.heute > summary{border-left-color:var(--akzent);background:var(--tint-akzent)}
+details.tag.heute{border-left:0;background:none}
+.tag.erledigt{opacity:.45}
+.tag .day{font-weight:800;width:32px;flex:none;font-family:var(--mono);color:var(--muted);font-size:0.8125rem;letter-spacing:.08em}
+.tag.heute .day{color:var(--akzent)}
+.tag .what{flex:1}
+.tag .detail{display:block;color:var(--muted);font-size:0.8125rem;margin-top:2px}
+.tag-info{padding:0 15px 14px 61px;font-size:0.875rem;color:var(--muted)}
+.tag-info p{margin:0 0 8px}
 .ride-done{color:var(--gruen);font-family:var(--mono);font-size:0.78125rem}
 
 /* ── Gewichte ─────────────────────────────────────────────── */
+/* Home: eine Liste in einer Karte. Der Strich unter einem Lift zeigt den
+   Weg zurueck zur Referenz und verschwindet, sobald er gegangen ist.     */
+.gewichte{background:var(--panel);border:1px solid var(--line);border-radius:2px}
+.reunion-kopf{padding:13px 15px 12px;border-bottom:1px solid var(--line)}
+.rk-zeile{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.rk-p{font-family:var(--display);font-weight:600;font-size:1.375rem;color:var(--gruen)}
+.gw{display:grid;grid-template-columns:1fr auto auto;gap:4px 12px;align-items:baseline;padding:11px 15px;border-top:1px solid var(--line)}
+.gw:first-child, .reunion-kopf + .gw{border-top:0}
+.gn{color:var(--fg)}
+.go{font-family:var(--mono);font-size:0.71875rem;color:var(--rost)}
+.gv{grid-column:3;font-family:var(--mono);font-weight:700;color:var(--akzent);white-space:nowrap;text-align:right}
+.gs{grid-column:1 / -1;display:block;height:3px;background:var(--sunken)}
+.gs i{display:block;height:100%;background:var(--gruen);opacity:.75}
+/* Max-Out: die Lift- und Pruefwert-Auswahl bleibt ein Kachelraster. */
 .weights{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .w{
   background:var(--panel);border:1px solid var(--line);padding:12px 14px;
@@ -548,8 +568,9 @@ p.quelle{margin-top:10px;color:var(--dim);font-style:italic;line-height:1.5}
 }
 
 /* Karten brauchen auf Hell eine Kante, die das Leuchten ersetzt. */
+:root[data-theme="light"] .woche-karte,
+:root[data-theme="light"] .gewichte,
 :root[data-theme="light"] .card,
-:root[data-theme="light"] .slot,
 :root[data-theme="light"] .w,
 :root[data-theme="light"] .stat,
 :root[data-theme="light"] .pr,
@@ -561,7 +582,6 @@ p.quelle{margin-top:10px;color:var(--dim);font-style:italic;line-height:1.5}
 :root[data-theme="light"] details.info{
   box-shadow:0 1px 2px rgba(26,24,21,.05), 0 6px 16px rgba(26,24,21,.05);
 }
-:root[data-theme="light"] .slot.today-slot{border-color:var(--akzent);background:var(--tint-akzent)}
 :root[data-theme="light"] .set:not(.done):not(.partial){border-color:#cdc5b8}
 :root[data-theme="light"] .set{border-width:2px}
 :root[data-theme="light"] .set.done{color:#3d5a29}
@@ -661,7 +681,7 @@ button.raus:active{border-color:var(--rost)}
   #hist-charts{display:grid;grid-template-columns:1fr 1fr;gap:0 9px;align-items:start}
   #hist-rad .fahrt{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:baseline}
   #hist-rad .fahrt .m{text-align:right}
-  .weights{grid-template-columns:repeat(3,1fr)}
+  #mo-lifts, #mo-checks{grid-template-columns:repeat(3,1fr)}
 }
 
 @media (min-width: 1200px) {
@@ -987,23 +1007,26 @@ details.shirt[open] .shirt-icon{fill:var(--akzent);stroke:var(--akzent)}
 .zugabe-check{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:0.9375rem;color:var(--fg);cursor:pointer}
 .zugabe-check input{width:20px;height:20px;accent-color:var(--akzent)}
 
-/* ── Goes to eleven ── */
-.amp{display:flex;gap:14px;align-items:center;margin-top:10px;padding:10px 14px;
-  background:var(--panel);border:1px solid var(--line)}
-.amp svg{flex:0 0 auto;width:84px;height:84px}
+/* ── Goes to eleven: der Kopf der Wochenkarte ── */
+.woche-kopf{display:flex;gap:12px;align-items:center;padding:12px 15px}
+.woche-kopf .serie{margin:4px 0 0}
+.amp svg{flex:0 0 auto;width:58px;height:58px}
 .amp .strich{stroke:var(--line);stroke-width:2.5;stroke-linecap:round}
 .amp .strich.an{stroke:var(--akzent)}
 .amp .strich.elf.an{stroke:var(--rot);stroke-width:3.5}
 .amp .knopf{fill:var(--panel2);stroke:var(--line);stroke-width:1.5}
 .amp .zeiger{stroke:var(--fg);stroke-width:3;stroke-linecap:round}
 .amp-txt{min-width:0}
-.amp-zahl{font-family:var(--display);font-size:2rem;font-weight:600;line-height:1;color:var(--akzent)}
+.amp-zeile{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.amp-zahl{font-family:var(--display);font-size:1.75rem;font-weight:600;line-height:1;color:var(--akzent)}
 .amp.elf .amp-zahl{color:var(--rot)}
-.amp-was{font-size:0.8125rem;color:var(--muted);margin-top:4px}
-.amp .fine{margin:6px 0 0}
+.amp-was{font-size:0.8125rem;color:var(--muted)}
+.amp .fine{margin:4px 0 0}
+.serie{margin:0;font-size:0.8125rem;font-weight:600;color:var(--gruen)}
+.serie.pausiert{color:var(--stahl)}
+.serie.leer{font-weight:400;color:var(--muted)}
 
 /* ── Reunion und Verletzungspause ── */
-.reunion{margin:8px 0 0;font-family:var(--display);text-transform:uppercase;letter-spacing:.06em;color:var(--gruen)}
 .kalender .zelle.pause{background:repeating-linear-gradient(135deg,var(--stahl) 0 1.5px,transparent 1.5px 4px);border-color:var(--stahl)}
 .kalender .legende i.pause{background:repeating-linear-gradient(135deg,var(--stahl) 0 1.5px,transparent 1.5px 3.5px);border:1px solid var(--stahl)}
 

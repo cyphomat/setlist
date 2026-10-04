@@ -10,6 +10,29 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-04.2
+
+### Geändert
+- **Home, rechte Spalte aufgeräumt.** Dieselbe Idee wie beim Plakat: eine Karte je
+  Thema, Normales leise, nichts doppelt.
+  - **Eine Wochenkarte.** Regler und Woche sind eine Karte. Im Kopf stehen der
+    (kleinere) Regler mit „x von y Krafteinheiten“ und darunter die Serie, auch als
+    „verschoben, nicht abgesagt“. Die Tage sind Zeilen statt einzelner Karten.
+    „Warum diese Einheit“ ist kein eigener Kasten mehr zwischen den Tagen: Die Radzeile
+    selbst klappt auf.
+  - **Eine Gewichtskarte.** Die fünf Kacheln sind eine Liste: Name, offene
+    Fehlversuche, Gewicht. Die Reunion-Tour ist ihr Kopf (Prozent und Balken), und unter
+    jedem Lift, der noch unter seinem alten Stand liegt, steht ein dünner Strich.
+    **Bei 100 % verschwindet beides.** Die große Karte „100 % · Originalbesetzung
+    wieder vereint“ stand vorher jeden Tag unverändert da; gefeiert wird das beim
+    Erreichen auf dem Geschafft-Screen und mit dem Aufnäher.
+  - **intervals.icu spricht nur bei Bedarf.** Läuft die Anbindung und die letzte Fahrt
+    ist frisch, steht dort nichts mehr; die Woche zeigt ohnehin, was gefahren wurde.
+    Ein Hinweis kommt, wenn das Rad über drei Wochen ruht, Doppel zusammengefasst
+    wurden, nichts verbunden ist oder keine Fahrten ankommen.
+  - Im Plakat steht die Serie nicht mehr zusätzlich im Kopf, sie hat ihren Platz in der
+    Wochenkarte.
+
 ## 2026-10-04.1
 
 ### Geändert
