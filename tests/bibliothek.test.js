@@ -210,4 +210,23 @@ const abpraller = B.suche(alles, 'Abpraller');
 ok('"Abpraller" findet den Wall Ball',
    abpraller.some(u => u.id === 'wod:wallball'), abpraller.map(u => u.id).join());
 
+
+print('\n--- Gruppiert ---');
+{
+  const liste = [
+    { id: 'a', name: 'Wall Ball', kategorie: 'Jam' },
+    { id: 'b', name: 'Back Squat', kategorie: 'Kraft' },
+    { id: 'c', name: 'Air Squat', kategorie: 'Jam' }
+  ];
+  const g = B.gruppiert(liste);
+  eq('Reihenfolge der Kategorien, nicht der Liste', g.map(x => x.kategorie).join(), 'Kraft,Jam');
+  eq('leere Kategorien fallen weg', g.length, 2);
+  eq('innerhalb bleibt die Reihenfolge der Liste', g[1].uebungen.map(u => u.id).join(), 'a,c');
+  eq('ohne Treffer keine Gruppen', B.gruppiert([]).length, 0);
+  const n = B.anzahlJeKategorie(liste);
+  eq('Zahl je Kategorie', `${n.Kraft}/${n.Jam}/${n.Technik}`, '1/2/0');
+  const echt = B.alleUebungen({}, {});
+  eq('alle echten Uebungen landen in einer Gruppe', B.gruppiert(echt).reduce((s, x) => s + x.uebungen.length, 0), echt.length);
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

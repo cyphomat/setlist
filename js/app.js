@@ -1795,17 +1795,26 @@ function zeigeBibliothek(kategorie = null) {
   show('bibliothek');
 }
 
+/* Die Bibliothek als Songbook: nach Kategorien gegliedert, jede mit ihrer
+   Farbe; eine Zeile je Uebung mit Name, Dosis und dem Cue darunter. Wer
+   aufklappt, bekommt Erklaerung, Fakten und — nur auf Wunsch — das
+   Notizformular. Vorher stand es offen ueber der ganzen Liste.         */
+
+const BIB_FARBE = { Kraft: 'var(--akzent)', Technik: 'var(--stahl)', Mobility: 'var(--gruen)',
+                    Finisher: 'var(--rot)', Jam: 'var(--rost)' };
+const bibKat = k => t(`bib.kat.${k}`);
+
 function bibDetailHtml(u) {
   const eintrag = bibliothek[u.id] || {};
   const video = sicherLink(eintrag.video) || B.youtubeSuche(u.name);
+  const fakt = (k, v) => v ? `<div class="kv"><span class="k">${k}</span><span class="v">${escHtml(v)}</span></div>` : '';
+  const fakten = fakt(t('bib.cue'), u.cue) + fakt(t('bib.standard'), u.standard) + fakt(t('bib.fehler'), u.fehler);
+  const hatNotiz = !!(eintrag.notiz || eintrag.video);
   return `
     <div class="bib-detail" data-id="${escHtml(u.id)}">
-      ${u.dosis ? `<p class="tagline"><b>${escHtml(u.dosis)}</b></p>` : ''}
-      ${u.aktuell ? `<div class="kv"><span class="k">${t('bib.aktuell')}</span><span class="v">${escHtml(u.aktuell)}</span></div>` : ''}
-      ${u.info ? `<p>${escHtml(u.info)}</p>` : ''}
-      ${u.cue ? `<div class="kv"><span class="k">${t('bib.cue')}</span><span class="v">${escHtml(u.cue)}</span></div>` : ''}
-      ${u.standard ? `<div class="kv"><span class="k">${t('bib.standard')}</span><span class="v">${escHtml(u.standard)}</span></div>` : ''}
-      ${u.fehler ? `<div class="kv"><span class="k">${t('bib.fehler')}</span><span class="v">${escHtml(u.fehler)}</span></div>` : ''}
+      ${u.aktuell ? `<p class="bib-aktuell">${t('bib.aktuell')} · <b>${escHtml(u.aktuell)}</b></p>` : ''}
+      ${u.info ? `<p class="bib-info">${escHtml(u.info)}</p>` : ''}
+      ${fakten ? `<div class="bib-fakten">${fakten}</div>` : ''}
       ${u.korrektur ? `<div class="korrektur">
         <p class="kh">${t('bib.korrektur')}</p>
         <p class="kw">${escHtml(u.korrektur.wenn)} ${escHtml(u.korrektur.warum)}</p>
@@ -1814,43 +1823,99 @@ function bibDetailHtml(u) {
         ${u.korrektur.uebungen.map(x =>
           `<div class="kv"><span class="k">${escHtml(x.dosis)}</span><span class="v">${escHtml(x.name)}</span></div>`).join('')}
       </div>` : ''}
+      ${eintrag.notiz ? `<div class="bib-notiz-text"><span class="kicker">${t('bib.deineNotiz')}</span>
+        <p>${escHtml(eintrag.notiz)}</p></div>` : ''}
+      <div class="bib-aktionen">
+        <a class="bib-video" href="${video}" target="_blank" rel="noopener noreferrer"
+           referrerpolicy="no-referrer">${t('bib.video')}</a>
+        <button type="button" class="bib-notiz-auf" aria-expanded="false">${t(hatNotiz ? 'bib.notizBearbeiten' : 'bib.notizNeu')}</button>
+      </div>
+      <div class="bib-form" hidden>
+        <textarea class="bib-notiz" rows="3" placeholder="${t('bib.notiz.ph')}">${escHtml(eintrag.notiz)}</textarea>
+        <input class="bib-eigenesvideo" type="text" placeholder="${t('bib.eigenesVideo.ph')}" value="${escHtml(eintrag.video)}">
+        <button class="btn ghost small bib-speichern">${t('bib.speichern')}</button>
+      </div>
       ${u.quelle && QUELLEN[u.quelle]
         ? `<p class="fine quelle">${t('bib.quelle')} ${escHtml(QUELLEN[u.quelle].lang)}</p>` : ''}
-      <a class="bib-video" href="${video}" target="_blank" rel="noopener noreferrer"
-         referrerpolicy="no-referrer">${t('bib.video')}</a>
-      <textarea class="bib-notiz" rows="3" placeholder="${t('bib.notiz.ph')}">${escHtml(eintrag.notiz)}</textarea>
-      <input class="bib-eigenesvideo" type="text" placeholder="${t('bib.eigenesVideo.ph')}" value="${escHtml(eintrag.video)}">
-      <button class="btn ghost small bib-speichern">${t('bib.speichern')}</button>
     </div>`;
+}
+
+/** Erster Satz — fuer die Uebung des Tages reicht ein Anriss. */
+const bibAnriss = text => {
+  const m = String(text || '').match(/^.*?[.!?](?=\s|$)/);
+  return m ? m[0] : String(text || '');
+};
+
+function bibZeileHtml(u) {
+  return `<details class="uebung" data-id="${escHtml(u.id)}" style="--kf:${BIB_FARBE[u.kategorie] || 'var(--muted)'}">
+    <summary>
+      <span class="u-name">${escHtml(u.name)}</span>
+      ${u.dosis ? `<span class="u-dosis">${escHtml(u.dosis)}</span>` : ''}
+      ${u.cue ? `<span class="u-kurz">${escHtml(u.cue)}</span>` : ''}
+    </summary>
+    <div class="u-body">${bibDetailHtml(u)}</div>
+  </details>`;
+}
+
+/** Eine Uebung in der Liste aufklappen und hinscrollen — notfalls ohne Filter. */
+function zeigeBibUebung(id) {
+  let el = document.querySelector(`#bib-liste .uebung[data-id="${CSS.escape(id)}"]`);
+  if (!el) { bibKategorie = null; $('bib-suche').value = ''; renderBibliothek(); el = document.querySelector(`#bib-liste .uebung[data-id="${CSS.escape(id)}"]`); }
+  if (!el) return;
+  el.open = true;
+  el.scrollIntoView({ block: 'start', behavior: 'smooth' });
 }
 
 function renderBibliothek() {
   const alle = B.alleUebungen(config, state);
   const treffer = B.suche(alle, $('bib-suche').value, bibKategorie);
+  const anzahl = B.anzahlJeKategorie(alle);
 
   $('bib-kategorien').innerHTML = ['Alle', ...B.KATEGORIEN].map(k => {
     const aktiv = k === 'Alle' ? !bibKategorie : k === bibKategorie;
-    return `<button class="${aktiv ? 'an' : ''}" data-k="${k}">${k === 'Alle' ? t('bib.alle') : k}</button>`;
+    const n = k === 'Alle' ? alle.length : anzahl[k];
+    return `<button class="${aktiv ? 'an' : ''}" data-k="${k}" aria-pressed="${aktiv}"
+      ${k === 'Alle' ? '' : `style="--kf:${BIB_FARBE[k]}"`}>${k === 'Alle' ? t('bib.alle') : escHtml(bibKat(k))}<span class="n">${n}</span></button>`;
   }).join('');
   $('bib-kategorien').querySelectorAll('button').forEach(b => {
     b.onclick = () => { bibKategorie = b.dataset.k === 'Alle' ? null : b.dataset.k; renderBibliothek(); };
   });
 
-  if (!bibZufall) bibZufall = B.zufaellig(alle);
-  $('bib-random').innerHTML = bibZufall ? `
-    <div class="card">
-      <div class="kicker">${escHtml(t('bib.zufaellig', { kat: bibZufall.kategorie }))}</div>
-      <div class="name">${escHtml(bibZufall.name)}</div>
-      ${bibDetailHtml(bibZufall)}
+  // Die Uebung des Tages: dieselbe den ganzen Tag, ausser man wuerfelt neu.
+  const tag = bibZufall || C.tagesAuswahl(alle, new Date(), 'bib');
+  const suchtGerade = !!$('bib-suche').value.trim() || !!bibKategorie;
+  $('bib-random').innerHTML = tag && !suchtGerade ? `
+    <div class="bib-tag" style="--kf:${BIB_FARBE[tag.kategorie] || 'var(--akzent)'}">
+      <div class="kicker">${escHtml(t('bib.desTages', { kat: bibKat(tag.kategorie) }))}</div>
+      <div class="bt-kopf"><span class="name">${escHtml(tag.name)}</span>${tag.dosis ? `<span class="u-dosis">${escHtml(tag.dosis)}</span>` : ''}</div>
+      ${tag.info ? `<p>${escHtml(bibAnriss(tag.info))}</p>` : ''}
+      <div class="bt-knoepfe">
+        <button type="button" class="btn small" id="bib-tag-auf">${t('bib.ansehen')}</button>
+        <button type="button" class="btn ghost small" id="bib-tag-neu" aria-label="${t('aria.neuWuerfeln')}">↻</button>
+      </div>
     </div>` : '';
+  if (tag && !suchtGerade) {
+    $('bib-tag-auf').onclick = () => zeigeBibUebung(tag.id);
+    $('bib-tag-neu').onclick = () => { bibZufall = B.zufaellig(alle.filter(u => u.id !== tag.id)); renderBibliothek(); };
+  }
 
-  $('bib-liste').innerHTML = treffer.length
-    ? treffer.map(u => `
-      <details class="info"><summary>${escHtml(u.name)}<span class="bib-kat">${escHtml(u.kategorie)}</span></summary>
-        <div class="body">${bibDetailHtml(u)}</div>
-      </details>`).join('')
-    : `<p class="fine">${t('bib.keine')}</p>`;
+  const gruppen = B.gruppiert(treffer);
+  $('bib-liste').innerHTML = gruppen.length
+    ? gruppen.map(g => `
+      <section class="bib-gruppe" style="--kf:${BIB_FARBE[g.kategorie]}">
+        <h2>${escHtml(bibKat(g.kategorie))}<span class="n">${g.uebungen.length}</span></h2>
+        <div class="bib-karte">${g.uebungen.map(bibZeileHtml).join('')}</div>
+      </section>`).join('')
+    : `<p class="lead">${t('bib.keine')}</p>`;
 
+  document.querySelectorAll('.bib-detail .bib-notiz-auf').forEach(btn => {
+    btn.onclick = () => {
+      const form = btn.closest('.bib-detail').querySelector('.bib-form');
+      form.hidden = !form.hidden;
+      btn.setAttribute('aria-expanded', String(!form.hidden));
+      if (!form.hidden) form.querySelector('.bib-notiz').focus();
+    };
+  });
   document.querySelectorAll('.bib-detail .bib-speichern').forEach(btn => {
     btn.onclick = () => {
       const box = btn.closest('.bib-detail');
@@ -1873,6 +1938,10 @@ async function speichereBibNotiz(id, notiz, video) {
     bibliothek = aktuell;
     S.cache({ bibliothek });
     banner(t('bib.gespeichert'), 'ok');
+    // Neu zeichnen, damit die Notiz als Text dasteht — die Uebung bleibt offen.
+    renderBibliothek();
+    const el = document.querySelector(`#bib-liste .uebung[data-id="${CSS.escape(id)}"]`);
+    if (el) el.open = true;
   } catch (e) {
     banner(t('bib.fehlgeschlagen', { msg: e.message }), 'err', 6000);
   }

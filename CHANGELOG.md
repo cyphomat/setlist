@@ -10,6 +10,25 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-04.4
+
+### Geändert
+- **Die Bibliothek als Songbook.** Vorher standen dort eine immer offene Zufallskarte mit
+  Notizformular und darunter rund siebzig gleich aussehende Zeilen in Großbuchstaben,
+  alphabetisch über alle Kategorien gemischt. Gleichnamige Übungen (Battle Ropes als
+  Finisher und als Jam) waren kaum auseinanderzuhalten.
+  - **Nach Kategorien gegliedert:** Kraft, Technik, Mobility, Finisher, Jam, jede mit
+    eigener Farbe, Überschrift und Anzahl. Die Filter zeigen die Zahlen ebenfalls; im
+    Englischen heißen die Kategorien jetzt auch englisch.
+  - **Ruhige Zeilen:** Name in normaler Schrift, Dosis rechts, der Cue leise darunter.
+    Aufgeklappt folgen Erklärung, Cue, Bewegungsstandard, typischer Fehler und „Wenn es
+    klemmt“ in einer sauberen Spalte.
+  - **Übung des Tages** statt Zufall bei jedem Öffnen: kompakt mit erstem Satz,
+    „Ansehen“ klappt sie in der Liste auf, ↻ würfelt neu. Während einer Suche oder mit
+    Filter tritt sie zurück.
+  - **Notizen nur auf Wunsch:** „Notiz hinzufügen“ öffnet das Formular. Eine
+    gespeicherte Notiz steht danach als Text bei der Übung, und die Übung bleibt offen.
+
 ## 2026-10-04.3
 
 ### Geändert

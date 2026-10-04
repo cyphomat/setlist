@@ -54,6 +54,24 @@ export function alleUebungen(config = {}, state = {}) {
 }
 
 /**
+ * Nach Kategorie gruppiert, in der festen Reihenfolge der Kategorien und
+ * innerhalb alphabetisch (wie alleUebungen). Leere Gruppen fallen weg —
+ * eine Ueberschrift ueber nichts ist kein Ergebnis.
+ */
+export function gruppiert(liste = []) {
+  return KATEGORIEN
+    .map(kategorie => ({ kategorie, uebungen: liste.filter(u => u.kategorie === kategorie) }))
+    .filter(g => g.uebungen.length);
+}
+
+/** Wie viele Uebungen je Kategorie — fuer die Zahlen an den Filtern. */
+export function anzahlJeKategorie(liste = []) {
+  const out = {};
+  for (const k of KATEGORIEN) out[k] = liste.filter(u => u.kategorie === k).length;
+  return out;
+}
+
+/**
  * Volltextsuche ueber Name, Erklaerung, Cue, Fehler und die Korrekturen.
  * Letztere gehoeren dazu, weil man eine Uebung auch ueber ihr Problem sucht:
  * wer "Lockout" eingibt, will den Strict Press finden.

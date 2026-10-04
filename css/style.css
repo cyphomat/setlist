@@ -752,23 +752,68 @@ button.raus:active{border-color:var(--rost)}
 .chips button.an{border-color:var(--akzent);color:var(--akzent);background:var(--tint-akzent)}
 .chips button:disabled{opacity:.35;cursor:default}
 .gefuehl{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
-#bib-random{margin-top:16px}
-#bib-random .name{font-size:1.375rem;margin-top:8px}
-#bib-liste{margin-top:14px}
-#bib-liste details.info{background:var(--panel);border:1px solid var(--line);margin-bottom:8px;border-radius:2px}
-#bib-liste details.info>summary{padding:13px 15px}
-.bib-kat{
-  float:right;font-size:0.59375rem;color:var(--stahl);letter-spacing:.1em;
-  border:1px solid var(--line);padding:2px 7px;border-radius:2px;
+/* ── Bibliothek als Songbook ──────────────────────────────────
+   Gegliedert nach Kategorien, jede mit ihrer Farbe (--kf). Eine Zeile je
+   Uebung: Name, Dosis rechts, der Cue leise darunter. Erst beim
+   Aufklappen kommt der Rest, das Notizformular erst auf Wunsch.       */
+#bib-kategorien button{display:inline-flex;align-items:center;gap:7px}
+#bib-kategorien button .n{font-size:0.625rem;color:var(--dim);letter-spacing:0}
+#bib-kategorien button.an{border-color:var(--kf,var(--akzent));color:var(--kf,var(--akzent));
+  background:color-mix(in srgb,var(--kf,var(--akzent)) 12%,transparent)}
+
+.bib-tag{
+  margin-top:16px;padding:16px 16px 14px;border:1px solid var(--line);border-top:3px solid var(--kf);
+  background:radial-gradient(120% 80% at 15% 0%,color-mix(in srgb,var(--kf) 14%,transparent),transparent 70%),var(--panel);
+  border-radius:2px;
 }
-.bib-detail .tagline{margin-top:0}
-.bib-video{
-  display:inline-block;font-family:var(--mono);font-size:0.75rem;letter-spacing:.06em;
-  color:var(--akzent);text-decoration:none;border-bottom:1px solid currentColor;margin:4px 0 10px;
+.bib-tag .kicker{color:var(--kf)}
+.bt-kopf{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-top:6px}
+.bt-kopf .u-dosis{flex:none}
+.bt-kopf .name{font-size:1.75rem;margin:0;overflow-wrap:anywhere}
+.bib-tag p{margin:8px 0 0;color:var(--muted);font-size:0.9375rem;line-height:1.5}
+.bt-knoepfe{display:flex;gap:8px;margin-top:14px}
+.bt-knoepfe .btn{margin-top:0;width:auto;padding:10px 18px}
+
+.bib-gruppe h2{color:var(--kf)}
+.bib-gruppe h2 .n{order:2;margin-left:2px;color:var(--dim);letter-spacing:.05em}
+.bib-karte{background:var(--panel);border:1px solid var(--line);border-radius:2px}
+.uebung + .uebung{border-top:1px solid var(--line)}
+.uebung{scroll-margin-top:96px}   /* nicht unter den klebenden Kopf scrollen */
+.uebung > summary{
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2px 10px;align-items:baseline;
+  padding:12px 15px;cursor:pointer;list-style:none;
 }
+.uebung > summary::-webkit-details-marker{display:none}
+.uebung > summary::before{
+  content:'';width:7px;height:7px;border-radius:50%;background:var(--kf);align-self:center;
+}
+.u-name{color:var(--fg);font-size:0.9375rem}
+.u-dosis{font-family:var(--mono);font-size:0.75rem;color:var(--dim);text-align:right;max-width:min(16ch,40vw)}
+.u-kurz{grid-column:2 / -1;font-size:0.8125rem;color:var(--muted);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.uebung[open] > summary{background:var(--panel2)}
+.uebung[open] .u-name{color:var(--kf);font-weight:600}
+.uebung[open] .u-kurz{display:none}
+.u-body{padding:4px 15px 16px 32px;background:var(--panel2)}
+
+.bib-aktuell{margin:6px 0 0;font-size:0.8125rem;color:var(--muted)}
+.bib-aktuell b{font-family:var(--mono);color:var(--akzent)}
+.bib-info{margin:8px 0 0;font-size:0.9375rem;line-height:1.55;color:var(--fg)}
+.bib-fakten{margin-top:10px}
+.bib-fakten .kv{display:grid;grid-template-columns:6.25rem minmax(0,1fr);gap:12px}
+.bib-notiz-text{margin-top:12px;padding:10px 12px;border-left:2px solid var(--kf);background:var(--panel)}
+.bib-notiz-text p{margin:4px 0 0;font-size:0.875rem;white-space:pre-wrap}
+.bib-aktionen{display:flex;gap:16px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.bib-video, .bib-notiz-auf{
+  font-family:var(--mono);font-size:0.75rem;letter-spacing:.06em;background:none;border:0;padding:4px 0;
+  color:var(--akzent);text-decoration:none;border-bottom:1px solid currentColor;cursor:pointer;
+}
+.bib-notiz-auf{color:var(--muted)}
+.bib-form{margin-top:10px}
 .bib-notiz{min-height:70px;font-size:0.875rem}
 .bib-eigenesvideo{font-size:0.8125rem;padding:12px}
-.bib-detail .bib-speichern{margin-top:2px;width:auto;padding:11px 18px}
+.bib-form .bib-speichern{margin-top:2px;width:auto;padding:11px 18px}
+.bib-detail .quelle{margin-top:12px}
 
 /* ── Programm einrichten ──────────────────────────────────── */
 /* Die Wochentage sollen als Reihe stehen und nicht je nach Sprache
