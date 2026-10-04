@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1420%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1429%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
 </p>
@@ -35,7 +35,7 @@
 <td width="33%"><img src="assets/screens/geschafft-dunkel.png" alt="After the session"></td>
 </tr>
 <tr>
-<td align="center"><b>The call</b><br><sub>Tone from layoff, form and bike</sub></td>
+<td align="center"><b>The poster</b><br><sub>One word for the day, only exceptions below</sub></td>
 <td align="center"><b>In the gym</b><br><sub>Plates, cadence, sets above target</sub></td>
 <td align="center"><b>Afterwards</b><br><sub>The win first, the report second</sub></td>
 </tr>

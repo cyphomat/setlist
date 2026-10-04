@@ -653,7 +653,7 @@ button.raus:active{border-color:var(--rost)}
     align-items:start;
   }
   .spalte > h2:first-child{margin-top:18px}
-  .spalte > #directive:first-child{margin-top:0}
+  .spalte > #today:first-child{margin-top:0}
 
   /* Kennzahlen und Bestwerte vertragen mehr Breite */
   #hist-summary .stats{grid-template-columns:repeat(4,1fr)}
@@ -1010,3 +1010,72 @@ details.shirt[open] .shirt-icon{fill:var(--akzent);stroke:var(--akzent)}
 @media (min-width: 900px) {
   #view-merch { max-width: 1080px; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Home als Buehnenplakat. Ein Wort traegt den Tag, darunter nur, was
+   heute etwas aendert, dann das Programm. Alles Normale steht als
+   Instrument darunter: ein Punkt, ein Wert — wie die LEDs am Amp.
+   ═══════════════════════════════════════════════════════════ */
+
+.plakat{
+  --ton:var(--akzent); --ton-tint:var(--tint-akzent);
+  position:relative;margin-top:16px;padding:20px 18px 18px;
+  border:1px solid var(--line);border-top:3px solid var(--ton);border-radius:2px;
+  background:
+    radial-gradient(120% 70% at 18% 0%,var(--ton-tint),transparent 70%),
+    var(--panel);
+}
+.plakat.ton-technik{--ton:var(--stahl);--ton-tint:color-mix(in srgb,var(--stahl) 16%,transparent)}
+.plakat.ton-normal{--ton:var(--gruen);--ton-tint:var(--tint-gruen)}
+.plakat.ton-hart{--ton:var(--rost);--ton-tint:var(--tint-rost)}
+.plakat > .kicker{color:var(--muted)}
+.tageswort{
+  font-family:var(--display);font-weight:700;text-transform:uppercase;
+  font-size:3.5rem;line-height:.95;letter-spacing:.01em;color:var(--ton);
+  margin:10px 0 8px;overflow-wrap:anywhere;
+}
+.tagessatz{margin:0;font-size:1.0625rem;line-height:1.45;color:var(--fg);max-width:34ch}
+
+.hinweise{margin-top:14px;display:flex;flex-direction:column;gap:7px}
+.hinweis{
+  margin:0;padding-left:20px;position:relative;font-size:0.875rem;line-height:1.45;color:var(--muted);
+}
+.hinweis::before{
+  content:'▲';position:absolute;left:0;top:.05em;font-size:0.6875rem;color:var(--hf);
+}
+.hinweis b{color:var(--fg);font-weight:600}
+
+.programm{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+.programm .name{font-size:1.75rem;margin:4px 0 6px;color:var(--fg)}
+.programm ul{list-style:none;padding:0;margin:6px 0 4px}
+.programm li{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:baseline;
+  padding:9px 0;border-top:1px solid var(--line)}
+.programm li:first-child{border-top:0}
+.programm .ln{color:var(--fg)}
+.programm .num{font-family:var(--mono);font-size:0.8125rem;color:var(--dim)}
+.programm .kg{font-family:var(--mono);font-weight:700;color:var(--akzent);white-space:nowrap;text-align:right;min-width:6ch}
+.programm .btn{margin-top:14px}
+
+.instrumente{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.instr{
+  display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:6px 12px;
+  background:var(--panel);border:1px solid var(--line);border-radius:999px;cursor:pointer;
+  font-family:var(--mono);font-size:0.75rem;letter-spacing:.04em;color:var(--fg);
+}
+.instr i{width:8px;height:8px;border-radius:50%;background:var(--if);flex:none}
+.instr.an{border-color:var(--if);background:var(--panel2)}
+.instr:focus-visible{outline:none;box-shadow:var(--gb-fokus)}
+.instr-detail{margin-top:2px}
+.instr-detail .formzeile{margin-top:10px;padding:10px 12px;background:var(--panel);border:1px solid var(--line);border-top-width:2px}
+
+.zitat{margin:22px 0 0;padding:0 4px 0 30px;position:relative}
+.zitat::before{
+  content:'\201C';position:absolute;left:0;top:-.12em;font-family:var(--display);
+  font-size:2.75rem;line-height:1;color:var(--akzent);
+}
+.zitat blockquote{margin:0;font-size:1.0625rem;line-height:1.5;font-style:italic;color:var(--fg)}
+.zitat figcaption{margin-top:6px;font-family:var(--mono);font-size:0.6875rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--dim)}
+.zitat figcaption::before{content:'— '}
+#zitat .meilenstein{margin-top:18px}
+:root[data-theme="light"] .plakat{box-shadow:0 1px 2px rgba(26,24,21,.05), 0 6px 16px rgba(26,24,21,.05)}

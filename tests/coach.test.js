@@ -460,4 +460,24 @@ ok('keine starre Schrittfolge wie bei der alten, unvermischten Auswahl', !deltas
 ok('unterschiedliches Salz ergibt unterschiedliche Folgen', // sonst waeren Technik und Encore am selben Tag dieselbe Reihenfolge
    fuenf.some((_, i) => C.tagesAuswahl(fuenf, new Date(2026, 8, i + 1), 'x') !== C.tagesAuswahl(fuenf, new Date(2026, 8, i + 1), 'y')));
 
+
+print('\n--- Was auf Home sprechen darf ---');
+{
+  const normal = { form: { stufe: 'neutral' }, stoerung: { stufe: 'gering' }, abnehmStufe: 'fenster' };
+  eq('ein normaler Tag hat keine Ausnahmen', C.ausnahmen(normal).length, 0);
+  eq('ohne Daten auch nicht', C.ausnahmen().length, 0);
+  eq('frische Form ist keine Ausnahme', C.ausnahmen({ form: { stufe: 'frisch' } }).length, 0);
+  const finger = { id: 'finger', was: 'Finger', art: 'wiederkehrend', status: 'aktiv' };
+  const schulter = { id: 'schulter', was: 'Schulter', art: 'strukturell', status: 'aktiv' };
+  const ruhig = { id: 'ferse', was: 'Ferse', art: 'wiederkehrend', status: 'ruhend' };
+  const alles = C.ausnahmen({ pause: { tage: 17 }, verletzungen: [schulter, finger, ruhig],
+    erholung: { stufe: 'kurz' }, form: { stufe: 'platt' }, stoerung: { stufe: 'stark' }, abnehmStufe: 'teuer' });
+  eq('Reihenfolge: Pause, Koerper, Umfeld', alles.map(a => a.art).join(','), 'pause,verletzung,form,stoerung,abnehmen');
+  eq('Strukturelles und Ruhendes sprechen nicht', alles.filter(a => a.art === 'verletzung').map(a => a.id).join(), 'finger');
+  eq('knappe Erholung sagt schon die Ansage — keine zweite Zeile', C.ausnahmen({ erholung: { stufe: 'belastet' } }).length, 0);
+  eq('leichte Stoerung spricht', C.ausnahmen({ stoerung: { stufe: 'leicht' } }).length, 1);
+  eq('traeges Abnehmen nicht', C.ausnahmen({ abnehmStufe: 'traege' }).length, 0);
+  eq('nach oben schon', C.ausnahmen({ abnehmStufe: 'rauf' })[0].art, 'abnehmen');
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

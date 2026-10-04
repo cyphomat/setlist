@@ -8,7 +8,7 @@
 # Rahmen startet und bedient — echte Bildschirme, keine Mockups.
 set -e
 cd "$(dirname "$0")/.."
-CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+CHROME="${CHROME:-/Applications/Google Chrome.app/Contents/MacOS/Google Chrome}"
 PORT="${PORT:-8765}"
 mkdir -p assets/screens
 

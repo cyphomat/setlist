@@ -10,6 +10,32 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-04.1
+
+### Geändert
+- **Home als Bühnenplakat.** Die Startseite war ein Textblock: bis zu acht gleich
+  gewichtete Zeilen im selben Kasten, die meisten davon mit der Botschaft „alles
+  normal, ändere nichts“. Erst darunter kamen Workout und Startknopf. Jetzt gilt:
+  **Nur Ausnahmen sprechen, Normales wird zum Instrument.**
+  - **Ein Plakat statt zwei Karten.** Oben stehen Wochentag, Datum und die Lage,
+    darunter riesig das Tageswort (TECHNIK, SOLIDE, HART, SCHWER) in seiner Farbe, mit
+    leichtem Bühnenlicht dahinter. Es folgen ein Satz, das Workout und der Startknopf.
+  - **Ausnahmen im Plakat**, je eine Zeile mit ▲ und nur der erste Satz: Pausen-Deload,
+    eine aktive wiederkehrende Verletzung (mit Trend), müde oder platte Form, Rad zu kurz
+    vor dem Eisen, Abnehmen zu schnell, zu teuer oder nach oben. Knapper Schlaf und
+    niedrige HRV stehen nicht doppelt da, weil das schon die Ansage selbst sagt. Welche
+    Lage spricht, entscheidet eine getestete Funktion (`coach.ausnahmen`).
+  - **Instrumente** unter dem Plakat: Form, Schlaf, Gewicht pro Woche, Rad und eine
+    strukturelle Verletzung, je mit farbigem Punkt und Wert. Antippen klappt die
+    ausführliche Zeile von früher auf; offen ist höchstens eine.
+  - **Der Spruch wird ein Zitat** ohne Kasten. An schweren Tagen steht dein eigener
+    Grund da, mit „— dein Grund“ darunter (vorher fest auf Deutsch „DEIN GRUND“).
+  - **Der „Wendepunkt“ ist weg von Home.** Dass ein Lift über dem Stand vor der Pause
+    liegt, feiern der Geschafft-Screen und der Aufnäher „Originalbesetzung“. Täglich
+    wiederholt war es nur noch Rauschen. Jahrestage alter Bestleistungen bleiben, sie
+    kommen und gehen mit dem Kalender.
+- `tools/screens.sh` nimmt einen anderen Browser über `CHROME=…`.
+
 ## 2026-10-03.2
 
 ### Neu

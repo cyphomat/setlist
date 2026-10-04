@@ -157,7 +157,7 @@ function intensitaet(situation, workout, erholung) {
   }
   if (erholung && erholung.stufe === 'kurz') {
     return { stufe: 'technik', label: 'TECHNIK',
-      text: `Nur ${erholung.schlafStunden} Stunden geschlafen — das drückt Kraftleistung stärker als ein normaler harter Tag. Heute Position, nicht Last.` };
+      text: `Nur ${String(erholung.schlafStunden).replace('.', ',')} Stunden geschlafen — das drückt Kraftleistung stärker als ein normaler harter Tag. Heute Position, nicht Last.` };
   }
   if (situation === 'comeback' || situation === 'leicht' || situation === 'nachDeload') {
     return { stufe: 'technik', label: 'TECHNIK', text: 'Heute geht es um Position, nicht um Last. Sauber vor schwer.' };
@@ -501,4 +501,40 @@ export function erfolge(vorher, nachher, config, log, alleLogs = [], heute = new
   }
 
   return out.sort((a, b) => a.rang - b.rang);
+}
+
+/* ---------------------------------------------------------------
+   Was auf Home sprechen darf.
+
+   Home zeigt Form, Erholung, Gewicht und Rad als kleine Instrumente.
+   Ausfuehrlich steht nur, was HEUTE etwas aendert — "alles normal,
+   aendere nichts" braucht keine drei Zeilen. Diese Funktion trennt das
+   eine vom anderen; die Oberflaeche baut daraus die Zeilen im Plakat.
+
+   Die Reihenfolge ist die Wichtigkeit vor dem Start: erst was die
+   Gewichte aendert (Pause), dann der Koerper (Verletzung, Erholung,
+   Form), dann das Umfeld (Rad, Gewicht).                          */
+
+// Die Erholung fehlt hier mit Absicht: ist sie knapp oder belastet, sagt
+// das schon die Ansage selbst (intensitaet weiter oben). Eine zweite Zeile
+// darueber waere dasselbe noch einmal. Als Instrument bleibt sie sichtbar.
+const AUSNAHME = {
+  form: ['muede', 'platt'],
+  stoerung: ['stark', 'leicht'],
+  abnehmen: ['schnell', 'teuer', 'rauf']
+};
+
+export function ausnahmen({ pause = null, verletzungen = [], form = null,
+                            stoerung = null, abnehmStufe = null } = {}) {
+  const out = [];
+  if (pause) out.push({ art: 'pause', stufe: 'vorschlag' });
+  // Strukturelles bleibt — es ist kein Ereignis des Tages, sondern ein
+  // Zustand. Dafuer gibt es ein Instrument, keine taegliche Zeile.
+  for (const v of verletzungen || []) {
+    if (v && v.status === 'aktiv' && v.art !== 'strukturell') out.push({ art: 'verletzung', stufe: 'aktiv', id: v.id });
+  }
+  if (form && AUSNAHME.form.includes(form.stufe)) out.push({ art: 'form', stufe: form.stufe });
+  if (stoerung && AUSNAHME.stoerung.includes(stoerung.stufe)) out.push({ art: 'stoerung', stufe: stoerung.stufe });
+  if (abnehmStufe && AUSNAHME.abnehmen.includes(abnehmStufe)) out.push({ art: 'abnehmen', stufe: abnehmStufe });
+  return out;
 }

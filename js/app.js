@@ -294,31 +294,14 @@ function renderHome() {
   renderOrtKnopf();
   const d = C.directive(state, config, new Date(), letzterLog, stimme, erholung, radFuerMerch());
 
-  $('directive').innerHTML = `
-    <div class="directive">
-      <span class="tone ${d.intensitaet.stufe}">${d.intensitaet.label} · ${d.kopf}</span>
-      <p class="txt">${d.intensitaet.text}</p>
-      ${verletzungsZeile()}
-      ${pausenZeile()}
-      ${abnehmZeile()}
-      ${formZeile()}
-      ${erholungsZeile()}
-      ${stoerungsZeile()}
-    </div>
-    ${meilensteinKarte()}
-    <p class="spruch">${zeileFuerHeute(d)}</p>`;
-
   const gewaehlt = workoutOverride || state.next;
   const plan = P.planWorkout(state, config, gewaehlt);
   $('swap-workout').textContent = `Workout ${gewaehlt === 'A' ? 'B' : 'A'}`;
-  $('today').innerHTML = `
-    <div class="kicker">${t(workoutOverride ? 'home.selbstGewaehlt' : 'home.alsNaechstes')}</div>
-    <div class="name neon">WORKOUT ${plan.workout}</div>
-    <ul>${plan.lifts.map(l => `
-      <li><span>${escHtml(l.name)} <span class="num">${l.sets}×${l.reps}</span></span><span>${P.fmtWeight(l.weight)}</span></li>
-    `).join('')}</ul>
-    <button id="start" class="btn">${t('home.starten')}</button>`;
+  $('today').className = `plakat ton-${d.intensitaet.stufe}`;
+  $('today').innerHTML = plakatHtml(d, plan);
   $('start').onclick = startMitPausenCheck;
+  renderInstrumente();
+  $('zitat').innerHTML = `${meilensteinKarte()}${zitatHtml(d)}`;
 
   const motto = config.motto;
   $('motto').innerHTML = motto ? `<p class="motto">${escHtml(motto)}</p>` : '';
@@ -456,20 +439,6 @@ function logsFuerAnzeige() {
  * Strukturelles bekommt einen ruhigeren Ton als ein akuter Fall — es ist
  * keine Neuigkeit, sondern eine Randbedingung.
  */
-function verletzungsZeile() {
-  const aktiv = VL.aktive(config);
-  if (!aktiv.length) return '';
-  return aktiv.map(v => {
-    const farbe = v.art === 'strukturell' ? 'var(--stahl)' : 'var(--rost)';
-    const wie = VL.lage(logsFuerAnzeige(), v.id);
-    const trend = wie.richtung && v.art !== 'strukturell'
-      ? ` <span style="color:var(--dim)">· ${escHtml(t(`inj.trend.${wie.richtung}`))}</span>` : '';
-    return `<p class="formzeile" style="border-top-color:${farbe}">
-      <b>${escHtml(v.was)}</b>${trend}${v.behandlung
-        ? `<br><span style="color:var(--muted)">${escHtml(v.behandlung)}</span>` : ''}</p>`;
-  }).join('');
-}
-
 /**
  * Deine eigene Behandlung als abhakbarer Punkt im Soundcheck.
  *
@@ -659,13 +628,6 @@ async function commitAnpassung(log) {
 }
 
 /** Auf dem Startbildschirm: damit die Karte beim Start keine Ueberraschung ist. */
-function pausenZeile() {
-  const v = pausenVorschlag();
-  if (!v) return '';
-  return `<p class="formzeile" style="border-top-color:var(--stahl)">${escHtml(
-    t('pause.home', { tage: v.tage, p: v.prozent }))}</p>`;
-}
-
 /** In der Einheit: ein Lift auf dem Rueckweg sagt, dass er doppelt steigt. */
 function rueckwegZeile(liftId) {
   const l = state.lifts[liftId], def = config.lifts[liftId];
@@ -3373,24 +3335,144 @@ function weitereRekorde() {
  * abnutzt.
  */
 function zeileFuerHeute(d) {
+  return escHtml(zitatTeile(d).text);
+}
+
+/** Der Spruch des Tages — an schweren Tagen dein eigener Grund statt eines Spruchs. */
+function zitatTeile(d) {
   const schwer = ['comeback', 'nachDeload'].includes(d.situation)
     || (form && ['muede', 'platt'].includes(form.stufe));
   const warum = config.ziele && config.ziele.warum;
-  if (schwer && warum) {
-    return `<span style="font-style:normal;color:var(--muted);font-size:0.75rem;
-      font-family:var(--mono);letter-spacing:.1em;display:block;margin-bottom:6px">DEIN GRUND</span>${escHtml(warum)}`;
-  }
-  return escHtml(d.spruch);
+  return schwer && warum ? { text: warum, grund: true } : { text: d.spruch, grund: false };
+}
+
+function zitatHtml(d) {
+  const z = zitatTeile(d);
+  if (!z.text) return '';
+  return `<figure class="zitat">
+    <blockquote>${escHtml(z.text)}</blockquote>
+    ${z.grund ? `<figcaption>${escHtml(t('home.deinGrund'))}</figcaption>` : ''}
+  </figure>`;
 }
 
 /** Was nur deine App sagen kann — Jahrestage, alte Bestwerte, Wendepunkte. */
 function meilensteinKarte() {
-  const m = C.meilensteine(state, config, new Date());
+  // Nur Jahrestage: sie kommen und gehen mit dem Kalender. "Ueber dem alten
+  // Stand" feiert schon der Geschafft-Screen und der Aufnaeher
+  // Originalbesetzung — taeglich wiederholt war es nur noch Rauschen.
+  const m = C.meilensteine(state, config, new Date()).filter(x => x.art === 'jahrestag');
   if (!m.length) return '';
   return `<div class="meilenstein">
-    <span class="kicker">${m[0].art === 'jahrestag' ? 'Aus deiner Geschichte' : 'Wendepunkt'}</span>
+    <span class="kicker">${escHtml(t('home.ausDeinerGeschichte'))}</span>
     <p>${escHtml(m[0].text)}</p>
   </div>`;
+}
+
+/* ============================ Das Plakat ============================
+   Ansage und Workout auf einer Karte: das Tageswort gross, darunter nur,
+   was heute etwas aendert, dann das Workout und der Startknopf. Alles
+   Normale steht nicht hier, sondern als Instrument darunter.          */
+
+function plakatHtml(d, plan) {
+  // "Do 01.10." statt "Do., 01.10." — der Kicker ist ein Plakatkopf, kein Brief.
+  const jetzt = new Date();
+  const heute = `${jetzt.toLocaleDateString(locale(), { weekday: 'short' }).replace(/\.$/, '')} ${
+    jetzt.toLocaleDateString(locale(), { day: '2-digit', month: '2-digit' })}`;
+  const hinweise = ausnahmenHtml();
+  return `
+    <div class="kicker">${escHtml(heute)} · ${escHtml(d.kopf)}</div>
+    <div class="tageswort">${escHtml(d.intensitaet.label)}</div>
+    <p class="tagessatz">${escHtml(d.intensitaet.text)}</p>
+    ${hinweise ? `<div class="hinweise">${hinweise}</div>` : ''}
+    <div class="programm">
+      <div class="kicker">${t(workoutOverride ? 'home.selbstGewaehlt' : 'home.alsNaechstes')}</div>
+      <div class="name">WORKOUT ${plan.workout}</div>
+      <ul>${plan.lifts.map(l => `
+        <li><span class="ln">${escHtml(l.name)}</span><span class="num">${l.sets}×${l.reps}</span><span class="kg">${P.fmtWeight(l.weight)}</span></li>`).join('')}
+      </ul>
+      <button id="start" class="btn">${t('home.starten')}</button>
+    </div>`;
+}
+
+const FARBE = {
+  form: { frisch: 'var(--gruen)', neutral: 'var(--muted)', muede: 'var(--rost)', platt: 'var(--rot)' },
+  erholung: { ok: 'var(--gruen)', kurz: 'var(--rost)', belastet: 'var(--rot)' },
+  stoerung: { stark: 'var(--rost)', leicht: 'var(--akzent)', gering: 'var(--dim)' },
+  abnehmen: { fenster: 'var(--gruen)', haltend: 'var(--akzent)', traege: 'var(--muted)',
+              schnell: 'var(--rost)', teuer: 'var(--rot)', rauf: 'var(--rost)' }
+};
+/** Im Plakat steht der erste Satz; der ganze Absatz liegt hinter dem Instrument. */
+const ersterSatz = text => {
+  const m = String(text || '').match(/^.*?[.!?](?=\s|$)/);
+  return m ? m[0] : String(text || '');
+};
+const zahl = (n, stellen = 1) => Number(n).toLocaleString(locale(), { maximumFractionDigits: stellen });
+
+/** Die Zeilen im Plakat: nur Ausnahmen (coach.js entscheidet, was dazugehoert). */
+function ausnahmenHtml() {
+  const pause = pausenVorschlag();
+  const aktiv = VL.aktive(config);
+  const liste = C.ausnahmen({ pause, verletzungen: aktiv, form, stoerung,
+    abnehmStufe: abnehmen && abnehmen.lage ? abnehmen.lage.stufe : null });
+  const zeile = (farbe, titel, text) => `<p class="hinweis" style="--hf:${farbe}">
+    <b>${escHtml(titel)}</b>${text ? ` <span>${escHtml(text)}</span>` : ''}</p>`;
+  return liste.map(a => {
+    switch (a.art) {
+      case 'pause': return zeile('var(--stahl)', t('pause.home', { tage: pause.tage, p: pause.prozent }), '');
+      case 'verletzung': {
+        const v = aktiv.find(x => x.id === a.id);
+        const wie = VL.lage(logsFuerAnzeige(), v.id);
+        return zeile('var(--rost)', v.was, wie.richtung ? t(`inj.trend.${wie.richtung}`) : '');
+      }
+      case 'form': return zeile(FARBE.form[a.stufe], t('form.zeile', { v: `${form.form > 0 ? '+' : ''}${form.form}` }), ersterSatz(form.text));
+      case 'stoerung': return zeile(FARBE.stoerung[a.stufe], t('stoer.zeile', { h: Math.round(stoerung.stunden) }), ersterSatz(stoerung.text));
+      case 'abnehmen': return zeile(FARBE.abnehmen[a.stufe], t(`abn.stufe.${a.stufe}`), ersterSatz(t(`abn.text.${a.stufe}`)));
+      default: return '';
+    }
+  }).join('');
+}
+
+/* Die Instrumente: Form, Schlaf, Gewicht, Rad, Strukturelles — je ein
+   Punkt und ein Wert. Antippen klappt die ausfuehrliche Zeile auf, die es
+   vorher immer gab; offen ist hoechstens eine.                        */
+let instrumentOffen = null;
+
+function renderInstrumente() {
+  const box = $('instrumente');
+  if (!box) return;
+  const liste = [];
+  if (form) liste.push({ id: 'form', farbe: FARBE.form[form.stufe],
+    text: t('form.zeile', { v: `${form.form > 0 ? '+' : ''}${form.form}` }), detail: formZeile });
+  if (erholung) liste.push({ id: 'erholung', farbe: FARBE.erholung[erholung.stufe],
+    text: erholung.schlafStunden != null ? t('erh.schlaf', { h: zahl(erholung.schlafStunden) })
+      : erholung.hrv != null ? t('erh.hrv', { v: erholung.hrv }) : t('erh.zeile', { label: t(`erh.${erholung.stufe}`) }),
+    detail: erholungsZeile });
+  if (abnehmen && abnehmen.lage && abnehmen.rate) liste.push({ id: 'gewicht', farbe: FARBE.abnehmen[abnehmen.lage.stufe],
+    text: t('instr.gewicht', { kg: `${abnehmen.rate.proWoche > 0 ? '+' : abnehmen.rate.proWoche < 0 ? '−' : ''}${zahl(Math.abs(abnehmen.rate.proWoche), 2)}` }),
+    detail: abnehmZeile });
+  if (stoerung) liste.push({ id: 'rad', farbe: FARBE.stoerung[stoerung.stufe],
+    text: t('stoer.zeile', { h: Math.round(stoerung.stunden) }), detail: stoerungsZeile });
+  for (const v of VL.aktive(config).filter(x => x.art === 'strukturell')) {
+    liste.push({ id: `inj-${v.id}`, farbe: 'var(--stahl)', text: v.was,
+      detail: () => `<p class="formzeile" style="border-top-color:var(--stahl)"><b>${escHtml(v.was)}</b>${v.behandlung
+        ? `<br><span style="color:var(--muted)">${escHtml(v.behandlung)}</span>` : ''}</p>` });
+  }
+  if (!liste.length) { box.innerHTML = ''; return; }
+  if (!liste.some(x => x.id === instrumentOffen)) instrumentOffen = null;
+  const offen = liste.find(x => x.id === instrumentOffen);
+  box.innerHTML = `
+    <div class="instrumente">${liste.map(x => `
+      <button type="button" class="instr${x.id === instrumentOffen ? ' an' : ''}" data-instr="${escHtml(x.id)}"
+        style="--if:${x.farbe}" aria-expanded="${x.id === instrumentOffen}"
+        aria-label="${escHtml(t('instr.aria', { was: x.text }))}"><i></i>${escHtml(x.text)}</button>`).join('')}
+    </div>
+    ${offen ? `<div class="instr-detail">${offen.detail()}</div>` : ''}`;
+  box.querySelectorAll('.instr').forEach(b => {
+    b.onclick = () => {
+      instrumentOffen = instrumentOffen === b.dataset.instr ? null : b.dataset.instr;
+      renderInstrumente();
+    };
+  });
 }
 
 /* ================= Kalender und Last ================= */
