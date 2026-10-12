@@ -36,7 +36,10 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 - **Tests mit Node und als GitHub Action.** `node tools/tests.mjs` führt alle 18
   Testdateien aus, zeigt je Datei das Ergebnis und endet mit Fehlercode, sobald etwas
   fehlschlägt. `.github/workflows/tests.yml` macht das bei jedem Push und Pull Request,
-  ohne Abhängigkeiten und mit nur lesenden Rechten.
+  ohne Abhängigkeiten und mit nur lesenden Rechten. Sie nutzt `actions/checkout@v7`,
+  `actions/setup-node@v7` und Node 24 (aktuelle LTS). Damit die Actions nicht still
+  veralten, meldet Dependabot neue Versionen als Pull Request (`.github/dependabot.yml`).
+  Die App selbst hat weiterhin keine Abhängigkeiten.
 
 ### Doku
 - READMEs: Abschnitt **Tests** (beide Wege, aktuelle Zahl, vollständige Liste),

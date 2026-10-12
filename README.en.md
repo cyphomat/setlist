@@ -386,8 +386,9 @@ off under *Backstage → Connections*.
 node tools/tests.mjs
 ```
 
-Node 18 or newer, nothing to install. The same runs as a GitHub Action on every push and
-pull request (`.github/workflows/tests.yml`). Without Node, the JS engine that ships with
+Node 22 or newer (current LTS recommended), nothing to install. The same runs as a GitHub
+Action on every push and pull request (`.github/workflows/tests.yml`); Dependabot opens a
+pull request when the actions it uses have a new version. Without Node, the JS engine that ships with
 macOS works too:
 
 ```sh

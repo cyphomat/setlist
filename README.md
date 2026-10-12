@@ -390,8 +390,9 @@ Wiederholungen. Abschaltbar unter *Backstage → Verbindungen*.
 node tools/tests.mjs
 ```
 
-Mit Node 18 oder neuer, ohne Installation. Dasselbe läuft als GitHub Action bei jedem
-Push und Pull Request (`.github/workflows/tests.yml`). Ohne Node geht es auch mit der
+Mit Node 22 oder neuer (empfohlen: die aktuelle LTS), ohne Installation. Dasselbe läuft
+als GitHub Action bei jedem Push und Pull Request (`.github/workflows/tests.yml`); neue
+Versionen der verwendeten Actions meldet Dependabot als Pull Request. Ohne Node geht es auch mit der
 JS-Engine, die in macOS ohnehin steckt:
 
 ```sh

@@ -1,0 +1,8 @@
+# Haelt die GitHub Actions aktuell: neue Versionen kommen als Pull Request.
+# Die App selbst hat keine Abhaengigkeiten — fuer npm gibt es nichts zu ueberwachen.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
