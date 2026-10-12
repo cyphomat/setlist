@@ -1,6 +1,7 @@
 // GitHub-API als Datenspeicher. Einziger I/O-Layer der App.
 // Schreibt Klartext-JSON ins private Repo — jede Einheit wird ein Commit.
 
+import { t } from './i18n.js';
 const API = 'https://api.github.com';
 const TOKEN_KEY = 'setlist.token';
 const QUEUE_KEY = 'setlist.queue';
@@ -68,12 +69,12 @@ async function api(path, options = {}, versuch = 1) {
       return api(path, options, versuch + 1);
     }
     const wo = path.split('?')[0].replace(`/repos/${getOwner()}/${getRepo()}/contents`, '');
-    throw new Error(`Keine Verbindung zu GitHub${wo ? ` (${wo})` : ''} — ${navigator.onLine ? 'Server nicht erreichbar' : 'Gerät ist offline'}.`);
+    throw new Error(t('err.github.netz', { wo: wo ? ` (${wo})` : '', grund: t(navigator.onLine ? 'err.github.server' : 'err.github.offline') }));
   }
   if (res.status === 401 || res.status === 403) {
     // Fine-grained Tokens laufen ab — das ist der haeufigste Grund fuer ein
     // ploetzliches 401, und ohne den Hinweis sucht man den Fehler woanders.
-    throw new Error(`Token ungültig, abgelaufen oder ohne Schreibrecht auf ${getRepo()}.`);
+    throw new Error(t('err.github.token', { repo: getRepo() }));
   }
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`GitHub ${res.status}: ${(await res.text()).slice(0, 140)}`);

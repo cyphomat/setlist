@@ -92,4 +92,61 @@ print('\n--- Singular und Plural ---');
 }
 
 
+
+print('\n--- Coach auf Englisch ---');
+{
+  const C = await import('../js/coach.js');
+  const config = {
+    lifts: {
+      squat: { name: 'Back Squat', increment: 2.5, start: 60, reference: 100 },
+      bench: { name: 'Bench Press', increment: 2.5, start: 40 },
+      row: { name: 'Row', increment: 2.5, start: 40 },
+      ohp: { name: 'OHP', increment: 2.5, start: 30 },
+      deadlift: { name: 'Deadlift', increment: 5, start: 80 }
+    },
+    workouts: { A: [{ lift: 'squat' }, { lift: 'bench' }, { lift: 'row' }], B: [{ lift: 'squat' }, { lift: 'ohp' }, { lift: 'deadlift' }] },
+    records: { programm: { squat: { datum: '2021-10-12', bestesEinzel: 140 } } }
+  };
+  const lifts = w => ({ squat: { weight: w, fails: 0 }, bench: { weight: 40, fails: 0 }, row: { weight: 40, fails: 0 },
+    ohp: { weight: 30, fails: 0 }, deadlift: { weight: 80, fails: 0 } });
+  const heute = new Date(2026, 9, 12);
+  const DEUTSCH = /\b(Tage|Einheit|Sätze|Sätzen|geschafft|Rechnung|Jahren|gefahren|heute|Heute|nicht|weg|Stunden)\b|[äöüß]/;
+  const pruefe = (name, text) => ok(`${name}: englisch`, typeof text === 'string' && text && !DEUTSCH.test(text), text);
+
+  I.setSprache('en');
+  const comeback = C.directive({ next: 'A', lifts: lifts(60), history: [{ date: '2026-09-25', type: 'strength' }] }, config, heute);
+  pruefe('Ansage-Kopf nach Pause', comeback.kopf);
+  pruefe('Ansage-Satz', comeback.intensitaet.text);
+  eq('das Tageswort bleibt in den Daten deutsch', comeback.intensitaet.label, 'TECHNIK');
+  eq('die Anzeige des Tagesworts ist englisch', I.t('ton.TECHNIK'), 'TECHNIQUE');
+  const offen = C.directive({ next: 'A', lifts: { ...lifts(60), squat: { weight: 60, fails: 1 } },
+    history: [{ date: '2026-10-10', type: 'strength' }] }, config, heute);
+  pruefe('offene Rechnung', offen.kopf);
+  ok('nennt den Lift', offen.kopf.includes('Back Squat'), offen.kopf);
+  const kurz = C.directive({ next: 'A', lifts: lifts(60), history: [{ date: '2026-10-10', type: 'strength' }] }, config, heute,
+    null, null, { stufe: 'kurz', schlafStunden: 5.4 });
+  pruefe('kurze Nacht', kurz.intensitaet.text);
+  ok('Dezimalpunkt auf Englisch', kurz.intensitaet.text.includes('5.4'), kurz.intensitaet.text);
+  for (const [ctl, atl] of [[50, 40], [40, 40], [30, 45], [20, 50]]) pruefe(`Form ${ctl - atl}`, C.formLage({ ctl, atl }).text);
+  const vor = h => { const d = new Date(heute.getTime() - h * 3600000); return d.toISOString(); };
+  for (const [h, load, min] of [[2, 120, 60], [6, 120, 60], [1, 20, 40]]) {
+    const st = C.interferenz([{ zeit: vor(h), load, minutes: min, intensitaet: load > 100 ? 0.9 : 0.6 }], heute);
+    if (st) pruefe(`Rad vor ${h} h`, st.text);
+  }
+  const ms = C.meilensteine({ lifts: lifts(105) }, config, heute);
+  ok('Meilensteine vorhanden', ms.length >= 2, ms.length);
+  for (const m of ms) pruefe(`Meilenstein ${m.art}`, m.text);
+  const vorher = { lifts: lifts(97.5) }, nachher = { lifts: lifts(100) };
+  const log = { date: '2026-10-12', lifts: [{ lift: 'squat', weight: 97.5, target: 5, reps: [5, 5, 5, 5, 5] }] };
+  const erf = C.erfolge(vorher, nachher, config, log, [], heute);
+  ok('Minierfolge vorhanden', erf.length >= 3, erf.length);
+  for (const e of erf) pruefe(`Minierfolg ${e.art}`, e.text);
+
+  I.setSprache('de');
+  eq('zurück auf Deutsch: wieder deutsch', C.directive({ next: 'A', lifts: lifts(60), history: [{ date: '2026-09-25', type: 'strength' }] }, config, heute).kopf, '17 Tage weg');
+  ok('Minierfolg wieder deutsch', C.erfolge(vorher, nachher, config, log, [], heute).some(e => e.text.includes('Sätzen')));
+}
+// Fuer die folgenden Testdateien im selben Prozess: Deutsch und kein Rest.
+I.setSprache('de');
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

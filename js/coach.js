@@ -3,6 +3,7 @@
 // etwas behauptet, das nicht aus deinen Daten folgt.
 
 import { VOICE } from './content.js';
+import { t, tn, locale } from './i18n.js';
 import { mondayOf, ymd, PAUSE_AB } from './program.js';
 import { pausenFenster, wocheInPause } from './verletzung.js';
 
@@ -110,25 +111,25 @@ export function directive(state, config, today = new Date(), letzterLog = null, 
   // um zehn oder zwanzig Prozent zurueckgenommen wurden.
   if (tage === null || tage >= PAUSE_AB) {
     situation = 'comeback';
-    kopf = tage === null ? 'Erste Einheit' : `${tage} Tage weg`;
+    kopf = tage === null ? t('coach.kopf.erste') : t('coach.kopf.weg', { n: tage });
   } else if (deloadGerade) {
     situation = 'nachDeload';
-    kopf = 'Deload aktiv';
+    kopf = t('coach.kopf.deload');
   } else if (offeneFehler.length) {
     situation = 'nachFehlversuch';
-    kopf = `Offene Rechnung: ${config.lifts[offeneFehler[0]].name}`;
+    kopf = t('coach.kopf.rechnung', { name: config.lifts[offeneFehler[0]].name });
   } else if (streak >= 4) {
     situation = 'streak';
-    kopf = `${streak} Wochen am Stück`;
+    kopf = t('coach.kopf.serie', { n: streak });
   } else if (fortschritt.gesamt < 0.7) {
     situation = 'leicht';
-    kopf = 'Wiederaufbau';
+    kopf = t('coach.kopf.aufbau');
   } else {
     situation = 'standard';
-    kopf = tage === null ? 'Auf geht’s'
-         : tage === 0 ? 'Heute schon trainiert'
-         : tage === 1 ? 'Gestern trainiert'
-         : `Zuletzt vor ${tage} Tagen`;
+    kopf = tage === null ? t('coach.kopf.los')
+         : tage === 0 ? t('coach.kopf.heute')
+         : tage === 1 ? t('coach.kopf.gestern')
+         : t('coach.kopf.zuletzt', { n: tage });
   }
 
   return {
@@ -150,25 +151,29 @@ export function directive(state, config, today = new Date(), letzterLog = null, 
  * weil beide etwas sehen, das Fitness/Ermüdung (reine Trainingslast) nicht
  * erfasst. Deshalb zuerst geprüft, auch vor einer offenen Rechnung.
  */
+// Das `label` (TECHNIK, SOLIDE, HART, SCHWER) ist ein Datenwert: es landet
+// als `angesagt` in jeder Einheit, und "Ansage gegen Gefuehl" vergleicht
+// damit. Es bleibt deshalb in jeder Sprache deutsch — uebersetzt wird nur
+// die Anzeige (tonWort in app.js). Der Satz dazu ist reine Anzeige.
 function intensitaet(situation, workout, erholung) {
   if (erholung && erholung.stufe === 'belastet') {
     return { stufe: 'technik', label: 'TECHNIK',
-      text: `HRV deutlich unter deinem Schnitt (${erholung.hrv} ms gegen ${erholung.basis} ms sonst) — Körper meldet Stress, den die Trainingslast allein nicht erklärt. Heute Position, nicht Last.` };
+      text: t('coach.int.hrv', { hrv: erholung.hrv, basis: erholung.basis }) };
   }
   if (erholung && erholung.stufe === 'kurz') {
     return { stufe: 'technik', label: 'TECHNIK',
-      text: `Nur ${String(erholung.schlafStunden).replace('.', ',')} Stunden geschlafen — das drückt Kraftleistung stärker als ein normaler harter Tag. Heute Position, nicht Last.` };
+      text: t('coach.int.schlaf', { h: Number(erholung.schlafStunden).toLocaleString(locale()) }) };
   }
   if (situation === 'comeback' || situation === 'leicht' || situation === 'nachDeload') {
-    return { stufe: 'technik', label: 'TECHNIK', text: 'Heute geht es um Position, nicht um Last. Sauber vor schwer.' };
+    return { stufe: 'technik', label: 'TECHNIK', text: t('coach.int.technik') };
   }
   if (situation === 'nachFehlversuch') {
-    return { stufe: 'hart', label: 'HART', text: 'Gleiche Last wie letztes Mal. Heute holst du sie dir.' };
+    return { stufe: 'hart', label: 'HART', text: t('coach.int.hart') };
   }
   if (workout === 'B') {
-    return { stufe: 'hart', label: 'SCHWER', text: 'Deadlift am Ende. Spar dir was auf, ein Satz muss reichen.' };
+    return { stufe: 'hart', label: 'SCHWER', text: t('coach.int.schwer') };
   }
-  return { stufe: 'normal', label: 'SOLIDE', text: 'Fünf saubere Sätze pro Übung. Nicht mehr, nicht weniger.' };
+  return { stufe: 'normal', label: 'SOLIDE', text: t('coach.int.solide') };
 }
 
 function toKey(d) {
@@ -226,16 +231,16 @@ export function formLage(wellness) {
   let stufe, text;
   if (form >= 5) {
     stufe = 'frisch';
-    text = 'Ausgeruht. Wenn ein Tag für einen Versuch am oberen Ende taugt, dann dieser.';
+    text = t('coach.form.frisch');
   } else if (form >= -10) {
     stufe = 'neutral';
-    text = 'Normal belastet. Plan durchziehen.';
+    text = t('coach.form.neutral');
   } else if (form >= -20) {
     stufe = 'muede';
-    text = 'Deutlich ermüdet vom Rad. Technik hat heute Vorrang vor Last — und das Encore darf ausfallen.';
+    text = t('coach.form.muede');
   } else {
     stufe = 'platt';
-    text = 'Stark ermüdet. Wenn heute etwas nicht geht, liegt es nicht an dir. Leichter machen ist hier die richtige Entscheidung, nicht die bequeme.';
+    text = t('coach.form.platt');
   }
 
   return {
@@ -311,20 +316,15 @@ export function interferenz(fahrten = [], jetzt = new Date()) {
 
   if (art === 'locker' && stunden >= 4) return null;
 
+  const vor = () => tn('coach.stoer.vor', gerundet, { art: t(`coach.stoer.art.${art === 'hart' ? 'hart' : 'lang'}`) });
   if (stunden < 4 && art !== 'locker') {
-    return { stufe: 'stark', stunden, art, fahrt: f,
-      text: `Vor ${gerundet} Stunden ${art === 'hart' ? 'hart' : 'lang'} gefahren. Unter vier Stunden Abstand `
-          + `leidet vor allem die Kraftausdauer — die letzten Sätze werden zäh. `
-          + `Das Maximalkraftniveau bleibt davon weitgehend unberührt: es ist Ermüdung, kein Rückschritt.` };
+    return { stufe: 'stark', stunden, art, fahrt: f, text: `${vor()} ${t('coach.stoer.stark')}` };
   }
   if (stunden < 8 && art !== 'locker') {
-    return { stufe: 'leicht', stunden, art, fahrt: f,
-      text: `Vor ${gerundet} Stunden ${art === 'hart' ? 'hart' : 'lang'} gefahren. Der Abstand reicht knapp; `
-          + `rechne beim letzten Satz mit etwas weniger Reserve.` };
+    return { stufe: 'leicht', stunden, art, fahrt: f, text: `${vor()} ${t('coach.stoer.leicht')}` };
   }
   if (stunden < 4) {
-    return { stufe: 'gering', stunden, art, fahrt: f,
-      text: `Vor ${gerundet} Stunden locker gefahren. Kein nennenswerter Einfluss — ruhige Grundlage stört das Eisen nicht.` };
+    return { stufe: 'gering', stunden, art, fahrt: f, text: tn('coach.stoer.gering', gerundet) };
   }
   return null;
 }
@@ -398,16 +398,13 @@ export function meilensteine(state, config, heute = new Date()) {
     // Ganze Saetze statt zusammengeklebter Bruchstuecke — sonst kommt
     // "Vor 1 Tag waren es 5 Jahren" heraus.
     const n = Math.abs(abstand);
-    const wann =
-      abstand === 0  ? `Heute vor ${jahre} Jahren`
-    : abstand === -1 ? `Gestern vor ${jahre} Jahren`
-    : abstand === 1  ? `Morgen vor ${jahre} Jahren`
-    : abstand < 0    ? `Vor ${n} Tagen war es ${jahre} Jahre her`
-    :                  `In ${n} Tagen ist es ${jahre} Jahre her`;
+    // Gezaehlt wird in Jahren ({n}, mit Einzahl); die Tage stehen in {d}.
+    const wann = tn(
+      abstand === 0 ? 'coach.ms.heute' : abstand === -1 ? 'coach.ms.gestern' : abstand === 1 ? 'coach.ms.morgen'
+        : abstand < 0 ? 'coach.ms.vorbei' : 'coach.ms.bald', jahre, { d: n });
     out.push({
       art: 'jahrestag', rang: 1, lift: id,
-      text: `${wann}: ${wert} kg ${def.name}. Heute stehst du bei ${state.lifts[id].weight} kg — `
-          + `nicht weil du weniger kannst, sondern weil du wieder anfängst.`
+      text: t('coach.ms.jahrestag', { wann, wert, name: def.name, jetzt: state.lifts[id].weight })
     });
   }
 
@@ -419,8 +416,8 @@ export function meilensteine(state, config, heute = new Date()) {
       out.push({
         art: 'referenz', rang: 2, lift: id,
         text: w > def.reference
-          ? `${def.name}: ${w} kg — ${Math.round((w - def.reference) * 10) / 10} kg über deinem Stand vor der Pause.`
-          : `${def.name}: ${w} kg — genau da, wo du vor der Pause warst. Ab hier ist alles Neuland.`
+          ? t('coach.ms.drueber', { name: def.name, w, d: Math.round((w - def.reference) * 10) / 10 })
+          : t('coach.ms.genau', { name: def.name, w })
       });
     }
   }
@@ -447,7 +444,7 @@ export function erfolge(vorher, nachher, config, log, alleLogs = [], heute = new
     .filter(x => x.neu > x.alt);
   for (const g of gestiegen) {
     out.push({ art: 'steigerung', rang: 3, lift: g.id,
-      text: `${config.lifts[g.id].name}: ${g.alt} → ${g.neu} kg` });
+      text: t('coach.erf.steigerung', { name: config.lifts[g.id].name, alt: g.alt, neu: g.neu }) });
   }
 
   // Runde Zahl geknackt
@@ -457,7 +454,7 @@ export function erfolge(vorher, nachher, config, log, alleLogs = [], heute = new
       // Bewusst ohne Artikel: die Uebungsnamen sind englisch, ein deutscher
       // Artikel davor waere immer falsch. Der Doppelpunkt loest das.
       out.push({ art: 'rund', rang: 1, lift: g.id,
-        text: `${config.lifts[g.id].name}: ${schwelle} kg — erstmals über dieser Marke seit dem Wiedereinstieg.` });
+        text: t('coach.erf.rund', { name: config.lifts[g.id].name, kg: schwelle }) });
     }
   }
 
@@ -466,7 +463,7 @@ export function erfolge(vorher, nachher, config, log, alleLogs = [], heute = new
     const ref = config.lifts[g.id].reference;
     if (ref && g.alt < ref && g.neu >= ref) {
       out.push({ art: 'referenz', rang: 0, lift: g.id,
-        text: `${config.lifts[g.id].name} zurück auf ${ref} kg — dem Stand vor der Pause. Ab hier ist alles Neuland.` });
+        text: t('coach.erf.referenz', { name: config.lifts[g.id].name, kg: ref }) });
     }
   }
 
@@ -474,16 +471,16 @@ export function erfolge(vorher, nachher, config, log, alleLogs = [], heute = new
   const saetze = lifts.reduce((s, e) => s + (e.reps || []).length, 0);
   const sauber = lifts.reduce((s, e) => s + (e.reps || []).filter(r => r >= (e.target || 5)).length, 0);
   if (saetze && sauber === saetze) {
-    out.push({ art: 'sauber', rang: 2, text: `${saetze} von ${saetze} Sätzen sauber durchgezogen.` });
+    out.push({ art: 'sauber', rang: 2, text: t('coach.erf.sauber', { n: saetze }) });
   } else if (saetze) {
-    out.push({ art: 'saetze', rang: 4, text: `${sauber} von ${saetze} Sätzen geschafft.` });
+    out.push({ art: 'saetze', rang: 4, text: t('coach.erf.saetze', { s: sauber, n: saetze }) });
   }
 
   // Bewegtes Gewicht dieser Einheit
   const tonnage = lifts.reduce((s, e) => s + (e.weight || 0) * (e.reps || []).reduce((a, r) => a + r, 0), 0);
   if (tonnage > 0) {
     out.push({ art: 'tonnage', rang: 5,
-      text: tonnage >= 1000 ? `${(tonnage / 1000).toFixed(1)} Tonnen bewegt.` : `${Math.round(tonnage)} kg bewegt.` });
+      text: tonnage >= 1000 ? t('coach.erf.tonnen', { t: (tonnage / 1000).toFixed(1) }) : t('coach.erf.kg', { kg: Math.round(tonnage) }) });
   }
 
   // Wievielte Einheit in dieser Woche
@@ -491,13 +488,13 @@ export function erfolge(vorher, nachher, config, log, alleLogs = [], heute = new
   const dieseWoche = alleLogs.filter(l => (l.type || 'strength') === 'strength'
     && new Date(l.date + 'T12:00:00') >= montag).length;
   if (dieseWoche >= 2) {
-    out.push({ art: 'woche', rang: 2, text: `${dieseWoche}. Einheit diese Woche.` });
+    out.push({ art: 'woche', rang: 2, text: t('coach.erf.woche', { n: dieseWoche }) });
   }
 
   // Runde Gesamtzahl an Einheiten
   const gesamt = alleLogs.filter(l => (l.type || 'strength') === 'strength').length;
   if (gesamt > 0 && (gesamt % 10 === 0 || gesamt === 5)) {
-    out.push({ art: 'anzahl', rang: 1, text: `${gesamt}. Einheit insgesamt.` });
+    out.push({ art: 'anzahl', rang: 1, text: t('coach.erf.anzahl', { n: gesamt }) });
   }
 
   return out.sort((a, b) => a.rang - b.rang);

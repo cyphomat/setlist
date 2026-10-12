@@ -10,6 +10,29 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-12.2
+
+### Geändert
+- **Der englische Modus ist fertig.** Bisher erschien auch im englischen Modus
+  Deutsch, weil `js/coach.js`, `js/store.js` und `js/intervals.js` ihre Texte selbst
+  zusammensetzten. Jetzt laufen sie über die Übersetzung:
+  - die Ansage: Kopf („17 days away“, „Unfinished business: Back Squat“), Satz und
+    **Tageswort** (TECHNIQUE, SOLID, HARD, HEAVY);
+  - Form und die Warnung vor einer Fahrt kurz vor dem Eisen;
+  - Meilensteine (Jahrestage, alter Stand) und die Minierfolge nach der Einheit;
+  - Fehlermeldungen von GitHub und intervals.icu.
+- **Das Tageswort bleibt in den Daten deutsch.** Es steht als `angesagt` in jeder
+  Einheit, und „Ansage gegen Gefühl“ vergleicht damit. Übersetzt wird nur die
+  Anzeige, damit eine englische Einheit dort genauso zählt.
+- Auf Deutsch ist alles wortgleich geblieben, mit zwei kleinen Korrekturen: „Vor einer
+  Stunde … gefahren“ statt „Vor 1 Stunden“ und „Heute vor einem Jahr“ statt „vor 1
+  Jahren“.
+- Deutsch bleiben bewusst nur die Übungsinhalte, die Sprüche, die Jam-Bewegungen und
+  die Rad-Begründungen. Das ist Fachtext, der eine echte Übersetzung braucht.
+- `sprache()` kommt ohne localStorage aus (dann Deutsch). Damit können auch die reinen
+  Module übersetzen, und ihre Tests laufen unverändert. 26 neue Tests prüfen die
+  englischen Texte und dass das Tageswort in den Daten deutsch bleibt.
+
 ## 2026-10-12.1
 
 ### Sicherheit

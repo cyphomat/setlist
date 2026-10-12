@@ -662,7 +662,7 @@ function startSession() {
   $('session-title').textContent = `WORKOUT ${plan.workout}`;
 
   $('session-intent').innerHTML = `
-    <div class="directive"><span class="tone ${d.intensitaet.stufe}">${d.intensitaet.label}</span>
+    <div class="directive"><span class="tone ${d.intensitaet.stufe}">${escHtml(tonWort(d.intensitaet.label))}</span>
     <p class="txt">${d.intensitaet.text}</p>${stoerungsZeile()}</div>`;
 
   const skill = C.tagesAuswahl(VL.ohneGesperrte(SKILL, config), new Date(), 'skill');
@@ -2636,7 +2636,7 @@ function renderAnsageAbgleich(logs) {
     <div class="pr" style="border-left:2px solid ${URTEIL_FARBE[e.urteil]}">
       <div class="k">${e.date.slice(8)}.${e.date.slice(5, 7)}. · Workout ${e.workout}</div>
       <div class="reihe"><span class="l">${t('ans.angesagt')}</span>
-        <span class="v"><span class="tone ${ANSAGE_TONE[e.angesagt]}" style="font-size:0.59375rem;padding:2px 7px">${e.angesagt}</span></span></div>
+        <span class="v"><span class="tone ${ANSAGE_TONE[e.angesagt]}" style="font-size:0.59375rem;padding:2px 7px">${escHtml(tonWort(e.angesagt))}</span></span></div>
       <div class="reihe"><span class="l">${t('ans.gefuehlt')}</span><span class="v">${gefuehlLabel(e.gefuehlt)}</span></div>
       <div class="reihe"><span class="l">${t('ans.urteil')}</span><span class="v" style="color:${URTEIL_FARBE[e.urteil]}">${urteilText(e.urteil)}</span></div>
     </div>`).join('');
@@ -3463,6 +3463,17 @@ function meilensteinKarte() {
    was heute etwas aendert, dann das Workout und der Startknopf. Alles
    Normale steht nicht hier, sondern als Instrument darunter.          */
 
+/**
+ * Das Tageswort in der gewaehlten Sprache. In den Daten steht es immer
+ * deutsch (siehe coach.js, intensitaet) — "Ansage gegen Gefuehl" vergleicht
+ * damit, und eine englische Einheit soll dort genauso zaehlen.
+ */
+function tonWort(label) {
+  const k = `ton.${label}`;
+  const w = t(k);
+  return w === k ? label : w;
+}
+
 function plakatHtml(d, plan) {
   // "Do 01.10." statt "Do., 01.10." — der Kicker ist ein Plakatkopf, kein Brief.
   // Die Serie steht im Kopf der Wochenkarte; hier waere sie doppelt.
@@ -3472,7 +3483,7 @@ function plakatHtml(d, plan) {
   const hinweise = ausnahmenHtml();
   return `
     <div class="kicker">${escHtml(heute)}${d.situation === 'streak' ? '' : ` · ${escHtml(d.kopf)}`}</div>
-    <div class="tageswort">${escHtml(d.intensitaet.label)}</div>
+    <div class="tageswort">${escHtml(tonWort(d.intensitaet.label))}</div>
     <p class="tagessatz">${escHtml(d.intensitaet.text)}</p>
     ${hinweise ? `<div class="hinweise">${hinweise}</div>` : ''}
     <div class="programm">

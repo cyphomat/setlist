@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1440%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1466%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
 </p>
@@ -22,7 +22,7 @@
   <b>English</b> · <a href="README.md">Deutsch</a> · <a href="CHANGELOG.md">Changelog</a>
 </p>
 
-> **Note on language.** The app's interface is available in German and English — switch it under **Tour → ⚙ Backstage → App**. The *training content* is still German only: the call before a session, exercise explanations, cues, mistakes, jam movements and the bike rationales. Those are technical text that needs to be translated properly rather than word-for-word, so they were deliberately left alone for now. Expect a mixed-language screen when you run the app in English.
+> **Note on language.** The app comes in German and English — switch it under **Tour → ⚙ Backstage → App**. Bilingual are the whole interface, the daily call including its one word, milestones, small wins, patches and error messages. Only the *exercise content* stays German — explanations, cues, common mistakes, movement standards — along with the built-in sayings, the jam movements and the bike rationales. That is technical text that needs a proper translation rather than a word-for-word one. In your data the day's word is always stored in German, so “call vs. feel” counts the same in both languages.
 
 ---
 
@@ -178,7 +178,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | **Home as a poster** | One word for the day at the top (TECHNIK, SOLIDE, HART, SCHWER), and below it only what changes today — a break, an injury, low form, a ride too close. Form, sleep, weight and bike sit underneath as small instruments that open on tap. On the right, a week card with the dial and your streak, and a weights list headed by the reunion tour until you have made it. |
 | **Tour with tabs** | Overview, Strength, Body, Bike, Sessions. Settings live separately in the **backstage** (⚙ in the Tour): Personal, Places, Connections, App. |
 | **Phone and Mac** | Two columns from 900 px, wider grids in the Tour — same order, no rebuild. |
-| **German and English** | Interface language switchable under Backstage. Training content stays German for now. |
+| **German and English** | Switch under Backstage: interface, daily call, milestones, small wins and messages. Exercise content and sayings stay German. |
 
 ### Library
 
@@ -396,7 +396,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-1440 tests in 18 files. No build, no dependencies.
+1466 tests in 18 files. No build, no dependencies.
 
 ---
 

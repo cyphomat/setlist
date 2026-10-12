@@ -4,6 +4,7 @@
 // Zugangsdaten liegen ausschliesslich im localStorage dieses Browsers,
 // niemals im Repo. Deshalb taucht hier kein Schluessel im Code auf.
 
+import { t } from './i18n.js';
 const BASE = 'https://intervals.icu/api/v1';
 const KEY_ID = 'setlist.icu.athlete';
 const KEY_TOKEN = 'setlist.icu.key';
@@ -27,7 +28,7 @@ async function get(path) {
   const res = await fetch(BASE + path, {
     headers: { Authorization: 'Basic ' + btoa('API_KEY:' + key) }
   });
-  if (res.status === 401 || res.status === 403) throw new Error('intervals.icu: Key ungültig.');
+  if (res.status === 401 || res.status === 403) throw new Error(t('err.icu.key'));
   if (!res.ok) throw new Error(`intervals.icu ${res.status}`);
   return res.json();
 }
@@ -271,7 +272,7 @@ export function alsAktivitaet(log, config = {}) {
 export async function pushAktivitaet(aktivitaet) {
   const id = localStorage.getItem(KEY_ID);
   const key = localStorage.getItem(KEY_TOKEN);
-  if (!id || !key) throw new Error('intervals.icu ist nicht verbunden.');
+  if (!id || !key) throw new Error(t('err.icu.aus'));
 
   const res = await fetch(`${BASE}/athlete/${id}/activities/manual`, {
     method: 'POST',
@@ -281,7 +282,7 @@ export async function pushAktivitaet(aktivitaet) {
     },
     body: JSON.stringify(aktivitaet)
   });
-  if (res.status === 401 || res.status === 403) throw new Error('intervals.icu: Key ohne Schreibrecht.');
+  if (res.status === 401 || res.status === 403) throw new Error(t('err.icu.schreiben'));
   if (!res.ok) throw new Error(`intervals.icu ${res.status}: ${(await res.text()).slice(0, 120)}`);
   return res.json();
 }
@@ -371,13 +372,13 @@ export async function pushEvents(liste) {
   if (!liste.length) return [];
   const id = localStorage.getItem(KEY_ID);
   const key = localStorage.getItem(KEY_TOKEN);
-  if (!id || !key) throw new Error('intervals.icu ist nicht verbunden.');
+  if (!id || !key) throw new Error(t('err.icu.aus'));
   const res = await fetch(`${BASE}/athlete/${id}/events/bulk`, {
     method: 'POST',
     headers: { Authorization: 'Basic ' + btoa('API_KEY:' + key), 'Content-Type': 'application/json' },
     body: JSON.stringify(liste)
   });
-  if (res.status === 401 || res.status === 403) throw new Error('intervals.icu: Key ohne Schreibrecht.');
+  if (res.status === 401 || res.status === 403) throw new Error(t('err.icu.schreiben'));
   if (!res.ok) throw new Error(`intervals.icu ${res.status}: ${(await res.text()).slice(0, 120)}`);
   return res.json();
 }

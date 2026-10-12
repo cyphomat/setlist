@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="App öffnen" src="https://img.shields.io/badge/App-öffnen-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1440%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1466%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-keiner-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Abhängigkeiten" src="https://img.shields.io/badge/Abhängigkeiten-0-a7a3ab?style=for-the-badge&labelColor=17161b">
 </p>
@@ -22,7 +22,7 @@
   <b>Deutsch</b> · <a href="README.en.md">English</a> · <a href="CHANGELOG.md">Changelog</a>
 </p>
 
-> **Zur Sprache.** Die Oberfläche der App gibt es auf Deutsch und Englisch — umschaltbar unter **Tour → ⚙ Backstage → App**. Die *Trainingsinhalte* sind bisher nur deutsch: die Ansage vor der Einheit, Übungserklärungen, Cues, typische Fehler, Jam-Bewegungen und die Rad-Begründungen. Das ist Fachtext, der inhaltlich übersetzt werden muss statt Wort für Wort — deshalb ist er bewusst noch nicht angefasst. Im englischen Modus steht also gemischte Sprache auf dem Bildschirm.
+> **Zur Sprache.** Die App gibt es auf Deutsch und Englisch — umschaltbar unter **Tour → ⚙ Backstage → App**. Zweisprachig sind die ganze Oberfläche, die Ansage samt Tageswort, Meilensteine, Minierfolge, Aufnäher und Fehlermeldungen. Deutsch bleiben nur die *Übungsinhalte* — Erklärungen, Cues, typische Fehler, Bewegungsstandards — sowie die mitgelieferten Sprüche, die Jam-Bewegungen und die Rad-Begründungen. Das ist Fachtext, der inhaltlich übersetzt werden muss statt Wort für Wort. In deinen Daten steht das Tageswort immer deutsch, damit „Ansage gegen Gefühl“ in beiden Sprachen gleich zählt.
 
 ---
 
@@ -178,7 +178,7 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 | **Startseite als Plakat** | Oben ein Tageswort (TECHNIK, SOLIDE, HART, SCHWER), darunter nur, was heute etwas ändert — Pause, Verletzung, müde Form, Rad zu nah. Form, Schlaf, Gewicht und Rad stehen als kleine Instrumente darunter und klappen auf Antippen auf. Rechts eine Wochenkarte mit Regler und Serie und eine Gewichtsliste, über der die Reunion-Tour steht, bis sie geschafft ist. |
 | **Tour mit Reitern** | Überblick, Kraft, Körper, Rad, Einheiten. Die Einstellungen liegen getrennt davon im **Backstage** (⚙ in der Tour): Persönlich, Orte, Verbindungen, App. |
 | **Handy und Mac** | Ab 900 px zwei Spalten, in der Tour breitere Raster — dieselbe Reihenfolge, kein Umbau. |
-| **Deutsch und Englisch** | Oberflächensprache unter Backstage umschaltbar. Trainingsinhalte bleiben vorerst deutsch. |
+| **Deutsch und Englisch** | Unter Backstage umschaltbar: Oberfläche, Ansage, Meilensteine, Minierfolge und Meldungen. Übungsinhalte und Sprüche bleiben deutsch. |
 
 ### Bibliothek
 
@@ -400,7 +400,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-1440 Tests in 18 Dateien. Kein Build, keine Abhängigkeiten.
+1466 Tests in 18 Dateien. Kein Build, keine Abhängigkeiten.
 
 ---
 
