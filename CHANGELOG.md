@@ -29,6 +29,11 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
   Jahren“.
 - Deutsch bleiben bewusst nur die Übungsinhalte, die Sprüche, die Jam-Bewegungen und
   die Rad-Begründungen. Das ist Fachtext, der eine echte Übersetzung braucht.
+- **Testlauf gehärtet wie bei Riffforge:** Die GitHub Actions hängen an Commits statt an
+  Versions-Tags (`actions/checkout` v7.0.1, `actions/setup-node` v7.1.0, die Fassung als
+  Kommentar daneben), weil ein Tag sich nachträglich verschieben lässt. Beim Checkout
+  bleibt das Git-Token nicht im Arbeitsverzeichnis liegen (`persist-credentials:
+  false`). Dependabot aktualisiert die gepinnten Commits wie bisher.
 - `sprache()` kommt ohne localStorage aus (dann Deutsch). Damit können auch die reinen
   Module übersetzen, und ihre Tests laufen unverändert. 26 neue Tests prüfen die
   englischen Texte und dass das Tageswort in den Daten deutsch bleibt.

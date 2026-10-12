@@ -387,8 +387,8 @@ node tools/tests.mjs
 ```
 
 Node 22 or newer (current LTS recommended), nothing to install. The same runs as a GitHub
-Action on every push and pull request (`.github/workflows/tests.yml`); Dependabot opens a
-pull request when the actions it uses have a new version. Without Node, the JS engine that ships with
+Action on every push and pull request (`.github/workflows/tests.yml`); the actions are
+pinned to commits, and Dependabot opens a pull request when they have a new version. Without Node, the JS engine that ships with
 macOS works too:
 
 ```sh

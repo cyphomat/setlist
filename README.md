@@ -391,8 +391,8 @@ node tools/tests.mjs
 ```
 
 Mit Node 22 oder neuer (empfohlen: die aktuelle LTS), ohne Installation. Dasselbe läuft
-als GitHub Action bei jedem Push und Pull Request (`.github/workflows/tests.yml`); neue
-Versionen der verwendeten Actions meldet Dependabot als Pull Request. Ohne Node geht es auch mit der
+als GitHub Action bei jedem Push und Pull Request (`.github/workflows/tests.yml`); die
+Actions sind an Commits gepinnt, neue Versionen meldet Dependabot als Pull Request. Ohne Node geht es auch mit der
 JS-Engine, die in macOS ohnehin steckt:
 
 ```sh
