@@ -34,6 +34,14 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
   Kommentar daneben), weil ein Tag sich nachträglich verschieben lässt. Beim Checkout
   bleibt das Git-Token nicht im Arbeitsverzeichnis liegen (`persist-credentials:
   false`). Dependabot aktualisiert die gepinnten Commits wie bisher.
+- **Browserproben im Repo:** `node tools/proben.mjs` öffnet die echte App in Chromium,
+  mit gestellter GitHub-API und festem Datum. Sechs Bereiche mit 202 Prüfungen:
+  - Start, Tour mit Backstage, Merch, Songbook, Sicherheit und Englisch;
+  - jeweils beide Themen, „Sehr groß“, 360 bis 1280 px;
+  - kein Überlauf, keine Seitenfehler.
+
+  Die Proben sind optional und brauchen Playwright. Sie laufen nicht in der GitHub
+  Action, und am ausgelieferten Code ändert sich nichts.
 - `sprache()` kommt ohne localStorage aus (dann Deutsch). Damit können auch die reinen
   Module übersetzen, und ihre Tests laufen unverändert. 26 neue Tests prüfen die
   englischen Texte und dass das Tageswort in den Daten deutsch bleibt.

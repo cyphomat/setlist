@@ -377,6 +377,7 @@ off under *Backstage → Connections*.
 | `js/app.js` | Interface and flow. |
 | `sw.js` | Caches the app shell. Deliberately **not** the training data. |
 | `tools/tests.mjs` | Runs every test with Node; the GitHub Action does the same on every push. |
+| `tools/proben.mjs` | Browser probes: the real app in Chromium against a mocked GitHub API (optional, Playwright). |
 
 ---
 
@@ -397,6 +398,27 @@ for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
 1466 tests in 18 files. No build, no dependencies.
+
+### Browser probes (optional)
+
+The tests check the maths; the probes check what you see. They open the real app in
+Chromium against a mocked GitHub API, a mocked intervals.icu and a frozen date:
+
+```sh
+node tools/proben.mjs                 # all: start, tour, merch, bibliothek, sicherheit, englisch
+node tools/proben.mjs start merch     # just these
+node tools/proben.mjs -v              # also list every passing check
+```
+
+They run in both themes, at „Sehr groß“, from 360 to 1280 px, in German and English.
+Each run checks that what should be on screen is there, that nothing overflows the edge,
+and that there are no page errors. Security cases come on top: your own text never runs
+as code, logging out cleans up, and the app refuses to load inside someone else's page.
+
+The probes bring their own server; all they need is Playwright with Chromium
+(`npx playwright install chromium`, or point `CHROMIUM=/path` at your own browser).
+Screenshots go to the temp folder (override with `PROBEN_BILDER`). They deliberately
+don't run in the GitHub Action, so Setlist stays dependency-free.
 
 ---
 

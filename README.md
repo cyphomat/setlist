@@ -381,6 +381,7 @@ Wiederholungen. Abschaltbar unter *Backstage → Verbindungen*.
 | `js/app.js` | Oberfläche und Ablauf. |
 | `sw.js` | Cacht die App-Hülle. Trainingsdaten bewusst **nicht**. |
 | `tools/tests.mjs` | Führt alle Tests mit Node aus; dasselbe tut die GitHub Action bei jedem Push. |
+| `tools/proben.mjs` | Browserproben: die echte App im Chromium, mit gestellter GitHub-API (optional, Playwright). |
 
 ---
 
@@ -401,6 +402,27 @@ for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
 1466 Tests in 18 Dateien. Kein Build, keine Abhängigkeiten.
+
+### Browserproben (optional)
+
+Die Tests prüfen die Rechnung, die Proben das, was man sieht. Sie öffnen die echte App
+in Chromium, mit gestellter GitHub-API, gestelltem intervals.icu und einem festen Datum:
+
+```sh
+node tools/proben.mjs                 # alle: start, tour, merch, bibliothek, sicherheit, englisch
+node tools/proben.mjs start merch     # einzelne
+node tools/proben.mjs -v              # auch jede bestandene Prüfung
+```
+
+Geprüft wird in beiden Themen, mit „Sehr groß“, bei 360 bis 1280 px und auf Deutsch und
+Englisch: Was zu sehen sein muss, ist da, nichts ragt über den Rand, und es gibt keine
+Seitenfehler. Dazu kommen Sicherheitsfälle: Eigener Text läuft nie als Code, Abmelden
+räumt auf, und die App lässt sich nicht in fremde Seiten einbetten.
+
+Einen Server bringen die Proben selbst mit. Sie brauchen nur Playwright samt Chromium
+(`npx playwright install chromium`; ein eigener Browser geht über `CHROMIUM=/pfad`). Die
+Bilder landen im Temp-Ordner (`PROBEN_BILDER` ändert das). In der GitHub Action laufen
+sie bewusst nicht, damit Setlist ohne Abhängigkeiten bleibt.
 
 ---
 
