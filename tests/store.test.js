@@ -14,7 +14,9 @@ const speicher = new Map();
 globalThis.localStorage = {
   getItem: k => (speicher.has(k) ? speicher.get(k) : null),
   setItem: (k, v) => speicher.set(k, String(v)),
-  removeItem: k => speicher.delete(k)
+  removeItem: k => speicher.delete(k),
+  get length() { return speicher.size; },
+  key: i => [...speicher.keys()][i] ?? null
 };
 
 const S = await import('../js/store.js');
@@ -96,5 +98,23 @@ print('\n--- Ordnername ---');
 // Der Ordner heisst bewusst nicht 'log': Inhaltsblocker und Firmen-WLANs
 // verwerfen Adressen mit diesem Wegstueck.
 eq('Einheiten liegen unter einem unverfaenglichen Pfad', S.LOG_DIR, 'einheiten');
+
+
+print('\n--- Abmelden raeumt auf ---');
+speicher.clear();
+for (const k of ['setlist.token', 'setlist.owner', 'setlist.repo', 'setlist.icu.key', 'setlist.icu.athlete',
+  'setlist.cache', 'setlist.logs', 'setlist.queue', 'setlist.icu.pendingPush', 'setlist.gym',
+  'setlist.pause.abgelehnt', 'setlist.tour.reiter',
+  'setlist.theme', 'setlist.schrift', 'setlist.sprache', 'setlist.up.leise', 'setlist.version', 'fremd.schluessel']) {
+  speicher.set(k, 'x');
+}
+const weg = S.alleDatenEntfernen();
+eq('Daten und Zugaenge sind weg', ['setlist.token', 'setlist.cache', 'setlist.logs', 'setlist.queue', 'setlist.icu.key']
+  .filter(k => speicher.has(k)).length, 0);
+eq('Einstellungen des Geraets bleiben', ['setlist.theme', 'setlist.schrift', 'setlist.sprache', 'setlist.up.leise', 'setlist.version']
+  .filter(k => speicher.has(k)).length, 5);
+ok('fremde Schluessel werden nicht angefasst', speicher.has('fremd.schluessel'));
+eq('gemeldet wird, was entfernt wurde', weg.length, 12);
+eq('danach liegen nur noch Einstellungen da', [...speicher.keys()].filter(k => k.startsWith('setlist.')).length, 5);
 
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

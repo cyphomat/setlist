@@ -10,6 +10,40 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-12.1
+
+### Sicherheit
+- **Eigener Text wird überall maskiert.** An drei Stellen ging Text aus der
+  `config.json` ungeprüft ins HTML: Verletzungsname und Behandlung in der
+  Aufwärmliste, der Liftname bei „Warum …“ in der Einheit und die Quellenangabe der
+  alten Bestleistungen. Ein Eintrag mit HTML darin wäre auf derselben Herkunft wie Token
+  und Key ausgeführt worden. Die Übersetzungsfunktion setzt Werte roh ein; maskiert wird
+  deshalb beim Aufrufer.
+- **Abmelden räumt das Gerät leer.** „Zugänge entfernen“ löschte bisher nur Token,
+  Repo und Key. Einheiten, Injury Report, Gewicht, Schlaf, Fahrten und sogar ungesendete
+  Einheiten blieben im Browser. Jetzt geht alles, was Daten sind (`S.alleDatenEntfernen`,
+  getestet); nur Thema, Schrift, Sprache und Unplugged-Einstellungen bleiben. Liegen noch
+  ungesendete Einheiten in der Warteschlange, nennt die Rückfrage ihre Zahl.
+- **Nicht in fremden Seiten.** Lädt eine andere Adresse die App in einem Rahmen, zeigt
+  sie nur einen Hinweis mit Link und startet nicht, ruft also auch GitHub nicht auf.
+  `frame-ancestors` geht weder per Meta-Tag noch auf GitHub Pages per Header, deshalb
+  prüft `js/boot.js` das vor dem ersten Bild. Der eigene Screenshot-Rahmen (gleiche
+  Herkunft) bleibt erlaubt. Dazu `referrer: no-referrer` für die ganze Seite.
+- **Abgelaufener Token** heißt jetzt auch so: „Token ungültig, abgelaufen oder ohne
+  Schreibrecht …“. Die Anleitung empfiehlt eine Laufzeit von etwa einem Jahr.
+
+### Neu
+- **Tests mit Node und als GitHub Action.** `node tools/tests.mjs` führt alle 18
+  Testdateien aus, zeigt je Datei das Ergebnis und endet mit Fehlercode, sobald etwas
+  fehlschlägt. `.github/workflows/tests.yml` macht das bei jedem Push und Pull Request,
+  ohne Abhängigkeiten und mit nur lesenden Rechten.
+
+### Doku
+- READMEs: Abschnitt **Tests** (beide Wege, aktuelle Zahl, vollständige Liste),
+  **Bibliothek** (Kategorien, Übung des Tages, Notiz auf Wunsch), **App** (Startseite
+  als Plakat, Tour mit Reitern, Backstage), **Sicherheit** (Gesundheitsdaten im Repo,
+  Abmelden, Einbett-Sperre, Token-Laufzeit), Aufbau-Tabelle.
+
 ## 2026-10-04.4
 
 ### Geändert

@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="App öffnen" src="https://img.shields.io/badge/App-öffnen-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1435%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1440%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-keiner-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Abhängigkeiten" src="https://img.shields.io/badge/Abhängigkeiten-0-a7a3ab?style=for-the-badge&labelColor=17161b">
 </p>
@@ -175,6 +175,8 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 | **Sound und Vibration** | Ton bei Pausenende und Einheitsabschluss, zusätzlich zur Vibration — Ton respektiert den Stumm-Schalter, Vibration nicht. |
 | **Hell und dunkel** | Umschalter System / Hell / Dunkel. Zwei echte Fassungen, keine Invertierung. |
 | **Schriftgröße** | Normal / Groß / Sehr groß unter *Backstage → App*. Skaliert die ganze Oberfläche gleichmäßig, gilt nur auf diesem Gerät. |
+| **Startseite als Plakat** | Oben ein Tageswort (TECHNIK, SOLIDE, HART, SCHWER), darunter nur, was heute etwas ändert — Pause, Verletzung, müde Form, Rad zu nah. Form, Schlaf, Gewicht und Rad stehen als kleine Instrumente darunter und klappen auf Antippen auf. Rechts eine Wochenkarte mit Regler und Serie und eine Gewichtsliste, über der die Reunion-Tour steht, bis sie geschafft ist. |
+| **Tour mit Reitern** | Überblick, Kraft, Körper, Rad, Einheiten. Die Einstellungen liegen getrennt davon im **Backstage** (⚙ in der Tour): Persönlich, Orte, Verbindungen, App. |
 | **Handy und Mac** | Ab 900 px zwei Spalten, in der Tour breitere Raster — dieselbe Reihenfolge, kein Umbau. |
 | **Deutsch und Englisch** | Oberflächensprache unter Backstage umschaltbar. Trainingsinhalte bleiben vorerst deutsch. |
 
@@ -184,9 +186,10 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 |---|---|
 | **Alle Übungen an einem Ort** | Grundlifts, Technik, Mobility, Finisher und alle Jam-Bewegungen, durchsuchbar und nach Kategorie filterbar. |
 | **Wann die Wiederholung zählt** | Zu 60 Übungen steht ein Bewegungsstandard als Prüfkriterium: nicht „tief in die Hocke", sondern „Hüftfalte unter der Kniescheibe, oben Hüfte und Knie ganz gestreckt". Auch im Jam, im Unplugged und in der laufenden Einheit. Dehnungen und Geräte auf Zeit bleiben bewusst ohne — dort gibt es keine gültige Wiederholung. |
-| **Immer eine zufällige Übung** | Mit vollem Detail oben, bei jedem Aufruf neu gezogen — bleibt stabil, während man tippt oder filtert. |
+| **Nach Kategorien gegliedert** | Jede Kategorie mit eigener Farbe und Anzahl; je Übung Name, Dosis und Cue, aufgeklappt Erklärung, Standard, Fehler und „Wenn es klemmt“. |
+| **Übung des Tages** | Den ganzen Tag dieselbe, kompakt oben; „Ansehen“ klappt sie in der Liste auf, ↻ würfelt neu. Tritt beim Suchen und Filtern zurück. |
 | **YouTube-Suchlink statt geratenem Video** | Ein einzelnes fest verdrahtetes Video könnte offline oder falsch sein. Per eigenem Link überschreibbar. |
-| **Eigene Notizen** | Landen in `bibliothek.json` in `setlist-data` und wachsen mit — dieselbe Wissensschicht wie `config.json`, nur für das, was du selbst gelernt hast. |
+| **Eigene Notizen** | Auf Wunsch über „Notiz hinzufügen“; gespeichert stehen sie als Text bei der Übung. Landen in `bibliothek.json` in `setlist-data` und wachsen mit — dieselbe Wissensschicht wie `config.json`, nur für das, was du selbst gelernt hast. |
 
 ---
 
@@ -277,7 +280,7 @@ Im Fork unter **Settings → Pages**: Source auf den `main`-Branch stellen. Nach
 
 **4 · GitHub-Token erzeugen**
 
-Klick oben rechts auf dein **Profilbild → Settings** — deine persönlichen Kontoeinstellungen, **nicht** die Settings des Repos — dann **Developer settings → Personal access tokens → Fine-grained tokens → Generate new token.** Zugriff nur auf dein Datenrepo, Permission **Contents → Read and write**, sonst nichts.
+Klick oben rechts auf dein **Profilbild → Settings** — deine persönlichen Kontoeinstellungen, **nicht** die Settings des Repos — dann **Developer settings → Personal access tokens → Fine-grained tokens → Generate new token.** Zugriff nur auf dein Datenrepo, Permission **Contents → Read and write**, sonst nichts. Setz eine **Laufzeit** (etwa ein Jahr) und erzeug vor Ablauf einen neuen Token — eintragen unter *Tour → ⚙ Backstage → Verbindungen*. Meldet die App „Token ungültig, abgelaufen …“, ist es meist genau das.
 
 Beim ersten Öffnen landest du automatisch auf dem Setup-Screen. Dort trägst du deinen **GitHub-Nutzernamen**, den **Namen deines Datenrepos** (steht schon auf `setlist-data` vor) und den Token ein — kein Code-Editieren nötig, das Repo-Ziel ist direkt in der App einstellbar. Alle drei bleiben ausschließlich im `localStorage` deines Browsers.
 
@@ -323,7 +326,7 @@ Die App ist für eine Person gebaut und soll auch nur für diese Person sichtbar
 Was das konkret heißt:
 
 **Deine Daten liegen in deinem privaten Repo.** Die App liest und schreibt ausschließlich
-in `setlist-data` — Einheiten, Körpergewicht, Notizen. Der App-Code selbst (dieses Repo)
+in `setlist-data` — Einheiten, Körpergewicht, Notizen, der Injury Report (also Gesundheitsangaben) und die Namen deiner Studios. Der App-Code selbst (dieses Repo)
 ist öffentlich, enthält aber keine Daten. Beim Start prüft die App die Sichtbarkeit deines
 Datenrepos und **warnt unübersehbar, wenn es öffentlich steht** — sonst würde man es nie
 merken, weil die App genauso funktioniert.
@@ -337,8 +340,12 @@ einer Fehlermeldung.
 Rad und Form, ein YouTube-*Suchlink* in der Bibliothek (ohne Referrer). Keine Analytics,
 kein CDN, keine Schriften von fremden Servern.
 
+**Abmelden räumt das Gerät leer.** *Backstage → App → Zugänge entfernen* löscht Token, Key **und** alle zwischengespeicherten Daten aus dem Browser — Einheiten, Injury Report, Gewicht, Schlaf, Fahrten. Es bleiben nur Einstellungen wie Thema und Schriftgröße. Liegen noch ungesendete Einheiten in der Warteschlange, sagt die Rückfrage das vorher.
+
+**Nicht in fremden Seiten.** Lädt eine andere Adresse die App in einem Rahmen, zeigt sie nur einen Hinweis und startet nicht — so lassen sich keine Klicks unterschieben. Auf GitHub Pages geht das nicht per Header, deshalb erledigt es `js/boot.js` vor dem ersten Bild.
+
 **Fremdtext wird maskiert.** Aktivitätsnamen aus intervals.icu setzt nicht du, sondern
-Strava, Zwift oder eine Gruppenfahrt. Solcher Text wird vor der Anzeige maskiert
+Strava, Zwift oder eine Gruppenfahrt. Solcher Text — und genauso alles aus deiner `config.json` — wird vor der Anzeige maskiert
 (`js/sicher.js`), und eine strikte Content-Security-Policy (`script-src 'self'`) fängt ab,
 was durchrutschen sollte. Selbst eingetragene Videolinks werden auf `http`/`https`
 begrenzt.
@@ -368,22 +375,31 @@ Wiederholungen. Abschaltbar unter *Backstage → Verbindungen*.
 | `js/unplugged.js` | Körpergewichts-Intervalle, Vorrat und Ablauf. |
 | `js/verletzung.js` | Injury Report: Sperren, Verlauf, Pausenfenster für die Serie. |
 | `js/merch.js` | Merch-Stand: Aufnäher, Schallplatten, Rang, Tourshirts, Wochenregler — alles aus den Logs. |
-| `js/boot.js` | Thema und Speicherumzug vor dem ersten Bild. |
+| `js/boot.js` | Thema, Speicherumzug und Einbett-Sperre vor dem ersten Bild. |
 | `js/store.js` | GitHub-API als Speicher, Offline-Puffer. |
 | `js/intervals.js` | Liest Fahrten und Form; schreibt Krafteinheiten zurück. |
 | `js/app.js` | Oberfläche und Ablauf. |
 | `sw.js` | Cacht die App-Hülle. Trainingsdaten bewusst **nicht**. |
+| `tools/tests.mjs` | Führt alle Tests mit Node aus; dasselbe tut die GitHub Action bei jedem Push. |
 
 ---
 
 ## Tests
 
 ```sh
-JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
-for t in program coach wod stats intervals bibliothek i18n geraete sicher store grundlagen icu-queue aktualisierung einrichten persoenlich unplugged; do $JSC --module-file=tests/$t.test.js; done
+node tools/tests.mjs
 ```
 
-996 Tests, ausgeführt von der JS-Engine, die in macOS ohnehin steckt. Kein Node, kein Build.
+Mit Node 18 oder neuer, ohne Installation. Dasselbe läuft als GitHub Action bei jedem
+Push und Pull Request (`.github/workflows/tests.yml`). Ohne Node geht es auch mit der
+JS-Engine, die in macOS ohnehin steckt:
+
+```sh
+JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
+for t in tests/*.test.js; do $JSC --module-file=$t; done
+```
+
+1440 Tests in 18 Dateien. Kein Build, keine Abhängigkeiten.
 
 ---
 

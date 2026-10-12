@@ -5,6 +5,33 @@
 // Zeile, die einen eingeschleusten onerror-Handler wirkungslos macht, falls
 // doch einmal fremder Text ungeschuetzt ins DOM geraet.
 (function () {
+  // Nicht in fremden Seiten. Eine andere Adresse koennte Setlist sonst
+  // unsichtbar in einen Rahmen laden und Klicks unterschieben — mit deinem
+  // Token im Hintergrund. frame-ancestors waere der Weg dafuer, geht aber
+  // weder per Meta-Tag noch auf GitHub Pages per Header. Ein Rahmen von
+  // derselben Herkunft (tools/shot.html fuer die Screenshots) bleibt erlaubt.
+  var fremd = false;
+  if (window.top !== window.self) {
+    try { fremd = window.top.location.origin !== window.location.origin; }
+    catch (e) { fremd = true; }
+  }
+  if (fremd) {
+    document.documentElement.setAttribute('data-eingebettet', '');
+    document.documentElement.style.display = 'none';
+    document.addEventListener('DOMContentLoaded', function () {
+      var p = document.createElement('p');
+      p.style.cssText = 'font:16px/1.5 sans-serif;padding:24px;color:#f2f0ec;background:#0c0c0e;margin:0';
+      p.textContent = 'Setlist läuft nicht eingebettet. ';
+      var a = document.createElement('a');
+      a.href = window.location.href; a.target = '_top'; a.rel = 'noopener';
+      a.textContent = 'Direkt öffnen';
+      a.style.color = '#e8a23d';
+      p.appendChild(a);
+      document.body.replaceChildren(p);
+      document.documentElement.style.display = '';
+    });
+    return;
+  }
   try {
     // Die App hiess frueher lifty. Zugaenge und Zwischenspeicher liegen auf
     // derselben Origin weiter unter den alten Schluesseln — einmal umtragen,

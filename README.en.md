@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1435%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1440%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
 </p>
@@ -175,6 +175,8 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | **Sound and vibration** | Tone at the end of a rest and on finishing a session, on top of the vibration — the tone respects the mute switch, the vibration does not. |
 | **Light and dark** | Switch between system / light / dark. Two real designs, not an inversion. |
 | **Text size** | Normal / Large / Extra large under *Backstage → App*. Scales the whole interface evenly, on this device only. |
+| **Home as a poster** | One word for the day at the top (TECHNIK, SOLIDE, HART, SCHWER), and below it only what changes today — a break, an injury, low form, a ride too close. Form, sleep, weight and bike sit underneath as small instruments that open on tap. On the right, a week card with the dial and your streak, and a weights list headed by the reunion tour until you have made it. |
+| **Tour with tabs** | Overview, Strength, Body, Bike, Sessions. Settings live separately in the **backstage** (⚙ in the Tour): Personal, Places, Connections, App. |
 | **Phone and Mac** | Two columns from 900 px, wider grids in the Tour — same order, no rebuild. |
 | **German and English** | Interface language switchable under Backstage. Training content stays German for now. |
 
@@ -184,9 +186,10 @@ Back squat is in both workouts and therefore climbs twice as fast.
 |---|---|
 | **Every exercise in one place** | Main lifts, technique, mobility, finishers and all jam movements, searchable and filterable by category. |
 | **When the rep counts** | 60 exercises carry a movement standard written as a test, not a hint: not “squat deep” but “hip crease below the kneecap, hips and knees fully extended at the top”. Shown in the jam, in Unplugged and during a live session too. Stretches and time-based machines deliberately have none — there is no valid rep to judge. |
-| **Always a random exercise** | With full detail at the top, drawn fresh on every visit — stays stable while you type or filter. |
+| **Grouped by category** | Each category with its own colour and count; per exercise name, dose and cue, and when opened the explanation, standard, mistakes and “when it stalls”. |
+| **Exercise of the day** | The same one all day, compact at the top; “Open” expands it in the list, ↻ rerolls. Steps aside while you search or filter. |
 | **YouTube search link instead of a guessed video** | A single hard-wired video could be offline or wrong. Overridable with your own link. |
-| **Your own notes** | Land in `bibliothek.json` in `setlist-data` and grow with you — the same knowledge layer as `config.json`, but for what you learned yourself. |
+| **Your own notes** | On request via “Add a note”; once saved they show as text with the exercise. They land in `bibliothek.json` in `setlist-data` and grow with you — the same knowledge layer as `config.json`, but for what you learned yourself. |
 
 ---
 
@@ -277,7 +280,7 @@ In your fork under **Settings → Pages**: set the source to the `main` branch. 
 
 **4 · Create a GitHub token**
 
-Click your **profile picture in the top right → Settings** — your personal account settings, **not** the repo's settings — then **Developer settings → Personal access tokens → Fine-grained tokens → Generate new token.** Access to your data repo only, permission **Contents → Read and write**, nothing else.
+Click your **profile picture in the top right → Settings** — your personal account settings, **not** the repo's settings — then **Developer settings → Personal access tokens → Fine-grained tokens → Generate new token.** Access to your data repo only, permission **Contents → Read and write**, nothing else. Set an **expiration** (about a year) and create a new token before it runs out — enter it under *Tour → ⚙ Backstage → Connections*. If the app reports “token invalid, expired …”, that is usually it.
 
 On first open you land on the setup screen automatically. There you enter your **GitHub username**, the **name of your data repo** (pre-filled with `setlist-data`) and the token — no code editing needed, the repo target is configurable right in the app. All three stay exclusively in your browser's `localStorage`.
 
@@ -322,7 +325,7 @@ Done. The first session creates `state.json` automatically; everything after tha
 The app is built for one person and should only be visible to that person. Concretely:
 
 **Your data lives in your private repo.** The app only ever reads and writes
-`setlist-data` — sessions, body weight, notes. The app code itself (this repo) is public
+`setlist-data` — sessions, body weight, notes, the injury report (that is, health information) and the names of your gyms. The app code itself (this repo) is public
 but holds no data. On start the app checks your data repo's visibility and **warns loudly
 if it is public** — otherwise you would never notice, because the app works just the same.
 
@@ -334,8 +337,12 @@ header — never in a URL, never in a commit, never in an error message.
 `intervals.icu` for bike and form, a YouTube *search link* in the library (no referrer).
 No analytics, no CDN, no fonts from third-party servers.
 
+**Signing out clears the device.** *Backstage → App → Remove credentials* deletes the token, the key **and** all cached data from the browser — sessions, injury report, weight, sleep, rides. Only settings such as theme and text size remain. If unsent sessions are still queued, the confirmation says so first.
+
+**Not inside other pages.** If another site loads the app in a frame, it shows a notice and does not start — so nobody can slip clicks under you. GitHub Pages cannot do this with a header, so `js/boot.js` handles it before the first paint.
+
 **Foreign text is escaped.** Activity names from intervals.icu are not written by you but
-by Strava, Zwift or a group ride. That text is escaped before display (`js/sicher.js`),
+by Strava, Zwift or a group ride. That text — and just as much everything from your `config.json` — is escaped before display (`js/sicher.js`),
 and a strict Content Security Policy (`script-src 'self'`) catches anything that might
 slip through. Video links you enter yourself are restricted to `http`/`https`.
 
@@ -364,22 +371,31 @@ off under *Backstage → Connections*.
 | `js/unplugged.js` | Bodyweight intervals, pool and run order. |
 | `js/verletzung.js` | Injury report: blocks, history, pause windows for the streak. |
 | `js/merch.js` | Merch stand: patches, records, rank, tour shirts, weekly dial — all from the logs. |
-| `js/boot.js` | Theme and storage migration before first paint. |
+| `js/boot.js` | Theme, storage migration and the frame block before first paint. |
 | `js/store.js` | GitHub API as storage, offline buffer. |
 | `js/intervals.js` | Reads rides and form; writes strength sessions back. |
 | `js/app.js` | Interface and flow. |
 | `sw.js` | Caches the app shell. Deliberately **not** the training data. |
+| `tools/tests.mjs` | Runs every test with Node; the GitHub Action does the same on every push. |
 
 ---
 
 ## Tests
 
 ```sh
-JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
-for t in program coach wod stats intervals bibliothek i18n geraete sicher store grundlagen icu-queue aktualisierung einrichten persoenlich unplugged; do $JSC --module-file=tests/$t.test.js; done
+node tools/tests.mjs
 ```
 
-996 tests, run by the JS engine that ships with macOS anyway. No Node, no build.
+Node 18 or newer, nothing to install. The same runs as a GitHub Action on every push and
+pull request (`.github/workflows/tests.yml`). Without Node, the JS engine that ships with
+macOS works too:
+
+```sh
+JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
+for t in tests/*.test.js; do $JSC --module-file=$t; done
+```
+
+1440 tests in 18 files. No build, no dependencies.
 
 ---
 

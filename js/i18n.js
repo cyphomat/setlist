@@ -770,7 +770,9 @@ export const TEXTE = {
     'bs.rebuild': 'state.json neu berechnen',
     'bs.logout': 'Zugänge entfernen',
     'bs.version': 'Version <b class="num" style="color:var(--akzent)">{v}</b> · Updates kommen beim nächsten Start von allein.',
-    'bs.logoutFrage': 'Token und Key aus diesem Browser entfernen?',
+    'bs.logoutFrage': 'Token, Key und alle zwischengespeicherten Trainingsdaten aus diesem Browser entfernen? In deinem Repo bleibt alles erhalten.',
+    'bs.logoutOffen': 'Achtung: {n} Einheiten sind noch nicht gespeichert und gehen dabei verloren.',
+    'bs.logoutOffen.eins': 'Achtung: eine Einheit ist noch nicht gespeichert und geht dabei verloren.',
     'bs.rebuildFrage': 'state.json vollständig aus allen Log-Dateien neu berechnen?',
     'bs.darstellungBanner': 'DARSTELLUNG: {was}',
 
@@ -1563,7 +1565,9 @@ export const TEXTE = {
     'bs.rebuild': 'Rebuild state.json',
     'bs.logout': 'Remove credentials',
     'bs.version': 'Version <b class="num" style="color:var(--akzent)">{v}</b> · updates arrive by themselves on the next start.',
-    'bs.logoutFrage': 'Remove token and key from this browser?',
+    'bs.logoutFrage': 'Remove the token, key and all cached training data from this browser? Everything stays in your repo.',
+    'bs.logoutOffen': 'Careful: {n} sessions have not been saved yet and will be lost.',
+    'bs.logoutOffen.eins': 'Careful: one session has not been saved yet and will be lost.',
     'bs.rebuildFrage': 'Rebuild state.json completely from all log files?',
     'bs.darstellungBanner': 'APPEARANCE: {was}',
 

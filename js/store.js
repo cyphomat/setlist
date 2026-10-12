@@ -71,7 +71,9 @@ async function api(path, options = {}, versuch = 1) {
     throw new Error(`Keine Verbindung zu GitHub${wo ? ` (${wo})` : ''} — ${navigator.onLine ? 'Server nicht erreichbar' : 'Gerät ist offline'}.`);
   }
   if (res.status === 401 || res.status === 403) {
-    throw new Error(`Token ungültig oder ohne Schreibrecht auf ${getRepo()}.`);
+    // Fine-grained Tokens laufen ab — das ist der haeufigste Grund fuer ein
+    // ploetzliches 401, und ohne den Hinweis sucht man den Fehler woanders.
+    throw new Error(`Token ungültig, abgelaufen oder ohne Schreibrecht auf ${getRepo()}.`);
   }
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`GitHub ${res.status}: ${(await res.text()).slice(0, 140)}`);
@@ -173,6 +175,33 @@ export function pending() {
   catch { return []; }
 }
 export function clearQueue() { localStorage.removeItem(QUEUE_KEY); }
+
+/* ---------- Abmelden ----------
+   Frueher entfernte "Zugaenge entfernen" nur Token, Repo und Key. Im
+   Browser blieben dabei alle Einheiten, der Injury Report, Gewicht, Schlaf
+   und Fahrten liegen — auf einem geliehenen Geraet genau das Falsche.
+   Jetzt geht alles, was Daten sind. Es bleiben nur Einstellungen dieses
+   Geraets, die nichts ueber dich verraten.                              */
+
+const BLEIBT = ['setlist.theme', 'setlist.schrift', 'setlist.sprache',
+  'setlist.up.leise', 'setlist.up.minuten', 'setlist.version'];
+
+/** Alle eigenen Schluessel im localStorage. */
+function eigeneSchluessel() {
+  const out = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('setlist.')) out.push(k);
+  }
+  return out;
+}
+
+/** Entfernt Zugaenge und alle Daten von diesem Geraet; gibt die entfernten Schluessel zurueck. */
+export function alleDatenEntfernen() {
+  const weg = eigeneSchluessel().filter(k => !BLEIBT.includes(k));
+  for (const k of weg) localStorage.removeItem(k);
+  return weg;
+}
 
 /* ---------- Lesecache ----------
    Damit die App auch ohne Netz sofort anzeigt, was heute ansteht.        */

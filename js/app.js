@@ -16,6 +16,10 @@ import * as PS from './persoenlich.js';
 import * as UP from './unplugged.js';
 import * as M from './merch.js';
 
+// Eingebettet in eine fremde Seite (siehe boot.js) startet die App gar nicht
+// erst — kein Laden, kein Token-Gebrauch. Der throw beendet das Modul hier.
+if (document.documentElement.hasAttribute('data-eingebettet')) throw new Error('Setlist: eingebettet, nicht gestartet');
+
 let config = null, state = null, stateSha = null, session = null;
 let ridesByDate = new Map(), letzterLog = null, trend = null;
 // Sichtbarer Zustand der intervals.icu-Anbindung. Vorher verschwanden
@@ -455,7 +459,10 @@ function logsFuerAnzeige() {
 function verletzungsWarmup() {
   return VL.aktive(config)
     .filter(v => v.behandlung)
-    .map(v => ({ t: t('inj.vorher'), was: v.was, detail: v.behandlung }));
+    // Maskiert: die Aufwaermliste setzt ihre Felder als HTML ein (die
+    // mitgelieferten Eintraege tragen eigenes Markup), und diese beiden
+    // kommen aus dem Injury Report, also von dir und nicht aus dem Code.
+    .map(v => ({ t: t('inj.vorher'), was: escHtml(v.was), detail: escHtml(v.behandlung) }));
 }
 
 /** Eine Zeile, nicht mehr — auf Home zählt, was heute anders wird. */
@@ -767,7 +774,7 @@ function renderSession() {
           return `<button class="set ${cls}" data-l="${li}" data-s="${si}">${r === undefined ? l.reps : r}</button>`;
         }).join('')}
       </div>
-      <details class="info"><summary>${t('ses.warum', { name: l.name })}</summary>
+      <details class="info"><summary>${t('ses.warum', { name: escHtml(l.name) })}</summary>
         <div class="body">
           <p>${i.warum || ''}</p>
           <div class="kv"><span class="k">${t('ses.cue')}</span><span class="v">${i.cue || ''}</span></div>
@@ -1173,8 +1180,14 @@ $('bib-back').onclick = () => show('home');
 $('bib-suche').oninput = renderBibliothek;
 $('rebuild').onclick = rebuild;
 $('logout').onclick = () => {
-  if (!confirm(t('bs.logoutFrage'))) return;
-  S.clearToken(); S.clearRepo(); ICU.clearCreds(); location.reload();
+  // Ungesendete Einheiten gingen dabei verloren — das muss man vorher wissen.
+  // (Die Warteschlange nach intervals.icu zaehlt nicht: diese Einheiten
+  // liegen schon im Repo, es fehlt nur die Kopie dort.)
+  const frage = t('bs.logoutFrage') + (S.pending().length
+    ? `\n\n${tn('bs.logoutOffen', S.pending().length)}` : '');
+  if (!confirm(frage)) return;
+  S.alleDatenEntfernen();
+  location.reload();
 };
 $('finish').onclick = finishSession;
 $('abort').onclick = () => { if (confirm(t('ses.verwerfen'))) { stopRest(); session = null; show('home'); } };
@@ -3400,7 +3413,7 @@ function weitereRekorde() {
       <span class="l">${escHtml(r.name)}${r.zusatz ? ` <small style="color:var(--dim)">${escHtml(r.zusatz)}</small>` : ''}</span>
       <span class="v" style="color:var(--stahl)">${P.fmtWeight(r.wert)}<small>${escHtml((r.datum || '').slice(0, 4))}</small></span>
     </div>`).join('')}
-    <p class="fine" style="margin-top:10px">${t('pr.quelle', { quelle: config.records.quelle })}</p>
+    <p class="fine" style="margin-top:10px">${t('pr.quelle', { quelle: escHtml(config.records.quelle) })}</p>
   </div>`;
 }
 
