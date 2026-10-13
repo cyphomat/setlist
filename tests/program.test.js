@@ -605,4 +605,140 @@ print('\n--- Pause: ableitbar aus den Logs ---');
 }
 
 
+print('\n--- Nach 5x5: die Stufen ---');
+{
+  const st = P.schemaStufen({ lift: 'squat', sets: 5, reps: 5 }).map(P.schemaText).join(' ');
+  eq('5x5 -> 3x5 -> 3x3', st, '5×5 3×5 3×3');
+  const dl = P.schemaStufen({ lift: 'deadlift', sets: 1, reps: 5 }).map(P.schemaText).join(' ');
+  eq('Kreuzheben: 1x5 -> 1x3, keine doppelte Stufe', dl, '1×5 1×3');
+  eq('3x3 bleibt eine Stufe', P.schemaStufen({ sets: 3, reps: 3 }).length, 1);
+  eq('ueber die letzte Stufe hinaus bleibt die letzte', P.schemaText(P.schemaFuer({ sets: 5, reps: 5 }, 9)), '3×3');
+  eq('ohne Stufe: das eigene Schema', P.schemaText(P.schemaFuer({ sets: 5, reps: 5 })), '5×5');
+  eq('Kniebeuge hat drei Stufen', P.stufenAnzahl(config, 'squat'), 3);
+  eq('Kreuzheben hat zwei', P.stufenAnzahl(config, 'deadlift'), 2);
+}
+
+// Drei Fehlversuche am Gewicht w: ein Deload.
+const deloadAm = (st, lift, w, tag) => {
+  for (let i = 0; i < 3; i++)
+    st = P.applyLog(st, config, { date: `2026-10-${String(tag + i).padStart(2, '0')}`, workout: 'B', lifts: [lose(lift, w)] });
+  return st;
+};
+
+print('\n--- Nach 5x5: wann ein Lift feststeckt ---');
+{
+  let s = P.initialState(config);
+  s.lifts.ohp.weight = 45;
+  s = deloadAm(s, 'ohp', 45, 1);
+  eq('erster Deload: auf 40', s.lifts.ohp.weight, 40);
+  eq('ein Deload gezaehlt', s.lifts.ohp.deloads, 1);
+  eq('am Gewicht 45', s.lifts.ohp.deloadBei, 45);
+  eq('ein Deload: noch kein Vorschlag', P.schemaVorschlaege(s, config).length, 0);
+
+  // Zurueck bis 45, dort wieder dreimal gescheitert
+  s.lifts.ohp.weight = 45;
+  s = deloadAm(s, 'ohp', 45, 10);
+  eq('zweiter Deload am selben Gewicht: zwei', s.lifts.ohp.deloads, 2);
+  const v = P.schemaVorschlaege(s, config);
+  eq('jetzt ein Vorschlag', v.length, 1);
+  eq('fuer das Schulterdruecken', v[0].lift, 'ohp');
+  eq('von 5x5', P.schemaText(v[0].von), '5×5');
+  eq('nach 3x5', P.schemaText(v[0].nach), '3×5');
+  eq('auf Stufe 1', v[0].stufe, 1);
+}
+{
+  let s = P.initialState(config);
+  s.lifts.ohp.weight = 45;
+  s = deloadAm(s, 'ohp', 45, 1);
+  s.lifts.ohp.weight = 47.5;            // dazwischen ein neues Hoch
+  s = deloadAm(s, 'ohp', 47.5, 10);
+  eq('Deload ueber dem alten: wieder der erste', s.lifts.ohp.deloads, 1);
+  eq('kein Vorschlag, es ging ja voran', P.schemaVorschlaege(s, config).length, 0);
+}
+{
+  let s = P.initialState(config);
+  s.lifts.ohp.weight = 45;
+  s = deloadAm(s, 'ohp', 45, 1);
+  s.lifts.ohp.weight = 42.5;
+  s = deloadAm(s, 'ohp', 42.5, 10);
+  eq('Deload unter dem alten: zaehlt weiter', s.lifts.ohp.deloads, 2);
+}
+{
+  let s = P.initialState(config);
+  s.lifts.ohp.weight = 45;
+  s = deloadAm(s, 'ohp', 45, 1);
+  s = P.applyLog(s, config, { date: '2026-10-05', type: 'maxout', lift: 'ohp', weight: 55, reps: 1, newWorking: 45 });
+  ok('Max-Out mit neuem Arbeitsgewicht: Zaehlung neu', !('deloads' in s.lifts.ohp) && !('deloadBei' in s.lifts.ohp));
+}
+
+print('\n--- Nach 5x5: der Wechsel ---');
+{
+  let s = P.initialState(config);
+  s.lifts.ohp.weight = 45;
+  s = deloadAm(s, 'ohp', 45, 1);
+  s.lifts.ohp.weight = 45;
+  s = deloadAm(s, 'ohp', 45, 10);
+  const vorher = s.lifts.ohp.weight;
+  const log = P.schemaAnpassung({ ohp: 1 }, new Date(2026, 9, 20, 9));
+  eq('Log: Anpassung', log.type, 'anpassung');
+  eq('Log: Grund schema', log.grund, 'schema');
+  eq('Log: Datum', log.date, '2026-10-20');
+  s = P.applyLog(s, config, log);
+  eq('Stufe 1 im Zustand', s.lifts.ohp.schema, 1);
+  eq('Gewicht bleibt', s.lifts.ohp.weight, vorher);
+  ok('Zaehlung neu', !('deloads' in s.lifts.ohp) && !('deloadBei' in s.lifts.ohp));
+  eq('Fehlerzaehler auf 0', s.lifts.ohp.fails, 0);
+  eq('A/B-Wechsel unberuehrt', s.next, 'A');
+  eq('kein Vorschlag mehr', P.schemaVorschlaege(s, config).length, 0);
+
+  const plan = P.planWorkout(s, config, 'B');
+  const ohp = plan.lifts.find(l => l.lift === 'ohp');
+  eq('Plan: 3 Saetze', ohp.sets, 3);
+  eq('Plan: 5 Wiederholungen', ohp.reps, 5);
+  const sq = plan.lifts.find(l => l.lift === 'squat');
+  eq('andere Lifts bleiben 5x5', `${sq.sets}x${sq.reps}`, '5x5');
+
+  // Auf 3x5 geht es normal weiter
+  s = P.applyLog(s, config, { date: '2026-10-22', workout: 'B',
+    lifts: [{ lift: 'ohp', weight: vorher, sets: 3, target: 5, reps: [5, 5, 5], success: true }] });
+  eq('3x5 geschafft: +2,5', s.lifts.ohp.weight, vorher + 2.5);
+
+  // Zweimal auf 3x5 festgefahren -> 3x3
+  const w = s.lifts.ohp.weight;
+  s = deloadAm(s, 'ohp', w, 23); s.lifts.ohp.weight = w; s = deloadAm(s, 'ohp', w, 26);
+  const v2 = P.schemaVorschlaege(s, config);
+  eq('auf 3x5 festgefahren: Vorschlag 3x3', v2.length && P.schemaText(v2[0].nach), '3×3');
+  s = P.applyLog(s, config, P.schemaAnpassung({ ohp: 2 }, new Date(2026, 9, 30)));
+  s.lifts.ohp.weight = w; s = deloadAm(s, 'ohp', w, 1); s.lifts.ohp.weight = w; s = deloadAm(s, 'ohp', w, 5);
+  eq('auf der letzten Stufe: kein Vorschlag mehr', P.schemaVorschlaege(s, config).length, 0);
+
+  s = P.applyLog(s, config, P.schemaAnpassung({ ohp: 0 }, new Date(2026, 10, 2)));
+  ok('zurueck auf 5x5: Stufe geloescht', !('schema' in s.lifts.ohp));
+  eq('Plan wieder 5 Saetze', P.planWorkout(s, config, 'B').lifts.find(l => l.lift === 'ohp').sets, 5);
+}
+{
+  let s = P.initialState(config);
+  s = P.applyLog(s, config, P.schemaAnpassung({ deadlift: 1 }, new Date(2026, 9, 1)));
+  const dl = P.planWorkout(s, config, 'B').lifts.find(l => l.lift === 'deadlift');
+  eq('Kreuzheben Stufe 1: 1x3', `${dl.sets}x${dl.reps}`, '1x3');
+  s = P.applyLog(s, config, P.schemaAnpassung({ gibtsnicht: 1 }, new Date(2026, 9, 2)));
+  ok('unbekannter Lift: nichts passiert', !('gibtsnicht' in s.lifts));
+}
+
+print('\n--- Nach 5x5: ableitbar und ohne Folgen fuer die Pause ---');
+{
+  const logs = [
+    { date: '2026-09-01', workout: 'A', lifts: [win('squat', 47.5)], finished: '2026-09-01T18:00:00Z' },
+    P.schemaAnpassung({ bench: 1 }, new Date('2026-09-02T10:00:00Z'))
+  ];
+  const s = P.deriveState(config, logs);
+  eq('aus den Logs: Bank auf Stufe 1', s.lifts.bench.schema, 1);
+  const v = P.pausenDeload(s, config, new Date(2026, 8, 25));
+  ok('Schemawechsel verschluckt den Pausenvorschlag nicht', v && v.tage >= 14, JSON.stringify(v));
+  const mitPause = P.applyLog(s, config, P.pausenAnpassung(v, new Date(2026, 8, 25)));
+  eq('nach der Pausen-Anpassung: kein zweiter Vorschlag', P.pausenDeload(mitPause, config, new Date(2026, 8, 25)), null);
+  eq('die Stufe ueberlebt die Pausen-Anpassung', mitPause.lifts.bench.schema, 1);
+}
+
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

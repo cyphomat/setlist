@@ -312,4 +312,22 @@ print('\n--- Rad ---');
   eq('mit Kilometern', bil.km, 30);
 }
 
+print('\n--- Aftershow: Roadcrew und Hangar 18 ---');
+{
+  ok('beide im Katalog', ['roadcrew', 'hangar'].every(id => M.katalog(config).some(a => a.id === id)));
+  const tage = Array.from({ length: 10 }, (_, i) => `2026-08-${String(3 + i * 2).padStart(2, '0')}`);
+  const mitHilfs = tage.map((d, i) => kraft(d, [satz('squat', 95)], { hilfs: [{ id: i === 9 ? 'chinup' : 'dip', reps: i === 9 ? [10, 6] : [8] }] }));
+  const neun = M.aufnaeher(mitHilfs.slice(0, 9), config, [], HEUTE);
+  eq('neun Einheiten mit Hilfsarbeit: noch keine Roadcrew', hat(neun, 'roadcrew'), null);
+  const zehn = M.aufnaeher(mitHilfs, config, [], HEUTE);
+  eq('zehnte: Roadcrew', hat(zehn, 'roadcrew'), tage[9]);
+  eq('zehn Chin-ups am Stueck: Hangar 18', hat(zehn, 'hangar'), tage[9]);
+  const leer = tage.map(d => kraft(d, [satz('squat', 95)], { hilfs: [{ id: 'dip', reps: [] }] }));
+  eq('leere Eintraege zaehlen nicht', hat(M.aufnaeher(leer, config, [], HEUTE), 'roadcrew'), null);
+  const dips = M.aufnaeher([kraft('2026-09-01', [satz('squat', 95)], { hilfs: [{ id: 'dip', reps: [25] }] })], config, [], HEUTE);
+  eq('25 Dips sind kein Klimmzug', hat(dips, 'hangar'), null);
+  const summe = M.aufnaeher([kraft('2026-09-01', [satz('squat', 95)], { hilfs: [{ id: 'pullup', reps: [5, 5, 5] }] })], config, [], HEUTE);
+  eq('dreimal fuenf sind keine zehn am Stueck', hat(summe, 'hangar'), null);
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

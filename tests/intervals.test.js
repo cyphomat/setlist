@@ -35,6 +35,14 @@ ok('Beschreibung kennzeichnet die Last als Schaetzung', a.description.includes('
 ok('Startzeit ohne Zeitzonenkuerzel', !/Z$/.test(a.start_date_local), a.start_date_local);
 ok('Startzeit im erwarteten Format', /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(a.start_date_local), a.start_date_local);
 
+print('\n--- Hilfsuebungen in der Beschreibung ---');
+{
+  const mit = I.alsAktivitaet({ ...kraft, hilfs: [{ id: 'pullup', reps: [8, 7] }, { id: 'kaputt', reps: [1] }] }, config);
+  ok('Klimmzuege stehen unter den Lifts', mit.description.includes('Klimmzüge — 8/7'), mit.description.slice(0, 120));
+  ok('unbekannte Uebung nicht', !mit.description.includes('kaputt'));
+  eq('Last unveraendert', mit.icu_training_load, a.icu_training_load);
+}
+
 print('\n--- Zweimal umrechnen ergibt dieselbe Kennung ---');
 eq('idempotent', I.alsAktivitaet(kraft, config).external_id, a.external_id);
 

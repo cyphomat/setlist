@@ -73,6 +73,16 @@ export function applyLog(state, config, log) {
   // und ist damit reproduzierbar; state.json direkt zu ueberschreiben wuerde
   // die Ableitbarkeit zerstoeren, auf der alles andere aufbaut.
   if (log.type === 'anpassung') {
+    // Ein Wechsel des Satzschemas (5x5 -> 3x5 -> 3x3) laesst das Gewicht
+    // stehen und faengt die Plateau-Zaehlung neu an: auf der neuen Stufe
+    // ist es ein neuer Anlauf.
+    for (const [id, stufe] of Object.entries(log.schema || {})) {
+      const l = next.lifts[id];
+      if (!l) continue;
+      if (stufe > 0) l.schema = stufe; else delete l.schema;
+      l.fails = 0;
+      delete l.deloads; delete l.deloadBei;
+    }
     for (const [id, gewicht] of Object.entries(log.gewichte || {})) {
       const l = next.lifts[id];
       if (!l || !gewicht) continue;
@@ -105,6 +115,7 @@ export function applyLog(state, config, log) {
       l.weight = Math.max(config.bar, roundTo(log.newWorking, config.rounding));
       l.fails = 0;
       delete l.rueckweg;
+      delete l.deloads; delete l.deloadBei;   // neues Arbeitsgewicht, neue Rechnung
     }
     next.updated = new Date().toISOString();
     const eintrag = { date: log.date, type: 'maxout', weight: log.weight, reps: log.reps };
@@ -144,6 +155,12 @@ export function applyLog(state, config, log) {
       delete cur.rueckweg;
       cur.fails += 1;
       if (cur.fails >= config.deload.afterFails) {
+        // Plateau-Zaehlung: Ein Deload an einem hoeheren Gewicht als der
+        // vorige heisst, dazwischen ging es voran — dann ist es wieder der
+        // erste. Wer zweimal am selben (oder niedrigeren) Gewicht haengt,
+        // steckt fest (siehe schemaVorschlaege).
+        cur.deloads = cur.deloadBei !== undefined && entry.weight > cur.deloadBei + 1e-9 ? 1 : (cur.deloads || 0) + 1;
+        cur.deloadBei = entry.weight;
         cur.weight = Math.max(config.bar, roundTo(entry.weight * config.deload.factor, config.rounding));
         cur.fails = 0;
       }
@@ -195,7 +212,9 @@ export function pausenDeload(state, config, heute = new Date()) {
     if (hist[i].type === 'strength') { letzteKraft = i; break; }
   }
   if (letzteKraft < 0) return null;
-  if (hist.slice(letzteKraft + 1).some(h => h.type === 'anpassung')) return null;
+  // Ein Schemawechsel ist keine Antwort auf die Pause — er laesst die
+  // Gewichte stehen und darf den Vorschlag nicht verschlucken.
+  if (hist.slice(letzteKraft + 1).some(h => h.type === 'anpassung' && h.grund !== 'schema')) return null;
 
   const seit = hist[letzteKraft].date;
   const tage = tageZwischen(seit, ymd(heute));
@@ -252,18 +271,105 @@ export function deriveState(config, logs) {
   return sorted.reduce((s, log) => applyLog(s, config, log), initialState(config));
 }
 
-/** Was steht heute an? Gewichte aus dem aktuellen Zustand. */
+/** Was steht heute an? Gewichte und Satzschema aus dem aktuellen Zustand. */
 export function planWorkout(state, config, which = state.next) {
   return {
     workout: which,
-    lifts: config.workouts[which].map(slot => ({
-      lift: slot.lift,
-      name: config.lifts[slot.lift].name,
-      weight: state.lifts[slot.lift].weight,
-      sets: slot.sets,
-      reps: slot.reps,
-      fails: state.lifts[slot.lift].fails
-    }))
+    lifts: config.workouts[which].map(slot => {
+      const zustand = state.lifts[slot.lift];
+      const s = schemaFuer(slot, zustand.schema);
+      return {
+        lift: slot.lift,
+        name: config.lifts[slot.lift].name,
+        weight: zustand.weight,
+        sets: s.sets,
+        reps: s.reps,
+        fails: zustand.fails
+      };
+    })
+  };
+}
+
+/* ===================================================================
+   Nach 5x5. Lineare Steigerung endet irgendwann: zweimal am selben
+   Gewicht in den Deload heisst, mehr Volumen pro Einheit ist gerade
+   nicht drin. Der klassische naechste Schritt ist weniger Volumen bei
+   weiter steigendem Gewicht — 5x5, dann 3x5, dann 3x3. Kreuzheben mit
+   einem Satz geht von 1x5 auf 1x3.
+
+   Nichts davon passiert von selbst. Die App schlaegt vor, du entscheidest,
+   und die Entscheidung steht als Anpassung im Log.                    */
+
+/** Ab so vielen Deloads ohne neues Hoch gilt ein Lift als festgefahren. */
+export const PLATEAU_DELOADS = 2;
+
+/** Die Stufen fuer eine Uebung: ihr eigenes Schema, dann 3xN, dann 3x3. */
+export function schemaStufen(slot) {
+  const stufen = [];
+  for (const s of [
+    { sets: slot.sets, reps: slot.reps },
+    { sets: Math.min(slot.sets, 3), reps: slot.reps },
+    { sets: Math.min(slot.sets, 3), reps: Math.min(slot.reps, 3) }
+  ]) {
+    if (!stufen.some(x => x.sets === s.sets && x.reps === s.reps)) stufen.push(s);
+  }
+  return stufen;
+}
+
+/** Saetze und Wiederholungen fuer eine Uebung auf Stufe n — nie ueber die letzte hinaus. */
+export function schemaFuer(slot, stufe = 0) {
+  const stufen = schemaStufen(slot);
+  return stufen[Math.min(Math.max(0, stufe || 0), stufen.length - 1)];
+}
+
+/** "5×5", "3×5", "1×3" */
+export const schemaText = s => `${s.sets}×${s.reps}`;
+
+/** Wie viele Stufen hat ein Lift — ueber alle Workouts, in denen er vorkommt. */
+export function stufenAnzahl(config, liftId) {
+  let n = 1;
+  for (const slots of Object.values(config.workouts || {})) {
+    for (const slot of slots) if (slot.lift === liftId) n = Math.max(n, schemaStufen(slot).length);
+  }
+  return n;
+}
+
+/** Das Schema eines Lifts zum Anzeigen — aus seinem ersten Vorkommen. */
+export function liftSchema(config, liftId, stufe = 0) {
+  for (const slots of Object.values(config.workouts || {})) {
+    const slot = slots.find(s => s.lift === liftId);
+    if (slot) return schemaFuer(slot, stufe);
+  }
+  return null;
+}
+
+/**
+ * Welche Lifts auf die naechste Stufe sollten: zweimal ohne neues Hoch in
+ * den Deload, und es gibt noch eine Stufe. Leere Liste, wenn nichts klemmt.
+ */
+export function schemaVorschlaege(state, config) {
+  const out = [];
+  for (const id of Object.keys(config.lifts || {})) {
+    const l = state.lifts && state.lifts[id];
+    if (!l || !((l.deloads || 0) >= PLATEAU_DELOADS)) continue;
+    const jetzt = l.schema || 0;
+    if (jetzt + 1 >= stufenAnzahl(config, id)) continue;
+    out.push({
+      lift: id, stufe: jetzt + 1, deloads: l.deloads, bei: l.deloadBei,
+      von: liftSchema(config, id, jetzt), nach: liftSchema(config, id, jetzt + 1)
+    });
+  }
+  return out;
+}
+
+/** Der Log-Eintrag fuer einen Schemawechsel. `stufen`: { liftId: stufe } */
+export function schemaAnpassung(stufen, heute = new Date()) {
+  return {
+    date: ymd(heute),
+    type: 'anpassung',
+    grund: 'schema',
+    finished: heute.toISOString(),
+    schema: { ...stufen }
   };
 }
 

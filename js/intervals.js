@@ -5,6 +5,7 @@
 // niemals im Repo. Deshalb taucht hier kein Schluessel im Code auf.
 
 import { t } from './i18n.js';
+import { bereinige } from './hilfs.js';
 const BASE = 'https://intervals.icu/api/v1';
 const KEY_ID = 'setlist.icu.athlete';
 const KEY_TOKEN = 'setlist.icu.key';
@@ -252,7 +253,7 @@ export function alsAktivitaet(log, config = {}) {
     : (log.lifts || []).map(e => {
         const name = (config.lifts && config.lifts[e.lift] && config.lifts[e.lift].name) || e.lift;
         return `${name} ${e.weight} kg — ${(e.reps || []).join('/')}`;
-      }).join('\n');
+      }).concat(bereinige(log.hilfs).map(h => `${t(`hilfs.${h.id}`)} — ${h.reps.join('/')}`)).join('\n');
 
   return {
     external_id: `setlist-${log.date}-${log.type || 'strength'}${log.workout ? '-' + log.workout : ''}`,

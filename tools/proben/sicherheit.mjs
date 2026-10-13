@@ -1,4 +1,4 @@
-// Browserprobe · Sicherheit: eigener Text bleibt Text, Abmelden räumt auf, keine fremden Rahmen.
+// Browserprobe · Sicherheit: eigener Text bleibt Text, Abmelden räumt auf, keine fremden Rahmen, CSV ohne Formeln.
 // Aufruf ueber tools/proben.mjs.
 
 import { CONFIG, VERSION, basis, verlauf, kontext } from './gemeinsam.mjs';
@@ -101,5 +101,33 @@ export default async function ({ browser, pruefe }) {
     const f2 = p2.frames()[1];
     pruefe('eigener Rahmen (shot.html) zeigt die App', !!(await f2.$('#today .tageswort')));
     await c2.close();
+  }
+
+  /* 4 · CSV-Export: Datei kommt, Formeln kommen als Text */
+  {
+    const logs = verlauf('2026-09-28');
+    const letzte = logs.filter(l => l.type === 'strength').pop();
+    letzte.ort = '=HYPERLINK("http://boese.example";"klick")';
+    letzte.hilfs = [{ id: 'pullup', reps: [8, 7] }];
+    const { ctx, p, fehler } = await kontext(browser, { logs, config: CONFIG, heute: '2026-10-01' });
+    await p.click('#go-history');
+    await p.click('#go-backstage');
+    await p.click('#bs-tab-app');
+    const [download] = await Promise.all([p.waitForEvent('download'), p.click('#export-csv')]);
+    pruefe('CSV: Dateiname mit Datum', download.suggestedFilename() === 'setlist-2026-10-01.csv', download.suggestedFilename());
+    const pfad = await download.path();
+    const text = (await import('node:fs')).readFileSync(pfad, 'utf8');
+    pruefe('CSV: BOM für Excel', text.charCodeAt(0) === 0xFEFF);
+    const reihen = text.slice(1).split('\r\n').filter(Boolean);
+    pruefe('CSV: deutsche Kopfzeile', reihen[0].startsWith('Datum;Art;Workout;Übung;Gewicht (kg)'), reihen[0]);
+    pruefe('CSV: Formel als Text', text.includes(`"'=HYPERLINK(""http://boese.example"";""klick"")"`) && !/(^|;)=HYPERLINK/m.test(text));
+    pruefe('CSV: Hilfsübung mit Namen', reihen.some(r => r.includes(';hilfs;') && r.includes('Klimmzüge') && r.includes('8/7')));
+    const lifts = logs.filter(l => l.type === 'strength').reduce((n, l) => n + l.lifts.length, 0);
+    pruefe('CSV: jede Lift-Zeile da', reihen.filter(r => r.split(';')[1] === 'kraft').length === lifts, String(lifts));
+    await p.waitForTimeout(300);
+    const meldung = await p.textContent('#banner');
+    pruefe('CSV: Meldung mit Zeilenzahl', /\d+ Zeilen exportiert/.test(meldung), meldung);
+    pruefe('keine Seitenfehler (CSV)', !fehler.length, fehler.join(' | '));
+    await ctx.close();
   }
 }

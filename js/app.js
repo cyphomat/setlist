@@ -15,6 +15,9 @@ import * as E from './einrichten.js';
 import * as PS from './persoenlich.js';
 import * as UP from './unplugged.js';
 import * as M from './merch.js';
+import * as W from './wach.js';
+import * as HL from './hilfs.js';
+import * as X from './export.js';
 
 // Eingebettet in eine fremde Seite (siehe boot.js) startet die App gar nicht
 // erst — kein Laden, kein Token-Gebrauch. Der throw beendet das Modul hier.
@@ -60,7 +63,15 @@ uebersetzeStatisch();
 const VERSION_KEY = 'setlist.version';
 let laufendeVersion = localStorage.getItem(VERSION_KEY) || '—';
 const VIEWS = ['setup', 'einrichten', 'home', 'session', 'wod', 'unplugged', 'maxout', 'done', 'history', 'bibliothek', 'merch', 'backstage'];
-const show = n => { VIEWS.forEach(v => $('view-' + v).hidden = v !== n); window.scrollTo(0, 0); };
+// Waehrend Einheit, Jam, Unplugged und Max-Out bleibt der Bildschirm an —
+// am Ansichtswechsel festgemacht, damit kein Ausgang (Fertig, Abbrechen,
+// Zurueck) das Freigeben vergessen kann.
+const wach = W.wachHalter();
+const show = n => {
+  VIEWS.forEach(v => $('view-' + v).hidden = v !== n);
+  window.scrollTo(0, 0);
+  wach.setze(W.wachFuerAnsicht(n));
+};
 
 let bannerTimer = null;
 function banner(msg, kind = '', ms = 3500) {
@@ -384,8 +395,9 @@ function renderWeights(f) {
     const s = state.lifts[id];
     const r = f.perLift[id];
     const anteil = r && r.anteil < 1 ? Math.round(r.anteil * 100) : null;
+    const sch = s.schema ? P.liftSchema(config, id, s.schema) : null;
     return `<div class="gw">
-      <span class="gn">${escHtml(def.name)}</span>
+      <span class="gn">${escHtml(def.name)}${sch ? ` <span class="gsch">${P.schemaText(sch)}</span>` : ''}</span>
       ${s.fails ? `<span class="go">${t('home.offen', { n: s.fails })}</span>` : ''}
       <span class="gv">${P.fmtWeight(s.weight)}</span>
       ${anteil !== null ? `<span class="gs" title="${escHtml(t('home.vonReferenz', { p: anteil, kg: def.reference }))}"><i style="width:${anteil}%"></i></span>` : ''}
@@ -588,7 +600,7 @@ function pausenVorschlag() {
 
 function startMitPausenCheck() {
   const v = pausenVorschlag();
-  if (!v) return startSession();
+  if (!v) return startMitSchemaCheck();
   oeffnePauseDialog(v);
 }
 
@@ -610,7 +622,7 @@ function oeffnePauseDialog(v) {
   $('pause-nein').onclick = () => {
     dlg.close();
     localStorage.setItem(PAUSE_KEY, `${v.seit}|${v.prozent}`);
-    startSession();
+    startMitSchemaCheck();
   };
   dlg.showModal();
 }
@@ -624,7 +636,7 @@ async function uebernehmePause(v) {
   const log = P.pausenAnpassung(v, new Date());
   state = P.applyLog(state, config, log);
   S.cache({ state });
-  startSession();
+  startMitSchemaCheck();
   try { await commitAnpassung(log); banner(t('pause.uebernommen', { p: v.prozent }), 'ok'); }
   catch { S.queue(log); banner(t('msg.keinNetz'), '', 6000); }
 }
@@ -633,10 +645,88 @@ async function commitAnpassung(log) {
   let path = `${S.LOG_DIR}/${log.date}-anpassung.json`;
   let n = 2;
   while (await S.readFile(path)) path = `${S.LOG_DIR}/${log.date}-anpassung-${n++}.json`;
-  await S.writeFile(path, log, `Anpassung nach ${log.tage || '?'} Tagen Pause am ${log.date}`);
+  const was = log.grund === 'schema' ? `Satzschema am ${log.date}` : `Anpassung nach ${log.tage || '?'} Tagen Pause am ${log.date}`;
+  await S.writeFile(path, log, was);
   const cur = await S.readFile('state.json');
   await S.writeFile('state.json', state, `Zustand nach Anpassung ${log.date}`, cur ? cur.sha : stateSha);
   return path;
+}
+
+/* ============================ Nach 5x5 ============================
+   Ein Lift, der zweimal ohne neues Hoch in den Deload musste, bekommt
+   beim Start den Vorschlag fuer die naechste Stufe (program.js). Abgelehnt
+   gilt fuer genau diesen Stand — nach einem weiteren Deload fragt die App
+   wieder, denn das ist eine neue Lage.                                  */
+const SCHEMA_KEY = 'setlist.schema.abgelehnt';
+const schemaStand = v => `${v.stufe}|${v.deloads}|${v.bei}`;
+function schemaAbgelehnt() {
+  try { return JSON.parse(localStorage.getItem(SCHEMA_KEY) || '{}') || {}; } catch { return {}; }
+}
+
+function schemaVorschlaege() {
+  if (!config || !state) return [];
+  const nein = schemaAbgelehnt();
+  return P.schemaVorschlaege(state, config).filter(v => nein[v.lift] !== schemaStand(v));
+}
+
+function startMitSchemaCheck() {
+  const liste = schemaVorschlaege();
+  if (!liste.length) return startSession();
+  oeffneSchemaDialog(liste);
+}
+
+function oeffneSchemaDialog(liste) {
+  const dlg = $('schema-dialog');
+  const name = id => (config.lifts[id] || {}).name || id;
+  $('schema-body').innerHTML = `
+    ${liste.map(v => `<p class="pause-kopf">${escHtml(t('schema.kopf', { n: v.deloads, name: name(v.lift), kg: P.fmtWeight(v.bei) }))}</p>`).join('')}
+    <div class="pause-liste">${liste.map(v => `
+      <div class="kv"><span class="k">${escHtml(name(v.lift))}</span>
+        <span class="v">${P.schemaText(v.von)} → <b>${P.schemaText(v.nach)}</b></span></div>`).join('')}</div>
+    <p class="fine">${escHtml(t('schema.warum'))}</p>
+    <p class="fine">${escHtml(t('schema.gewicht'))}</p>`;
+  $('schema-ja').onclick = () => { dlg.close(); uebernehmeSchema(liste); };
+  $('schema-nein').onclick = () => {
+    dlg.close();
+    const nein = schemaAbgelehnt();
+    for (const v of liste) nein[v.lift] = schemaStand(v);
+    localStorage.setItem(SCHEMA_KEY, JSON.stringify(nein));
+    startSession();
+  };
+  dlg.showModal();
+}
+
+/** Wie bei der Pause: erst lokal, dann die Einheit, dann schreiben. */
+async function uebernehmeSchema(liste) {
+  const log = P.schemaAnpassung(Object.fromEntries(liste.map(v => [v.lift, v.stufe])), new Date());
+  state = P.applyLog(state, config, log);
+  S.cache({ state });
+  startSession();
+  await schreibeSchema(log, t('schema.uebernommen', { liste: schemaListe(log) }));
+}
+
+async function schreibeSchema(log, meldung) {
+  try { await commitAnpassung(log); banner(meldung, 'ok'); }
+  catch { S.queue(log); banner(t('msg.keinNetz'), '', 6000); }
+}
+
+/** "Strict Press 3×5 · Deadlift 1×3" */
+const schemaListe = log => Object.entries(log.schema || {}).map(([id, n]) => {
+  const sch = P.liftSchema(config, id, n);
+  return `${(config.lifts[id] || {}).name || id}${sch ? ' ' + P.schemaText(sch) : ''}`;
+}).join(' · ');
+
+/** Zurueck auf die volle Stufe — aus der Tour, mit Rueckfrage. */
+async function schemaZurueck(id) {
+  const def = config.lifts[id], basis = P.liftSchema(config, id, 0);
+  if (!def || !basis) return;
+  if (!confirm(t('schema.zurueckFrage', { name: def.name, basis: P.schemaText(basis) }))) return;
+  const log = P.schemaAnpassung({ [id]: 0 }, new Date());
+  state = P.applyLog(state, config, log);
+  S.cache({ state });
+  renderPlateaus(geladeneLogs());
+  renderHome();
+  await schreibeSchema(log, t('schema.zurueckOk', { name: def.name, basis: P.schemaText(basis) }));
 }
 
 /** Auf dem Startbildschirm: damit die Karte beim Start keine Ueberraschung ist. */
@@ -725,8 +815,88 @@ function startSession() {
     </details>`;
   $('zugabe-gespielt').onchange = e => { if (session) session.zugabe = e.target.checked; };
 
+  session.hilfs = [];
+  $('hilfs').innerHTML = '';
+  renderHilfs();
+  // "Letztes Mal" braucht die Einheiten. Ohne Zwischenspeicher (frisch
+  // eingerichtet, Tour nie geoeffnet) im Hintergrund nachladen — die
+  // Einheit wartet nicht darauf.
+  if (!geladeneLogs().length) {
+    S.readAllLogs().then(logs => { alleLogs = logs; S.cacheLogs(logs); if (session) renderHilfs(); }).catch(() => {});
+  }
   renderSession();
   show('session');
+}
+
+/* ======================= Aftershow: Hilfsuebungen =======================
+   Nach dem Hauptprogramm mitgeschrieben, ohne Steigerung (hilfs.js).
+   Uebung antippen, je Satz die Wiederholungen ueber den Picker; ein
+   getippter Satz verschwindet beim Antippen wieder.                    */
+function renderHilfs() {
+  const box = $('hilfs');
+  if (!box || !session) return;
+  const vorher = box.querySelector('details');
+  const offen = vorher ? vorher.open : false;
+  const logs = geladeneLogs();
+  const name = id => t(`hilfs.${id}`);
+  box.innerHTML = `
+    <details class="info"${offen || session.hilfs.length ? ' open' : ''}><summary>${escHtml(t('hilfs.h'))}</summary>
+      <div class="body">
+        <p class="fine">${escHtml(t('hilfs.hinweis'))}</p>
+        <div class="chips hilfs-wahl">${HL.auswahl(config).map(h => {
+          const an = session.hilfs.some(x => x.id === h.id);
+          return `<button type="button" data-h="${h.id}" class="${an ? 'an' : ''}" aria-pressed="${an}">${escHtml(name(h.id))}</button>`;
+        }).join('')}</div>
+        ${session.hilfs.map(x => {
+          const letzt = HL.letztesMal(logs, x.id);
+          return `<div class="hilfs-zeile" data-h="${x.id}">
+            <div class="hz-kopf"><span class="ln">${escHtml(name(x.id))}</span>${letzt
+              ? `<span class="hz-letzt">${escHtml(t('hilfs.letztes', { reps: HL.repsText(letzt.reps) }))}</span>` : ''}</div>
+            <div class="sets">${x.reps.map((r, i) =>
+              `<button type="button" class="set done" data-i="${i}" aria-label="${escHtml(t('hilfs.entfernen', { n: i + 1 }))}">${r}</button>`).join('')}
+              <button type="button" class="set hz-plus">${escHtml(t('hilfs.satz'))}</button></div>
+          </div>`;
+        }).join('')}
+      </div>
+    </details>`;
+  box.querySelectorAll('.hilfs-wahl button').forEach(b => {
+    b.onclick = () => {
+      const i = session.hilfs.findIndex(x => x.id === b.dataset.h);
+      if (i < 0) session.hilfs.push({ id: b.dataset.h, reps: [] });
+      // Mit erfassten Saetzen nur nach Rueckfrage — ein Fehltipp soll
+      // keine Arbeit wegwerfen.
+      else if (!session.hilfs[i].reps.length
+        || confirm(t('hilfs.weg', { name: t(`hilfs.${b.dataset.h}`), n: session.hilfs[i].reps.length }))) session.hilfs.splice(i, 1);
+      renderHilfs();
+    };
+  });
+  box.querySelectorAll('.hilfs-zeile').forEach(z => {
+    const eintrag = session.hilfs.find(x => x.id === z.dataset.h);
+    z.querySelectorAll('.set.done').forEach(b => {
+      b.onclick = () => { eintrag.reps.splice(+b.dataset.i, 1); renderHilfs(); };
+    });
+    z.querySelector('.hz-plus').onclick = () => hilfsPicker(eintrag, HL.letztesMal(logs, eintrag.id));
+  });
+}
+
+function hilfsPicker(eintrag, letzt) {
+  const dlg = $('picker');
+  const n = eintrag.reps.length;
+  // Hervorgehoben: was beim letzten Mal in diesem Satz ging, sonst der
+  // vorige Satz von heute.
+  const anhalt = (letzt && letzt.reps[n]) || eintrag.reps[n - 1] || null;
+  $('picker-title').textContent = t('hilfs.picker', { name: t(`hilfs.${eintrag.id}`), n: n + 1 });
+  $('picker-opts').innerHTML = Array.from({ length: 30 }, (_, i) => i + 1).map(r =>
+    `<button data-n="${r}" class="${r === anhalt ? 'ziel' : ''}">${r}</button>`).join('');
+  $('picker-opts').querySelectorAll('button').forEach(b => {
+    b.onclick = () => {
+      dlg.close();
+      eintrag.reps.push(+b.dataset.n);
+      renderHilfs();
+      startRest(config.rest.normal);
+    };
+  });
+  dlg.showModal();
 }
 
 /**
@@ -901,6 +1071,8 @@ async function finishSession() {
     })
   };
   if (session.zugabe && session.fin) log.zugabe = session.fin.id;
+  const hilfs = HL.bereinige(session.hilfs);
+  if (hilfs.length) log.hilfs = hilfs;
   const ort = ortName();
   if (ort) log.ort = ort;
   const before = state;
@@ -1179,6 +1351,47 @@ $('merch-back').onclick = () => {
 $('bib-back').onclick = () => show('home');
 $('bib-suche').oninput = renderBibliothek;
 $('rebuild').onclick = rebuild;
+$('export-csv').onclick = exportiereCsv;
+
+/**
+ * Einheiten als CSV (export.js). Frisch vom Repo, damit auch die Einheit
+ * von eben drin ist; ohne Netz aus dem Zwischenspeicher. Die Datei
+ * entsteht im Browser und geht an keinen Dienst.
+ */
+async function exportiereCsv() {
+  const knopf = $('export-csv');
+  knopf.disabled = true;
+  try {
+    let logs;
+    try { logs = await S.readAllLogs(); alleLogs = logs; S.cacheLogs(logs); }
+    catch { logs = geladeneLogs(); }
+    if (!logs.length) { banner(t('exp.leer'), '', 4000); return; }
+    const text = X.alsCsv(logs, config, {
+      name: (art, id) => t(art === 'hilfs' ? `hilfs.${id}` : `chk.${id}`),
+      kopf: Object.fromEntries(X.SPALTEN.map(sp => [sp, t(`exp.sp.${sp}`)]))
+    });
+    const datei = X.dateiname(new Date());
+    const blob = new Blob([text], { type: 'text/csv;charset=utf-8' });
+    // Als Home-Bildschirm-App auf iOS verpuffen Download-Links; dort
+    // fuehrt das Teilen-Blatt zu "In Dateien sichern".
+    const file = typeof File === 'function' ? new File([blob], datei, { type: 'text/csv' }) : null;
+    if (navigator.standalone === true && file && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: datei }); }
+      catch (e) { if (e && e.name !== 'AbortError') throw e; return; }
+    } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = datei; a.rel = 'noopener';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    }
+    banner(t('exp.fertig', { n: X.zeilen(logs, config).length }), 'ok');
+  } catch (e) {
+    banner(t('exp.fehler', { msg: e.message }), 'err', 5000);
+  } finally {
+    knopf.disabled = false;
+  }
+}
 $('logout').onclick = () => {
   // Ungesendete Einheiten gingen dabei verloren — das muss man vorher wissen.
   // (Die Warteschlange nach intervals.icu zaehlt nicht: diese Einheiten
@@ -1190,7 +1403,9 @@ $('logout').onclick = () => {
   location.reload();
 };
 $('finish').onclick = finishSession;
-$('abort').onclick = () => { if (confirm(t('ses.verwerfen'))) { stopRest(); session = null; show('home'); } };
+// Neu zeichnen: Vor der Einheit kann eine Anpassung (Pause, Satzschema)
+// den Zustand geaendert haben — sonst stuende auf Home der alte Stand.
+$('abort').onclick = () => { if (confirm(t('ses.verwerfen'))) { stopRest(); session = null; renderHome(); show('home'); } };
 $('done-ok').onclick = () => { renderHome(); show('home'); };
 $('rest-skip').onclick = stopRest;
 /**
@@ -2069,8 +2284,8 @@ function renderListe(logs) {
       // der Text wird daraus gebildet, damit er in beiden Sprachen stimmt.
       const grund = l.grund === 'pause'
         ? t('pause.hist', { tage: l.tage || '?', p: Math.round((1 - (l.faktor || 1)) * 100) })
-        : l.grund;
-      return `<div class="hist anpassung"><div class="d">${escHtml(l.date)} · ${t('hist.angepasst')}</div>
+        : l.grund === 'schema' ? schemaListe(l) : l.grund;
+      return `<div class="hist anpassung"><div class="d">${escHtml(l.date)} · ${t(l.grund === 'schema' ? 'hist.schema' : 'hist.angepasst')}</div>
         <div class="l">${g}${grund ? `<br><span style="color:var(--dim)">${escHtml(grund)}</span>` : ''}</div></div>`;
     }
     if (l.type && l.type !== 'strength') {
@@ -2084,7 +2299,8 @@ function renderListe(logs) {
     }
     return `<div class="hist"><div class="d">${escHtml(l.date)} · WORKOUT ${escHtml(l.workout)}</div>
       <div class="l">${(l.lifts || []).map(e =>
-        `${escHtml((config.lifts[e.lift] || {}).name || e.lift)} ${P.fmtWeight(e.weight)} (${escHtml((e.reps || []).join('/'))})`).join(' · ')}</div>
+        `${escHtml((config.lifts[e.lift] || {}).name || e.lift)} ${P.fmtWeight(e.weight)} (${escHtml((e.reps || []).join('/'))})`).join(' · ')}${
+        HL.bereinige(l.hilfs).map(h => ` · ${escHtml(t(`hilfs.${h.id}`))} (${escHtml(h.reps.join('/'))})`).join('')}</div>
     </div>`;
   }).join('') : `<p class="lead">${t('tour.keineEinheit')}</p>`;
 }
@@ -2542,7 +2758,18 @@ function renderPlateaus(logs) {
   // kennt diese Auswertung nicht.
   const auffaellig = p.filter(x =>
     x.offeneFails > 0 || x.fehl > 0 || (x.satzQuote !== null && x.satzQuote < 95));
-  if (!auffaellig.length) { $('hist-plateaus').innerHTML = ''; return; }
+  // Lifts nach 5x5: welche Stufe gerade laeuft, und der Weg zurueck.
+  const gestuft = Object.keys(config.lifts).filter(id => state.lifts[id] && state.lifts[id].schema);
+  if (!auffaellig.length && !gestuft.length) { $('hist-plateaus').innerHTML = ''; return; }
+  const stufenHtml = gestuft.map(id => {
+    const jetzt = P.liftSchema(config, id, state.lifts[id].schema), basis = P.liftSchema(config, id, 0);
+    return `<div class="reihe">
+      <span class="l">${escHtml(liftName(id))}</span>
+      <span class="v">${P.schemaText(jetzt)}</span>
+    </div>
+    <div class="hoch-text">${escHtml(t('schema.tourZeile', { schema: P.schemaText(jetzt), basis: P.schemaText(basis) }))}
+      <button type="button" class="link schema-zurueck" data-lift="${escHtml(id)}">${escHtml(t('schema.zurueck', { basis: P.schemaText(basis) }))}</button></div>`;
+  }).join('');
 
   // "Seit N Einheiten" steht in der Textzeile, nicht im Kopf: dort liegt
   // es neben dem Gewicht und sprengt bei langen Lift-Namen die Zeile.
@@ -2559,8 +2786,27 @@ function renderPlateaus(logs) {
 
   $('hist-plateaus').innerHTML = `
     <h2>${escHtml(t('plat.h'))}</h2>
-    <div class="pr">${zeilen}</div>
-    <p class="fine">${escHtml(t('plat.fine'))}</p>`;
+    ${stufenHtml ? `<div class="pr">${stufenHtml}</div>` : ''}
+    ${zeilen ? `<div class="pr">${zeilen}</div>
+    <p class="fine">${escHtml(t('plat.fine'))}</p>` : ''}`;
+  $('hist-plateaus').querySelectorAll('.schema-zurueck').forEach(b => { b.onclick = () => schemaZurueck(b.dataset.lift); });
+}
+
+/** Aftershow in der Tour: je Hilfsuebung bester Satz, wie oft, zuletzt. */
+function renderHilfsBilanz(logs) {
+  const box = $('hist-hilfs');
+  if (!box) return;
+  const b = HL.bilanz(logs);
+  const liste = HL.HILFS.filter(h => b[h.id]);
+  if (!liste.length) { box.innerHTML = ''; return; }
+  box.innerHTML = `
+    <h2>${escHtml(t('hilfs.tour'))}</h2>
+    <div class="pr">${liste.map(h => {
+      const x = b[h.id];
+      return `<div class="reihe"><span class="l">${escHtml(t(`hilfs.${h.id}`))}</span><span class="v">${x.bester}</span></div>
+        <div class="hoch-text">${escHtml(t('hilfs.tourZeile', { n: x.bester, einheiten: x.einheiten, reps: HL.repsText(x.letzte.reps) }))}</div>`;
+    }).join('')}</div>
+    <p class="fine">${escHtml(t('hilfs.tourFine'))}</p>`;
 }
 
 function renderTour(logs) {
@@ -2577,6 +2823,7 @@ function renderTour(logs) {
   renderHochrechnung(logs);
   renderRelativKraft(logs);
   renderPlateaus(logs);
+  renderHilfsBilanz(logs);
   renderKoerper(logs);
   renderAnsageAbgleich(logs);
   renderCharts(logs);
@@ -3514,13 +3761,18 @@ const zahl = (n, stellen = 1) => Number(n).toLocaleString(locale(), { maximumFra
 function ausnahmenHtml() {
   const pause = pausenVorschlag();
   const aktiv = VL.aktive(config);
+  const schema = schemaVorschlaege();
   const liste = C.ausnahmen({ pause, verletzungen: aktiv, form, stoerung,
-    abnehmStufe: abnehmen && abnehmen.lage ? abnehmen.lage.stufe : null });
+    abnehmStufe: abnehmen && abnehmen.lage ? abnehmen.lage.stufe : null, schema });
   const zeile = (farbe, titel, text) => `<p class="hinweis" style="--hf:${farbe}">
     <b>${escHtml(titel)}</b>${text ? ` <span>${escHtml(text)}</span>` : ''}</p>`;
   return liste.map(a => {
     switch (a.art) {
       case 'pause': return zeile('var(--stahl)', t('pause.home', { tage: pause.tage, p: pause.prozent }), '');
+      case 'schema': {
+        const v = schema.find(x => x.lift === a.lift);
+        return zeile('var(--stahl)', t('schema.home', { name: (config.lifts[v.lift] || {}).name || v.lift, nach: P.schemaText(v.nach) }), '');
+      }
       case 'verletzung': {
         const v = aktiv.find(x => x.id === a.id);
         const wie = VL.lage(logsFuerAnzeige(), v.id);
@@ -4028,7 +4280,10 @@ function setlistZettel(log) {
         <span class="z-w">${e.sets}×${e.target} · ${P.fmtWeight(e.weight)}</span>
         ${e.success ? '' : `<span class="z-nochmal">${escHtml(t('done.nochmal'))}</span>`}
       </li>`;
-    }).join('')}${zugabe}</ol>
+    }).join('')}${HL.bereinige(log.hilfs).map(h => `<li class="gespielt hilfs">
+        <span class="song">${escHtml(t(`hilfs.${h.id}`))}</span>
+        <span class="z-w">${escHtml(t('hilfs.zettel'))} · ${escHtml(HL.repsText(h.reps))}</span>
+      </li>`).join('')}${zugabe}</ol>
   </div>`;
 }
 

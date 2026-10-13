@@ -214,6 +214,8 @@ details.tag.heute{border-left:0;background:none}
 .gw:first-child, .reunion-kopf + .gw{border-top:0}
 .gn{color:var(--fg)}
 .go{font-family:var(--mono);font-size:0.71875rem;color:var(--rost)}
+/* Satzschema nach 5x5 (3×5, 3×3) — nur wenn es vom eigenen abweicht. */
+.gsch{font-family:var(--mono);font-size:0.71875rem;color:var(--stahl);letter-spacing:.06em;white-space:nowrap}
 .gv{grid-column:3;font-family:var(--mono);font-weight:700;color:var(--akzent);white-space:nowrap;text-align:right}
 .gs{grid-column:1 / -1;display:block;height:3px;background:var(--sunken)}
 .gs i{display:block;height:100%;background:var(--gruen);opacity:.75}
@@ -315,8 +317,8 @@ dialog{
 dialog::backdrop{background:var(--backdrop)}
 /* Die Pausenkarte ist breiter als die Auswahldialoge: sie traegt eine
    Tabelle und zwei Saetze Begruendung, und die muessen lesbar bleiben. */
-#pause-dialog{max-width:min(380px,calc(100vw - 32px))}
-#pause-title{margin:0 0 12px;font-family:var(--mono);font-size:0.75rem;letter-spacing:.18em;
+#pause-dialog, #schema-dialog{max-width:min(380px,calc(100vw - 32px))}
+#pause-title, #schema-title{margin:0 0 12px;font-family:var(--mono);font-size:0.75rem;letter-spacing:.18em;
   text-transform:uppercase;color:var(--akzent);text-align:center}
 .pause-kopf{margin:0 0 6px;font-size:1rem;color:var(--fg)}
 .pause-vorschlag{margin:10px 0 6px;font-family:var(--display);font-size:1.375rem;color:var(--akzent)}
@@ -448,6 +450,9 @@ dialog::backdrop{background:var(--backdrop)}
 .hoch-text{margin:2px 0 10px;font-size:0.8125rem;line-height:1.5;color:var(--muted);
   text-transform:none;letter-spacing:normal}
 .hoch-text:last-child{margin-bottom:0}
+/* Kleiner Textknopf in einer Zeile: "Zurück auf 5×5". */
+.link{display:inline-block;margin-left:6px;padding:4px 0;background:none;border:0;color:var(--akzent);
+  font:inherit;font-size:0.8125rem;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 /* Zeile und Kurve als eine Einheit. Hat eine Uebung zu wenige Punkte fuer
    eine Kurve, sah die naechste sonst aus, als gehoere sie zur vorigen. */
 .relz{padding-bottom:6px}
@@ -1063,6 +1068,15 @@ details.shirt[open] .shirt-icon{fill:var(--akzent);stroke:var(--akzent)}
   color:#a32a22;border:2px solid #a32a22;padding:0 5px;transform:rotate(-3deg)}
 .zettel li.zugabe .song{font-size:1rem;color:#3d372f}
 
+/* Aftershow: Hilfsuebungen in der Einheit */
+.hilfs-wahl{margin:10px 0 4px}
+.hilfs-zeile{margin-top:16px}
+.hz-kopf{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 12px;margin-bottom:8px}
+.hz-kopf .ln{font-family:var(--display);font-weight:600;font-size:1.0625rem;text-transform:uppercase;letter-spacing:.04em;color:var(--fg)}
+.hz-letzt{font-family:var(--mono);font-size:0.71875rem;color:var(--dim)}
+.hilfs-zeile .set{flex:0 0 auto;min-width:56px;height:52px;font-size:1.25rem}
+.hilfs-zeile .hz-plus{padding:0 14px;font-family:var(--mono);font-size:0.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border-style:dashed}
+.zettel li.hilfs .song{font-size:1.0625rem}
 .zugabe-check{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:0.9375rem;color:var(--fg);cursor:pointer}
 .zugabe-check input{width:20px;height:20px;accent-color:var(--akzent)}
 

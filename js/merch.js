@@ -16,6 +16,7 @@
 import { applyLog, initialState, ymd } from './program.js';
 import { tonnage, gewichtsReihe, wochenSerie, intensitaetsAbgleich } from './stats.js';
 import { pausenFenster } from './verletzung.js';
+import { HILFS, bereinige } from './hilfs.js';
 
 /** Was als Gig zaehlt: alles, wofuer man ins Studio gegangen ist — und jede Fahrt. */
 export const GIG_TYPEN = ['strength', 'wod', 'unplugged', 'maxout'];
@@ -82,6 +83,10 @@ export const KM_STUFEN = [100, 500, 1000, 2500, 5000];
 export const HOEHE_M = 8848;
 export const CENTURY_KM = 100;
 const DOOM_N = 10, OPENAIR_N = 10;
+/* Hilfsuebungen: Regelmaessigkeit (Einheiten mit Hilfsarbeit) und ein
+   Qualitaetsmerkmal (Klimmzuege am Stueck) — keine Wiederholungssummen. */
+export const ROADCREW_N = 10, HANGAR_WDH = 10;
+const ZUG = new Set(HILFS.filter(h => h.zug).map(h => h.id));
 const CROSSOVER_STUFEN = [1, 10, 26];
 
 /**
@@ -102,6 +107,7 @@ export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHo
   p('maxout', 'buehne', 'maxout', 'merch.p.maxout');
   p('zugaben', 'buehne', 'zugaben', 'merch.p.zugaben', { n: 10 });
   p('tight', 'buehne', 'tight', 'merch.p.tight', { n: 10 });
+  p('roadcrew', 'buehne', 'roadcrew', 'merch.p.roadcrew', { n: ROADCREW_N });
 
   for (const [id, def] of Object.entries(lifts)) {
     for (const n of PLATTEN_STUFEN) {
@@ -110,6 +116,7 @@ export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHo
     }
   }
   if (CLUB_LIFTS.every(id => lifts[id])) p('club', 'kraft', 'club', 'merch.p.club', { kg: CLUB_KG });
+  p('hangar', 'kraft', 'hangar', 'merch.p.hangar', { n: HANGAR_WDH });
   if (mitGewicht) {
     for (const m of KOERPER_MARKEN) {
       if (!lifts[m.lift]) continue;
@@ -169,7 +176,7 @@ export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Dat
   const refs = Object.entries(lifts).filter(([, d]) => d && d.reference);
   const best = {};
   const gigTage = new Set();
-  let unplugged = 0, zugaben = 0, tight = 0, comebackOffen = false;
+  let unplugged = 0, zugaben = 0, tight = 0, roadcrew = 0, comebackOffen = false;
 
   for (const { log, vorher, nachher } of zeitleiste(logs, config)) {
     const d = log.date;
@@ -204,6 +211,9 @@ export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Dat
         }
         if (log.lifts.length && log.lifts.every(e => e.success) && ++tight >= 10) setze('tight', d);
         if (log.zugabe && ++zugaben >= 10) setze('zugaben', d);
+        const hilfs = bereinige(log.hilfs);
+        if (hilfs.length && ++roadcrew >= ROADCREW_N) setze('roadcrew', d);
+        if (hilfs.some(h => ZUG.has(h.id) && Math.max(...h.reps) >= HANGAR_WDH)) setze('hangar', d);
         if (comebackOffen) { setze('comeback', d); comebackOffen = false; }
         break;
       }

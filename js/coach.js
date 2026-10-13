@@ -522,9 +522,12 @@ const AUSNAHME = {
 };
 
 export function ausnahmen({ pause = null, verletzungen = [], form = null,
-                            stoerung = null, abnehmStufe = null } = {}) {
+                            stoerung = null, abnehmStufe = null, schema = [] } = {}) {
   const out = [];
   if (pause) out.push({ art: 'pause', stufe: 'vorschlag' });
+  // Ein festgefahrener Lift steht da, bevor man startet — der Dialog beim
+  // Start soll keine Ueberraschung sein.
+  for (const v of schema || []) if (v && v.lift) out.push({ art: 'schema', stufe: 'vorschlag', lift: v.lift });
   // Strukturelles bleibt — es ist kein Ereignis des Tages, sondern ein
   // Zustand. Dafuer gibt es ein Instrument, keine taegliche Zeile.
   for (const v of verletzungen || []) {

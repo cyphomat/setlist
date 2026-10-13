@@ -465,6 +465,12 @@ print('\n--- Was auf Home sprechen darf ---');
 {
   const normal = { form: { stufe: 'neutral' }, stoerung: { stufe: 'gering' }, abnehmStufe: 'fenster' };
   eq('ein normaler Tag hat keine Ausnahmen', C.ausnahmen(normal).length, 0);
+  {
+    const a = C.ausnahmen({ schema: [{ lift: 'ohp', stufe: 1 }] });
+    eq('festgefahrener Lift ist eine Ausnahme', a.length, 1);
+    eq('mit Lift', a[0].art === 'schema' && a[0].lift, 'ohp');
+    eq('Pause vor dem Schema', C.ausnahmen({ pause: { tage: 20 }, schema: [{ lift: 'ohp' }] })[0].art, 'pause');
+  }
   eq('ohne Daten auch nicht', C.ausnahmen().length, 0);
   eq('frische Form ist keine Ausnahme', C.ausnahmen({ form: { stufe: 'frisch' } }).length, 0);
   const finger = { id: 'finger', was: 'Finger', art: 'wiederkehrend', status: 'aktiv' };

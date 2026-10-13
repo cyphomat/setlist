@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="App öffnen" src="https://img.shields.io/badge/App-öffnen-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1466%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1628%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-keiner-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Abhängigkeiten" src="https://img.shields.io/badge/Abhängigkeiten-0-a7a3ab?style=for-the-badge&labelColor=17161b">
 </p>
@@ -138,19 +138,21 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 | **Soundcheck** | Aufwärmsätze aus dem Arbeitsgewicht: leere Stange, dann 55 / 70 / 85 %. Jede Zeile abhakbar — angetippt durchgestrichen. |
 | **Gewicht im Satz** | Anpassbar während der Einheit — das Log bildet ab, was wirklich passiert ist. |
 | **Pausenuhr** | 90 s, nach Fehlversuch 180 s, im Lauf um ±30 s verstellbar. Endet mit Vibration und Ton, stoppt sich nach dem letzten Satz der Einheit selbst. |
+| **Aftershow** | Hilfsübungen nach dem Hauptprogramm: Klimmzüge, Chin-ups, Dips, Liegestütze, Face Pulls, Curls, hängendes Beinheben. Je Satz die Wiederholungen, daneben, was beim letzten Mal ging. Ohne Steigerung, ohne Einfluss auf Gewichte und Tonnage. In der Tour steht je Übung der beste Satz. |
 | **Bestwerte** | `Maximum` (nur aus Max-Out) gegen `Mindestens` (aus Arbeitssätzen, systematisch zu niedrig). |
 | **Max-Out** | Krafttest mit e1RM. Dreht den A/B-Wechsel nicht. |
 | **Wissen an der Stange** | Aufklappbar: Begründung, Cue, typischer Fehler, Brücke zum olympischen Heben. |
 | **Mobility** | Fünf Übungen, einmal pro Kalenderwoche fällig — bei der ersten Einheit (Kraft oder Jam), ganz gleich welcher. Eigener Button, jederzeit unabhängig davon nutzbar. |
 | **Gefühl nach der Einheit** | Vier Stufen (Leicht/Normal/Hart/Extrem) auf dem Geschafft-Screen — macht die Ansage im Nachhinein überprüfbar. |
 | **Injury Report** | Was gerade zwickt, mit deiner eigenen Behandlung. Zwei Arten: *wiederkehrend* (kommt und geht, wird nach der Einheit kurz abgefragt, kann ausheilen) und *strukturell* (bleibt, wird nicht abgefragt, sperrt dauerhaft). Übungen, die du sperrst, würfelt der Jam nicht, das Unplugged nimmt sie nicht, Technik und Mobility lassen sie weg. Grundübungen werden nur angemerkt, nie weggelassen — daran hängt die 5×5-Mechanik. Die App stellt keine Diagnose und schlägt keine Behandlung vor. |
-| **Merch-Stand** | Ein bisschen Spiel, passend zur Bühne: eine **Kutte** mit Aufnähern (Plattenclub, 1000-lb-Club, Körpergewicht-Marken, Comeback, Serien … und fürs Rad: Tourbus-Kilometer, Stairway to Heaven, Highway Star, Doom für disziplinierte Grundlage, Open Air, Crossover-Wochen mit Kraft und Rad), **Gold und Platin** fürs bewegte Gewicht, ein **Rang** von der Garagenband bis zur Hall of Fame und jedes Quartal ein **Tourshirt** mit deinen Trainingstagen auf dem Rücken. Nach der Einheit kommt die Setlist als Zettel mit Gaffa-Tape, auf Home steht ein Wochenregler, der nur bei erfülltem Plan **und** sauberen Sätzen auf elf geht. Belohnt wird Regelmäßigkeit, nie Menge: der Rang zählt Wochen statt Einheiten (Radwochen eingeschlossen), und eine eingetragene Verletzung **friert die Serie ein** statt sie reißen zu lassen. Alles aus den Logs berechnet, nichts gespeichert. |
+| **Merch-Stand** | Ein bisschen Spiel, passend zur Bühne: eine **Kutte** mit Aufnähern (Plattenclub, 1000-lb-Club, Körpergewicht-Marken, Comeback, Serien, Roadcrew und Hangar 18 für die Aftershow … und fürs Rad: Tourbus-Kilometer, Stairway to Heaven, Highway Star, Doom für disziplinierte Grundlage, Open Air, Crossover-Wochen mit Kraft und Rad), **Gold und Platin** fürs bewegte Gewicht, ein **Rang** von der Garagenband bis zur Hall of Fame und jedes Quartal ein **Tourshirt** mit deinen Trainingstagen auf dem Rücken. Nach der Einheit kommt die Setlist als Zettel mit Gaffa-Tape, auf Home steht ein Wochenregler, der nur bei erfülltem Plan **und** sauberen Sätzen auf elf geht. Belohnt wird Regelmäßigkeit, nie Menge: der Rang zählt Wochen statt Einheiten (Radwochen eingeschlossen), und eine eingetragene Verletzung **friert die Serie ein** statt sie reißen zu lassen. Alles aus den Logs berechnet, nichts gespeichert. |
 | **Ansage gegen Gefühl** | In der Tour: jede Einheit mit beiden Werten, dazu die Trefferquote — Ansage und gefühlte Schwere nebeneinander statt nur behauptet. |
 | **Wo du schief stehst** | Zwölf Kraftverhältnisse gegen Richtwerte *und* gegen deinen eigenen Stand vor der Pause. Fällt derselbe Lift in mehreren Paaren auf, nennt die App ihn als Ursache und schlägt Zusatzarbeit vor — ein einzelnes schiefes Paar sagt nicht, an welcher Seite es liegt. Verglichen werden nur Werte gleicher Güte. |
 | **Prüfwerte** | Klimmzug, Dip, Front Squat, einarmiges Drücken, Step-Up, einbeiniges Kreuzheben und Farmer's Carry — was das 5×5 nicht selbst erzeugt. Im Backstage eintragen oder **im Max-Out messen**; ein gemessener Test schlägt die Handeingabe und steht mit Datum im Verlauf. Damit kommen acht weitere Verhältnisse dazu, darunter ob dein Ziehen zu deinem Drücken passt. |
 | **Wann du wieder da bist** | Hochrechnung je Übung aus deiner tatsächlichen Steigerungsrate bis zum Gewicht vor der Pause. „Erreicht" heißt gehoben, nicht zugeteilt. |
 | **Kraft je Kilo** | Arbeitsgewicht geteilt durch Körpergewicht, mit Verlauf. Im Defizit die ehrlichere Zahl — dort ist Halten schon Fortschritt. |
 | **Wo es klemmt** | Plateaus, bevor der Deload-Zähler sie meldet: wie lange ein Gewicht steht, Fehlversuche, und wie viele einzelne Sätze auf dem Ziel lagen. |
+| **Nach 5×5** | Muss ein Lift zweimal ohne neues Hoch in den Deload, steckt er fest. Beim Start schlägt die App dann den klassischen nächsten Schritt vor: **5×5 → 3×5 → 3×3** (Kreuzheben 1×5 → 1×3), gleiches Gewicht, weiter steigern. Nur mit deiner Zustimmung, als Anpassung im Log und unter *Tour → Kraft* jederzeit zurückzunehmen. |
 
 ### Rad und Kondition
 
@@ -171,6 +173,8 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 | | |
 |---|---|
 | **Offline** | Einheiten werden gepuffert. Tour und Radansicht zeigen den letzten Stand. |
+| **Bildschirm bleibt an** | Während Einheit, Jam, Unplugged und Max-Out geht das Display nicht aus. Zum Abhaken muss nicht entsperrt werden. Danach gibt die App den Bildschirm wieder frei. |
+| **Export als CSV** | *Backstage → App*: alle Einheiten als Tabelle für Excel, Numbers oder Sheets. Entsteht im Browser, geht an keinen Dienst; Text aus deinen Daten kommt nie als Formel an. |
 | **Selbstaktualisierend** | Prüft die Version beim Start und lädt sich genau einmal neu. |
 | **Sound und Vibration** | Ton bei Pausenende und Einheitsabschluss, zusätzlich zur Vibration — Ton respektiert den Stumm-Schalter, Vibration nicht. |
 | **Hell und dunkel** | Umschalter System / Hell / Dunkel. Zwei echte Fassungen, keine Invertierung. |
@@ -375,6 +379,9 @@ Wiederholungen. Abschaltbar unter *Backstage → Verbindungen*.
 | `js/unplugged.js` | Körpergewichts-Intervalle, Vorrat und Ablauf. |
 | `js/verletzung.js` | Injury Report: Sperren, Verlauf, Pausenfenster für die Serie. |
 | `js/merch.js` | Merch-Stand: Aufnäher, Schallplatten, Rang, Tourshirts, Wochenregler — alles aus den Logs. |
+| `js/hilfs.js` | Aftershow: Hilfsübungen bereinigen, letztes Mal, Bilanz. |
+| `js/wach.js` | Hält den Bildschirm während des Trainings an. |
+| `js/export.js` | Einheiten als CSV, sicher gegen Formeln. |
 | `js/boot.js` | Thema, Speicherumzug und Einbett-Sperre vor dem ersten Bild. |
 | `js/store.js` | GitHub-API als Speicher, Offline-Puffer. |
 | `js/intervals.js` | Liest Fahrten und Form; schreibt Krafteinheiten zurück. |
@@ -401,7 +408,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-1466 Tests in 18 Dateien. Kein Build, keine Abhängigkeiten.
+1628 Tests in 21 Dateien. Kein Build, keine Abhängigkeiten.
 
 ### Browserproben (optional)
 
@@ -409,7 +416,7 @@ Die Tests prüfen die Rechnung, die Proben das, was man sieht. Sie öffnen die e
 in Chromium, mit gestellter GitHub-API, gestelltem intervals.icu und einem festen Datum:
 
 ```sh
-node tools/proben.mjs                 # alle: start, tour, merch, bibliothek, sicherheit, englisch
+node tools/proben.mjs                 # alle: start, einheit, tour, merch, bibliothek, sicherheit, englisch
 node tools/proben.mjs start merch     # einzelne
 node tools/proben.mjs -v              # auch jede bestandene Prüfung
 ```

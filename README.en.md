@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1466%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1628%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
 </p>
@@ -138,19 +138,21 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | **Soundcheck** | Warm-up sets derived from the working weight: empty bar, then 55 / 70 / 85%. Every line tickable — tapped means struck through. |
 | **Weight mid-set** | Adjustable during the session — the log reflects what actually happened. |
 | **Rest timer** | 90 s, 180 s after a failed attempt, adjustable by ±30 s while running. Ends with vibration and a tone, stops itself after the session's last set. |
+| **Aftershow** | Accessory work after the main lifts: pull-ups, chin-ups, dips, push-ups, face pulls, curls, hanging leg raises. Reps per set, next to what you managed last time. No progression, no effect on weights or tonnage. The tour shows your best set for each. |
 | **Personal bests** | `Max` (only from a max-out) versus `At least` (from working sets, systematically too low). |
 | **Max-out** | Strength test with e1RM. Does not advance the A/B rotation. |
 | **Knowledge at the bar** | Expandable: rationale, cue, typical mistake, bridge to olympic lifting. |
 | **Mobility** | Five exercises, due once per calendar week — at the first session (strength or jam), whichever comes first. Own button, usable independently at any time. |
 | **Feel after the session** | Four levels (easy/normal/hard/brutal) on the done screen — makes the call verifiable in hindsight. |
 | **Injury report** | What is nagging, with your own treatment. Two kinds: *recurring* (comes and goes, briefly asked about after a session, can heal) and *structural* (stays, not asked about, blocks permanently). Exercises you block are not rolled by the jam, not picked by Unplugged, and left out of technique and mobility. Main lifts are only flagged, never dropped — the 5×5 mechanics hang on them. The app makes no diagnosis and suggests no treatment. |
-| **Merch stand** | A little play to match the stage: a **battle vest** with patches (plate club, 1000 lb club, bodyweight marks, comeback, streaks … and for the bike: tour bus kilometres, Stairway to Heaven, Highway Star, Doom for disciplined base rides, Open Air, crossover weeks with strength and bike), **gold and platinum** records for the weight you have moved, a **rank** from garage band to Hall of Fame, and every quarter a **tour shirt** with your training days on the back. After a session the setlist shows up as a taped paper sheet, and the home screen has a weekly dial that only goes to eleven when the plan is done **and** every set was clean. Consistency earns it, never volume: the rank counts weeks, not sessions (bike weeks included), and a logged injury **freezes your streak** instead of breaking it. All calculated from the logs, nothing stored. |
+| **Merch stand** | A little play to match the stage: a **battle vest** with patches (plate club, 1000 lb club, bodyweight marks, comeback, streaks, Road crew and Hangar 18 for the aftershow … and for the bike: tour bus kilometres, Stairway to Heaven, Highway Star, Doom for disciplined base rides, Open Air, crossover weeks with strength and bike), **gold and platinum** records for the weight you have moved, a **rank** from garage band to Hall of Fame, and every quarter a **tour shirt** with your training days on the back. After a session the setlist shows up as a taped paper sheet, and the home screen has a weekly dial that only goes to eleven when the plan is done **and** every set was clean. Consistency earns it, never volume: the rank counts weeks, not sessions (bike weeks included), and a logged injury **freezes your streak** instead of breaking it. All calculated from the logs, nothing stored. |
 | **Call vs. feel** | In the Tour: every session with both values plus the hit rate — the call and the perceived effort side by side instead of merely asserted. |
 | **Where you are out of balance** | Twelve strength ratios against guidance values *and* against your own level before the layoff. When the same lift stands out in several pairs, the app names it as the cause and suggests extra work — a single skewed pair does not tell you which side causes it. Only values of equal quality are compared. |
 | **Test values** | Pull-up, dip, front squat, single-arm press, step-up, single-leg deadlift and farmer’s carry — what 5×5 does not produce on its own. Enter them in the backstage or **measure them in a max-out**; a measured test beats a typed one and is recorded with its date. They add eight more ratios, including whether your pulling matches your pressing. |
 | **When you are back** | A projection per lift from your actual rate of increase up to your pre-layoff weight. “Reached” means lifted, not assigned. |
 | **Strength per kilo** | Working weight divided by body weight, with a trend line. In a deficit this is the honest number — holding steady is already progress. |
 | **Where it is stuck** | Plateaus before the deload counter reports them: how long a weight has stood, failed attempts, and how many individual sets landed on target. |
+| **Beyond 5×5** | When a lift has to deload twice without a new high in between, it is stuck. On start the app then suggests the classic next step: **5×5 → 3×5 → 3×3** (deadlift 1×5 → 1×3), same weight, keep climbing. Only with your consent, logged as an adjustment, and reversible any time under *Tour → Strength*. |
 
 ### Bike and conditioning
 
@@ -171,6 +173,8 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | | |
 |---|---|
 | **Offline** | Sessions are buffered. Tour and bike view show the last known state. |
+| **Screen stays on** | During a session, jam, Unplugged and max-out the display does not go dark, so you can tick off a set without unlocking. Afterwards the app lets the screen sleep again. |
+| **CSV export** | *Backstage → App*: every session as a table for Excel, Numbers or Sheets. Built in the browser, sent to no service; text from your data never arrives as a formula. |
 | **Self-updating** | Checks the version at start and reloads itself exactly once. |
 | **Sound and vibration** | Tone at the end of a rest and on finishing a session, on top of the vibration — the tone respects the mute switch, the vibration does not. |
 | **Light and dark** | Switch between system / light / dark. Two real designs, not an inversion. |
@@ -371,6 +375,9 @@ off under *Backstage → Connections*.
 | `js/unplugged.js` | Bodyweight intervals, pool and run order. |
 | `js/verletzung.js` | Injury report: blocks, history, pause windows for the streak. |
 | `js/merch.js` | Merch stand: patches, records, rank, tour shirts, weekly dial — all from the logs. |
+| `js/hilfs.js` | Aftershow: clean up accessory sets, last time, summary. |
+| `js/wach.js` | Keeps the screen on while you train. |
+| `js/export.js` | Sessions as CSV, safe against formulas. |
 | `js/boot.js` | Theme, storage migration and the frame block before first paint. |
 | `js/store.js` | GitHub API as storage, offline buffer. |
 | `js/intervals.js` | Reads rides and form; writes strength sessions back. |
@@ -397,7 +404,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-1466 tests in 18 files. No build, no dependencies.
+1628 tests in 21 files. No build, no dependencies.
 
 ### Browser probes (optional)
 
@@ -405,7 +412,7 @@ The tests check the maths; the probes check what you see. They open the real app
 Chromium against a mocked GitHub API, a mocked intervals.icu and a frozen date:
 
 ```sh
-node tools/proben.mjs                 # all: start, tour, merch, bibliothek, sicherheit, englisch
+node tools/proben.mjs                 # all: start, einheit, tour, merch, bibliothek, sicherheit, englisch
 node tools/proben.mjs start merch     # just these
 node tools/proben.mjs -v              # also list every passing check
 ```

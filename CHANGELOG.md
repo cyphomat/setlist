@@ -10,6 +10,57 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-13.1
+
+### Neu
+- **Bildschirm bleibt an.** Während Einheit, Jam, Unplugged und Max-Out geht das
+  Display nicht mehr aus. Zum Abhaken des nächsten Satzes muss also nicht mehr
+  entsperrt werden.
+  - Beim Verlassen der Ansicht gibt die App den Bildschirm wieder frei, egal ob über
+    Fertig, Abbrechen oder Zurück.
+  - Nach dem Wechsel in eine andere App holt sie die Sperre neu.
+  - Ohne Unterstützung im Browser bleibt alles wie bisher (`js/wach.js`).
+- **Nach 5×5.** Muss ein Lift zweimal ohne neues Hoch dazwischen in den Deload,
+  steckt er fest.
+  - Ein Deload an einem höheren Gewicht als der vorige zählt wieder als erster.
+  - Beim Start schlägt die App für diesen Lift die nächste Stufe vor: 5×5 → 3×5 → 3×3,
+    beim Kreuzheben 1×5 → 1×3. Das Gewicht bleibt und steigt weiter wie bisher.
+  - Wechseln geht nur mit deiner Zustimmung und steht als Anpassung
+    (`grund: 'schema'`) im Log, der Zustand bleibt also ableitbar.
+  - „Noch nicht“ gilt bis zum nächsten Deload.
+  - Die Startseite kündigt den Vorschlag an. Die Gewichtsliste zeigt die laufende
+    Stufe, und unter *Tour → Kraft → Wo es klemmt* geht es zurück.
+  - Ein Schemawechsel verschluckt keinen fälligen Pausen-Deload.
+- **Aftershow: Hilfsübungen.** Nach dem Hauptprogramm lassen sich Klimmzüge, Chin-ups,
+  Dips, Liegestütze, Face Pulls, Curls und hängendes Beinheben mitschreiben.
+  - Je Satz die Wiederholungen über den bekannten Auswahldialog. Hervorgehoben ist, was
+    beim letzten Mal ging.
+  - Ohne Steigerung: keine Gewichte, kein A/B-Wechsel, keine Tonnage.
+  - Sie stehen auf dem Setlist-Zettel, in der Historie, in der Beschreibung für
+    intervals.icu und als Bilanz unter *Tour → Kraft*.
+  - Zwei neue Aufnäher: **Roadcrew** für zehn Einheiten mit Hilfsarbeit und
+    **Hangar 18** für zehn Klimmzüge oder Chin-ups am Stück.
+- **Export als CSV** unter *Backstage → App*.
+  - Eine Zeile je Lift, Hilfsübung, Zugabe, Jam, Unplugged, Max-Out und Anpassung.
+  - Semikolon und BOM, damit Excel die Datei direkt öffnet.
+  - Die Datei entsteht im Browser und geht an keinen Dienst. Als Home-Bildschirm-App
+    auf iOS öffnet sich das Teilen-Blatt („In Dateien sichern“).
+  - Text aus den eigenen Daten kommt nie als Formel an: Ein Ort `=HYPERLINK(…)` landet
+    als Text in der Zelle (`js/export.js`).
+
+### Behoben
+- **Abbrechen zeigt den aktuellen Stand.** Wer vor der Einheit einen Pausen-Deload
+  übernommen und dann abgebrochen hat, sah auf der Startseite noch die alten Gewichte.
+- **Einheiten im Hintergrund nachladen.** Ohne Zwischenspeicher, also frisch
+  eingerichtet und die Tour nie geöffnet, kannte die Einheit die bisherigen Logs nicht.
+  Jetzt lädt sie sie im Hintergrund nach.
+
+### Werkzeuge
+- Neue Browserprobe `einheit`: Wachsperre, Schemadialog, Wechsel und Rückweg,
+  Aftershow bis zum Aufnäher. `sicherheit` prüft jetzt auch den CSV-Export samt
+  Formelschutz. Zusammen 265 Prüfungen.
+- 162 neue Tests (1628 in 21 Dateien).
+
 ## 2026-10-12.2
 
 ### Geändert
