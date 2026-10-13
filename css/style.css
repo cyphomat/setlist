@@ -451,6 +451,12 @@ dialog::backdrop{background:var(--backdrop)}
   text-transform:none;letter-spacing:normal}
 .hoch-text:last-child{margin-bottom:0}
 /* Kleiner Textknopf in einer Zeile: "Zurück auf 5×5". */
+/* Ueber Setlist (Backstage) und die Fusszeile im Setup: Text in --muted,
+   Links in Akzentfarbe und unterstrichen — erkennbar, ohne zu laermen. */
+.ueber p{margin:0 0 10px;font-size:0.875rem;line-height:1.6;color:var(--muted)}
+.ueber p:last-child{margin-bottom:0}
+.ueber a, .fuss a{color:var(--akzent);text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}
+.fuss{margin:28px 0 0;padding-top:14px;border-top:1px solid var(--line);font-size:0.8125rem;line-height:1.7;color:var(--muted);text-align:center}
 .link{display:inline-block;margin-left:6px;padding:4px 0;background:none;border:0;color:var(--akzent);
   font:inherit;font-size:0.8125rem;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 /* Zeile und Kurve als eine Einheit. Hat eine Uebung zu wenige Punkte fuer

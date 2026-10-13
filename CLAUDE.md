@@ -1,0 +1,26 @@
+# Setlist — Hinweise für die Arbeit an diesem Repo
+
+## Lizenz und Autor
+- Lizenz: **MIT** (`LICENSE`). Copyright-Zeile „Copyright (c) <erstes Jahr>[–<aktuelles Jahr>] cyphomat“; ein Bereich erst, wenn die Jahre verschieden sind.
+- Autor erscheint **nur** als „@cyphomat“, verlinkt auf https://github.com/cyphomat.
+- **Kein Klarname, keine E-Mail-Adresse**: nirgends, weder in Lizenz, README, App-Texten, Code-Kommentaren, Tests noch im CHANGELOG. Statt eines Namens „der Autor“ oder „@cyphomat“.
+- Feedback geht als Issue ans Original: https://github.com/cyphomat/setlist/issues. Im Fork zeigt der Quelltext-Link auf den Fork (`js/aktualisierung.js`).
+
+## Daten
+- Private Datenrepos (z. B. `cyphomat/setlist-data`) nie anfassen.
+- Der Zustand wird aus den Logs abgeleitet (`deriveState`). Änderungen am Programm laufen als Log-Eintrag (`type: 'anpassung'`), nie durch Überschreiben von `state.json`.
+
+## Oberfläche
+- Zweisprachig: jeder sichtbare Text über `js/i18n.js`, deutsch und englisch, mit gleichen Platzhaltern. `t()` maskiert nicht: Werte aus Daten mit `escHtml`, Links mit `sicherLink`.
+- Externe Links mit `target="_blank" rel="noopener noreferrer"`. Keine Abrufe an neue Hosts; die CSP in `index.html` bleibt, wie sie ist.
+- Nur vorhandene Farbtokens (`--fg`, `--muted`, `--akzent` …). Neue Texte und Links in beiden Themen auf Kontrast ≥ 4,5:1 prüfen.
+- Prüfen bei 320, 390 und 1280 px, in beiden Themen und mit „Sehr groß“: kein Querlauf.
+
+## Dokumentation
+- Beide READMEs (`README.md`, `README.en.md`) gleich gliedern; Abzeichen in beiden.
+- Jede Auslieferung bekommt einen CHANGELOG-Eintrag.
+
+## Release
+- `version.json` und `CACHE` in `sw.js` immer gemeinsam setzen (entspricht dem obersten CHANGELOG-Eintrag); nur wenn sich ausgelieferter Code ändert. Neue Module in die `SHELL`-Liste von `sw.js`.
+- Vor jedem Push: `node tools/tests.mjs` (muss grün sein) und `node tools/proben.mjs` (Browserproben, braucht Playwright).
+- Testzahl im Abzeichen und im Abschnitt „Tests“ beider READMEs aktuell halten.

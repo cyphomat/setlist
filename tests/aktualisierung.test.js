@@ -47,4 +47,21 @@ print('\n--- Ursprung ---');
 eq('Besitzer', A.URSPRUNG.owner, 'cyphomat');
 eq('Repo', A.URSPRUNG.repo, 'setlist');
 
+print('\n--- Autor, Issues, Quelltext ---');
+eq('Autor nur als Handle', A.AUTOR.name, '@cyphomat');
+eq('Autor verlinkt aufs Profil', A.AUTOR.url, 'https://github.com/cyphomat');
+eq('Issues im Original', A.ISSUES, 'https://github.com/cyphomat/setlist/issues');
+eq('Original: Quelltext im Original', A.quelltext('cyphomat.github.io', '/setlist/'), 'https://github.com/cyphomat/setlist');
+eq('Fork: Quelltext im Fork', A.quelltext('jens.github.io', '/setlist/index.html'), 'https://github.com/jens/setlist');
+eq('Fork mit umbenanntem Repo', A.quelltext('jens.github.io', '/training/'), 'https://github.com/jens/training');
+eq('Fork auf der Wurzel: Nutzerseite', A.quelltext('jens.github.io', '/'), 'https://github.com/jens/jens.github.io');
+eq('Fork auf der Wurzel mit Datei', A.quelltext('jens.github.io', '/index.html'), 'https://github.com/jens/jens.github.io');
+eq('Grossschreibung im Host', A.quelltext('Jens.GitHub.io', '/setlist/'), 'https://github.com/jens/setlist');
+eq('localhost: Original', A.quelltext('localhost', '/setlist/'), 'https://github.com/cyphomat/setlist');
+eq('eigene Domain: Original', A.quelltext('setlist.example.com', '/'), 'https://github.com/cyphomat/setlist');
+eq('seltsamer Pfad: Original', A.quelltext('jens.github.io', '/a"b/'), 'https://github.com/cyphomat/setlist');
+eq('ohne Pfad', A.quelltext('jens.github.io'), 'https://github.com/jens/jens.github.io');
+eq('Lizenz neben dem Quelltext', A.lizenz('jens.github.io', '/setlist/'), 'https://github.com/jens/setlist/blob/main/LICENSE');
+eq('Lizenz im Original', A.lizenz('localhost', '/'), 'https://github.com/cyphomat/setlist/blob/main/LICENSE');
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

@@ -49,3 +49,36 @@ export function istFork(host, owner = URSPRUNG.owner) {
   if (!h.endsWith('.github.io')) return false;          // lokal oder woanders
   return h !== `${String(owner).toLowerCase()}.github.io`;
 }
+
+/* ---------- Wer, wo, wohin mit Feedback ---------- */
+
+const GITHUB = 'https://github.com';
+
+/** Der Autor — nur als GitHub-Handle, ohne Klarnamen. */
+export const AUTOR = { name: '@cyphomat', url: `${GITHUB}/cyphomat` };
+
+/** Fehler und Wuensche gehen immer ans Original, auch aus einem Fork. */
+export const ISSUES = `${GITHUB}/${URSPRUNG.owner}/${URSPRUNG.repo}/issues`;
+
+/**
+ * Wo der Quelltext dieser laufenden Fassung liegt. Im Fork ist das der
+ * Fork — wer dort etwas aendert, soll seinen eigenen Code finden. Erkannt
+ * wie bei istFork an der Pages-Adresse: <nutzer>.github.io/<repo>/, bei
+ * einer Nutzerseite direkt auf der Wurzel heisst das Repo <nutzer>.github.io.
+ * Lokal oder unter fremder Domain gibt es nichts zu erkennen: das Original.
+ */
+export function quelltext(host, pfad = '/') {
+  const original = `${GITHUB}/${URSPRUNG.owner}/${URSPRUNG.repo}`;
+  if (!istFork(host)) return original;
+  const h = String(host).toLowerCase();
+  const nutzer = h.slice(0, -'.github.io'.length);
+  // Nur was in GitHub-Namen vorkommen darf — sonst lieber das Original.
+  if (!/^[a-z0-9-]+$/.test(nutzer)) return original;
+  const erstes = String(pfad ?? '/').split('/').filter(Boolean)[0] || '';
+  const repo = erstes && !/\.[a-z0-9]+$/i.test(erstes) ? erstes : h;
+  if (!/^[A-Za-z0-9._-]+$/.test(repo)) return original;
+  return `${GITHUB}/${nutzer}/${repo}`;
+}
+
+/** Die Lizenzdatei neben dem Quelltext. */
+export const lizenz = (host, pfad) => `${quelltext(host, pfad)}/blob/main/LICENSE`;

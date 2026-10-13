@@ -17,7 +17,7 @@
 import { mkdirSync } from 'node:fs';
 import { starteServer, starteBrowser, BILDER } from './proben/gemeinsam.mjs';
 
-const BEREICHE = ['start', 'einheit', 'tour', 'merch', 'bibliothek', 'sicherheit', 'englisch'];
+const BEREICHE = ['start', 'einheit', 'tour', 'merch', 'bibliothek', 'sicherheit', 'englisch', 'ueber'];
 
 const args = process.argv.slice(2);
 const laut = args.includes('-v');

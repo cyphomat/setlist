@@ -290,7 +290,7 @@ export async function pushAktivitaet(aktivitaet) {
 
 const PUSH_KEY = 'setlist.icu.push';
 /**
- * An, solange nicht ausdruecklich abgeschaltet. Daniel hat die Uebertragung
+ * An, solange nicht ausdruecklich abgeschaltet. Der Autor hat die Uebertragung
  * freigegeben; ein Schalter, den man erst suchen muss, wuerde die Funktion
  * faktisch totlegen.
  */

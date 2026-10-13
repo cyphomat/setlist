@@ -10,6 +10,36 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-13.2
+
+### Neu
+- **MIT-Lizenz.** Bisher lag keine Lizenz im Repo. Rechtlich hieß das „alle Rechte
+  vorbehalten“: forken per Knopf ging, anpassen und selbst betreiben nicht. Jetzt steht
+  der Quelltext unter MIT (`LICENSE`), Forken und Anpassen ist ausdrücklich erwünscht.
+- **Über Setlist** unter *Backstage → App*:
+  - gebaut von @cyphomat;
+  - Fehler und Wünsche als Issue im Original-Repo;
+  - Lizenz und Quelltext;
+  - ein ehrlicher Satz „ohne Gewähr“.
+  - Im Fork zeigt der Quelltext-Link auf den Fork, Feedback geht weiter ans Original.
+  - Alles nur Links: kein Abruf, die CSP bleibt unverändert.
+- **Fußzeile** auf dem Einrichtungsbildschirm mit Autor, Lizenz und Issues.
+- **READMEs:** Lizenz-Abzeichen und ein Abschnitt „Mitmachen“ / „Contributing“.
+- `CLAUDE.md` mit den Regeln für dieses Repo. Der Autor erscheint nur als @cyphomat.
+
+### Geändert
+- Kommentare, Tests und der CHANGELOG nennen keinen Vornamen mehr.
+
+### Werkzeuge
+- Neue Browserprobe `ueber`:
+  - Links, neue Tabs ohne Opener und Referrer;
+  - Fork-Fall unter `jens.github.io/setlist/`;
+  - Kontrast ≥ 4,5:1 bei 320/390/1280 px in beiden Themen;
+  - Englisch;
+  - keine Anfrage an fremde Hosts.
+- `kontext()` kann die App jetzt unter einer anderen Adresse und ohne Token öffnen.
+- 15 neue Tests (1643).
+
 ## 2026-10-13.1
 
 ### Neu
@@ -848,7 +878,7 @@ ersetzten Rekorden, halbe Daten, unsinnige Gewichte.
 
 ## 2026-09-01.77
 
-Der erste Schritt weg von „das ist Daniels App" hin zu „das kann jemand anderes auch
+Der erste Schritt weg von „das ist die App ihres Autors" hin zu „das kann jemand anderes auch
 benutzen". Die höchste Hürde war nicht das Training, sondern eine JSON-Datei.
 
 ### Behoben

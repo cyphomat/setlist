@@ -4,9 +4,10 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="App öffnen" src="https://img.shields.io/badge/App-öffnen-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1628%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1643%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-keiner-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Abhängigkeiten" src="https://img.shields.io/badge/Abhängigkeiten-0-a7a3ab?style=for-the-badge&labelColor=17161b">
+  <a href="LICENSE"><img alt="Lizenz: MIT" src="https://img.shields.io/badge/Lizenz-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
 </p>
 
 <p align="center">
@@ -373,7 +374,7 @@ Wiederholungen. Abschaltbar unter *Backstage → Verbindungen*.
 | `js/i18n.js` | Oberflächentexte auf Deutsch und Englisch. |
 | `js/geraete.js` | Orte, Ausstattung, Machbarkeit einer Bewegung. |
 | `js/sicher.js` | Maskiert Fremdtext, prüft Adressen. |
-| `js/aktualisierung.js` | Vergleicht die eigene Version mit der des Originals. |
+| `js/aktualisierung.js` | Vergleicht die eigene Version mit der des Originals; Autor, Issues und Quelltext-Link (im Fork der Fork). |
 | `js/einrichten.js` | Baut aus ein paar Antworten eine gültige `config.json`. |
 | `js/persoenlich.js` | Grund, eigene Zeilen und alte Bestleistungen. |
 | `js/unplugged.js` | Körpergewichts-Intervalle, Vorrat und Ablauf. |
@@ -408,7 +409,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-1628 Tests in 21 Dateien. Kein Build, keine Abhängigkeiten.
+1643 Tests in 21 Dateien. Kein Build, keine Abhängigkeiten.
 
 ### Browserproben (optional)
 
@@ -416,7 +417,7 @@ Die Tests prüfen die Rechnung, die Proben das, was man sieht. Sie öffnen die e
 in Chromium, mit gestellter GitHub-API, gestelltem intervals.icu und einem festen Datum:
 
 ```sh
-node tools/proben.mjs                 # alle: start, einheit, tour, merch, bibliothek, sicherheit, englisch
+node tools/proben.mjs                 # alle: start, einheit, tour, merch, bibliothek, sicherheit, englisch, ueber
 node tools/proben.mjs start merch     # einzelne
 node tools/proben.mjs -v              # auch jede bestandene Prüfung
 ```
@@ -468,3 +469,14 @@ Token und Key liegen im `localStorage`, also pro Gerät — auf dem Mac einmal n
 ## Zugangsdaten
 
 Nirgends im Code, nirgends im Repo, in keinem Commit. GitHub-Token und intervals.icu-Key werden in der App eingegeben und liegen ausschließlich im `localStorage` des jeweiligen Browsers.
+
+---
+
+## Mitmachen
+
+Setlist ist von [@cyphomat](https://github.com/cyphomat).
+
+- **Fehler gefunden oder einen Wunsch?** Gern als [Issue](https://github.com/cyphomat/setlist/issues) hier im Original-Repo.
+- **Forken und anpassen ist ausdrücklich erwünscht.** Der Quelltext steht unter der [MIT-Lizenz](LICENSE): verwenden, ändern, weitergeben, auch in einer eigenen Fassung. Wie du deine eigene Instanz aufsetzt, steht unter [Selbst einrichten](#selbst-einrichten).
+- **Im Fork** zeigt der Quelltext-Link der App (*Backstage → App → Über Setlist*) auf deinen Fork. Feedback geht weiterhin hierher ans Original.
+- **Ohne Gewähr:** Setlist rechnet Gewichte, Pausen und Ansagen nach Faustregeln. Sie ersetzt weder Trainer noch Arzt. Was du an die Stange lädst, entscheidest du.

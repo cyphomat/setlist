@@ -409,7 +409,7 @@ eq('zwei Punkte sind kein Verlauf', S.effizienzTrend(ef.punkte.slice(0, 2)), nul
 eq('einer erst recht nicht', S.effizienzTrend(ef.punkte.slice(0, 1)), null);
 
 print('\n--- Entkopplung bleibt still, bis sie etwas bedeutet ---');
-// Genau Daniels Lage: kurze Zwift-Fahrten, der Wert steht da, aber es
+// Genau die Lage des Autors: kurze Zwift-Fahrten, der Wert steht da, aber es
 // stehen kaum Minuten zusammenhaengender Grundlage dahinter.
 const kurz = S.entkopplungsReihe([
   { date:'2026-08-25', entkopplung:4.2, pwhrMin:6,  minutes:45 },

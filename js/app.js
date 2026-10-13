@@ -1458,6 +1458,32 @@ async function leereCaches() {
 // nicht erreichbar — dann wird nichts behauptet.
 let versionOben = null;
 
+/* ============================ Ueber Setlist ============================
+   Wer die App gebaut hat, wohin mit Feedback, unter welcher Lizenz — im
+   Backstage und als Fusszeile im Setup. Nur Links, kein Abruf. Im Fork
+   zeigt der Quelltext auf den Fork, Issues gehen ans Original
+   (aktualisierung.js).                                                 */
+const extLink = (url, text) =>
+  `<a href="${sicherLink(url)}" target="_blank" rel="noopener noreferrer">${escHtml(text)}</a>`;
+
+function renderUeber() {
+  const host = location.hostname, pfad = location.pathname;
+  const fork = A.istFork(host);
+  const autor = extLink(A.AUTOR.url, A.AUTOR.name);
+  const issue = extLink(A.ISSUES, t('ueber.issue'));
+  const lizenz = extLink(A.lizenz(host, pfad), t('ueber.lizenzName'));
+  const quelle = extLink(A.quelltext(host, pfad), t(fork ? 'ueber.quelleFork' : 'ueber.quelle'));
+  const box = $('ueber-box');
+  if (box) box.innerHTML = `
+    <p>${t('ueber.autor', { autor })}</p>
+    <p>${t('ueber.feedback', { issue })}</p>
+    <p>${t('ueber.lizenz', { lizenz, quelle })}</p>
+    <p>${escHtml(t('ueber.gewaehr'))}</p>`;
+  const fuss = $('setup-fuss');
+  if (fuss) fuss.innerHTML = t('ueber.fuss', { autor, lizenz, issue });
+}
+renderUeber();
+
 function renderVersion() {
   const veraltet = versionOben && A.istVeraltet(laufendeVersion, versionOben);
   $('version-box').innerHTML =

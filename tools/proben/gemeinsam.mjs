@@ -115,13 +115,16 @@ const b64 = o => Buffer.from(JSON.stringify(o)).toString('base64');
  * Oeffnet die App mit Token, Logs und Config aus den Beispieldaten.
  * fahrten: intervals.icu verbinden und diese Aktivitaeten liefern.
  * vorher:  eigener Haken auf dem Kontext, bevor die Seite laedt.
+ * adresse: die App unter dieser Adresse ausliefern statt unter localhost,
+ *          etwa 'http://jens.github.io/setlist/' fuer einen Fork.
  * Gibt die Seite, gesammelte Seitenfehler und alles Geschriebene zurueck.
  */
-export async function kontext(browser, { logs, config, heute, breite = 390, hoehe = 900, schrift = null, theme = 'dunkel', fahrten = null, vorher = null }) {
+export async function kontext(browser, { logs, config, heute, breite = 390, hoehe = 900, schrift = null, theme = 'dunkel', fahrten = null, vorher = null, adresse = null, ohneToken = false }) {
   const state = P.deriveState(config, logs);
   const geschrieben = [];
   const ctx = await browser.newContext({ viewport: { width: breite, height: hoehe }, deviceScaleFactor: 1 });
   if (vorher) await vorher(ctx);
+  if (adresse) await unterAdresse(ctx, adresse);
   const icuAufrufe = [];
   if (fahrten) {
     await ctx.addInitScript(() => {
@@ -139,13 +142,13 @@ export async function kontext(browser, { logs, config, heute, breite = 390, hoeh
       return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
     });
   }
-  await ctx.addInitScript(([v, th, sch]) => {
-    localStorage.setItem('setlist.token', 'demo');
+  await ctx.addInitScript(([v, th, sch, ohne]) => {
+    if (!ohne) localStorage.setItem('setlist.token', 'demo');
     localStorage.setItem('setlist.theme', th);
     localStorage.setItem('setlist.version', v);
     localStorage.setItem('setlist.gym', 'box');
     if (sch) localStorage.setItem('setlist.schrift', sch);
-  }, [VERSION, theme, schrift]);
+  }, [VERSION, theme, schrift, ohneToken]);
   const alle = () => logs.concat(geschrieben.filter(g => g.path.startsWith('einheiten/')).map(g => g.data));
   await ctx.route('**/api.github.com/**', async r => {
     const u = r.request().url(), m = r.request().method();
@@ -175,11 +178,46 @@ export async function kontext(browser, { logs, config, heute, breite = 390, hoeh
   const fehler = [];
   p.on('pageerror', e => fehler.push(e.message));
   p.on('console', msg => { if (msg.type() === 'error' && !/404|Failed to load/.test(msg.text())) fehler.push('console: ' + msg.text()); });
-  await p.goto(`${BASIS}/index.html`);
-  await p.waitForSelector('#today .name');
+  await p.goto(adresse ? `${adresse}index.html` : `${BASIS}/index.html`);
+  await p.waitForSelector(ohneToken ? '#view-setup:not([hidden])' : '#today .name');
   await p.waitForTimeout(600);
   return { ctx, p, fehler, geschrieben, icuAufrufe };
 }
+
+/** Die App unter einer anderen Adresse ausliefern: Pfad dort -> Repo-Wurzel hier. */
+export async function unterAdresse(ctx, adresse) {
+  const ziel = new URL(adresse);
+  await ctx.route(u => u.origin === ziel.origin, async r => {
+    const pfad = new URL(r.request().url()).pathname;
+    const hier = pfad.startsWith(ziel.pathname) ? '/' + pfad.slice(ziel.pathname.length) : pfad;
+    const res = await fetch(`${BASIS}${hier}`);
+    return r.fulfill({ status: res.status, contentType: res.headers.get('content-type') || 'text/html',
+      body: Buffer.from(await res.arrayBuffer()) });
+  });
+}
+
+/**
+ * Kontrast einer Textstelle gegen ihren tatsaechlichen Hintergrund (WCAG).
+ * Laeuft im Browser; der Hintergrund ist die erste deckende Farbe darunter.
+ */
+export const kontraste = (p, selektor) => p.$$eval(selektor, els => {
+  const rgb = s => (s.match(/[\d.]+/g) || []).map(Number);
+  const lum = ([r, g, b]) => {
+    const k = c => { c /= 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+    return 0.2126 * k(r) + 0.7152 * k(g) + 0.0722 * k(b);
+  };
+  const grund = el => {
+    for (let e = el; e; e = e.parentElement) {
+      const c = rgb(getComputedStyle(e).backgroundColor);
+      if (c.length >= 3 && (c.length < 4 || c[3] > 0.9)) return c;
+    }
+    return [255, 255, 255];
+  };
+  return els.map(el => {
+    const a = lum(rgb(getComputedStyle(el).color)), b = lum(grund(el));
+    return { text: el.textContent.trim().slice(0, 30), wert: Math.round(((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)) * 100) / 100 };
+  });
+});
 
 /** Ragt etwas sichtbar ueber den rechten Rand? */
 export const ueberlauf = p => p.evaluate(() => {

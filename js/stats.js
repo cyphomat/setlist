@@ -629,7 +629,7 @@ export function radWochen(rides = [], wochen = 12, heute = new Date()) {
 }
 
 /* ---------------------------------------------------------------
-   Trainingskalender. Regelmaessigkeit ist Daniels erklaertes Ziel —
+   Trainingskalender. Regelmaessigkeit ist das erklaerte Ziel —
    und nichts zeigt sie so unbestechlich wie ein Raster, in dem die
    Luecken genauso sichtbar sind wie die Treffer.                   */
 
@@ -869,7 +869,7 @@ export function ansageAbgleich(logs = []) {
  * Die Zielwerte.
  *
  * `tabelle` ist der einzige Wert aus der Strength-Ratio-Tabelle, die
- * Daniel geschickt hat (Active Life). Der Rest sind gaengige Richtwerte
+ * dem Autor vorlag (Active Life). Der Rest sind gaengige Richtwerte
  * aus der Kraftsportliteratur — Faustregeln, keine Messwerte, und die
  * Oberflaeche sagt das auch. Dieselbe Trennung wie bei QUELLEN in
  * content.js: was belegt ist, wird als belegt ausgezeichnet, der Rest

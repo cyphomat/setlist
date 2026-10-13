@@ -375,7 +375,7 @@ eq('bei zwei Einheiten und zwei Slots ist der Vorrat jede Woche durch',
      .filter(s => s.type === 'ride').map(s => s.label).join('/'));
 
 // Rotation ueber Wochen zeigt sich erst bei mehr Einheiten als Slots —
-// Daniels echte Config hat vier Radeinheiten auf zwei Slots, also einen
+// Die Config des Autors hat vier Radeinheiten auf zwei Slots, also einen
 // Zweiwochen-Zyklus.
 const vier = { ...config, rides: [
   { label:'Z2', detail:'ruhig' }, { label:'SST', detail:'zaeh' },
