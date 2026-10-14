@@ -23,6 +23,18 @@
   <b>English</b> · <a href="README.md">Deutsch</a> · <a href="CHANGELOG.md">Changelog</a>
 </p>
 
+<h3 align="center">Get started → <a href="https://cyphomat.github.io/setlist/">cyphomat.github.io/setlist</a></h3>
+
+<p align="center">
+  <b>1</b> · Create a <b>private</b> repo called <code>setlist-data</code>. Empty is fine; the app asks for your programme on first start.<br>
+  <b>2</b> · Create a <a href="https://github.com/settings/personal-access-tokens/new">fine-grained token</a>: only for that repo, <b>Contents → Read and write</b>, nothing else (<a href="#setting-it-up-yourself">details</a>).<br>
+  <b>3</b> · <a href="https://cyphomat.github.io/setlist/">Open the app</a> and enter your GitHub username, the repo and the token. On a phone: Share → <i>Add to Home Screen</i>.
+</p>
+
+<p align="center">
+  <sub>Your training data lives in your private repo, token and key only in your browser. Want the code in your own hands? <a href="#setting-it-up-yourself">Fork it and run your own version</a>.</sub>
+</p>
+
 > **Note on language.** The app comes in German and English — switch it under **Tour → ⚙ Backstage → App**. Bilingual are the whole interface, the daily call including its one word, milestones, small wins, patches and error messages. Only the *exercise content* stays German — explanations, cues, common mistakes, movement standards — along with the built-in sayings, the jam movements and the bike rationales. That is technical text that needs a proper translation rather than a word-for-word one. In your data the day's word is always stored in German, so “call vs. feel” counts the same in both languages.
 
 ---
@@ -224,6 +236,11 @@ Back squat is in both workouts and therefore climbs twice as fast.
 ---
 
 ## Setting it up yourself
+
+**Just want to try it or simply use it?** Steps 2, 4 and 5 with the hosted app at
+[cyphomat.github.io/setlist](https://cyphomat.github.io/setlist/) are all you need (see
+*Get started* at the top). Fork and Pages (steps 1, 3 and 6) are only for your own,
+independent version whose code you control.
 
 Setlist is built for exactly one person — you. There is no multi-account login; whoever uses the app is whoever's `setlist-data` repo is configured. To get your own independent instance you need a GitHub account and about ten minutes.
 

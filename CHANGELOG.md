@@ -25,6 +25,11 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
   - Alles nur Links: kein Abruf, die CSP bleibt unverändert.
 - **Fußzeile** auf dem Einrichtungsbildschirm mit Autor, Lizenz und Issues.
 - **READMEs:** Lizenz-Abzeichen und ein Abschnitt „Mitmachen“ / „Contributing“.
+- **READMEs: Loslegen oben.** Der Link zur App ging zwischen den Abzeichen unter. Jetzt
+  steht gleich unter dem Untertitel „Loslegen → cyphomat.github.io/setlist“ mit drei
+  Schritten: privates Repo, Token, App öffnen. „Selbst einrichten“ sagt vorab, dass zum
+  Benutzen die gehostete App reicht. Fork und Pages braucht es nur für eine eigene
+  Fassung.
 - `CLAUDE.md` mit den Regeln für dieses Repo. Der Autor erscheint nur als @cyphomat.
 
 ### Geändert

@@ -23,6 +23,18 @@
   <b>Deutsch</b> · <a href="README.en.md">English</a> · <a href="CHANGELOG.md">Changelog</a>
 </p>
 
+<h3 align="center">Loslegen → <a href="https://cyphomat.github.io/setlist/">cyphomat.github.io/setlist</a></h3>
+
+<p align="center">
+  <b>1</b> · Ein <b>privates</b> Repo <code>setlist-data</code> anlegen. Leer genügt, das Programm fragt die App beim ersten Start ab.<br>
+  <b>2</b> · Einen <a href="https://github.com/settings/personal-access-tokens/new">Fine-grained Token</a> erzeugen: nur für dieses Repo, <b>Contents → Read and write</b>, sonst nichts (<a href="#selbst-einrichten">ausführlich</a>).<br>
+  <b>3</b> · <a href="https://cyphomat.github.io/setlist/">App öffnen</a>, GitHub-Nutzernamen, Repo und Token eintragen. Auf dem Handy: Teilen → <i>Zum Home-Bildschirm</i>.
+</p>
+
+<p align="center">
+  <sub>Deine Trainingsdaten liegen in deinem privaten Repo, Token und Key nur in deinem Browser. Den Code selbst in der Hand haben? <a href="#selbst-einrichten">Forken und eine eigene Fassung betreiben</a>.</sub>
+</p>
+
 > **Zur Sprache.** Die App gibt es auf Deutsch und Englisch — umschaltbar unter **Tour → ⚙ Backstage → App**. Zweisprachig sind die ganze Oberfläche, die Ansage samt Tageswort, Meilensteine, Minierfolge, Aufnäher und Fehlermeldungen. Deutsch bleiben nur die *Übungsinhalte* — Erklärungen, Cues, typische Fehler, Bewegungsstandards — sowie die mitgelieferten Sprüche, die Jam-Bewegungen und die Rad-Begründungen. Das ist Fachtext, der inhaltlich übersetzt werden muss statt Wort für Wort. In deinen Daten steht das Tageswort immer deutsch, damit „Ansage gegen Gefühl“ in beiden Sprachen gleich zählt.
 
 ---
@@ -224,6 +236,11 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 ---
 
 ## Selbst einrichten
+
+**Nur ausprobieren oder einfach benutzen?** Dann reichen die Schritte 2, 4 und 5 mit der
+gehosteten App unter [cyphomat.github.io/setlist](https://cyphomat.github.io/setlist/)
+(siehe *Loslegen* oben). Fork und Pages (Schritte 1, 3 und 6) brauchst du nur für eine
+eigene, unabhängige Fassung, deren Code du selbst in der Hand hast.
 
 Setlist ist für genau eine Person gebaut — dich. Es gibt keinen Login mit mehreren Konten; wer die App benutzt, ist der oder die, dessen `setlist-data`-Repo hinterlegt ist. Um eine eigene, unabhängige Instanz zu bekommen, brauchst du ein GitHub-Konto und etwa zehn Minuten.
 
