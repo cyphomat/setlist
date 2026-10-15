@@ -15,6 +15,7 @@
 - Externe Links mit `target="_blank" rel="noopener noreferrer"`. Keine Abrufe an neue Hosts; die CSP in `index.html` bleibt, wie sie ist.
 - Nur vorhandene Farbtokens (`--fg`, `--muted`, `--akzent` …). Neue Texte und Links in beiden Themen auf Kontrast ≥ 4,5:1 prüfen.
 - Prüfen bei 320, 390 und 1280 px, in beiden Themen und mit „Sehr groß“: kein Querlauf.
+- Pixel-Grafiken nur über `tools/pixel.mjs` (Quellen in `tools/pixel/`), nie die Bögen in `assets/pixel/` von Hand ändern; `node tools/pixel.mjs --pruefe` muss grün sein. Bewegung (Feuer, Ansager) respektiert `prefers-reduced-motion`.
 
 ## Dokumentation
 - Beide READMEs (`README.md`, `README.en.md`) gleich gliedern; Abzeichen in beiden.

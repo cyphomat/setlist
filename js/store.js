@@ -185,7 +185,7 @@ export function clearQueue() { localStorage.removeItem(QUEUE_KEY); }
    Geraets, die nichts ueber dich verraten.                              */
 
 const BLEIBT = ['setlist.theme', 'setlist.schrift', 'setlist.sprache',
-  'setlist.up.leise', 'setlist.up.minuten', 'setlist.version'];
+  'setlist.up.leise', 'setlist.up.minuten', 'setlist.version', 'setlist.ansager'];
 
 /** Alle eigenen Schluessel im localStorage. */
 function eigeneSchluessel() {

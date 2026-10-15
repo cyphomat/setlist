@@ -18,6 +18,8 @@ import * as M from './merch.js';
 import * as W from './wach.js';
 import * as HL from './hilfs.js';
 import * as X from './export.js';
+import * as F from './feuer.js';
+import * as ANS from './ansager.js';
 
 // Eingebettet in eine fremde Seite (siehe boot.js) startet die App gar nicht
 // erst — kein Laden, kein Token-Gebrauch. Der throw beendet das Modul hier.
@@ -318,6 +320,7 @@ function renderHome() {
   $('swap-workout').textContent = `Workout ${gewaehlt === 'A' ? 'B' : 'A'}`;
   $('today').className = `plakat ton-${d.intensitaet.stufe}`;
   $('today').innerHTML = plakatHtml(d, plan);
+  plakatGlut();
   $('start').onclick = startMitPausenCheck;
   renderInstrumente();
   $('zitat').innerHTML = `${meilensteinKarte()}${zitatHtml(d)}`;
@@ -1122,6 +1125,7 @@ function renderDone(before, log) {
   // Erst der Erfolg, dann der Bericht. Eine Tabelle mit Pfeilen sagt, was
   // passiert ist; sie sagt nicht, dass du gerade etwas geschafft hast.
   const wins = C.erfolge(before, state, config, log, alleLogs.concat([log]), new Date());
+  letzteErfolge = wins;
   const kopf = wins[0];
   const rest = wins.slice(1, 5);
 
@@ -3492,6 +3496,23 @@ document.querySelectorAll('.themen button[data-thema]').forEach(b => {
   };
 });
 
+/* ---------- Ansager an/aus ----------
+   Beim Einschalten einmal zur Probe — dann weiss man, worauf man sich
+   einlaesst. */
+function renderAnsagerSchalter() {
+  const an = ANS.istAn();
+  document.querySelectorAll('.ansager-wahl button').forEach(b => b.classList.toggle('an', (b.dataset.ansager === 'an') === an));
+}
+document.querySelectorAll('.ansager-wahl button').forEach(b => {
+  b.onclick = () => {
+    const an = b.dataset.ansager === 'an';
+    ANS.setzeAn(an);
+    renderAnsagerSchalter();
+    if (an) zeigeAnsage(ANS.ansage({ sauber: true }));
+  };
+});
+renderAnsagerSchalter();
+
 /* ---------- Schriftgroesse ----------
    Sitzt am <html> und wirkt ueber die rem-Angaben auf jeden Text zugleich.
    Bewusst nur drei Stufen: eine stufenlose Regelung waere ein Schieberegler,
@@ -3756,7 +3777,7 @@ function plakatHtml(d, plan) {
   const hinweise = ausnahmenHtml();
   return `
     <div class="kicker">${escHtml(heute)}${d.situation === 'streak' ? '' : ` · ${escHtml(d.kopf)}`}</div>
-    <div class="tageswort">${escHtml(tonWort(d.intensitaet.label))}</div>
+    <div class="tageswort"><span class="tw">${d.intensitaet.label === 'SCHWER' ? '<canvas class="glut" aria-hidden="true"></canvas>' : ''}<span>${escHtml(tonWort(d.intensitaet.label))}</span></span></div>
     <p class="tagessatz">${escHtml(d.intensitaet.text)}</p>
     ${hinweise ? `<div class="hinweise">${hinweise}</div>` : ''}
     <div class="programm">
@@ -4285,10 +4306,19 @@ function patchVars(a) {
 const patchName = a => typeof a.vars.n === 'number' ? tn(a.key, a.vars.n, patchVars(a)) : t(a.key, patchVars(a));
 const patchBedingung = a => t(a.key.replace('merch.p.', 'merch.pb.'), patchVars(a));
 
+/** Das Pixelbild eines Aufnaehers aus dem Bogen assets/pixel/aufnaeher.png (tools/pixel.mjs). */
+function pixHtml(a) {
+  const i = M.bildIndex(a);
+  return i < 0 ? '' : `<span class="pix" style="--i:${i};--n:${M.BILDER.length}" aria-hidden="true"></span>`;
+}
+
 function patchHtml(a) {
   return `<div class="patch k-${a.kategorie}${a.verdient ? '' : ' offen'}" title="${escHtml(patchBedingung(a))}">
-    <b>${escHtml(patchName(a))}</b>
-    <span>${escHtml(a.verdient ? t('merch.verdient', { datum: datumLang(a.verdient) }) : patchBedingung(a))}</span>
+    ${pixHtml(a)}
+    <div class="pt">
+      <b>${escHtml(patchName(a))}</b>
+      <span>${escHtml(a.verdient ? t('merch.verdient', { datum: datumLang(a.verdient) }) : patchBedingung(a))}</span>
+    </div>
   </div>`;
 }
 
@@ -4323,8 +4353,15 @@ function setlistZettel(log) {
  * spaet im Merch als ein falscher Jubel.
  */
 async function zeigeNeueAufnaeher(log, historie) {
+  let info = null;
+  try { info = await neueAufnaeherZeigen(log, historie); } catch { /* dann eben ohne */ }
+  ansagen(log, info);
+}
+
+/** Zeigt neue Aufnaeher und gibt fuer den Ansager zurueck, was neu ist — oder null. */
+async function neueAufnaeherZeigen(log, historie) {
   const box = $('done-aufnaeher');
-  if (!box || !config) return;
+  if (!box || !config) return null;
   let logs;
   try { logs = await S.readAllLogs(); alleLogs = logs; S.cacheLogs(logs); }
   catch { logs = (S.cachedLogs() || {}).logs || []; }
@@ -4332,15 +4369,78 @@ async function zeigeNeueAufnaeher(log, historie) {
     (l.finished || '') === (log.finished || '');
   const vorher = logs.filter(l => !gleich(l));
   const tage = new Set(vorher.map(l => l.date));
-  if (!historie.every(h => tage.has(h.date))) return;
-  const neu = M.neueAufnaeher(vorher, vorher.concat([log]), config, gewichtsPunkte, new Date(),
+  if (!historie.every(h => tage.has(h.date))) return null;
+  const nachher = vorher.concat([log]);
+  const neu = M.neueAufnaeher(vorher, nachher, config, gewichtsPunkte, new Date(),
     { fahrten: radFuerMerch(vorher), planFuer: planFuerDatum });
-  if (!neu.length || !box.isConnected) return;
+  // Rang und Wochenregler: vorher gegen nachher, aus denselben Logs
+  const rVor = M.rang(vorher, radFuerMerch(vorher)), rNach = M.rang(nachher, radFuerMerch(nachher));
+  const vVor = M.verstaerker(vorher, config, new Date(), historie);
+  const vNach = M.verstaerker(nachher, config, new Date(), state.history || []);
+  const info = { neu, rang: rNach.stufe > rVor.stufe ? rNach.id : null,
+    elf: !!(vNach && vNach.stufe === 11 && !(vVor && vVor.stufe === 11)) };
+  if (!neu.length || !box.isConnected) return info;
   box.innerHTML = `<div class="aufnaeher-neu">
     <span class="kicker">${escHtml(t('done.neuerAufnaeher'))}</span>
     <div class="patches">${neu.map(patchHtml).join('')}</div>
   </div>`;
   renderAmp();
+  return info;
+}
+
+/* ============================ Ansager und Feuer ============================
+   Hoechstens eine Ansage je Einheit (ansager.js entscheidet), bei den
+   goldenen dazu ein kurzer Feuerstoss am unteren Rand (feuer.js). Bei
+   "Bewegung reduzieren" kein Feuer und die Ansage ohne Sprung.          */
+let letzteErfolge = [];
+let ansagerTimer = null, stoss = null, stossTimer = null, glut = null;
+
+function ansagen(log, info) {
+  if (!ANS.istAn() || !config || !$('view-done') || $('view-done').hidden) return;
+  const kraft = (log.type || 'strength') === 'strength' && Array.isArray(log.lifts);
+  const wins = kraft ? letzteErfolge : [];
+  const ref = wins.find(w => w.art === 'referenz'), rund = wins.find(w => w.art === 'rund');
+  zeigeAnsage(ANS.ansage({
+    rang: info && info.rang ? t(`merch.r.${info.rang}`) : null,
+    aufnaeher: info ? info.neu.map(patchName) : [],
+    referenz: ref ? { name: liftName(ref.lift), kg: ref.kg } : null,
+    rund: rund ? { name: liftName(rund.lift), kg: rund.kg } : null,
+    elf: !!(info && info.elf),
+    sauber: kraft && log.lifts.length > 0 && log.lifts.every(e => e.success)
+  }));
+}
+
+function zeigeAnsage(a) {
+  const el = $('ansager');
+  if (!a || !el) return;
+  el.className = `ansager ${a.art}`;
+  el.innerHTML = `<span class="ruf">${escHtml(a.ruf)}</span><small>${escHtml(a.unter)}</small>`;
+  el.hidden = false;
+  void el.offsetWidth;
+  el.classList.add('los');
+  clearTimeout(ansagerTimer);
+  ansagerTimer = setTimeout(() => { el.hidden = true; }, 2200);
+  if (a.art === 'gold') feuerstoss();
+}
+
+function feuerstoss(ms = 1800) {
+  const c = $('feuerstoss');
+  if (!c || F.ruhig()) return;
+  c.hidden = false;
+  if (!stoss) stoss = F.feuer(c, { breite: 200, hoehe: 60, kuehlung: 2 });
+  stoss.start();
+  clearTimeout(stossTimer);
+  stossTimer = setTimeout(() => { stoss.stop(); setTimeout(() => { if (!stoss.an) c.hidden = true; }, 2500); }, ms);
+}
+
+/** Klein hinter dem Tageswort SCHWER. Beim Neuzeichnen brennt das alte aus. */
+function plakatGlut() {
+  if (glut) glut.stop();
+  glut = null;
+  const c = document.querySelector('#today .tageswort .glut');
+  if (!c) return;
+  glut = F.feuer(c, { breite: 90, hoehe: 34, kuehlung: 3 });
+  glut.start();
 }
 
 async function zeigeMerch(von = 'home') {
@@ -4382,8 +4482,15 @@ function renderMerch(logs) {
     <div class="card rang">
       <div class="kicker">${escHtml(tn('merch.rang.wochen', r.wochen))}</div>
       <div class="name">${escHtml(t(`merch.r.${r.id}`))}</div>
-      <div class="leiter">${M.RAENGE.map((x, i) =>
-        `<i class="${i <= r.stufe ? 'an' : ''}" title="${escHtml(t(`merch.r.${x.id}`))}"></i>`).join('')}</div>
+      <div class="szene gross" role="img" aria-label="${escHtml(t('merch.szene', { name: t(`merch.r.${r.id}`) }))}"
+        style="--i:${r.stufe};--n:${M.RAENGE.length}"></div>
+      <div class="tour-leiste">${M.RAENGE.map((x, i) => {
+        const name = t(`merch.r.${x.id}`);
+        const zustand = i < r.stufe ? 'erreicht' : i === r.stufe ? 'jetzt' : 'kommt';
+        return `<figure class="tstop ${zustand}" title="${escHtml(i <= r.stufe ? name : tn('merch.rang.ab', x.wochen, { name }))}">
+          <span class="szene" style="--i:${i};--n:${M.RAENGE.length}" aria-hidden="true"></span>
+          <figcaption>${escHtml(name)}</figcaption></figure>`;
+      }).join('')}</div>
       <div class="bar"><i style="width:${Math.round(r.anteil * 100)}%"></i></div>
       <p class="fine">${escHtml(r.naechste
         ? tn('merch.rang.naechste', r.naechste.fehlt, { name: t(`merch.r.${r.naechste.id}`) })

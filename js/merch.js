@@ -357,6 +357,18 @@ export function schallplatten(logs = []) {
  * fuenfmal trainiert, steigt nicht schneller auf als mit zweimal; wer
  * pausiert, steigt nicht ab. Der Rang faellt nie.
  */
+/**
+ * Reihenfolge der Bilder im Bogen assets/pixel/aufnaeher.png (je 24×24),
+ * gebaut von tools/pixel.mjs: eines je Leiter, die Stufen teilen sich ein
+ * Motiv.
+ */
+export const BILDER = ['debuet', 'gigs', 'jam', 'unplugged', 'maxout', 'zugaben', 'tight', 'roadcrew',
+  'platten', 'club', 'hangar', 'koerper', 'km', 'hoehe', 'century', 'doom', 'openair', 'crossover',
+  'comeback', 'rueckweg', 'reunion', 'serie'];
+
+/** Platz des Aufnaehers im Bogen, oder -1. "platten-squat" und "koerper-bench" teilen sich je ein Bild. */
+export const bildIndex = a => BILDER.indexOf(String((a && a.gruppe) || '').split('-')[0]);
+
 export const RAENGE = [
   { id: 'garage', wochen: 0 },
   { id: 'proberaum', wochen: 4 },

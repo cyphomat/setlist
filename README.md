@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="App öffnen" src="https://img.shields.io/badge/App-öffnen-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1643%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1690%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-keiner-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Abhängigkeiten" src="https://img.shields.io/badge/Abhängigkeiten-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="Lizenz: MIT" src="https://img.shields.io/badge/Lizenz-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -159,6 +159,7 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 | **Gefühl nach der Einheit** | Vier Stufen (Leicht/Normal/Hart/Extrem) auf dem Geschafft-Screen — macht die Ansage im Nachhinein überprüfbar. |
 | **Injury Report** | Was gerade zwickt, mit deiner eigenen Behandlung. Zwei Arten: *wiederkehrend* (kommt und geht, wird nach der Einheit kurz abgefragt, kann ausheilen) und *strukturell* (bleibt, wird nicht abgefragt, sperrt dauerhaft). Übungen, die du sperrst, würfelt der Jam nicht, das Unplugged nimmt sie nicht, Technik und Mobility lassen sie weg. Grundübungen werden nur angemerkt, nie weggelassen — daran hängt die 5×5-Mechanik. Die App stellt keine Diagnose und schlägt keine Behandlung vor. |
 | **Merch-Stand** | Ein bisschen Spiel, passend zur Bühne: eine **Kutte** mit Aufnähern (Plattenclub, 1000-lb-Club, Körpergewicht-Marken, Comeback, Serien, Roadcrew und Hangar 18 für die Aftershow … und fürs Rad: Tourbus-Kilometer, Stairway to Heaven, Highway Star, Doom für disziplinierte Grundlage, Open Air, Crossover-Wochen mit Kraft und Rad), **Gold und Platin** fürs bewegte Gewicht, ein **Rang** von der Garagenband bis zur Hall of Fame und jedes Quartal ein **Tourshirt** mit deinen Trainingstagen auf dem Rücken. Nach der Einheit kommt die Setlist als Zettel mit Gaffa-Tape, auf Home steht ein Wochenregler, der nur bei erfülltem Plan **und** sauberen Sätzen auf elf geht. Belohnt wird Regelmäßigkeit, nie Menge: der Rang zählt Wochen statt Einheiten (Radwochen eingeschlossen), und eine eingetragene Verletzung **friert die Serie ein** statt sie reißen zu lassen. Alles aus den Logs berechnet, nichts gespeichert. |
+| **Pixel-Bühne** | Jeder Aufnäher hat ein eigenes Pixelbild, die Form zeigt die Kategorie: Bühne rund, Kraft Raute, Rad eckig, Comeback Wappen, Serie Stern. Jeder Rang hat seine Szene, von der Garage bis zur Hall of Fame, darunter die Tour mit allen Stationen. An Tagen mit **SCHWER** brennt hinter dem Wort ein kleines Pixelfeuer. Nach der Einheit sagt ein **Ansager** die großen Momente an: neuer Rang, neuer Aufnäher, wieder auf dem Stand vor der Pause, eine runde Marke wie „100 KG“, der Wochenregler auf elf, „FLAWLESS“. Es gibt höchstens eine Ansage je Einheit, und unter *Backstage → App* lässt sie sich abschalten. Mit „Bewegung reduzieren“ im System gibt es kein Feuer und keinen Sprung. Eigene Pixel-Art, keine fremden Grafiken. |
 | **Ansage gegen Gefühl** | In der Tour: jede Einheit mit beiden Werten, dazu die Trefferquote — Ansage und gefühlte Schwere nebeneinander statt nur behauptet. |
 | **Wo du schief stehst** | Zwölf Kraftverhältnisse gegen Richtwerte *und* gegen deinen eigenen Stand vor der Pause. Fällt derselbe Lift in mehreren Paaren auf, nennt die App ihn als Ursache und schlägt Zusatzarbeit vor — ein einzelnes schiefes Paar sagt nicht, an welcher Seite es liegt. Verglichen werden nur Werte gleicher Güte. |
 | **Prüfwerte** | Klimmzug, Dip, Front Squat, einarmiges Drücken, Step-Up, einbeiniges Kreuzheben und Farmer's Carry — was das 5×5 nicht selbst erzeugt. Im Backstage eintragen oder **im Max-Out messen**; ein gemessener Test schlägt die Handeingabe und steht mit Datum im Verlauf. Damit kommen acht weitere Verhältnisse dazu, darunter ob dein Ziehen zu deinem Drücken passt. |
@@ -400,6 +401,8 @@ Wiederholungen. Abschaltbar unter *Backstage → Verbindungen*.
 | `js/hilfs.js` | Aftershow: Hilfsübungen bereinigen, letztes Mal, Bilanz. |
 | `js/wach.js` | Hält den Bildschirm während des Trainings an. |
 | `js/export.js` | Einheiten als CSV, sicher gegen Formeln. |
+| `js/feuer.js` | Pixelfeuer (Doom-Algorithmus, eigene Umsetzung). |
+| `js/ansager.js` | Entscheidet, was nach der Einheit angesagt wird. |
 | `js/boot.js` | Thema, Speicherumzug und Einbett-Sperre vor dem ersten Bild. |
 | `js/store.js` | GitHub-API als Speicher, Offline-Puffer. |
 | `js/intervals.js` | Liest Fahrten und Form; schreibt Krafteinheiten zurück. |
@@ -407,6 +410,7 @@ Wiederholungen. Abschaltbar unter *Backstage → Verbindungen*.
 | `sw.js` | Cacht die App-Hülle. Trainingsdaten bewusst **nicht**. |
 | `tools/tests.mjs` | Führt alle Tests mit Node aus; dasselbe tut die GitHub Action bei jedem Push. |
 | `tools/proben.mjs` | Browserproben: die echte App im Chromium, mit gestellter GitHub-API (optional, Playwright). |
+| `tools/pixel.mjs` | Baut die Pixel-Bögen in `assets/pixel/` aus den Quellbildern in `tools/pixel/`; `--pruefe` läuft in der Action. |
 
 ---
 
@@ -426,7 +430,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-1643 Tests in 21 Dateien. Kein Build, keine Abhängigkeiten.
+1690 Tests in 23 Dateien. Kein Build, keine Abhängigkeiten.
 
 ### Browserproben (optional)
 
@@ -434,7 +438,7 @@ Die Tests prüfen die Rechnung, die Proben das, was man sieht. Sie öffnen die e
 in Chromium, mit gestellter GitHub-API, gestelltem intervals.icu und einem festen Datum:
 
 ```sh
-node tools/proben.mjs                 # alle: start, einheit, tour, merch, bibliothek, sicherheit, englisch, ueber
+node tools/proben.mjs                 # alle: start, einheit, tour, merch, buehne, bibliothek, sicherheit, englisch, ueber
 node tools/proben.mjs start merch     # einzelne
 node tools/proben.mjs -v              # auch jede bestandene Prüfung
 ```

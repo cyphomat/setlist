@@ -391,6 +391,12 @@
       <button data-sprache="en" data-i18n="bs.sprache.en">English</button>
     </div>
     <p class="fine" data-i18n="bs.spracheHinweis">Betrifft die Oberfläche. Trainingsinhalte — Ansage, Übungserklärungen, Jam-Bewegungen — bleiben deutsch.</p>
+    <h2 data-i18n="ans.schalter">Ansager</h2>
+    <div class="themen ansager-wahl">
+      <button data-ansager="an" data-i18n="ans.an">An</button>
+      <button data-ansager="aus" data-i18n="ans.aus">Aus</button>
+    </div>
+    <p class="fine" data-i18n="ans.hinweis">Große Einblendung nach der Einheit.</p>
     <h2 data-i18n="bs.export">Daten</h2>
     <button id="export-csv" class="btn ghost" data-i18n="bs.exportKnopf">Einheiten als CSV</button>
     <p class="fine" data-i18n="bs.exportHinweis">Eine Zeile je Lift, Hilfsübung, Jam, Unplugged, Max-Out und Anpassung.</p>
@@ -449,6 +455,9 @@
     <button id="pause-nein" class="btn ghost" data-i18n="pause.nein">Wie vorher</button>
   </div>
 </dialog>
+
+<div id="ansager" class="ansager" aria-live="polite" hidden></div>
+<canvas id="feuerstoss" class="feuerstoss" aria-hidden="true" hidden></canvas>
 
 <dialog id="schema-dialog">
   <p id="schema-title" data-i18n="schema.titel">Nach 5×5</p>

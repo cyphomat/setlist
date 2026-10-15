@@ -10,6 +10,48 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-15.1
+
+### Neu
+- **Pixel-Aufnäher.** Jeder Aufnäher auf der Kutte hat ein eigenes 24×24-Pixelbild.
+  - Die Rahmenform zeigt die Kategorie: Bühne rund, Kraft Raute, Rad eckig, Comeback
+    Wappen, Serie Stern.
+  - Die Symbole stammen aus der Pixel-Art von „Orga privat“ (eigene Arbeit, keine
+    fremden Grafiken), z. B. Blutstropfen fürs Debüt, Hantel für den Plattenclub,
+    Tourbus für die Kilometer, Totenkopf für Doom. Klimmzug und Treppe sind neu
+    gezeichnet.
+  - Offene Aufnäher erscheinen grau, neu verdiente auch auf dem Geschafft-Screen.
+- **Rangszenen.**
+  - Jeder Rang hat eine Pixel-Szene: Garage, Proberaum, Klub, Halle, Arena,
+    Goldbühne und eine neue Hall of Fame mit Vitrine und Goldplatten.
+  - Darunter steht die Tour mit allen sieben Stationen: erreichte in Farbe, die
+    aktuelle mit Rahmen, kommende abgedunkelt.
+- **Pixelfeuer** (Doom-Algorithmus, eigene Umsetzung, `js/feuer.js`).
+  - Es brennt klein hinter dem Tageswort SCHWER.
+  - Bei einer goldenen Ansage gibt es einen kurzen Feuerstoß am unteren Rand.
+  - Mit „Bewegung reduzieren“ im System gibt es kein Feuer; bei verborgener Seite
+    hält es an.
+- **Ansager** nach der Einheit (`js/ansager.js`). Höchstens eine Ansage, nach Vorrang:
+  1. neuer Rang;
+  2. neuer Aufnäher;
+  3. wieder auf dem Stand vor der Pause;
+  4. runde Marke („160 KG“);
+  5. Wochenregler auf elf;
+  6. „FLAWLESS“.
+
+  Unter *Backstage → App* lässt er sich abschalten; beim Einschalten kommt eine
+  Probe. Die Wahl bleibt beim Abmelden erhalten.
+
+### Werkzeuge
+- `tools/pixel.mjs` baut die Bildbögen `assets/pixel/aufnaeher.png` und `raenge.png`
+  aus den Quellbildern in `tools/pixel/`, ohne Abhängigkeit (PNG über `node:zlib`).
+  `--pruefe` vergleicht die Bögen mit den Quellen und läuft jetzt in der GitHub Action.
+- Neue Browserprobe `buehne`:
+  - Bögen geladen, Szene und Tour-Leiste, jeder Aufnäher mit Bild, offene grau;
+  - Glut nur bei SCHWER und nicht bei reduzierter Bewegung;
+  - Ansager mit richtigem Vorrang, verschwindet wieder, abschaltbar.
+- 39 neue Tests (1690 in 23 Dateien).
+
 ## 2026-10-13.2
 
 ### Neu

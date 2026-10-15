@@ -330,4 +330,20 @@ print('\n--- Aftershow: Roadcrew und Hangar 18 ---');
   eq('dreimal fuenf sind keine zehn am Stueck', hat(summe, 'hangar'), null);
 }
 
+print('\n--- Pixelbilder ---');
+{
+  const voll = M.katalog({ ...config, lifts: { ...config.lifts, squat: { ...config.lifts.squat, reference: 100 } } },
+    { mitGewicht: true, mitRad: true, mitHoehe: true, mitPlan: true });
+  const ohne = voll.filter(a => M.bildIndex(a) < 0).map(a => a.id);
+  eq('jeder Aufnaeher hat ein Bild', ohne.join(), '');
+  eq('Stufen teilen sich ein Bild', M.bildIndex({ gruppe: 'platten-squat' }), M.bildIndex({ gruppe: 'platten-deadlift' }));
+  eq('Gigs: alle Stufen ein Bild', M.bildIndex({ gruppe: 'gigs' }), M.BILDER.indexOf('gigs'));
+  eq('unbekannte Gruppe: kein Bild', M.bildIndex({ gruppe: 'gibtsnicht' }), -1);
+  eq('ohne Aufnaeher: kein Bild', M.bildIndex(null), -1);
+  eq('keine Gruppe doppelt im Bogen', new Set(M.BILDER).size, M.BILDER.length);
+  const gruppen = new Set(voll.map(a => a.gruppe.split('-')[0]));
+  eq('kein Bild ohne Aufnaeher', M.BILDER.filter(b => !gruppen.has(b)).join(), '');
+  eq('sieben Raenge, sieben Szenen', M.RAENGE.length, 7);
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

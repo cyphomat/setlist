@@ -453,7 +453,7 @@ export function erfolge(vorher, nachher, config, log, alleLogs = [], heute = new
     if (schwelle > g.alt && schwelle <= g.neu && schwelle >= 40) {
       // Bewusst ohne Artikel: die Uebungsnamen sind englisch, ein deutscher
       // Artikel davor waere immer falsch. Der Doppelpunkt loest das.
-      out.push({ art: 'rund', rang: 1, lift: g.id,
+      out.push({ art: 'rund', rang: 1, lift: g.id, kg: schwelle,
         text: t('coach.erf.rund', { name: config.lifts[g.id].name, kg: schwelle }) });
     }
   }
@@ -462,7 +462,7 @@ export function erfolge(vorher, nachher, config, log, alleLogs = [], heute = new
   for (const g of gestiegen) {
     const ref = config.lifts[g.id].reference;
     if (ref && g.alt < ref && g.neu >= ref) {
-      out.push({ art: 'referenz', rang: 0, lift: g.id,
+      out.push({ art: 'referenz', rang: 0, lift: g.id, kg: ref,
         text: t('coach.erf.referenz', { name: config.lifts[g.id].name, kg: ref }) });
     }
   }
