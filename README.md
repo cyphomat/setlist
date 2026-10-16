@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="App öffnen" src="https://img.shields.io/badge/App-öffnen-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1694%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1791%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-keiner-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Abhängigkeiten" src="https://img.shields.io/badge/Abhängigkeiten-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="Lizenz: MIT" src="https://img.shields.io/badge/Lizenz-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -90,10 +90,10 @@
 </tr>
 </table>
 
-**Und ein bisschen Bühne** — Aufnäher, Schallplatten und Tourshirts, alles aus deinen Einheiten:
+**Und ein bisschen Bühne** — Rang, Monats-Tour mit Endgegner, Aufnäher, Schallplatten und Tourshirts, alles aus deinen Einheiten:
 
 <p align="center">
-  <img src="assets/screens/merch-dunkel.png" alt="Der Merch-Stand: Rang und Kutte mit Aufnähern" width="330">
+  <img src="assets/screens/merch-dunkel.png" alt="Der Merch-Stand: Rang, Monats-Tour mit Endgegner und Kutte mit Aufnähern" width="330">
 </p>
 
 <sub>Echte Bildschirme mit Beispieldaten, aufgenommen über <code>tools/shot.html</code> und <code>tools/shots.mjs</code>. Keine Mockups.</sub>
@@ -155,11 +155,14 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 | **Bestwerte** | `Maximum` (nur aus Max-Out) gegen `Mindestens` (aus Arbeitssätzen, systematisch zu niedrig). |
 | **Max-Out** | Krafttest mit e1RM. Dreht den A/B-Wechsel nicht. |
 | **Wissen an der Stange** | Aufklappbar: Begründung, Cue, typischer Fehler, Brücke zum olympischen Heben. |
-| **Mobility** | Fünf Übungen, einmal pro Kalenderwoche fällig — bei der ersten Einheit (Kraft oder Jam), ganz gleich welcher. Eigener Button, jederzeit unabhängig davon nutzbar. |
+| **Mobility** | Fünf Übungen, einmal pro Kalenderwoche fällig — bei der ersten Einheit (Kraft oder Jam), ganz gleich welcher. Eigener Button, jederzeit unabhängig davon nutzbar. In der Einheit lässt sich „Mobility gemacht“ abhaken, in der Bibliothek trägt **Heute gemacht** einen eigenen kleinen Eintrag ein. Mobility zählt als Mobility, nicht als Training: keine Serie, keine Tonnage, keine Übertragung zu intervals.icu. Dreimal in einer Woche bringt den Aufnäher **Gelenkig**. |
 | **Gefühl nach der Einheit** | Vier Stufen (Leicht/Normal/Hart/Extrem) auf dem Geschafft-Screen — macht die Ansage im Nachhinein überprüfbar. |
 | **Injury Report** | Was gerade zwickt, mit deiner eigenen Behandlung. Zwei Arten: *wiederkehrend* (kommt und geht, wird nach der Einheit kurz abgefragt, kann ausheilen) und *strukturell* (bleibt, wird nicht abgefragt, sperrt dauerhaft). Übungen, die du sperrst, würfelt der Jam nicht, das Unplugged nimmt sie nicht, Technik und Mobility lassen sie weg. Grundübungen werden nur angemerkt, nie weggelassen — daran hängt die 5×5-Mechanik. Die App stellt keine Diagnose und schlägt keine Behandlung vor. |
 | **Merch-Stand** | Ein bisschen Spiel, passend zur Bühne: eine **Kutte** mit Aufnähern (Plattenclub, 1000-lb-Club, Körpergewicht-Marken, Comeback, Serien, Roadcrew und Hangar 18 für die Aftershow … und fürs Rad: Tourbus-Kilometer, Stairway to Heaven, Highway Star, Doom für disziplinierte Grundlage, Open Air, Crossover-Wochen mit Kraft und Rad), **Gold und Platin** fürs bewegte Gewicht, ein **Rang** von der Garagenband bis zur Hall of Fame und jedes Quartal ein **Tourshirt** mit deinen Trainingstagen auf dem Rücken. Nach der Einheit kommt die Setlist als Zettel mit Gaffa-Tape, auf Home steht ein Wochenregler, der nur bei erfülltem Plan **und** sauberen Sätzen auf elf geht. Belohnt wird Regelmäßigkeit, nie Menge: der Rang zählt Wochen statt Einheiten (Radwochen eingeschlossen), und eine eingetragene Verletzung **friert die Serie ein** statt sie reißen zu lassen. Alles aus den Logs berechnet, nichts gespeichert. |
 | **Pixel-Bühne** | Jeder Aufnäher hat ein eigenes Pixelbild, auch jede Stufe einer Leiter: die Gigs wachsen vom Setlist-Zettel über Ticket, Plakat und Amp bis zum hochgehaltenen Feuerzeug, die Kilometer vom Fahrrad bis zur Weltkugel, und im Plattenclub steht jeder Lift als eigene Figur mit 1–4 Scheiben an der Stange. Die Form zeigt die Kategorie: Bühne rund, Kraft achteckig, Rad eckig, Comeback Wappen, Serie Stern. Jeder Rang hat seine Szene, von der Garage bis zur Hall of Fame, darunter die Tour mit allen Stationen. An Tagen mit **SCHWER** brennt hinter dem Wort ein kleines Pixelfeuer. Nach der Einheit sagt ein **Ansager** die großen Momente an: neuer Rang, neuer Aufnäher, wieder auf dem Stand vor der Pause, eine runde Marke wie „100 KG“, der Wochenregler auf elf, „FLAWLESS“. Es gibt höchstens eine Ansage je Einheit, und unter *Backstage → App* lässt sie sich abschalten. Mit „Bewegung reduzieren“ im System gibt es kein Feuer und keinen Sprung. Eigene Pixel-Art, keine fremden Grafiken. |
+| **Monats-Tour** | Jeden Monat drei Ziele aus deinem eigenen Wochenplan: die geplanten Krafteinheiten, die geplanten Fahrten (ohne Rad: vier Tage Jam, Unplugged oder Mobility) und halb so viele saubere Einheiten. Am Ende wartet der **Endgegner** des Monats, vom Frostriesen im Januar bis zum Krampus im Dezember, mit einer Lebensleiste, die mit jedem erfüllten Ziel ein Drittel verliert. Tage vor der ersten Einheit und in einer Verletzungspause zählen nicht zum Soll. Fällt der Gegner, sagt der Ansager **TOUR KOMPLETT**; dazu Aufnäher für 1, 3, 6 und 12 besiegte Monate. Die Karte steht im Merch, die Zeile im Wochenkopf. |
+| **Wochen-Soundcheck** | Sonntags für die laufende Woche, montags und dienstags noch für die vergangene: die Zahlen der Woche (Einheiten, Jams, Mobility, Fahrten, Tonnen, saubere Sätze), dazu „Lief gut“, „Hakt“ und drei Vorsätze. Er liegt als eigene Datei im Datenrepo (`soundcheck/JJJJ-Www.json`), ohne Netz in der Warteschlange. Die Vorsätze stehen danach im Wochenkopf, frühere Soundchecks in der Tour. Aufnäher für 4 und 12 Wochen in Folge. |
+| **Flightcase-Look** | Karten mit Kantenschutz an den Ecken wie am Case, Überschriften als Gaffa-Streifen mit Edding-Schrift, das Tageswort in Anton. Beide Schriften liegen im Repo (`assets/fonts/`, Lizenzen daneben), es wird nichts von außen geladen. |
 | **Ansage gegen Gefühl** | In der Tour: jede Einheit mit beiden Werten, dazu die Trefferquote — Ansage und gefühlte Schwere nebeneinander statt nur behauptet. |
 | **Wo du schief stehst** | Zwölf Kraftverhältnisse gegen Richtwerte *und* gegen deinen eigenen Stand vor der Pause. Fällt derselbe Lift in mehreren Paaren auf, nennt die App ihn als Ursache und schlägt Zusatzarbeit vor — ein einzelnes schiefes Paar sagt nicht, an welcher Seite es liegt. Verglichen werden nur Werte gleicher Güte. |
 | **Prüfwerte** | Klimmzug, Dip, Front Squat, einarmiges Drücken, Step-Up, einbeiniges Kreuzheben und Farmer's Carry — was das 5×5 nicht selbst erzeugt. Im Backstage eintragen oder **im Max-Out messen**; ein gemessener Test schlägt die Handeingabe und steht mit Datum im Verlauf. Damit kommen acht weitere Verhältnisse dazu, darunter ob dein Ziehen zu deinem Drücken passt. |
@@ -295,7 +298,8 @@ etwas davon, bleibt die Wochenübersicht einfach leer — der Rest der App läuf
 `config.json` ab und schreibt ihn erst nach der ersten abgeschlossenen Einheit zurück.
 `einheiten/` als Ordner reicht leer. Optional sind `stimme.json` (eigene Sprüche, siehe
 `js/content.js` für die Struktur) sowie `records` und `ziele` in `config.json`, wenn du
-Meilensteine oder alte Bestleistungen willst.
+Meilensteine oder alte Bestleistungen willst. Den Ordner `soundcheck/` legt der erste
+Wochen-Soundcheck selbst an.
 
 **3 · Veröffentlichen**
 
@@ -403,6 +407,7 @@ Wiederholungen. Abschaltbar unter *Backstage → Verbindungen*.
 | `js/export.js` | Einheiten als CSV, sicher gegen Formeln. |
 | `js/feuer.js` | Pixelfeuer (Doom-Algorithmus, eigene Umsetzung). |
 | `js/ansager.js` | Entscheidet, was nach der Einheit angesagt wird. |
+| `js/soundcheck.js` | Wochen-Soundcheck: Kalenderwochen, Fälligkeit, Serie, Bereinigen der Eingaben. |
 | `js/boot.js` | Thema, Speicherumzug und Einbett-Sperre vor dem ersten Bild. |
 | `js/store.js` | GitHub-API als Speicher, Offline-Puffer. |
 | `js/intervals.js` | Liest Fahrten und Form; schreibt Krafteinheiten zurück. |
@@ -430,7 +435,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-1694 Tests in 23 Dateien. Kein Build, keine Abhängigkeiten.
+1791 Tests in 24 Dateien. Kein Build, keine Abhängigkeiten.
 
 ### Browserproben (optional)
 
@@ -438,7 +443,7 @@ Die Tests prüfen die Rechnung, die Proben das, was man sieht. Sie öffnen die e
 in Chromium, mit gestellter GitHub-API, gestelltem intervals.icu und einem festen Datum:
 
 ```sh
-node tools/proben.mjs                 # alle: start, einheit, tour, merch, buehne, bibliothek, sicherheit, englisch, ueber
+node tools/proben.mjs                 # alle: start, einheit, tour, merch, buehne, bibliothek, rueckschau, sicherheit, englisch, ueber
 node tools/proben.mjs start merch     # einzelne
 node tools/proben.mjs -v              # auch jede bestandene Prüfung
 ```

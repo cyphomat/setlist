@@ -288,7 +288,7 @@ const SZENEN = {
   merch: {
     optionen: { mitVerlauf: true },
     icu: true, fahrten: true,
-    hoehe: 1400,
+    hoehe: 1900,
     async fuehre(p) {
       await p.click('#go-merch');
       await p.waitForSelector('#merch-kutte .patch.k-rad');

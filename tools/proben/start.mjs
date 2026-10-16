@@ -1,7 +1,7 @@
 // Browserprobe · Startseite: Bühnenplakat, Instrumente, Ausnahmen, Woche und Gewichte in vier Lagen.
 // Aufruf ueber tools/proben.mjs.
 
-import { P, CONFIG, BILDER, verlauf, kontext, ueberlauf } from './gemeinsam.mjs';
+import { P, CONFIG, BILDER, verlauf, kontext, ueberlauf, kontraste } from './gemeinsam.mjs';
 
 export default async function ({ browser, pruefe }) {
   const wellness = (schlafH, ctl, atl) => Array.from({ length: 60 }, (_, i) => {
@@ -88,6 +88,16 @@ export default async function ({ browser, pruefe }) {
             await p.waitForTimeout(150);
             pruefe(`${tag}: Warum steht unter der Zeile`, await rad.locator('.tag-info').isVisible());
           }
+        }
+        if (L.name === 'normal') {
+          // Flightcase: Edding auf Gaffa muss lesbar bleiben, die Schriften kommen aus dem Repo
+          const k = (await kontraste(p, '#view-home h2, #today .tageswort')).filter(x => x.wert < 4.5);
+          pruefe(`${tag}: Gaffa und Tageswort Kontrast ≥ 4,5`, !k.length, JSON.stringify(k));
+          const gr = await p.$$eval('#view-home h2', l => l.map(h => parseFloat(getComputedStyle(h).fontSize)));
+          pruefe(`${tag}: Edding-Schrift ≥ 16 px`, gr.length >= 2 && gr.every(x => x >= 16), gr.join());
+          const geladen = await p.evaluate(async () => { await document.fonts.ready;
+            return [...document.fonts].filter(f => f.status === 'loaded').map(f => f.family.replace(/"/g, '')); });
+          pruefe(`${tag}: Anton und Permanent Marker geladen`, geladen.includes('Anton') && geladen.includes('Permanent Marker'), geladen.join());
         }
         const u = await ueberlauf(p);
         pruefe(`${tag}: kein Überlauf`, !u.scroll, JSON.stringify(u));

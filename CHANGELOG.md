@@ -10,6 +10,64 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-16.2
+
+### Neu
+- **Monats-Tour mit Endgegner.** Jeden Monat drei Ziele aus dem eigenen Wochenplan:
+  - die geplanten Krafteinheiten;
+  - die geplanten Fahrten, ohne Rad stattdessen vier Tage Jam, Unplugged oder Mobility;
+  - halb so viele saubere Einheiten.
+
+  Am Ende wartet der Endgegner des Monats (Frostriese, Eisgeist, … Krampus), ein
+  gehörnter Pixelschädel mit einer Lebensleiste in drei Teilen. Tage vor der ersten
+  Einheit und in einer Verletzungspause zählen nicht zum Soll; ein Monat ganz in der
+  Pause hat keinen Gegner. Die Karte steht im Merch über der Kutte, frühere Monate
+  lassen sich aufklappen. Im Wochenkopf steht „Oktober-Tour: 2 von 3“. Fällt der
+  Gegner, sagt der Ansager **TOUR KOMPLETT** (Vorrang direkt nach dem Rang). Dazu gibt
+  es Aufnäher für 1, 3, 6 und 12 besiegte Monate, in einer neuen Kategorie „Tour“ mit
+  lila Rahmen.
+- **Wochen-Soundcheck.** Fällig sonntags für die laufende Woche, montags und dienstags
+  noch für die vergangene. Ein Knopf im Wochenkopf führt hin:
+  - die Zahlen der Woche: Einheiten, Jams, Mobility-Tage, Fahrten und Kilometer,
+    Tonnen, saubere Sätze;
+  - „Lief gut“, „Hakt“ und drei Vorsätze.
+
+  Gespeichert wird er als `soundcheck/JJJJ-Www.json` im Datenrepo, ohne Netz kommt er
+  in die Warteschlange. Er ist kein Training und ändert am Programm nichts. Die
+  Vorsätze stehen danach im Wochenkopf, frühere Soundchecks in der Tour unter
+  Einheiten. Aufnäher für 4 und 12 Wochen in Folge.
+- **Mobility zählen.**
+  - In der Einheit lässt sich „Mobility gemacht“ abhaken (Feld `mobility` am Eintrag).
+  - In der Bibliothek trägt **Heute gemacht** einen eigenen Mobility-Eintrag ein
+    (`einheiten/<datum>-mobility.json`, kein Zustand), einmal je Tag.
+  - Mobility ist kein Training: keine Serie, kein Rang, keine Tonnage, keine
+    Übertragung zu intervals.icu, und eine Pause endet dadurch nicht. Historie und
+    CSV-Export führen sie mit.
+  - Den Aufnäher **Gelenkig** gibt es für drei Mobility-Tage in einer Woche, als
+    Leiter 1, 4 und 12 solcher Wochen.
+  - Über der Mobility-Gruppe der Bibliothek steht, wie oft es diese Woche schon war.
+
+### Geändert
+- **Flightcase-Look.**
+  - Karten tragen Kantenschutz aus Metall an allen vier Ecken.
+  - Überschriften sind schief geklebte Gaffa-Streifen mit Edding-Schrift (Permanent
+    Marker, ab 16 px).
+  - Das Tageswort steht in Anton.
+  - Beide Schriften liegen im Repo (`assets/fonts/`, Lizenzen OFL und Apache 2.0
+    daneben); die CSP bleibt unverändert.
+- Neue Pixelmotive: Tourplakat, Nightliner, Lorbeerkranz, Mischpult, der Endgegner
+  (`assets/pixel/boss.png`). Dazu aus „Roadie“ (vormals „Orga privat“): Gelenkig, Tour komplett,
+  Soundcheck.
+- Ohne zwischengespeicherte Einheiten (etwa auf einem neuen Gerät) lädt Home sie
+  einmal im Hintergrund nach.
+
+### Werkzeuge
+- Neue Probe `rueckschau` für den Soundcheck: fällig, ausfüllen, Datei, Serie,
+  Aufnäher, Archiv, offline, Englisch.
+- Die Probe `buehne` prüft die Monats-Tour, `einheit` und `bibliothek` prüfen
+  Mobility, `start` prüft Gaffa-Kontrast, Schriftgröße und die geladenen Schriften.
+- 1791 Tests, 500 Probenprüfungen.
+
 ## 2026-10-16.1
 
 ### Geändert
