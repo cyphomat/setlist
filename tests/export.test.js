@@ -63,6 +63,15 @@ eq('Pruefwert-Max-Out mit uebersetztem Namen', z[7].uebung, 'check:pullup');
 eq('Unplugged 15 Minuten', z[8].dauer, 15);
 eq('Pausen-Anpassung', z[9].notiz, 'pause: Back Squat 90');
 
+print('\n--- Mobility ---');
+const mz = X.zeilen([
+  { date: '2026-09-03', type: 'mobility', uebung: 'couch', finished: '2026-09-03T07:00:00Z' },
+  { date: '2026-09-04', workout: 'A', lifts: [], mobility: 'hips' }
+], config, { name });
+eq('eigener Mobility-Log: eine Zeile', mz.length, 2);
+eq('Mobility aus der Bibliothek', `${mz[0].art} ${mz[0].uebung}`, 'mobility mobility:couch');
+eq('Mobility in der Einheit', `${mz[1].art} ${mz[1].workout} ${mz[1].uebung}`, 'mobility A mobility:hips');
+
 print('\n--- Datei ---');
 const csv = X.alsCsv(logs, config, { name, kopf: { datum: 'Datum', uebung: 'Übung' } });
 ok('beginnt mit BOM', csv.startsWith('﻿'));

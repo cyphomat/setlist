@@ -1,4 +1,4 @@
-// Browserprobe · Einheit: Bildschirm bleibt wach, Plateau-Ausstieg nach 5×5, Aftershow.
+// Browserprobe · Einheit: Bildschirm bleibt wach, Plateau-Ausstieg nach 5×5, Aftershow, Mobility.
 // Aufruf ueber tools/proben.mjs.
 
 import { P, CONFIG, BILDER, verlauf, kontext, ueberlauf } from './gemeinsam.mjs';
@@ -224,6 +224,42 @@ export default async function ({ browser, pruefe }) {
     const hist = (await p.textContent('#history-body')).replace(/\s+/g, ' ');
     pruefe(`${tag}: Historie nennt die Hilfsübungen`, /Klimmzüge \(10\/7\)/.test(hist), '');
     pruefe(`keine Seitenfehler (Aftershow ${tag})`, !fehler.length, fehler.join(' | '));
+    await ctx.close();
+  }
+
+  /* 3b · Mobility in der Einheit abhaken */
+  {
+    const alt = verlauf('2026-09-25');   // in dieser Woche noch nichts: Mobility ist dran
+    const { ctx, p, fehler, geschrieben } = await kontext(browser, { logs: alt, config: CONFIG, heute: '2026-10-01', breite: 360, schrift: 'sehr' });
+    p.on('dialog', d => d.accept());
+    await p.click('#start');
+    await p.waitForSelector('#view-session:not([hidden])');
+    const mob = p.locator('#warmup details', { has: p.locator('#mobility-gemacht') });
+    pruefe('Mobility-Block mit Häkchen', await mob.count() === 1);
+    await mob.locator('summary').click();
+    await p.check('#mobility-gemacht');
+    await mob.screenshot({ path: BILDER + 'einheit-mobility.png' });
+    const n = await p.locator('#session-body .set').count();
+    for (let i = 0; i < n; i++) {
+      await p.locator('#session-body .set').nth(i).click();
+      await p.evaluate(() => { const r = document.getElementById('rest'); if (r) r.hidden = true; });
+    }
+    await p.click('#finish');
+    await p.waitForSelector('#view-done:not([hidden])');
+    await p.waitForTimeout(600);
+    const log = [...geschrieben].reverse().find(g => g.path.startsWith('einheiten/') && g.data.date === '2026-10-01' && g.data.workout);
+    pruefe('Log trägt die Mobility', log && typeof log.data.mobility === 'string' && log.data.mobility.length > 0, JSON.stringify(log && log.data.mobility));
+    const zettel = (await p.textContent('.zettel')).replace(/\s+/g, ' ');
+    pruefe('Zettel: Mobility gemacht', /Mobility gemacht/.test(zettel), zettel);
+    const u = await ueberlauf(p);
+    pruefe('Mobility: kein Überlauf', !u.scroll, JSON.stringify(u));
+    await p.click('#done-ok');
+    await p.click('#go-history');
+    await p.click('#tour-tab-einheiten');
+    await p.waitForSelector('#history-body .hist');
+    const hist = (await p.textContent('#history-body')).replace(/\s+/g, ' ');
+    pruefe('Historie: Einheit mit Mobility', /MOBILITY/.test(hist), hist.slice(0, 160));
+    pruefe('keine Seitenfehler (Mobility)', !fehler.length, fehler.join(' | '));
     await ctx.close();
   }
 

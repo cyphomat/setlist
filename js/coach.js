@@ -4,7 +4,7 @@
 
 import { VOICE } from './content.js';
 import { t, tn, locale } from './i18n.js';
-import { mondayOf, ymd, PAUSE_AB } from './program.js';
+import { mondayOf, ymd, PAUSE_AB, istTraining } from './program.js';
 import { pausenFenster, wocheInPause } from './verletzung.js';
 
 export function daysSince(dateStr, today = new Date()) {
@@ -29,7 +29,7 @@ export function weekStreak(history = [], today = new Date(), fenster = []) {
  * haelt keine Serie am Leben.
  */
 export function serienStand(history = [], today = new Date(), fenster = []) {
-  const zaehlt = history.filter(h => h && h.date && h.type !== 'anpassung');
+  const zaehlt = history.filter(istTraining);
   if (!zaehlt.length) return { wochen: 0, pausiert: null };
   const wochen = new Set(zaehlt.map(h => isoWeekKey(new Date(h.date + 'T00:00:00'))));
   let n = 0, pausiert = null;
@@ -91,7 +91,9 @@ function pick(list, seed) {
  */
 export function directive(state, config, today = new Date(), letzterLog = null, stimme = null, erholung = null, fahrten = []) {
   const hist = state.history || [];
-  const letzte = hist.length ? hist[hist.length - 1].date : null;
+  // Mobility ist kein Training: zehn Minuten Dehnen beenden keine Pause.
+  const ohneMobility = hist.filter(h => h.type !== 'mobility');
+  const letzte = ohneMobility.length ? ohneMobility[ohneMobility.length - 1].date : null;
   const tage = daysSince(letzte, today);
   // Eine Woche nur auf dem Rad haelt die Serie genauso wie eine im Studio —
   // dieselbe Rechnung wie der Rekord in der Tour und der Merch-Stand.

@@ -288,6 +288,26 @@ const EIGENE = {
     'H.H.H.A.H.H',
     'HHHHHHHHHHH'
   ],
+  bruecke: [              // Gelenkig 4: Bruecke, Haende und Fuesse am Boden
+    '....HHHHHHH....',
+    '..HH.......HH..',
+    '.H...........H.',
+    '.H...........H.',
+    'H...........HHH',
+    'H............HH',
+    'AAAAAAAAAAAAAAA'
+  ],
+  spagat: [               // Gelenkig 12: Spagat, Arme hoch
+    '..H.........H..',
+    '...H..HHH..H...',
+    '....H.HHH.H....',
+    '.....HHHHH.....',
+    '......HHH......',
+    '......HHH......',
+    '.....HHHHH.....',
+    'HHHHHHHHHHHHHHH',
+    'AAAAAAAAAAAAAAA'
+  ],
   radhantel: [            // Crossover 10: Rad und Hantel
     '.AAA...H...H.',
     'A...A..H...H.',
@@ -421,6 +441,7 @@ const MOTIV = {
   hoehe: '#hoehe', century: 'flawless', doom: 'boss1', openair: 'nacht',
   'crossover-1': 'kilometer', 'crossover-10': '#radhantel', 'crossover-26': 'boss3',
   comeback: 'metal', rueckweg: 'nachgefasst', reunion: 'stammtisch',
+  'gelenkig-1': 'gelenkig', 'gelenkig-4': '#bruecke', 'gelenkig-12': '#spagat',
   'serie-4': 'serie4', 'serie-12': '#kalender', 'serie-26': 'trainingslager', 'serie-52': 'legende'
 };
 /* Symbole, deren Farbe die Aussage ist: Blut bleibt rot. */
@@ -428,7 +449,7 @@ const EIGENE_FARBE = new Set(['debuet']);
 
 const KATEGORIE = {
   debuet: 'buehne', gigs: 'buehne', jam: 'buehne', unplugged: 'buehne', maxout: 'buehne', zugaben: 'buehne', tight: 'buehne', roadcrew: 'buehne',
-  platten: 'kraft', club: 'kraft', hangar: 'kraft', koerper: 'kraft',
+  platten: 'kraft', club: 'kraft', hangar: 'kraft', koerper: 'kraft', gelenkig: 'kraft',
   km: 'rad', hoehe: 'rad', century: 'rad', doom: 'rad', openair: 'rad', crossover: 'rad',
   comeback: 'comeback', rueckweg: 'comeback', reunion: 'comeback', serie: 'serie'
 };

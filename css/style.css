@@ -815,11 +815,12 @@ button.raus:active{border-color:var(--rost)}
 .bib-notiz-text{margin-top:12px;padding:10px 12px;border-left:2px solid var(--kf);background:var(--panel)}
 .bib-notiz-text p{margin:4px 0 0;font-size:0.875rem;white-space:pre-wrap}
 .bib-aktionen{display:flex;gap:16px;align-items:center;margin-top:14px;flex-wrap:wrap}
-.bib-video, .bib-notiz-auf{
+.bib-video, .bib-notiz-auf, .bib-mobility{
   font-family:var(--mono);font-size:0.75rem;letter-spacing:.06em;background:none;border:0;padding:4px 0;
   color:var(--akzent);text-decoration:none;border-bottom:1px solid currentColor;cursor:pointer;
 }
 .bib-notiz-auf{color:var(--muted)}
+.bib-mobility.erledigt{color:var(--muted);border-bottom-style:dotted;cursor:default}
 .bib-form{margin-top:10px}
 .bib-notiz{min-height:70px;font-size:0.875rem}
 .bib-eigenesvideo{font-size:0.8125rem;padding:12px}

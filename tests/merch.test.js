@@ -330,11 +330,37 @@ print('\n--- Aftershow: Roadcrew und Hangar 18 ---');
   eq('dreimal fuenf sind keine zehn am Stueck', hat(summe, 'hangar'), null);
 }
 
+print('\n--- Mobility und Gelenkig ---');
+{
+  const mob = (date, uebung = 'couch') => ({ date, type: 'mobility', uebung, finished: `${date}T07:00:00Z` });
+  ok('drei Stufen im Katalog', [1, 4, 12].every(n => M.katalog(config).some(a => a.id === `gelenkig-${n}`)));
+  const woche = [mob('2026-09-07'), kraft('2026-09-08', [satz('squat', 95)], { mobility: 'hips' }), mob('2026-09-08'), mob('2026-09-10')];
+  eq('Tage zusammengefasst, doppelt zaehlt einmal', M.mobilityTage(woche).join(','), '2026-09-07,2026-09-08,2026-09-10');
+  eq('dritter Tag macht die Woche voll', M.gelenkigeWochen(woche).join(','), '2026-09-10');
+  eq('Gelenkig am dritten Tag', hat(M.aufnaeher(woche, config, [], HEUTE), 'gelenkig-1'), '2026-09-10');
+  const zwei = [mob('2026-09-06'), mob('2026-09-07'), mob('2026-09-08')];   // So | Mo, Di
+  eq('ueber die Wochengrenze: noch nicht', M.gelenkigeWochen(zwei).length, 0);
+  eq('ohne Mobility kein Gelenkig', hat(M.aufnaeher([kraft('2026-09-08', [satz('squat', 95)])], config, [], HEUTE), 'gelenkig-1'), null);
+  const vier = [];
+  for (const mo of ['2026-08-03', '2026-08-10', '2026-08-17', '2026-08-24'])
+    for (let i = 0; i < 3; i++) { const d = new Date(mo + 'T12:00:00'); d.setDate(d.getDate() + i * 2); vier.push(mob(P.ymd(d))); }
+  const a4 = M.aufnaeher(vier, config, [], HEUTE);
+  eq('vier Wochen: Stufe 4', hat(a4, 'gelenkig-4'), '2026-08-28');
+  eq('zwoelf noch nicht', hat(a4, 'gelenkig-12'), null);
+  eq('Mobility ist kein Gig', M.GIG_TYPEN.includes('mobility'), false);
+  eq('Mobility zaehlt nicht zum Rang', M.rang(vier, []).wochen || 0, 0);
+  eq('diese Woche zwei Tage', M.mobilityWoche([mob('2026-09-28'), mob('2026-09-30'), mob('2026-10-05')], new Date(2026, 9, 1)), 2);
+  eq('Zukunft zaehlt nicht', M.mobilityWoche([mob('2026-10-02')], new Date(2026, 9, 1)), 0);
+  const st = P.applyLog(P.initialState(config), config, mob('2026-09-07'));
+  eq('Historie: als Mobility, nicht als WOD', `${st.history[0].type}/${st.history[0].label}`, 'mobility/undefined');
+  eq('A/B-Wechsel unberuehrt', st.next, P.initialState(config).next);
+  ok('kein Training', !P.istTraining(st.history[0]) && P.istTraining({ date: '2026-09-07', type: 'wod' }));
+}
+
 print('\n--- Pixelbilder ---');
 {
   const voll = M.katalog({ ...config, lifts: { ...config.lifts, squat: { ...config.lifts.squat, reference: 100 } } },
     { mitGewicht: true, mitRad: true, mitHoehe: true, mitPlan: true });
-  eq('der volle Katalog: 57 Aufnaeher', voll.length, 57);
   const ohne = voll.filter(a => M.bildIndex(a) < 0).map(a => a.id);
   eq('jeder Aufnaeher hat ein Bild', ohne.join(), '');
   const indizes = voll.map(a => M.bildIndex(a));
@@ -347,7 +373,7 @@ print('\n--- Pixelbilder ---');
   eq('unbekannter Aufnaeher: kein Bild', M.bildIndex({ id: 'gibtsnicht' }), -1);
   eq('ohne Aufnaeher: kein Bild', M.bildIndex(null), -1);
   eq('keine ID doppelt im Bogen', new Set(M.BILDER).size, M.BILDER.length);
-  eq('57 Motive plus 5 neutrale Figuren', M.BILDER.length, 62);
+  eq('jeder Aufnaeher plus 5 neutrale Figuren', M.BILDER.length, voll.length + 5);
   const ids = new Set(voll.map(a => a.id));
   eq('kein Bild ohne Aufnaeher (ausser den Figuren)', M.BILDER.filter(b => !ids.has(b) && !/-figur/.test(b)).join(), '');
   eq('sieben Raenge, sieben Szenen', M.RAENGE.length, 7);

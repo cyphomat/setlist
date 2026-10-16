@@ -655,6 +655,39 @@ async function commitAnpassung(log) {
   return path;
 }
 
+/** Mobility aus der Bibliothek: eine eigene kleine Datei, kein Zustand —
+ * sie aendert am Programm nichts (program.js, KEIN_TRAINING). */
+async function commitMobility(log) {
+  let path = `${S.LOG_DIR}/${log.date}-mobility.json`;
+  let n = 2;
+  while (await S.readFile(path)) path = `${S.LOG_DIR}/${log.date}-mobility-${n++}.json`;
+  await S.writeFile(path, log, `Mobility am ${log.date}`);
+  return path;
+}
+
+/** "Heute gemacht" in der Bibliothek. Einmal am Tag reicht fuers Zaehlen. */
+async function trageMobilityEin(uebung, name) {
+  if (!config) return;
+  const heute = P.ymd(new Date());
+  // Frisch lesen: an den Einheiten haengen die Aufnaeher, ein alter
+  // Zwischenspeicher wuerde Gelenkig zu frueh oder zu spaet feiern.
+  let vorher;
+  try { vorher = await S.readAllLogs(); } catch { vorher = geladeneLogs(); }
+  if (M.mobilityTage(vorher).includes(heute)) { alleLogs = vorher; aktualisiereMobility(); banner(t('mob.schon'), '', 3000); return; }
+  const log = { date: heute, type: 'mobility', uebung, finished: new Date().toISOString() };
+  const nachher = vorher.concat([log]);
+  alleLogs = nachher;
+  S.cacheLogs(nachher);
+  state = P.applyLog(state, config, log);
+  S.cache({ state });
+  const neu = M.neueAufnaeher(vorher, nachher, config, gewichtsPunkte, new Date(),
+    { fahrten: radFuerMerch(vorher), planFuer: planFuerDatum });
+  try { await commit(log); banner(t('mob.erledigt', { name }), 'ok'); }
+  catch { S.queue(log); banner(t('msg.keinNetz'), '', 6000); }
+  if (neu.length && ANS.istAn()) zeigeAnsage(ANS.ansage({ aufnaeher: neu.map(patchName) }));
+  aktualisiereMobility();
+}
+
 /* ============================ Nach 5x5 ============================
    Ein Lift, der zweimal ohne neues Hoch in den Deload musste, bekommt
    beim Start den Vorschlag fuer die naechste Stufe (program.js). Abgelehnt
@@ -799,8 +832,11 @@ function startSession() {
       <div class="body">
         <p class="tagline"><b>${mobility.name}</b> · ${mobility.dosis}</p>
         <p>${mobility.warum}</p>
+        <label class="zugabe-check"><input type="checkbox" id="mobility-gemacht"> ${t('mob.gemacht')}</label>
       </div>
     </details>` : ''}`;
+  session.mobility = null;
+  if (mobility) $('mobility-gemacht').onchange = e => { if (session) session.mobility = e.target.checked ? mobility.id : null; };
   $('warmup').querySelectorAll('.kv.check input').forEach(cb => {
     cb.onchange = () => cb.closest('.kv').classList.toggle('erledigt', cb.checked);
   });
@@ -1074,6 +1110,7 @@ async function finishSession() {
     })
   };
   if (session.zugabe && session.fin) log.zugabe = session.fin.id;
+  if (session.mobility) log.mobility = session.mobility;
   const hilfs = HL.bereinige(session.hilfs);
   if (hilfs.length) log.hilfs = hilfs;
   const ort = ortName();
@@ -1102,6 +1139,7 @@ async function finishSession() {
  * zurueck — das Gefuehl danach (siehe waehleGefuehl) muss wissen, wohin. */
 async function commit(log) {
   if (log.type === 'anpassung') return commitAnpassung(log);
+  if (log.type === 'mobility') return commitMobility(log);
   let path = `${S.LOG_DIR}/${log.date}.json`;
   if (await S.readFile(path)) path = `${S.LOG_DIR}/${log.date}-2.json`;
   // Ohne workout — etwa bei einer Anpassung — waere hier "Einheit undefined"
@@ -1371,7 +1409,7 @@ async function exportiereCsv() {
     catch { logs = geladeneLogs(); }
     if (!logs.length) { banner(t('exp.leer'), '', 4000); return; }
     const text = X.alsCsv(logs, config, {
-      name: (art, id) => t(art === 'hilfs' ? `hilfs.${id}` : `chk.${id}`),
+      name: (art, id) => art === 'mobility' ? mobilityName(id) : t(art === 'hilfs' ? `hilfs.${id}` : `chk.${id}`),
       kopf: Object.fromEntries(X.SPALTEN.map(sp => [sp, t(`exp.sp.${sp}`)]))
     });
     const datei = X.dateiname(new Date());
@@ -2051,6 +2089,24 @@ function zeigeBibliothek(kategorie = null) {
   $('bib-suche').value = '';
   renderBibliothek();
   show('bibliothek');
+  // Fuer den Mobility-Zaehler die Einheiten nachladen, ohne zu warten.
+  if (!alleLogs.length) {
+    S.readAllLogs().then(logs => { alleLogs = logs; S.cacheLogs(logs); aktualisiereMobility(); }).catch(() => {});
+  }
+}
+
+/** "Heute gemacht" und der Zaehler der Woche, ohne die Liste neu zu zeichnen. */
+function aktualisiereMobility() {
+  const logs = geladeneLogs();
+  const erledigt = M.mobilityTage(logs).includes(P.ymd(new Date()));
+  document.querySelectorAll('#bib-liste .bib-mobility').forEach(b => {
+    b.disabled = erledigt;
+    b.classList.toggle('erledigt', erledigt);
+    b.textContent = `${erledigt ? '✓ ' : ''}${t('mob.heute')}`;
+  });
+  const n = M.mobilityWoche(logs, new Date());
+  const el = document.querySelector('#bib-liste .mob-woche');
+  if (el) { el.hidden = !n; el.textContent = n ? tn('mob.woche', n) : ''; }
 }
 
 /* Die Bibliothek als Songbook: nach Kategorien gegliedert, jede mit ihrer
@@ -2087,6 +2143,7 @@ function bibDetailHtml(u) {
         <a class="bib-video" href="${video}" target="_blank" rel="noopener noreferrer"
            referrerpolicy="no-referrer">${t('bib.video')}</a>
         <button type="button" class="bib-notiz-auf" aria-expanded="false">${t(hatNotiz ? 'bib.notizBearbeiten' : 'bib.notizNeu')}</button>
+        ${u.kategorie === 'Mobility' ? `<button type="button" class="bib-mobility">${t('mob.heute')}</button>` : ''}
       </div>
       <div class="bib-form" hidden>
         <textarea class="bib-notiz" rows="3" placeholder="${t('bib.notiz.ph')}">${escHtml(eintrag.notiz)}</textarea>
@@ -2162,6 +2219,7 @@ function renderBibliothek() {
     ? gruppen.map(g => `
       <section class="bib-gruppe" style="--kf:${BIB_FARBE[g.kategorie]}">
         <h2>${escHtml(bibKat(g.kategorie))}<span class="n">${g.uebungen.length}</span></h2>
+        ${g.kategorie === 'Mobility' ? '<p class="fine mob-woche" hidden></p>' : ''}
         <div class="bib-karte">${g.uebungen.map(bibZeileHtml).join('')}</div>
       </section>`).join('')
     : `<p class="lead">${t('bib.keine')}</p>`;
@@ -2172,6 +2230,15 @@ function renderBibliothek() {
       form.hidden = !form.hidden;
       btn.setAttribute('aria-expanded', String(!form.hidden));
       if (!form.hidden) form.querySelector('.bib-notiz').focus();
+    };
+  });
+  aktualisiereMobility();
+  document.querySelectorAll('.bib-detail .bib-mobility').forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.closest('.bib-detail').dataset.id;
+      const u = alle.find(x => x.id === id);
+      btn.disabled = true;
+      trageMobilityEin(id.replace(/^mobility:/, ''), u ? u.name : id);
     };
   });
   document.querySelectorAll('.bib-detail .bib-speichern').forEach(btn => {
@@ -2318,6 +2385,10 @@ function renderListe(logs) {
       return `<div class="hist anpassung"><div class="d">${escHtml(l.date)} · ${t(l.grund === 'schema' ? 'hist.schema' : 'hist.angepasst')}</div>
         <div class="l">${g}${grund ? `<br><span style="color:var(--dim)">${escHtml(grund)}</span>` : ''}</div></div>`;
     }
+    if (l.type === 'mobility') {
+      return `<div class="hist mobility"><div class="d">${escHtml(l.date)} · ${t('hist.mobility')}</div>
+        <div class="l">${escHtml(mobilityName(l.uebung))}</div></div>`;
+    }
     if (l.type && l.type !== 'strength') {
       const m = l.dauerSekunden ? `${Math.floor(l.dauerSekunden / 60)}:${String(l.dauerSekunden % 60).padStart(2, '0')}` : '—';
       // Bis hierher landete jeder fremde Typ unter "WOD". Unplugged ist
@@ -2330,7 +2401,8 @@ function renderListe(logs) {
     return `<div class="hist"><div class="d">${escHtml(l.date)} · WORKOUT ${escHtml(l.workout)}</div>
       <div class="l">${(l.lifts || []).map(e =>
         `${escHtml((config.lifts[e.lift] || {}).name || e.lift)} ${P.fmtWeight(e.weight)} (${escHtml((e.reps || []).join('/'))})`).join(' · ')}${
-        HL.bereinige(l.hilfs).map(h => ` · ${escHtml(t(`hilfs.${h.id}`))} (${escHtml(h.reps.join('/'))})`).join('')}</div>
+        HL.bereinige(l.hilfs).map(h => ` · ${escHtml(t(`hilfs.${h.id}`))} (${escHtml(h.reps.join('/'))})`).join('')}${
+        l.mobility ? ` · ${escHtml(t('hist.mobility'))}` : ''}</div>
     </div>`;
   }).join('') : `<p class="lead">${t('tour.keineEinheit')}</p>`;
 }
@@ -4322,6 +4394,8 @@ function patchHtml(a) {
   </div>`;
 }
 
+const mobilityName = id => (MOBILITY.find(m => m.id === id) || {}).name || id;
+
 /** Die Setlist des Abends: gespielt ist durchgestrichen, wie auf dem Zettel am Monitor. */
 function setlistZettel(log) {
   const fin = session && session.fin;
@@ -4339,7 +4413,10 @@ function setlistZettel(log) {
     }).join('')}${HL.bereinige(log.hilfs).map(h => `<li class="gespielt hilfs">
         <span class="song">${escHtml(t(`hilfs.${h.id}`))}</span>
         <span class="z-w">${escHtml(t('hilfs.zettel'))} · ${escHtml(HL.repsText(h.reps))}</span>
-      </li>`).join('')}${zugabe}</ol>
+      </li>`).join('')}${log.mobility ? `<li class="gespielt hilfs">
+        <span class="song">${escHtml(t('mob.gemacht'))}</span>
+        <span class="z-w">${escHtml(mobilityName(log.mobility))}</span>
+      </li>` : ''}${zugabe}</ol>
   </div>`;
 }
 

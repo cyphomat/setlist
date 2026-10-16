@@ -1,10 +1,12 @@
-// Browserprobe · Songbook: Gruppen, Übung des Tages, Notiz, Filter und Suche.
+// Browserprobe · Songbook: Gruppen, Übung des Tages, Notiz, Filter, Suche und Mobility.
 // Aufruf ueber tools/proben.mjs.
 
 import { CONFIG, BILDER, verlauf, kontext, ueberlauf } from './gemeinsam.mjs';
 
 export default async function ({ browser, pruefe }) {
   const logs = verlauf('2026-09-28');
+  // Zwei Mobility-Tage in der laufenden Woche (Mo 28.09., Di 29.09.)
+  for (const d of ['2026-09-28', '2026-09-29']) logs.push({ date: d, type: 'mobility', uebung: 'couch', finished: `${d}T07:00:00.000Z` });
   const NAME = 'bib';
   for (const [theme, breite, schrift] of [['dunkel', 390, null], ['hell', 390, null], ['dunkel', 360, 'sehr'], ['dunkel', 1280, null]]) {
     const { ctx, p, fehler, geschrieben } = await kontext(browser, { logs, config: CONFIG, heute: '2026-10-01', breite, hoehe: 900, schrift, theme });
@@ -32,6 +34,23 @@ export default async function ({ browser, pruefe }) {
       await p.click('#bib-kategorien [data-k="Mobility"]');
       const nurMob = await p.$$eval('#bib-liste .bib-gruppe', l => l.length);
       pruefe('Filter Mobility: eine Gruppe, keine Tageskarte', nurMob === 1 && !(await p.$('#bib-random .bib-tag')));
+      const vorher = (await p.textContent('#bib-liste .mob-woche')).trim();
+      pruefe('Zähler: zwei Tage in dieser Woche', /2× Mobility/.test(vorher), vorher);
+      // Zwei Tage Mobility in dieser Woche stehen schon da, heute macht drei: Gelenkig
+      await p.locator('#bib-liste details.uebung').first().locator('summary').click();
+      await p.locator('#bib-liste details.uebung[open] .bib-mobility').click();
+      await p.waitForTimeout(1200);
+      const mlog = geschrieben.find(g => /^einheiten\/2026-10-01-mobility/.test(g.path));
+      pruefe('Heute gemacht: eigener Mobility-Log', mlog && mlog.data.type === 'mobility' && mlog.data.uebung && !/:/.test(mlog.data.uebung), JSON.stringify(mlog && mlog.data));
+      pruefe('kein Zustand geschrieben', !geschrieben.some(g => g.path === 'state.json'));
+      const woche = (await p.textContent('#bib-liste .mob-woche').catch(() => '')).trim();
+      pruefe('Zähler der Woche', /3× Mobility/.test(woche), woche);
+      const ans = (await p.textContent('#ansager').catch(() => '')).replace(/\s+/g, ' ');
+      pruefe('Ansager: Gelenkig', /Gelenkig/.test(ans), ans);
+      const knopf = p.locator('#bib-liste details.uebung').nth(1);
+      await knopf.locator('summary').click();
+      pruefe('zweite Übung: schon erledigt', await knopf.locator('.bib-mobility').isDisabled());
+      await p.locator('#bib-liste .bib-gruppe').screenshot({ path: BILDER + 'bib-mobility.png' });
       await p.click('#bib-kategorien [data-k="Alle"]');
       await p.fill('#bib-suche', 'Lockout');
       await p.dispatchEvent('#bib-suche', 'input');

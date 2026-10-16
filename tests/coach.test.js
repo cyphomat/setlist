@@ -39,6 +39,7 @@ eq('Luecke bricht den Streak', C.weekStreak(mitLuecke, HEUTE), 1);
 const nurLetzteWoche = [{date:'2026-09-08'}];
 eq('laufende Woche ohne Einheit zaehlt nicht mit', C.weekStreak(nurLetzteWoche, HEUTE), 1);
 eq('eine Anpassung ist kein Training', C.weekStreak([{date:'2026-09-08'},{date:'2026-09-15',type:'anpassung'}], HEUTE), 1);
+eq('Mobility ist kein Training', C.weekStreak([{date:'2026-09-08'},{date:'2026-09-15',type:'mobility'}], HEUTE), 1);
 
 print('\n--- Serie mit Verletzungspause ---');
 {

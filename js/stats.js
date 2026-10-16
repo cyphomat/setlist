@@ -15,7 +15,7 @@ export function tonnage(log) {
 /** Zahlen fuer die Kopfzeile der Historie. */
 export function summary(logs = []) {
   const kraft = logs.filter(istKraft);
-  const wods = logs.filter(l => l.type && l.type !== 'strength');
+  const wods = logs.filter(l => l.type && l.type !== 'strength' && istTraining(l));
   const gesamt = kraft.reduce((s, l) => s + tonnage(l), 0);
 
   const best = {};
@@ -87,7 +87,7 @@ export function sparkline(punkte, breite = 300, hoehe = 60, rand = 4) {
    Invariante wie beim Zustand. Eine PR-Liste, die man von Hand
    fortschreibt, ist nach dem ersten Tippfehler wertlos.           */
 
-import { e1rm, e1rmFormel } from './program.js';
+import { e1rm, e1rmFormel, istTraining } from './program.js';
 
 /**
  * Bestwerte je Übung, aus allen Logs abgeleitet.
@@ -695,7 +695,7 @@ export function wochenLast(logs = [], fahrten = [], wochen = 12, heute = new Dat
   const eimerFuer = datum => index.get(tagesKey(montagVon(new Date(datum + 'T12:00:00'))));
 
   for (const l of logs) {
-    if (!l.date || l.type === 'maxout' || l.type === 'anpassung') continue;
+    if (!l.date || l.type === 'maxout' || !istTraining(l)) continue;
     const i = eimerFuer(l.date);
     if (i === undefined) continue;
     const sek = l.dauerSekunden ||
@@ -814,7 +814,7 @@ export function wochenSerie(daten = [], fenster = []) {
  * reissen sie nicht, zaehlen aber auch nicht mit.
  */
 export function laengsteSerie(logs = [], fahrten = [], fenster = []) {
-  const daten = logs.filter(l => l.type !== 'anpassung').map(l => l.date)
+  const daten = logs.filter(istTraining).map(l => l.date)
     .concat(fahrten.map(f => f.date));
   return wochenSerie(daten, fenster).reduce((m, w) => Math.max(m, w.laufend), 0);
 }

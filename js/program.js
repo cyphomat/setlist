@@ -5,6 +5,14 @@ export function roundTo(weight, step) {
   return Math.round(weight / step) * step;
 }
 
+/**
+ * Was im Log steht, aber kein Training ist: eine Anpassung setzt Gewichte,
+ * ein Mobility-Haken ist zehn Minuten Dehnen. Beides haelt keine Serie am
+ * Leben und zaehlt nicht als Einheit.
+ */
+export const KEIN_TRAINING = ['anpassung', 'mobility'];
+export const istTraining = l => !!(l && l.date && !KEIN_TRAINING.includes(l.type));
+
 /** Startzustand allein aus der Programmdefinition. */
 export function initialState(config) {
   const lifts = {};
@@ -129,7 +137,9 @@ export function applyLog(state, config, log) {
   // wuerde eine Spasseinheit die Progression verschieben.
   if (log.type && log.type !== 'strength') {
     next.updated = new Date().toISOString();
-    next.history = [...(next.history || []), { date: log.date, type: log.type, label: log.label || 'WOD' }].slice(-100);
+    const eintrag = log.type === 'mobility' ? { date: log.date, type: 'mobility', uebung: log.uebung || '' }
+      : { date: log.date, type: log.type, label: log.label || 'WOD' };
+    next.history = [...(next.history || []), eintrag].slice(-100);
     return next;
   }
 

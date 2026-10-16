@@ -55,6 +55,9 @@ export function zeitleiste(logs = [], config) {
 
 const GIG_STUFEN = [10, 25, 50, 100, 250];
 const SERIE_STUFEN = [4, 12, 26, 52];
+/** Wochen mit mindestens dreimal Mobility — 1, 4, 12 solcher Wochen. */
+export const GELENKIG_STUFEN = [1, 4, 12];
+export const GELENKIG_TAGE = 3;
 const PLATTEN_STUFEN = [1, 2, 3, 4];
 /** Eine Platte = 20 kg je Seite, wie im Kraftsport ueblich. */
 export const PLATTE_KG = 20;
@@ -117,6 +120,7 @@ export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHo
   }
   if (CLUB_LIFTS.every(id => lifts[id])) p('club', 'kraft', 'club', 'merch.p.club', { kg: CLUB_KG });
   p('hangar', 'kraft', 'hangar', 'merch.p.hangar', { n: HANGAR_WDH });
+  for (const n of GELENKIG_STUFEN) p(`gelenkig-${n}`, 'kraft', 'gelenkig', 'merch.p.gelenkig', { n, tage: GELENKIG_TAGE });
   if (mitGewicht) {
     for (const m of KOERPER_MARKEN) {
       if (!lifts[m.lift]) continue;
@@ -244,6 +248,9 @@ export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Dat
 
   radAufnaeher(rad, logs, planFuer, setze);
 
+  const gelenkig = gelenkigeWochen(logs);
+  for (const n of GELENKIG_STUFEN) if (gelenkig.length >= n) setze(`gelenkig-${n}`, gelenkig[n - 1]);
+
   // Serien: dieselbe Rechnung wie der Rekord in der Tour, mit Verletzungspause.
   const fenster = pausenFenster(config, ymd(heute));
   for (const w of wochenSerie(tage, fenster)) {
@@ -253,6 +260,37 @@ export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Dat
   }
 
   return kat.map(k => ({ ...k, verdient: verdient[k.id] || null }));
+}
+
+/**
+ * Tage mit Mobility: ein eigener Mobility-Log oder der Haken in einer
+ * Krafteinheit. Je Tag einmal — dreimal am selben Abend ist kein Rhythmus.
+ */
+export function mobilityTage(logs = []) {
+  const tage = new Set();
+  for (const l of logs) {
+    if (!l || !l.date) continue;
+    if (l.type === 'mobility' || (typ(l) === 'strength' && l.mobility)) tage.add(l.date);
+  }
+  return [...tage].sort();
+}
+
+/** Je Woche mit mindestens GELENKIG_TAGE Mobility-Tagen der Tag, an dem sie es wurde. */
+/** Wie viele Mobility-Tage die laufende Woche (Mo–So) bisher hat. */
+export function mobilityWoche(logs = [], heute = new Date()) {
+  const tag = ymd(heute), montag = montagKey(tag);
+  return mobilityTage(logs).filter(d => d <= tag && montagKey(d) === montag).length;
+}
+
+export function gelenkigeWochen(logs = []) {
+  const zaehler = new Map(), out = [];
+  for (const d of mobilityTage(logs)) {
+    const k = montagKey(d);
+    const n = (zaehler.get(k) || 0) + 1;
+    zaehler.set(k, n);
+    if (n === GELENKIG_TAGE) out.push(d);
+  }
+  return out;
 }
 
 /** Plant die config ueberhaupt Radeinheiten? Sonst gibt es nichts abzugleichen. */
@@ -367,7 +405,7 @@ const STANDARD_LIFTS = ['squat', 'bench', 'row', 'ohp', 'deadlift'];
 export const BILDER = [
   'debuet', ...GIG_STUFEN.map(n => `gigs-${n}`), 'jam', 'unplugged', 'maxout', 'zugaben', 'tight', 'roadcrew',
   ...STANDARD_LIFTS.flatMap(id => PLATTEN_STUFEN.map(n => `platten-${id}-${n}`)),
-  'club', 'hangar', ...KOERPER_MARKEN.map(m => `koerper-${m.lift}`),
+  'club', 'hangar', ...KOERPER_MARKEN.map(m => `koerper-${m.lift}`), ...GELENKIG_STUFEN.map(n => `gelenkig-${n}`),
   ...KM_STUFEN.map(n => `km-${n}`), 'hoehe', 'century', 'doom', 'openair', ...CROSSOVER_STUFEN.map(n => `crossover-${n}`),
   'comeback', 'rueckweg', 'reunion', ...SERIE_STUFEN.map(n => `serie-${n}`),
   ...PLATTEN_STUFEN.map(n => `platten-figur-${n}`), 'koerper-figur'
