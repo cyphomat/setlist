@@ -17,6 +17,7 @@ import { applyLog, initialState, ymd } from './program.js';
 import { tonnage, gewichtsReihe, wochenSerie, intensitaetsAbgleich } from './stats.js';
 import { pausenFenster } from './verletzung.js';
 import { HILFS, bereinige } from './hilfs.js';
+import { serienMarken } from './soundcheck.js';
 
 /** Was als Gig zaehlt: alles, wofuer man ins Studio gegangen ist — und jede Fahrt. */
 export const GIG_TYPEN = ['strength', 'wod', 'unplugged', 'maxout'];
@@ -61,6 +62,8 @@ export const GELENKIG_TAGE = 3;
 const PLATTEN_STUFEN = [1, 2, 3, 4];
 /** Besiegte Monats-Endgegner — 1, 3, 6, 12 Monate. */
 export const TOUR_STUFEN = [1, 3, 6, 12];
+/** Wochen-Soundcheck so viele Wochen in Folge. */
+export const SOUNDCHECK_STUFEN = [4, 12];
 /** Eine Platte = 20 kg je Seite, wie im Kraftsport ueblich. */
 export const PLATTE_KG = 20;
 /** 1000 lb in kg. */
@@ -146,6 +149,7 @@ export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHo
 
   for (const n of SERIE_STUFEN) p(`serie-${n}`, 'serie', 'serie', 'merch.p.serie', { n });
   if (kraftGeplant(config)) for (const n of TOUR_STUFEN) p(`tour-${n}`, 'tour', 'tour', 'merch.p.tour', { n });
+  for (const n of SOUNDCHECK_STUFEN) p(`soundcheck-${n}`, 'tour', 'soundcheck', 'merch.p.soundcheck', { n });
   return out;
 }
 
@@ -165,7 +169,7 @@ function waageFuer(reihe, datum) {
  * Alle Aufnaeher mit dem Tag, an dem sie verdient wurden (oder null).
  * "Gehoben" heisst: ein geschaffter Arbeitssatz oder ein Max-Out-Lift.
  */
-export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Date(), { fahrten = [], planFuer = null } = {}) {
+export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Date(), { fahrten = [], planFuer = null, soundchecks = [] } = {}) {
   const reihe = gewichtsReihe(wellness);
   const rad = mitDatum(fahrten);
   const kat = katalog(config, {
@@ -253,6 +257,9 @@ export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Dat
 
   monatsTouren(logs, config, { fahrten: rad, heute }).filter(m => m.komplett).reverse()
     .forEach((m, i) => { for (const n of TOUR_STUFEN) if (i + 1 >= n) setze(`tour-${n}`, m.besiegtAm); });
+
+  const marken = serienMarken(soundchecks, SOUNDCHECK_STUFEN);
+  for (const n of SOUNDCHECK_STUFEN) if (marken[n]) setze(`soundcheck-${n}`, marken[n]);
 
   const gelenkig = gelenkigeWochen(logs);
   for (const n of GELENKIG_STUFEN) if (gelenkig.length >= n) setze(`gelenkig-${n}`, gelenkig[n - 1]);
@@ -414,6 +421,7 @@ export const BILDER = [
   'club', 'hangar', ...KOERPER_MARKEN.map(m => `koerper-${m.lift}`), ...GELENKIG_STUFEN.map(n => `gelenkig-${n}`),
   ...KM_STUFEN.map(n => `km-${n}`), 'hoehe', 'century', 'doom', 'openair', ...CROSSOVER_STUFEN.map(n => `crossover-${n}`),
   'comeback', 'rueckweg', 'reunion', ...SERIE_STUFEN.map(n => `serie-${n}`), ...TOUR_STUFEN.map(n => `tour-${n}`),
+  ...SOUNDCHECK_STUFEN.map(n => `soundcheck-${n}`),
   ...PLATTEN_STUFEN.map(n => `platten-figur-${n}`), 'koerper-figur'
 ];
 

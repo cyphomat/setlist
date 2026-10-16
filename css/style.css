@@ -1252,3 +1252,28 @@ details.shirt[open] .shirt-icon{fill:var(--akzent);stroke:var(--akzent)}
 .zitat figcaption::before{content:'— '}
 #zitat .meilenstein{margin-top:18px}
 :root[data-theme="light"] .plakat{box-shadow:0 1px 2px rgba(26,24,21,.05), 0 6px 16px rgba(26,24,21,.05)}
+
+/* ── Wochen-Soundcheck ──
+   Faellig: ein Knopf unter dem Wochenkopf. Danach die Vorsaetze an derselben Stelle. */
+.sc-faellig{
+  display:block;width:calc(100% - 30px);margin:0 15px 12px;padding:10px 12px;text-align:left;cursor:pointer;
+  font-family:var(--mono);font-size:0.75rem;letter-spacing:.06em;text-transform:uppercase;line-height:1.4;
+  color:var(--fg);background:var(--tint-akzent);border:1px solid var(--akzent);border-radius:2px;
+}
+.sc-faellig:focus-visible{outline:2px solid var(--akzent);outline-offset:2px}
+.sc-vorsaetze{margin:0 15px 12px;padding-top:8px;border-top:1px solid var(--line)}
+.sc-vorsaetze ul{margin:4px 0 0;padding-left:18px;font-size:0.875rem;line-height:1.5;color:var(--fg)}
+.sc-vorsaetze li{overflow-wrap:anywhere}
+#sc-body .stats{grid-template-columns:repeat(auto-fill,minmax(min(130px,100%),1fr))}
+#sc-body .stat{min-width:0}
+#sc-body .stat .n{letter-spacing:.08em;overflow-wrap:anywhere;hyphens:auto}
+#sc-body .serie{margin-top:12px}
+.sc-feld{display:block;margin:16px 0 0;padding:0;border:0;min-width:0}
+.sc-feld > span, .sc-feld > legend{display:block;padding:0;margin-bottom:6px;font-family:var(--mono);font-size:0.75rem;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+#sc-body .sc-feld textarea{width:100%;margin:0}
+#sc-body .sc-vorsatz{display:block;width:100%;margin:0 0 8px}
+#sc-speichern{margin-top:10px}
+.sc-archiv .sc-eintrag + .sc-eintrag{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.sc-eintrag p{margin:4px 0;font-size:0.875rem;overflow-wrap:anywhere}
+.sc-eintrag ul{margin:4px 0 0;padding-left:18px;font-size:0.875rem;overflow-wrap:anywhere}

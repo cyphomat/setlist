@@ -119,7 +119,7 @@ const b64 = o => Buffer.from(JSON.stringify(o)).toString('base64');
  *          etwa 'http://jens.github.io/setlist/' fuer einen Fork.
  * Gibt die Seite, gesammelte Seitenfehler und alles Geschriebene zurueck.
  */
-export async function kontext(browser, { logs, config, heute, breite = 390, hoehe = 900, schrift = null, theme = 'dunkel', fahrten = null, vorher = null, adresse = null, ohneToken = false }) {
+export async function kontext(browser, { logs, config, heute, breite = 390, hoehe = 900, schrift = null, theme = 'dunkel', fahrten = null, vorher = null, adresse = null, ohneToken = false, dateien = {} }) {
   const state = P.deriveState(config, logs);
   const geschrieben = [];
   const ctx = await browser.newContext({ viewport: { width: breite, height: hoehe }, deviceScaleFactor: 1 });
@@ -150,6 +150,12 @@ export async function kontext(browser, { logs, config, heute, breite = 390, hoeh
     if (sch) localStorage.setItem('setlist.schrift', sch);
   }, [VERSION, theme, schrift, ohneToken]);
   const alle = () => logs.concat(geschrieben.filter(g => g.path.startsWith('einheiten/')).map(g => g.data));
+  // Weitere Dateien im Datenrepo (etwa soundcheck/): vorgegebene plus dort geschriebene
+  const extra = () => {
+    const m = new Map(Object.entries(dateien));
+    for (const g of geschrieben) if (g.path.startsWith('soundcheck/')) m.set(g.path, g.data);
+    return m;
+  };
   await ctx.route('**/api.github.com/**', async r => {
     const u = r.request().url(), m = r.request().method();
     const j = (o, s = 200) => r.fulfill({ status: s, contentType: 'application/json', body: JSON.stringify(o) });
@@ -165,9 +171,13 @@ export async function kontext(browser, { logs, config, heute, breite = 390, hoeh
       return j({ content: b64(neu ? neu.data : config), sha: 'c1' });
     }
     if (u.includes('contents/state.json')) return j({ content: b64(state), sha: 'st1' });
-    if (u.includes('contents/')) return r.fulfill({ status: 404, body: '' });
+    if (u.includes('contents/')) {
+      const path = decodeURIComponent(new URL(u).pathname.split('/contents/')[1]);
+      return extra().has(path) ? j({ content: b64(extra().get(path)), sha: 'x1' }) : r.fulfill({ status: 404, body: '' });
+    }
     if (u.includes('git/trees'))
-      return j({ tree: alle().map((l, i) => ({ path: `einheiten/${l.date}-${i}.json`, type: 'blob', sha: `s${i}` })) });
+      return j({ tree: alle().map((l, i) => ({ path: `einheiten/${l.date}-${i}.json`, type: 'blob', sha: `s${i}` }))
+        .concat([...extra().keys()].map((path, i) => ({ path, type: 'blob', sha: `x${i}` }))) });
     const blob = u.match(/git\/blobs\/s(\d+)/);
     if (blob && alle()[+blob[1]]) return j({ content: b64(alle()[+blob[1]]), encoding: 'base64' });
     if (/\/repos\/[^/]+\/[^/]+$/.test(new URL(u).pathname)) return j({ private: true });

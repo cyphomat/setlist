@@ -942,4 +942,29 @@ print('\n--- Ein Pruefwert-Test ruehrt die Progression nicht an ---');
 }
 
 
+print('\n--- Wochen-Rueckschau ---');
+{
+  const k = (date, reps, extra = {}) => ({ date, type: 'strength', lifts: [{ lift: 'squat', weight: 100, sets: 5, target: 5, reps }], ...extra });
+  const logs = [
+    k('2026-09-27', [5, 5, 5, 5, 5]),                                  // Sonntag davor
+    k('2026-09-28', [5, 5, 5, 5, 5], { mobility: 'hips' }),
+    k('2026-10-01', [5, 5, 5, 4, 3]),
+    { date: '2026-09-29', type: 'wod', dauerSekunden: 600 },
+    { date: '2026-09-30', type: 'mobility', uebung: 'couch' },
+    { date: '2026-09-28', type: 'mobility', uebung: 'couch' },         // derselbe Tag wie der Haken
+    { date: '2026-10-02', type: 'anpassung', gewichte: {} },
+    k('2026-10-05', [5, 5, 5, 5, 5])                                   // Montag danach
+  ];
+  const r = S.wochenRueckschau(logs, [{ date: '2026-10-03', km: 42.4 }, { date: '2026-10-04', km: 20 }, { date: '2026-10-05', km: 99 }], '2026-09-28');
+  eq('bis Sonntag', r.bis, '2026-10-04');
+  eq('zwei Krafteinheiten', r.einheiten, 2);
+  eq('ein Jam', r.jams, 1);
+  eq('Mobility an zwei Tagen', r.mobility, 2);
+  eq('zwei Fahrten in der Woche', `${r.fahrten} ${r.km}`, '2 62');
+  eq('saubere Saetze', `${r.saetze.sauber}/${r.saetze.gesamt}`, '8/10');
+  eq('Tonnen', r.tonnen, 4.7);
+  const leer = S.wochenRueckschau([], [], '2026-09-28');
+  eq('leere Woche', `${leer.einheiten}/${leer.saetze.gesamt}/${leer.km}`, '0/0/0');
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

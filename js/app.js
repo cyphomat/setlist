@@ -20,6 +20,7 @@ import * as HL from './hilfs.js';
 import * as X from './export.js';
 import * as F from './feuer.js';
 import * as ANS from './ansager.js';
+import * as SC from './soundcheck.js';
 
 // Eingebettet in eine fremde Seite (siehe boot.js) startet die App gar nicht
 // erst — kein Laden, kein Token-Gebrauch. Der throw beendet das Modul hier.
@@ -57,6 +58,8 @@ let formPunkte = [];            // Fitness und Ermuedung ueber die Zeit
 let eftp = null;                // geschaetzte FTP, fuer Wattziele
 let bibliothek = {};            // eigene Notizen/Videos je Uebung, aus bibliothek.json
 let bibZufall = null, bibKategorie = null;
+let soundchecks = [];           // Wochen mit Soundcheck ('JJJJ-Www'), aus soundcheck/
+let scVorsaetze = null;         // { woche, vorsaetze } des juengsten Soundchecks
 
 const $ = id => document.getElementById(id);
 // Feste Beschriftungen sofort in der gewaehlten Sprache — vor dem ersten
@@ -64,7 +67,7 @@ const $ = id => document.getElementById(id);
 uebersetzeStatisch();
 const VERSION_KEY = 'setlist.version';
 let laufendeVersion = localStorage.getItem(VERSION_KEY) || '—';
-const VIEWS = ['setup', 'einrichten', 'home', 'session', 'wod', 'unplugged', 'maxout', 'done', 'history', 'bibliothek', 'merch', 'backstage'];
+const VIEWS = ['setup', 'einrichten', 'home', 'session', 'wod', 'unplugged', 'maxout', 'done', 'history', 'bibliothek', 'merch', 'backstage', 'soundcheck'];
 // Waehrend Einheit, Jam, Unplugged und Max-Out bleibt der Bildschirm an —
 // am Ansichtswechsel festgemacht, damit kein Ausgang (Fertig, Abbrechen,
 // Zurueck) das Freigeben vergessen kann.
@@ -144,6 +147,8 @@ async function load() {
   if (zwischen.wkg) wkgPunkte = zwischen.wkg;
   if (zwischen.gewichtsReihe) { gewichtsReihe = zwischen.gewichtsReihe; berechneAbnehmen(); }
   if (zwischen.eftp) eftp = zwischen.eftp;
+  if (Array.isArray(zwischen.soundchecks)) soundchecks = zwischen.soundchecks.filter(SC.istKey);
+  if (zwischen.scVorsaetze) scVorsaetze = zwischen.scVorsaetze;
 
   await flushQueue();
   renderOrtKnopf();
@@ -161,6 +166,7 @@ async function load() {
   if (!geladeneLogs().length) {
     S.readAllLogs().then(logs => { if (!alleLogs.length) { alleLogs = logs; S.cacheLogs(logs); } renderAmp(); }).catch(() => {});
   }
+  ladeSoundchecks();
 }
 
 /** Nur Beiwerk: Fehler hier duerfen die App nie blockieren — aber sichtbar sein. */
@@ -371,7 +377,7 @@ function renderAmp() {
   if (!box || !config || !state) return;
   const logs = alleLogs.length ? alleLogs : ((S.cachedLogs() || {}).logs || []);
   const v = M.verstaerker(logs, config, new Date(), state.history || []);
-  if (!v) { box.innerHTML = `<div class="woche-kopf">${serienZeile()}</div>`; return; }
+  if (!v) { box.innerHTML = `<div class="woche-kopf">${serienZeile()}</div>${soundcheckZeile()}`; bindeSoundcheck(); return; }
   const punkt = (grad, r) => {
     const a = grad * Math.PI / 180;
     return [Math.round(Math.sin(a) * r * 100) / 100, Math.round(-Math.cos(a) * r * 100) / 100];
@@ -396,7 +402,8 @@ function renderAmp() {
         ${serienZeile()}
         ${tourZeile(logs)}
       </div>
-    </div>`;
+    </div>${soundcheckZeile()}`;
+  bindeSoundcheck();
 }
 
 /**
@@ -698,7 +705,7 @@ async function trageMobilityEin(uebung, name) {
   state = P.applyLog(state, config, log);
   S.cache({ state });
   const neu = M.neueAufnaeher(vorher, nachher, config, gewichtsPunkte, new Date(),
-    { fahrten: radFuerMerch(vorher), planFuer: planFuerDatum });
+    { fahrten: radFuerMerch(vorher), planFuer: planFuerDatum, soundchecks });
   try { await commit(log); banner(t('mob.erledigt', { name }), 'ok'); }
   catch { S.queue(log); banner(t('msg.keinNetz'), '', 6000); }
   const monat = heute.slice(0, 7);
@@ -1160,6 +1167,7 @@ async function finishSession() {
 async function commit(log) {
   if (log.type === 'anpassung') return commitAnpassung(log);
   if (log.type === 'mobility') return commitMobility(log);
+  if (log.type === 'soundcheck') return commitSoundcheck(log);
   let path = `${S.LOG_DIR}/${log.date}.json`;
   if (await S.readFile(path)) path = `${S.LOG_DIR}/${log.date}-2.json`;
   // Ohne workout — etwa bei einer Anpassung — waere hier "Einheit undefined"
@@ -1411,6 +1419,7 @@ $('merch-back').onclick = () => {
   show('home');
 };
 $('bib-back').onclick = () => show('home');
+$('sc-back').onclick = () => { renderOrtKnopf(); renderHome(); show('home'); };
 $('bib-suche').oninput = renderBibliothek;
 $('rebuild').onclick = rebuild;
 $('export-csv').onclick = exportiereCsv;
@@ -2953,6 +2962,7 @@ function renderTour(logs) {
   renderAerob();
   renderRad();
   renderListe(logs);
+  renderSoundcheckArchiv();
 }
 
 function renderPRs(logs) {
@@ -4469,7 +4479,7 @@ async function neueAufnaeherZeigen(log, historie) {
   if (!historie.every(h => tage.has(h.date))) return null;
   const nachher = vorher.concat([log]);
   const neu = M.neueAufnaeher(vorher, nachher, config, gewichtsPunkte, new Date(),
-    { fahrten: radFuerMerch(vorher), planFuer: planFuerDatum });
+    { fahrten: radFuerMerch(vorher), planFuer: planFuerDatum, soundchecks });
   // Rang und Wochenregler: vorher gegen nachher, aus denselben Logs
   const rVor = M.rang(vorher, radFuerMerch(vorher)), rNach = M.rang(nachher, radFuerMerch(nachher));
   const vVor = M.verstaerker(vorher, config, new Date(), historie);
@@ -4544,6 +4554,131 @@ function plakatGlut() {
   if (!c) return;
   glut = F.feuer(c, { breite: 90, hoehe: 34, kuehlung: 3 });
   glut.start();
+}
+
+/* ============================ Wochen-Soundcheck ============================
+   Sonntags, montags, dienstags: einmal auf die Woche schauen, festhalten,
+   was lief und was hakt, drei Vorsaetze. Eine Datei je Woche im Datenrepo
+   (soundcheck.js); die Vorsaetze stehen danach im Wochenkopf.           */
+const kwNr = key => Number(String(key).slice(6));
+const ersterTag = () => ersteEinheit(geladeneLogs()) || ersteEinheit((state && state.history) || []);
+const scFaellig = () => SC.faellig(new Date(), soundchecks, { ab: ersterTag() });
+
+/** Liste der Wochen aus dem Repo (eine Anfrage), dazu die Vorsaetze der juengsten. */
+async function ladeSoundchecks() {
+  try {
+    const liste = (await S.listeOrdner(SC.ORDNER)).map(f => SC.ausPfad(f.path)).filter(Boolean).sort();
+    soundchecks = liste;
+    S.cache({ soundchecks });
+    const jetzt = SC.wochenKey(new Date());
+    const juengste = [jetzt, SC.vorige(jetzt)].find(k => liste.includes(k)) || null;
+    if (juengste && !(scVorsaetze && scVorsaetze.woche === juengste)) {
+      const f = await S.readFile(SC.pfad(juengste));
+      const v = f && f.data && Array.isArray(f.data.vorsaetze) ? f.data.vorsaetze.filter(x => typeof x === 'string') : [];
+      scVorsaetze = { woche: juengste, vorsaetze: v.slice(0, SC.VORSAETZE) };
+      S.cache({ scVorsaetze });
+    }
+    renderAmp();
+  } catch (e) { console.warn('Soundchecks:', e.message); }
+}
+
+/** Faellig: ein Knopf im Wochenkopf. Sonst die Vorsaetze dieser Woche. */
+function soundcheckZeile() {
+  const key = scFaellig();
+  if (key) return `<button type="button" class="sc-faellig" id="go-soundcheck" data-woche="${escHtml(key)}">${escHtml(t('sc.faellig', { kw: kwNr(key) }))} →</button>`;
+  const jetzt = SC.wochenKey(new Date());
+  const v = scVorsaetze && [jetzt, SC.vorige(jetzt)].includes(scVorsaetze.woche) ? scVorsaetze.vorsaetze : [];
+  if (!v.length) return '';
+  return `<div class="sc-vorsaetze"><span class="kicker">${escHtml(t('sc.vorsaetzeKopf'))}</span>
+    <ul>${v.map(x => `<li>${escHtml(x)}</li>`).join('')}</ul></div>`;
+}
+function bindeSoundcheck() {
+  const b = $('go-soundcheck');
+  if (b) b.onclick = () => zeigeSoundcheck(b.dataset.woche);
+}
+
+function zeigeSoundcheck(key) {
+  if (!config || !SC.istKey(key)) return;
+  const logs = geladeneLogs();
+  const z = ST.wochenRueckschau(logs, radFuerMerch(logs), SC.montagVon(key));
+  const zahl = (k, v) => `<div class="stat"><div class="n">${escHtml(t(`sc.z.${k}`))}</div><div class="v">${escHtml(v)}</div></div>`;
+  const n = SC.serie(soundchecks, new Date());
+  $('sc-body').innerHTML = `
+    <p class="kicker">${escHtml(t('sc.kopf', { kw: kwNr(key), von: datumKurz(z.montag), bis: datumKurz(z.bis) }))}</p>
+    <p class="lead">${escHtml(t('sc.lead'))}</p>
+    <div class="stats">
+      ${zahl('einheiten', z.einheiten)}${zahl('jams', z.jams)}${zahl('mobility', z.mobility)}
+      ${z.fahrten ? zahl('fahrten', z.fahrten) + zahl('km', z.km.toLocaleString(locale())) : ''}
+      ${zahl('tonnen', z.tonnen.toLocaleString(locale(), { maximumFractionDigits: 1 }))}
+      ${z.saetze.gesamt ? zahl('saetze', `${z.saetze.sauber}/${z.saetze.gesamt}`) : ''}
+    </div>
+    ${n ? `<p class="serie">${escHtml(tn('sc.serie', n))}</p>` : ''}
+    <label class="sc-feld"><span>${escHtml(t('sc.lief'))}</span>
+      <textarea id="sc-lief" rows="3" maxlength="${SC.TEXT_MAX}" placeholder="${escHtml(t('sc.lief.ph'))}"></textarea></label>
+    <label class="sc-feld"><span>${escHtml(t('sc.hakt'))}</span>
+      <textarea id="sc-hakt" rows="3" maxlength="${SC.TEXT_MAX}" placeholder="${escHtml(t('sc.hakt.ph'))}"></textarea></label>
+    <fieldset class="sc-feld"><legend>${escHtml(t('sc.vorsaetze'))}</legend>
+      ${Array.from({ length: SC.VORSAETZE }, (_, i) => `<input type="text" class="sc-vorsatz" maxlength="${SC.VORSATZ_MAX}"
+        aria-label="${escHtml(t('sc.vorsatz.ph', { n: i + 1 }))}" placeholder="${escHtml(t('sc.vorsatz.ph', { n: i + 1 }))}">`).join('')}
+    </fieldset>
+    <button class="btn" id="sc-speichern">${escHtml(t('sc.abschliessen'))}</button>
+    <p class="fine">${escHtml(t('sc.fine'))}</p>`;
+  $('sc-speichern').onclick = () => speichereSoundcheck(key);
+  show('soundcheck');
+}
+
+async function commitSoundcheck(eintrag) {
+  const { type, ...daten } = eintrag;
+  const path = SC.pfad(daten.woche);
+  const cur = await S.readFile(path);
+  await S.writeFile(path, daten, `Soundcheck ${daten.woche}`, cur ? cur.sha : undefined);
+  return path;
+}
+
+async function speichereSoundcheck(key) {
+  const eintrag = SC.bereinige({
+    woche: key, lief: $('sc-lief').value, hakt: $('sc-hakt').value,
+    vorsaetze: [...document.querySelectorAll('#sc-body .sc-vorsatz')].map(i => i.value)
+  });
+  if (!eintrag) return;
+  $('sc-speichern').disabled = true;
+  const vorher = soundchecks.slice();
+  soundchecks = [...new Set(soundchecks.concat([key]))].sort();
+  scVorsaetze = { woche: key, vorsaetze: eintrag.vorsaetze };
+  S.cache({ soundchecks, scVorsaetze });
+  try { await commitSoundcheck({ type: 'soundcheck', ...eintrag }); banner(t('sc.gespeichert', { kw: kwNr(key) }), 'ok'); }
+  catch { S.queue({ type: 'soundcheck', ...eintrag }); banner(t('msg.keinNetz'), '', 6000); }
+  const logs = geladeneLogs();
+  const opts = soundchecks => ({ fahrten: radFuerMerch(logs), planFuer: planFuerDatum, soundchecks });
+  const alt = new Set(M.aufnaeher(logs, config, gewichtsPunkte, new Date(), opts(vorher)).filter(a => a.verdient).map(a => a.id));
+  const neu = M.aufnaeher(logs, config, gewichtsPunkte, new Date(), opts(soundchecks)).filter(a => a.verdient && !alt.has(a.id));
+  renderOrtKnopf();
+  renderHome();
+  show('home');
+  if (neu.length && ANS.istAn()) zeigeAnsage(ANS.ansage({ aufnaeher: neu.map(patchName) }));
+}
+
+/** Fruehere Soundchecks in der Tour, erst beim Aufklappen geladen. */
+function renderSoundcheckArchiv() {
+  const box = $('hist-soundcheck');
+  if (!box) return;
+  if (!soundchecks.length) { box.innerHTML = ''; return; }
+  box.innerHTML = `<details class="info sc-archiv"><summary>${escHtml(t('sc.archiv'))} · ${soundchecks.length}</summary>
+    <div class="body" id="sc-archiv-body"><p class="fine">${escHtml(t('sc.laedt'))}</p></div></details>`;
+  const det = box.querySelector('details');
+  det.addEventListener('toggle', async () => {
+    if (!det.open || det.dataset.geladen) return;
+    det.dataset.geladen = '1';
+    const keys = soundchecks.slice().reverse().slice(0, 26);
+    const eintraege = await Promise.all(keys.map(k => S.readFile(SC.pfad(k)).then(f => f && f.data).catch(() => null)));
+    const text = v => typeof v === 'string' ? v : '';
+    $('sc-archiv-body').innerHTML = eintraege.map((e, i) => e ? `<div class="sc-eintrag">
+      <p class="kicker">${escHtml(t('sc.kw', { kw: kwNr(keys[i]) }))} · ${escHtml(keys[i].slice(0, 4))}</p>
+      ${text(e.lief) ? `<p><b>${escHtml(t('sc.lief'))}:</b> ${escHtml(text(e.lief))}</p>` : ''}
+      ${text(e.hakt) ? `<p><b>${escHtml(t('sc.hakt'))}:</b> ${escHtml(text(e.hakt))}</p>` : ''}
+      ${Array.isArray(e.vorsaetze) && e.vorsaetze.length ? `<ul>${e.vorsaetze.filter(x => typeof x === 'string').map(x => `<li>${escHtml(x)}</li>`).join('')}</ul>` : ''}
+    </div>` : '').join('') || `<p class="fine">${escHtml(t('sc.leer'))}</p>`;
+  });
 }
 
 /* ============================ Monats-Tour ============================
@@ -4624,7 +4759,7 @@ async function zeigeMerch(von = 'home') {
 function renderMerch(logs) {
   const heute = new Date();
   const fahrten = radFuerMerch(logs);
-  const liste = M.aufnaeher(logs, config, gewichtsPunkte, heute, { fahrten, planFuer: planFuerDatum });
+  const liste = M.aufnaeher(logs, config, gewichtsPunkte, heute, { fahrten, planFuer: planFuerDatum, soundchecks });
 
   // Rang
   const r = M.rang(logs, fahrten);

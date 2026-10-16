@@ -1334,3 +1334,34 @@ export function plateaus(logs = [], state = {}, config = {}) {
   }
   return out.sort((a, b) => b.stehtSeit - a.stehtSeit);
 }
+
+/**
+ * Die Zahlen einer Woche fuer den Soundcheck (Montag bis Sonntag ab
+ * `montag`): Krafteinheiten, Jams und Unplugged, Tage mit Mobility,
+ * Fahrten und Kilometer, bewegte Tonnen, saubere Saetze.
+ */
+export function wochenRueckschau(logs = [], fahrten = [], montag) {
+  const ende = (() => { const d = new Date(`${montag}T12:00:00`); d.setDate(d.getDate() + 6); return d; })();
+  const bis = `${ende.getFullYear()}-${String(ende.getMonth() + 1).padStart(2, '0')}-${String(ende.getDate()).padStart(2, '0')}`;
+  const drin = d => typeof d === 'string' && d >= montag && d <= bis;
+  const woche = logs.filter(l => l && drin(l.date));
+  const kraft = woche.filter(istKraft);
+  let sauber = 0, gesamt = 0;
+  for (const l of kraft) for (const e of l.lifts) {
+    const reps = Array.isArray(e.reps) ? e.reps : [];
+    gesamt += Math.max(e.sets || 0, reps.length);
+    sauber += reps.filter(r => r >= (e.target || 0)).length;
+  }
+  const rad = (fahrten || []).filter(f => f && drin(f.date));
+  const mobility = new Set(woche.filter(l => l.type === 'mobility' || (istKraft(l) && l.mobility)).map(l => l.date));
+  return {
+    montag, bis,
+    einheiten: kraft.length,
+    jams: woche.filter(l => l.type === 'wod' || l.type === 'unplugged').length,
+    mobility: mobility.size,
+    fahrten: rad.length,
+    km: Math.round(rad.reduce((s, f) => s + (f.km || 0), 0)),
+    tonnen: Math.round(kraft.reduce((s, l) => s + tonnage(l), 0) / 100) / 10,
+    saetze: { sauber, gesamt }
+  };
+}

@@ -162,6 +162,13 @@ export async function readAllLogs() {
   return out;
 }
 
+/** Die Dateien eines Ordners im Datenrepo als [{ path, sha }] — eine Anfrage, ohne Inhalte. */
+export async function listeOrdner(ordner) {
+  const tree = await api(`/repos/${getOwner()}/${getRepo()}/git/trees/main?recursive=1`);
+  if (!tree || !Array.isArray(tree.tree)) return [];
+  return tree.tree.filter(f => f.type === 'blob' && f.path.startsWith(`${ordner}/`)).map(f => ({ path: f.path, sha: f.sha }));
+}
+
 /* ---------- Offline-Puffer ----------
    Im Studio ist der Empfang schlecht. Eine fertige Einheit darf niemals
    verloren gehen, nur weil gerade kein Netz da ist.                      */

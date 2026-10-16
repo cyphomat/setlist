@@ -399,7 +399,17 @@ print('\n--- Monats-Tour ---');
   eq('drei Monate noch nicht', hat(M.aufnaeher(sept, config, [], HEUTE), 'tour-3'), null);
   const ohnePlan = { ...config, week: { slots: [{ day: 3, type: 'ride' }] } };
   ok('ohne Krafttage: keine Tour, kein Aufnaeher', M.monatsTour(sept, ohnePlan, '2026-09', { heute: HEUTE }) === null &&
-    !M.katalog(ohnePlan).some(a => a.kategorie === 'tour'));
+    !M.katalog(ohnePlan).some(a => a.gruppe === 'tour'));
+}
+
+print('\n--- Soundcheck-Serie ---');
+{
+  const wochen = ['2026-W33', '2026-W34', '2026-W35', '2026-W36'];
+  const a = M.aufnaeher([], config, [], HEUTE, { soundchecks: wochen });
+  eq('vier Wochen in Folge: am Sonntag der vierten', hat(a, 'soundcheck-4'), '2026-09-06');
+  eq('zwoelf noch nicht', hat(a, 'soundcheck-12'), null);
+  eq('mit Luecke nicht', hat(M.aufnaeher([], config, [], HEUTE, { soundchecks: ['2026-W33', '2026-W34', '2026-W36', '2026-W37'] }), 'soundcheck-4'), null);
+  eq('ohne Soundchecks nicht', hat(M.aufnaeher([], config, [], HEUTE), 'soundcheck-4'), null);
 }
 
 print('\n--- Pixelbilder ---');
