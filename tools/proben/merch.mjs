@@ -1,7 +1,7 @@
 // Browserprobe · Merch-Stand: Einheit bis zum Aufnäher, Serienpause bei Verletzung, Rad, große Schrift.
 // Aufruf ueber tools/proben.mjs.
 
-import { P, CONFIG, BILDER, verlauf, kontext, ueberlauf } from './gemeinsam.mjs';
+import { P, CONFIG, BILDER, verlauf, kontext, ueberlauf, kontraste } from './gemeinsam.mjs';
 
 export default async function ({ browser, pruefe }) {
   /* 1 · Home, Einheit, Zettel, neuer Aufnaeher */
@@ -63,10 +63,62 @@ export default async function ({ browser, pruefe }) {
     pruefe('Umrisse: je Leiter nur einer', offenJeGruppe.filter(x => x.startsWith('Back Squat')).length === 1, offenJeGruppe.join(' | '));
     const platten = await p.textContent('#merch-platten');
     pruefe('Schallplatten mit Stand', /t bewegt/.test(platten), platten.replace(/\s+/g, ' ').trim().slice(0, 160));
-    const shirts = await p.$$eval('#merch-shirts details', l => l.length);
+    const wand = await p.$$eval('#merch-platten .scheibe', l => l.map(x => ({ offen: x.classList.contains('offen'),
+      bild: getComputedStyle(x.querySelector('.award')).backgroundImage, filter: getComputedStyle(x.querySelector('.award')).filter,
+      label: x.querySelector('.award').getAttribute('aria-label'), lage: getComputedStyle(x.querySelector('.award')).backgroundPosition })));
+    pruefe('Platten: vier gerahmte Auszeichnungen aus dem Pixelbogen', wand.length === 4 && wand.every(w => /platten\.png/.test(w.bild) && /^Auszeichnung /.test(w.label || '')),
+      JSON.stringify(wand.map(w => w.label)));
+    pruefe('Platten: jede mit eigenem Bild', new Set(wand.map(w => w.lage)).size === 4, wand.map(w => w.lage).join(' | '));
+    pruefe('Platten: offene abgedunkelt, verdiente nicht', wand.every(w => /grayscale/.test(w.filter) === w.offen), JSON.stringify(wand.map(w => [w.offen, w.filter])));
+    const shirts = await p.$$eval('#merch-shirts .tourshirt', l => l.length);
     pruefe('Tourshirts: Q2, Q3, Q4', shirts === 3, String(shirts));
-    const rueck = await p.textContent('#merch-shirts details[open] .termine');
+    const rueck = await p.textContent('#merch-shirts .tourshirt .shirt-termine .termine');
     pruefe('laufende Tour mit heutigem Gig', rueck.includes('01.10'), rueck.replace(/\s+/g, ' ').trim());
+    // Das Shirt: Stoff und Emblem aus dem Namen, Siebdruck vorne, Daten hinten
+    const erstes = await p.evaluate(() => {
+      const k = document.querySelector('#merch-shirts .tourshirt');
+      return { name: k.querySelector('.shirt-info b').textContent, druck: k.querySelector('.vorne .tname').innerText.replace(/\s+/g, ' '),
+        sticker: (k.querySelector('.sticker') || {}).textContent || '', label: k.querySelector('.vorne').getAttribute('aria-label'),
+        stoff: getComputedStyle(k.querySelector('.vorne')).backgroundImage, emblem: getComputedStyle(k.querySelector('.emblem')).backgroundImage,
+        hinten: [...k.querySelectorAll('.hinten .daten li')].map(l => l.textContent) };
+    });
+    pruefe('Shirt: Tourname vorne gedruckt', erstes.name.toUpperCase() === `${erstes.druck} TOUR`, `${erstes.name} / ${erstes.druck}`);
+    pruefe('Shirt: laufende Tour mit Sticker', erstes.sticker === 'Live', erstes.sticker);
+    pruefe('Shirt: als Bild beschrieben', /^Tourshirt .* Tour, Q4 2026/.test(erstes.label || ''), erstes.label);
+    pruefe('Shirt: Stoff und Emblem aus den Pixelbögen', /shirts\.png/.test(erstes.stoff) && /embleme\.png/.test(erstes.emblem));
+    pruefe('Shirt: Tourdaten hinten', erstes.hinten.includes('01.10.'), erstes.hinten.join(' '));
+    const stile = await p.$$eval('#merch-shirts .tourshirt', l => l.map(k => k.getAttribute('style')));
+    pruefe('Shirt: jede Tour ihr eigener Stil', new Set(stile).size === stile.length, stile.join(' | '));
+    // Tinte gegen den hellsten Stoffpixel im Druckbereich — gemessen am echten Bogen
+    const tinte = await p.evaluate(async () => {
+      const img = new Image(); img.src = 'assets/pixel/shirts.png'; await img.decode();
+      const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+      const g = c.getContext('2d'); g.drawImage(img, 0, 0);
+      const lum = ([r, gr, b]) => { const k = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * k(r) + 0.7152 * k(gr) + 0.0722 * k(b); };
+      const ink = getComputedStyle(document.querySelector('#merch-shirts .druck')).color.match(/\d+/g).map(Number);
+      let schlechtester = 99;
+      for (let kachel = 0; kachel < img.width / 64; kachel++) {
+        const d = g.getImageData(kachel * 64 + 16, 6, 32, 50).data;
+        let hell = 0;
+        for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200) hell = Math.max(hell, lum([d[i], d[i + 1], d[i + 2]]));
+        schlechtester = Math.min(schlechtester, (lum(ink) + 0.05) / (hell + 0.05));
+      }
+      return Math.round(schlechtester * 100) / 100;
+    });
+    pruefe('Shirt: Druck auf jedem Stoff ≥ 4,5', tinte >= 4.5, String(tinte));
+    const wenden = p.locator('#merch-shirts .shirt-wenden').first();
+    await wenden.click();
+    await p.waitForTimeout(800);
+    const gewendet = await p.evaluate(() => {
+      const k = document.querySelector('#merch-shirts .tourshirt'), b = k.querySelector('.shirt-wenden');
+      return { klasse: k.classList.contains('gewendet'), gedrueckt: b.getAttribute('aria-pressed'), text: b.textContent,
+        dreh: getComputedStyle(k.querySelector('.shirt-dreh')).transform };
+    });
+    pruefe('Shirt wenden: Rückseite', gewendet.klasse && gewendet.gedrueckt === 'true' && /Vorderseite/.test(gewendet.text) && gewendet.dreh !== 'none',
+      JSON.stringify(gewendet));
+    await p.locator('#merch-shirts .tourshirt').first().screenshot({ path: BILDER + 'shirt-hinten.png' });
+    await wenden.click();
+    pruefe('Shirt wenden: zurück nach vorn', !(await p.$eval('#merch-shirts .tourshirt', k => k.classList.contains('gewendet'))));
     const bilanz = await p.textContent('#merch-bilanz');
     pruefe('Tour-Bilanz 2026', bilanz.includes('Tour-Bilanz 2026'), '');
     await p.screenshot({ path: BILDER + 'p1-merch.png', fullPage: true });
@@ -136,7 +188,7 @@ export default async function ({ browser, pruefe }) {
     pruefe('Kutte: Abschnitt Rad', rad.length >= 4, rad.join(' | '));
     const radVerdient = await p.$$eval('#merch-kutte .patch.k-rad:not(.offen) b', l => l.map(x => x.textContent));
     pruefe('Highway Star, Stairway, Crossover verdient', ['Highway Star', 'Stairway to Heaven'].every(n => radVerdient.includes(n)) && radVerdient.some(n => n.startsWith('Crossover')), radVerdient.join(' | '));
-    const shirt = await p.textContent('#merch-shirts details[open]');
+    const shirt = await p.textContent('#merch-shirts .tourshirt');
     pruefe('Tourshirt: Rad auf dem Rücken, km im Kopf', shirt.includes('Rad') && / km/.test(shirt), shirt.replace(/\s+/g, ' ').trim().slice(0, 200));
     const bil = await p.textContent('#merch-bilanz');
     pruefe('Bilanz mit Kilometern', bil.includes('Kilometer'), '');
@@ -164,6 +216,15 @@ export default async function ({ browser, pruefe }) {
     await p.waitForSelector('#merch-kutte .patch');
     await p.waitForTimeout(400);
     pruefe(`Merch kein Ueberlauf (${theme}, sehr gross)`, !(await ueberlauf(p)).scroll, JSON.stringify(await ueberlauf(p)));
+    const info = (await kontraste(p, '#merch-shirts .shirt-info b, #merch-shirts .shirt-info span, #merch-shirts .shirt-wenden, #merch-shirts .shirt-termine summary, #merch-shirts .sticker'))
+      .filter(x => x.wert < 4.5);
+    pruefe(`Tourshirts: Text Kontrast ≥ 4,5 (${theme})`, !info.length, JSON.stringify(info));
+    const wandText = (await kontraste(p, '#merch-platten .scheibe b, #merch-platten .scheibe span:not(.award)')).filter(x => x.wert < 4.5);
+    pruefe(`Platten: Text Kontrast ≥ 4,5 (${theme})`, !wandText.length, JSON.stringify(wandText));
+    await p.locator('#merch-platten').screenshot({ path: BILDER + `platten-${theme}-360.png` });
+    const druck = await p.$$eval('#merch-shirts .vorne .druck', l => l.filter(d => [...d.children].some(c => c.getBoundingClientRect().right > d.getBoundingClientRect().right + 1 || c.scrollWidth > d.clientWidth + 1)).length);
+    pruefe(`Tourshirts: Druck bleibt auf der Brust (${theme})`, druck === 0, String(druck));
+    await p.locator('#merch-shirts').screenshot({ path: BILDER + `shirts-${theme}-360.png` });
     await p.screenshot({ path: BILDER + `p3-merch-${theme}.png`, fullPage: true });
     pruefe(`keine Seitenfehler (${theme})`, !fehler.length, fehler.join(' | '));
     await ctx.close();

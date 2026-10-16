@@ -215,6 +215,19 @@ print('\n--- Tourshirts ---');
   eq('Tonnen je Tour', t[1].tonnen, 1.5);
 }
 
+print('\n--- Tourshirt-Stil ---');
+{
+  const st = M.tourStil(2026, 3);
+  eq('Name aus Stil', M.tourName(2026, 3), `${M.ADJ[st.farbe]} ${M.NOMEN[st.motiv]} Tour`);
+  ok('Stoff und Emblem im Bereich', st.farbe >= 0 && st.farbe < M.ADJ.length && st.motiv >= 0 && st.motiv < M.NOMEN.length);
+  eq('je zwoelf', `${M.ADJ.length}/${M.NOMEN.length}`, '12/12');
+  const tr = M.touren([kraft('2026-08-03', [satz('squat', 95)])], HEUTE)[0];
+  eq('Tour traegt ihren Stil', `${tr.farbe}/${tr.motiv}`, `${st.farbe}/${st.motiv}`);
+  const alle = new Set();
+  for (let j = 2026; j < 2036; j++) for (let q = 1; q <= 4; q++) { const x = M.tourStil(j, q); alle.add(x.farbe); }
+  ok('ueber zehn Jahre kommen viele Stoffe vor', alle.size >= 8, String(alle.size));
+}
+
 print('\n--- Jahresbilanz ---');
 {
   const logs = [

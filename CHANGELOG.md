@@ -10,6 +10,31 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-16.3
+
+### Geändert
+- **Tourshirts als echte Bandshirts.** Statt einer Liste mit einem flachen Icon hängt
+  jedes Quartal als Pixel-Shirt im Merch.
+  - Der Tourname macht das Shirt: das erste Wort die Stofffarbe (Molten bordeaux,
+    Electric navy, Savage oliv …), das zweite das Emblem auf der Brust (Hantel,
+    Scheibe, Amboss, Gitarre, Flammen, Verstärker … zwölf Motive).
+  - Vorne steht ein Siebdruck mit SETLIST, Emblem, Tourname und Quartal, die laufende
+    Tour trägt einen „Live“-Sticker. Hinten stehen die Tourdaten wie auf jedem
+    Tourshirt. „Rückseite zeigen“ dreht das Shirt um, ohne Animation bei „Bewegung
+    reduzieren“.
+  - Die volle Liste mit Art und Ort lässt sich darunter aufklappen.
+- **Gold und Platin als gerahmte Auszeichnungen.** Jede Stufe ist eine eigene Plakette
+  an der Studiowand: schwarzer Rahmen, Samtgrund, die Scheibe mit Rillen und farbigem
+  Label, darunter ein Messingschild. Doppelplatin trägt zwei Scheiben, Diamant einen
+  Stein. Was noch fehlt, hängt schon da, nur abgedunkelt.
+
+### Werkzeuge
+- `tools/pixel.mjs` baut dazu `shirts.png` (12 Stoffe, vorne und hinten),
+  `embleme.png` (12 Motive, alle verschieden) und `platten.png`.
+- Die Probe `merch` prüft Shirt und Wand: Druck vom Tournamen, Wenden, Kontrast der
+  Tinte gegen den hellsten Stoffpixel jedes Shirts, abgedunkelte offene Plaketten.
+- 1796 Tests, 518 Probenprüfungen.
+
 ## 2026-10-16.2
 
 ### Neu

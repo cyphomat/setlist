@@ -21,7 +21,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { inflateSync, deflateSync } from 'node:zlib';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BILDER, RAENGE } from '../js/merch.js';
+import { BILDER, RAENGE, ADJ, NOMEN, PLATTEN } from '../js/merch.js';
 
 const WURZEL = join(dirname(fileURLToPath(import.meta.url)), '..');
 const QUELLE = join(WURZEL, 'tools', 'pixel');
@@ -650,6 +650,301 @@ function endgegner() {
   return b;
 }
 
+/* ---------------- Tourshirts ---------------- */
+
+/*
+ * Ein T-Shirt, 64×60, flach hingelegt: Schultern, Aermel, Rippkragen,
+ * Saeume, ein paar Falten. Vorne ein tiefer Halsausschnitt, hinten ein
+ * flacher. Die Stofffarbe kommt vom ersten Wort des Tournamens (M.ADJ),
+ * alle dunkel genug, dass der helle Siebdruck darauf lesbar bleibt.
+ */
+const STOFF = {
+  Iron: '2c2c30', Steel: '28323d', Thunder: '2a2240', Heavy: '1b1a19', Black: '111113', Electric: '15264a',
+  Molten: '4a1616', Savage: '27321d', Midnight: '141b33', Raw: '3a2d1d', Burning: '561f10', Chrome: '383c42'
+};
+const SHIRT_W = 64, SHIRT_H = 60;
+const SHIRT_FORM = [[23, 1], [41, 1], [52, 5], [63, 19], [56, 27], [49, 22], [50, 59], [13, 59], [14, 22], [7, 27], [0, 19], [11, 5]];
+
+function innen(poly, x, y) {
+  let drin = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i], [xj, yj] = poly[j];
+    if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) drin = !drin;
+  }
+  return drin;
+}
+const mischen = (hexA, f) => { const c = rgba(hexA); return Uint8Array.from([...c.slice(0, 3)].map(v => Math.max(0, Math.min(255, Math.round(v * f)))).concat([255])); };
+/** Abstand eines Punkts zur Strecke a–b. */
+const zurStrecke = (x, y, [ax, ay], [bx, by]) => {
+  const dx = bx - ax, dy = by - ay, t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy)));
+  return Math.hypot(x - ax - t * dx, y - ay - t * dy);
+};
+
+function shirt(stoff, hinten) {
+  const b = leer(SHIRT_W, SHIRT_H);
+  const hals = (x, y) => ((x - 31.5) / 9.5) ** 2 + (y / (hinten ? 3.2 : 6.5)) ** 2 <= 1;
+  const drin = (x, y) => x >= 0 && y >= 0 && x < SHIRT_W && y < SHIRT_H && innen(SHIRT_FORM, x + .5, y + .5) && !hals(x, y);
+  const kontur = rgba('0a0a0a');
+  for (let y = 0; y < SHIRT_H; y++) for (let x = 0; x < SHIRT_W; x++) {
+    if (!drin(x, y)) continue;
+    const rand = !drin(x - 1, y) || !drin(x + 1, y) || !drin(x, y - 1) || !drin(x, y + 1);
+    if (rand) { setze(b, x, y, kontur); continue; }
+    let f = 1;
+    // Rippkragen um den Ausschnitt
+    if (((x - 31.5) / 11.5) ** 2 + (y / (hinten ? 5.2 : 8.5)) ** 2 <= 1) f = (x + y) % 2 ? 1.35 : 1.2;
+    // Aermel- und Saumnaht
+    else if (zurStrecke(x, y, [63, 19], [56, 27]) < 2.6 || zurStrecke(x, y, [0, 19], [7, 27]) < 2.6) f = 0.78;
+    else if (y >= 56) f = 0.78;
+    // Achselnaht und Falten
+    else if (zurStrecke(x, y, [14, 22], [11, 6]) < 0.8 || zurStrecke(x, y, [49, 22], [52, 6]) < 0.8) f = 0.82;
+    else if (zurStrecke(x, y, [19, 30], [24, 52]) < 0.6 || zurStrecke(x, y, [44, 34], [41, 50]) < 0.6) f = 0.86;
+    // Licht von links oben, Schatten zur rechten Kante
+    else if (x > 44 && y > 22) f = 0.9;
+    else if (x < 22 && y < 30) f = 1.08;
+    setze(b, x, y, mischen(stoff, f));
+  }
+  return b;
+}
+
+/*
+ * Embleme fuer die Brust, 20×20, zweifarbig wie ein Siebdruck: C cremig,
+ * A Glut. Je ein Motiv fuer das zweite Wort des Tournamens (M.NOMEN).
+ */
+const DRUCK = { C: rgba('ece3cb'), A: rgba('e0601f') };
+const feld20 = f => { const z = []; for (let y = 0; y < 20; y++) { let r = ''; for (let x = 0; x < 20; x++) r += f(x + .5, y + .5) || '.'; z.push(r); } return z; };
+const EMBLEM = {
+  Barbell: [
+    '..CC............CC..',
+    '.CCCC..........CCCC.',
+    '.CCCC.C......C.CCCC.',
+    '.CCCC.C......C.CCCC.',
+    'ACCCCACAAAAAACACCCCA',
+    'ACCCCACAAAAAACACCCCA',
+    '.CCCC.C......C.CCCC.',
+    '.CCCC.C......C.CCCC.',
+    '.CCCC..........CCCC.',
+    '..CC............CC..'
+  ],
+  Plates: feld20((x, y) => {
+    const r = Math.hypot(x - 10, y - 10);
+    if (r > 9.6) return null;
+    if (r > 7.8) return 'C';
+    if (r > 6.8) return null;
+    if (r > 3.2) return (Math.atan2(y - 10, x - 10) * 4 / Math.PI + 8) % 2 < 0.25 ? null : 'A';
+    if (r > 1.6) return 'C';
+    return null;
+  }),
+  Chalk: [
+    '......A...A.........',
+    '...A....A....A..A...',
+    '.....AAA.AAA.A......',
+    '..A.AAAAAAAAAAA.A...',
+    '....AAAAAAAAAAAA....',
+    '...AAAAAAAAAAAAAA...',
+    'CCCCCCCCCCCCCCCCCCCC',
+    '.CCCCCCCCCCCCCCCCCC.',
+    '.CCCCCCCCCCCCCCCCCC.',
+    '..CCCCCCCCCCCCCCCC..',
+    '...CCCCCCCCCCCCCC...',
+    '....CCCCCCCCCCCC....',
+    '......CCCCCCCC......',
+    '.......CCCCCC.......',
+    '......CCCCCCCC......'
+  ],
+  Anvil: [
+    '..............A...A.',
+    '...............A.A..',
+    '............AA..A..A',
+    '................A...',
+    'CCCCCCCCCCCCCCCC....',
+    '.CCCCCCCCCCCCCCCCCCC',
+    '..CCCCCCCCCCCCCCCC..',
+    '....CCCCCCCCCCCC....',
+    '......CCCCCCCC......',
+    '.......CCCCCC.......',
+    '.......CCCCCC.......',
+    '.....CCCCCCCCCC.....',
+    '...CCCCCCCCCCCCCC...',
+    '...CCCCCCCCCCCCCC...',
+    '...AAAAAAAAAAAAAA...'
+  ],
+  Riffs: feld20((x, y) => {
+    if (Math.hypot(x - 5.5, y - 14.5) < 4.6 || Math.hypot(x - 8.6, y - 11.2) < 3.2) {
+      return Math.hypot(x - 6.6, y - 13.2) < 1.3 ? 'C' : 'A';
+    }
+    if (x > 16 && x < 19.5 && y > 0.5 && y < 4.5 && x + y > 18) return 'C';
+    return zurStrecke(x, y, [8, 12], [17.5, 2.5]) < 0.95 ? 'C' : null;
+  }),
+  Hammer: [
+    '....................',
+    '..CCCCCCCCCCCCCC....',
+    '.CCCCCCCCCCCCCCCCC..',
+    '.CCCCCCCCCCCCCCCCCC.',
+    '..CCCCCCCCCCCCCC....',
+    '........AAA.........',
+    '........AAA.........',
+    '........AAA.........',
+    '........AAA.........',
+    '........AAA.........',
+    '........AAA.........',
+    '........AAA.........',
+    '........AAA.........',
+    '........AAA.........',
+    '.......CCCCC........',
+    '.......CCCCC........',
+    '........CCC.........'
+  ],
+  Voltage: [
+    '..........CCCCCC....',
+    '.........CCCCCC.....',
+    '........CCCCCC......',
+    '.......CCCCCC.......',
+    '......CCCCCC........',
+    '.....CCCCCCCCCCCC...',
+    '....CCCCCCCCCCCC....',
+    '.........CCCCCC.....',
+    '........CCCCCC......',
+    '.......CCCCC........',
+    '......CCCC....A.....',
+    '.....CCC....A...A...',
+    '....CC.....A..A.....',
+    '...C..........A.....'
+  ],
+  Furnace: [
+    '.........A..........',
+    '........AA.....A....',
+    '........AAA...AA....',
+    '...A...AAAA..AAA....',
+    '...AA.AAAAA.AAAA....',
+    '..AAA.AACAAAAACAA...',
+    '..AAAAAACCAAAACCAA..',
+    '..AAAAACCCCAACCCAA..',
+    '.AAAAACCCCCCCCCCAAA.',
+    '.AAAACCCCCCCCCCCCAA.',
+    '.AAAACCCCCCCCCCCCAA.',
+    '..AAACCCCCCCCCCCAA..',
+    '...AAACCCCCCCCCAA...',
+    '.....AAAAAAAAAAA....'
+  ],
+  Amplifier: [
+    'CCCCCCCCCCCCCCCCCCCC',
+    'C.A.A.A.A......CC..C',
+    'CCCCCCCCCCCCCCCCCCCC',
+    'C.A.A.A.A.A.A.A.A..C',
+    'C..A.A.A.A.A.A.A.A.C',
+    'C.A.A.A.A.A.A.A.A..C',
+    'C..A.A.A.A.A.A.A.A.C',
+    'C.A.A.A.A.A.A.A.A..C',
+    'C..A.A.A.A.A.A.A.A.C',
+    'C.A.A.A.A.A.A.A.A..C',
+    'C..A.A.A.A.A.A.A.A.C',
+    'CCCCCCCCCCCCCCCCCCCC',
+    '.CC..............CC.'
+  ],
+  Rust: feld20((x, y) => {
+    const r = Math.hypot(x - 10, y - 10), w = Math.atan2(y - 10, x - 10);
+    const zahn = Math.cos(w * 8) > 0.2;
+    if (r > (zahn ? 9.6 : 7.4)) return null;
+    if (r < 2.6) return null;
+    // Rost frisst sich von oben rechts in die Zaehne
+    return r > 6.2 && x > 9 && y < 11 ? 'A' : 'C';
+  }),
+  Rack: [
+    '.CC..............CC.',
+    '.CC..............CC.',
+    '.CC..............CC.',
+    '.CCA............ACC.',
+    'AAAAAAAAAAAAAAAAAAAA',
+    '.CCA............ACC.',
+    '.CC..............CC.',
+    '.CC..............CC.',
+    '.CC..............CC.',
+    '.CC..............CC.',
+    '.CC..............CC.',
+    '.CC..............CC.',
+    '.CC..............CC.',
+    'CCCC............CCCC'
+  ],
+  Reps: feld20((x, y) => {
+    if (zurStrecke(x, y, [1, 14.5], [19, 3.5]) < 1.1) return 'A';
+    return y > 1 && y < 18 && [3, 7, 11, 15].some(s => x > s && x < s + 2) ? 'C' : null;
+  })
+};
+
+function emblem(name) {
+  const zeilen = EMBLEM[name];
+  if (!zeilen) throw new Error(`Kein Emblem fuer ${name}`);
+  const b = leer(20, 20);
+  const oben = Math.floor((20 - zeilen.length) / 2);
+  zeilen.forEach((z, y) => [...z].forEach((r, x) => { if (DRUCK[r]) setze(b, x, oben + y, DRUCK[r]); }));
+  return b;
+}
+
+/* ---------------- Gold und Platin ---------------- */
+
+/*
+ * Eine Auszeichnung wie an der Studiowand, 48×60: schwarzer Lackrahmen,
+ * Samtgrund mit Zierleiste, die Scheibe mit Rillen, Lichtreflex und
+ * farbigem Label, darunter ein Messingschild. Doppelplatin traegt zwei
+ * Scheiben, Diamant einen Stein. Reihenfolge wie M.PLATTEN.
+ */
+const AWARD_W = 48, AWARD_H = 60;
+const METALL = {
+  gold: { basis: 'd4af37', dunkel: '9a7a1c', hell: 'f6e08a', label: 'b8261b', leiste: 'c9a43a' },
+  platin: { basis: 'c9ccd1', dunkel: '8d929a', hell: 'f4f6f9', label: '27468a', leiste: 'b9bdc4' },
+  doppelplatin: { basis: 'b3bcc7', dunkel: '6f7884', hell: 'e8eef4', label: '5b2a7a', leiste: 'b9bdc4' },
+  diamant: { basis: 'bfe3ef', dunkel: '6aa6bd', hell: 'f6feff', label: '0f5d6e', leiste: 'a8dbe8' }
+};
+
+function scheibe(b, cx, cy, r, m) {
+  for (let y = Math.floor(cy - r - 1); y <= cy + r + 1; y++) for (let x = Math.floor(cx - r - 1); x <= cx + r + 1; x++) {
+    const d = Math.hypot(x + .5 - cx, y + .5 - cy);
+    if (d > r) continue;
+    let c;
+    if (d < 0.9) c = '0c0c0e';                                   // Loch
+    else if (d < r * 0.3) c = m.label;                           // Label
+    else if (d < r * 0.36) c = m.dunkel;
+    else if (d > r - 1) c = m.dunkel;                            // Rand
+    else c = Math.round(d) % 3 === 0 ? m.dunkel : m.basis;      // Rillen
+    // Lichtreflex: ein schmaler Bogen oben links
+    const w = Math.atan2(y + .5 - cy, x + .5 - cx);
+    if (d > r * 0.55 && d < r * 0.85 && w > -2.55 && w < -2.0) c = m.hell;
+    setze(b, x, y, rgba(c));
+  }
+}
+
+function award(id) {
+  const m = METALL[id];
+  if (!m) throw new Error(`Keine Auszeichnung fuer ${id}`);
+  const b = leer(AWARD_W, AWARD_H);
+  const rahmen = rgba('121214'), lack = rgba('26262b'), glanz = rgba('3d3d44'), samt = rgba('17151b'), samt2 = rgba('1c1a21');
+  for (let y = 0; y < AWARD_H; y++) for (let x = 0; x < AWARD_W; x++) {
+    const rand = Math.min(x, y, AWARD_W - 1 - x, AWARD_H - 1 - y);
+    let c;
+    if (rand === 0) c = rgba('050506');
+    else if (rand < 4) c = rand === 1 && (x === 1 || y === 1) ? glanz : rand === 3 ? rahmen : lack;
+    else if (rand === 5) c = rgba(m.leiste);                    // Zierleiste
+    else c = (x + y) % 2 ? samt : samt2;                        // Samt
+    setze(b, x, y, c);
+  }
+  if (id === 'doppelplatin') { scheibe(b, 18, 21, 11, m); scheibe(b, 30, 25, 11, m); }
+  else scheibe(b, 24, 22, 14.5, m);
+  if (id === 'diamant') {                                       // Stein mit Funkeln
+    const stein = ['..W..', '.WCW.', 'WCCCW', '.WCW.', '..W..'];
+    stein.forEach((z, y) => [...z].forEach((r, x) => { if (r !== '.') setze(b, 33 + x, 8 + y, rgba(r === 'W' ? 'ffffff' : '7fd6ee')); }));
+    for (const [x, y] of [[31, 7], [39, 9], [36, 14]]) setze(b, x, y, rgba('ffffff'));
+  }
+  // Messingschild mit gravierten Zeilen
+  const messing = rgba('b48a3c'), messingHell = rgba('d8b76a'), gravur = rgba('6b5020');
+  for (let y = 42; y < 51; y++) for (let x = 13; x < 35; x++) {
+    const kante = y === 42 || x === 13;
+    setze(b, x, y, kante ? messingHell : messing);
+  }
+  for (let x = 16; x < 32; x++) setze(b, x, 45, gravur);
+  for (let x = 19; x < 29; x++) if (x % 3) setze(b, x, 48, gravur);
+  return b;
+}
+
 /* ---------------- Bogen schreiben ---------------- */
 
 function bogen(teile, w, h) {
@@ -672,6 +967,9 @@ function eindeutig(teile, namen) {
 const ausgaben = {
   'aufnaeher.png': bogen(eindeutig(BILDER.map(aufnaeher), BILDER), 24, 24),
   'boss.png': endgegner(),
+  'shirts.png': bogen(ADJ.flatMap(a => { if (!STOFF[a]) throw new Error(`Kein Stoff fuer ${a}`); return [shirt(STOFF[a], false), shirt(STOFF[a], true)]; }), SHIRT_W, SHIRT_H),
+  'embleme.png': bogen(eindeutig(NOMEN.map(emblem), NOMEN), 20, 20),
+  'platten.png': bogen(PLATTEN.map(p => award(p.id)), AWARD_W, AWARD_H),
   'raenge.png': bogen(RAENGE.map(r => { const f = SZENE[r.id]; if (!f) throw new Error(`Keine Szene fuer ${r.id}`); return f(); }), 96, 48)
 };
 
@@ -697,3 +995,6 @@ for (const [name, b] of Object.entries(ausgaben)) writeFileSync(join(ZIEL, name)
 console.log(`assets/pixel/aufnaeher.png  ${BILDER.length} × 24×24, alle verschieden`);
 console.log(`assets/pixel/raenge.png     ${RAENGE.length} × 96×48`);
 console.log('assets/pixel/boss.png       2 × 24×24');
+console.log(`assets/pixel/shirts.png     ${ADJ.length} × 2 × ${SHIRT_W}×${SHIRT_H}`);
+console.log(`assets/pixel/embleme.png    ${NOMEN.length} × 20×20, alle verschieden`);
+console.log(`assets/pixel/platten.png    ${PLATTEN.length} × ${AWARD_W}×${AWARD_H}`);

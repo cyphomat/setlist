@@ -470,9 +470,11 @@ export function rang(logs = [], fahrten = []) {
 
 /* ============================== Tourshirts ============================== */
 
-const ADJ = ['Iron', 'Steel', 'Thunder', 'Heavy', 'Black', 'Electric',
+/* Der Name macht das Shirt: das erste Wort die Stofffarbe, das zweite das
+   Emblem auf der Brust (Bilder aus tools/pixel.mjs, gleiche Reihenfolge). */
+export const ADJ = ['Iron', 'Steel', 'Thunder', 'Heavy', 'Black', 'Electric',
   'Molten', 'Savage', 'Midnight', 'Raw', 'Burning', 'Chrome'];
-const NOMEN = ['Barbell', 'Plates', 'Chalk', 'Anvil', 'Riffs', 'Hammer',
+export const NOMEN = ['Barbell', 'Plates', 'Chalk', 'Anvil', 'Riffs', 'Hammer',
   'Voltage', 'Furnace', 'Amplifier', 'Rust', 'Rack', 'Reps'];
 
 function hash(s) {
@@ -481,10 +483,16 @@ function hash(s) {
   return h >>> 0;
 }
 
+/** Stofffarbe und Emblem eines Quartals: je ein Platz in ADJ und NOMEN. */
+export function tourStil(jahr, quartal) {
+  const h = hash(`${jahr}-Q${quartal}`);
+  return { farbe: h % ADJ.length, motiv: (h >>> 8) % NOMEN.length };
+}
+
 /** Ein Tourname, der fuer dasselbe Quartal immer derselbe ist. */
 export function tourName(jahr, quartal) {
-  const h = hash(`${jahr}-Q${quartal}`);
-  return `${ADJ[h % ADJ.length]} ${NOMEN[(h >>> 8) % NOMEN.length]} Tour`;
+  const { farbe, motiv } = tourStil(jahr, quartal);
+  return `${ADJ[farbe]} ${NOMEN[motiv]} Tour`;
 }
 
 const quartalVon = datum => Math.floor((Number(datum.slice(5, 7)) - 1) / 3) + 1;
@@ -520,6 +528,7 @@ export function touren(logs = [], heute = new Date(), liste = [], fahrten = []) 
     return {
       jahr: t.jahr, quartal: t.quartal,
       name: tourName(t.jahr, t.quartal),
+      ...tourStil(t.jahr, t.quartal),
       laufend: Number(jetzt.slice(0, 4)) === t.jahr && quartalVon(jetzt) === t.quartal,
       gigs: [...t.tage.values()],
       tonnen: Math.round(t.kg / 100) / 10,

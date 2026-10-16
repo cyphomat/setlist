@@ -4681,6 +4681,56 @@ function renderSoundcheckArchiv() {
   });
 }
 
+/* ============================ Tourshirts ============================
+   Ein Bandshirt je Quartal, Pixel-Art aus tools/pixel.mjs: der Stoff kommt
+   vom ersten Wort des Tournamens, das Emblem vom zweiten. Vorne Siebdruck
+   (SETLIST, Emblem, Tourname), hinten die Tourdaten wie auf jedem echten
+   Tourshirt. Der Knopf dreht es um; die volle Liste mit Art und Ort steht
+   darunter zum Aufklappen.                                              */
+const SHIRT_DATEN = 33;   // was hinten aufs Shirt passt, drei Spalten
+function shirtHtml(tr) {
+  const zeit = `Q${tr.quartal} ${tr.jahr}`;
+  const [wort1, wort2] = tr.name.replace(/ Tour$/, '').split(' ');
+  const t1 = n => n.toLocaleString(locale(), { maximumFractionDigits: 1 });
+  const arten = g => g.arten.map(a => t(`merch.art.${a}`)).join(' + ');
+  const hinten = tr.gigs.slice(0, SHIRT_DATEN);
+  const rest = tr.gigs.length - hinten.length;
+  return `<article class="tourshirt" style="--f:${tr.farbe};--m:${tr.motiv}">
+    <div class="shirt-buehne">
+      <div class="shirt-dreh">
+        <div class="shirt-seite vorne" role="img" aria-label="${escHtml(t('merch.shirt.bild', { name: tr.name, zeit }))}">
+          <div class="druck" aria-hidden="true">
+            <span class="logo">Setlist</span>
+            <span class="emblem"></span>
+            <span class="tname">${escHtml(wort1)}<br>${escHtml(wort2)}</span>
+            <span class="tzeit">Tour · ${escHtml(zeit)}</span>
+          </div>
+          ${tr.laufend ? `<span class="sticker" aria-hidden="true">${escHtml(t('merch.shirt.live'))}</span>` : ''}
+        </div>
+        <div class="shirt-seite hinten" aria-hidden="true">
+          <div class="druck">
+            <span class="tkopf">${escHtml(t('merch.shirt.rueckseite'))}</span>
+            <ol class="daten">${hinten.map(g => `<li>${escHtml(datumKurz(g.date))}</li>`).join('')}</ol>
+            ${rest > 0 ? `<span class="mehr">${escHtml(t('merch.shirt.mehr', { n: rest }))}</span>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="shirt-info">
+      <b>${escHtml(tr.name)}</b>
+      <span>${escHtml(zeit)}${tr.laufend ? ` · ${escHtml(t('merch.shirt.laufend'))}` : ''}</span>
+      <span>${escHtml(tn('merch.shirt.gigs', tr.gigs.length))} · ${t1(tr.tonnen)} t${tr.km ? ` · ${tr.km.toLocaleString(locale())} km` : ''}${tr.aufnaeher ? ` · ${escHtml(tn('merch.shirt.aufnaeher', tr.aufnaeher))}` : ''}</span>
+      <button type="button" class="shirt-wenden" aria-pressed="false">${escHtml(t('merch.shirt.wenden'))} ↻</button>
+    </div>
+    <details class="shirt-termine"><summary>${escHtml(t('merch.shirt.alle'))}</summary>
+      <ol class="termine">${tr.gigs.map(g => `
+        <li><span class="d">${escHtml(datumKurz(g.date))}</span>
+          <span class="a">${escHtml(arten(g))}</span>${g.ort ? `<span class="o">${escHtml(g.ort)}</span>` : ''}</li>`).join('')}
+      </ol>
+    </details>
+  </article>`;
+}
+
 /* ============================ Monats-Tour ============================
    Drei Ziele aus dem eigenen Plan, am Ende der Endgegner des Monats
    (merch.js, monatsTour). Je erfuelltes Ziel verliert er ein Drittel.   */
@@ -4803,11 +4853,11 @@ function renderMerch(logs) {
   const s = M.schallplatten(logs);
   const t1 = n => n.toLocaleString(locale(), { maximumFractionDigits: 1 });
   $('merch-platten').innerHTML = `
-    <div class="platten-wand">${s.stufen.map(p => `
+    <div class="platten-wand">${s.stufen.map((p, i) => `
       <div class="scheibe s-${p.id}${p.verdient ? '' : ' offen'}">
-        <i></i>
+        <span class="award" style="--i:${i}" role="img" aria-label="${escHtml(t('merch.s.bild', { name: t(`merch.s.${p.id}`) }))}"></span>
         <b>${escHtml(t(`merch.s.${p.id}`))}</b>
-        <span>${p.verdient ? escHtml(datumLang(p.verdient)) : escHtml(t('merch.s.ab', { t: t1(p.tonnen) }))}</span>
+        <span>${p.verdient ? escHtml(t('merch.verdient', { datum: datumLang(p.verdient) })) : escHtml(t('merch.s.ab', { t: t1(p.tonnen) }))}</span>
       </div>`).join('')}
     </div>
     <p class="fine">${escHtml(t('merch.s.stand', { t: t1(s.tonnen), stacks: Math.round(s.tonnen * 1000 / MARSHALL_KG).toLocaleString(locale()) }))}
@@ -4816,25 +4866,17 @@ function renderMerch(logs) {
 
   // Tourshirts
   const touren = M.touren(logs, heute, liste, fahrten);
-  const arten = g => g.arten.map(a => t(`merch.art.${a}`)).join(' + ');
-  $('merch-shirts').innerHTML = touren.length ? touren.map((tr, i) => `
-    <details class="shirt"${i === 0 ? ' open' : ''}>
-      <summary>
-        <svg class="shirt-icon" viewBox="0 0 40 36" aria-hidden="true"><path d="M13 2 L4 7 L1 15 L8 17 L8 34 L32 34 L32 17 L39 15 L36 7 L27 2 Q20 7 13 2 Z"/></svg>
-        <span class="shirt-kopf">
-          <b>${escHtml(tr.name)}</b>
-          <span>Q${tr.quartal} ${tr.jahr}${tr.laufend ? ` · ${escHtml(t('merch.shirt.laufend'))}` : ''}</span>
-          <span>${escHtml(tn('merch.shirt.gigs', tr.gigs.length))} · ${t1(tr.tonnen)} t${tr.km ? ` · ${tr.km.toLocaleString(locale())} km` : ''}${tr.aufnaeher ? ` · ${escHtml(tn('merch.shirt.aufnaeher', tr.aufnaeher))}` : ''}</span>
-        </span>
-      </summary>
-      <div class="rueckseite">
-        <div class="kicker">${escHtml(t('merch.shirt.rueckseite'))}</div>
-        <ol class="termine">${tr.gigs.map(g => `
-          <li><span class="d">${escHtml(datumKurz(g.date))}</span>
-            <span class="a">${escHtml(arten(g))}</span>${g.ort ? `<span class="o">${escHtml(g.ort)}</span>` : ''}</li>`).join('')}
-        </ol>
-      </div>
-    </details>`).join('') : `<p class="lead">${t('merch.shirt.leer')}</p>`;
+  $('merch-shirts').innerHTML = touren.length
+    ? `<div class="shirt-wand">${touren.map(shirtHtml).join('')}</div>`
+    : `<p class="lead">${t('merch.shirt.leer')}</p>`;
+  $('merch-shirts').querySelectorAll('.shirt-wenden').forEach(b => {
+    b.onclick = () => {
+      const karte = b.closest('.tourshirt');
+      const hinten = karte.classList.toggle('gewendet');
+      b.setAttribute('aria-pressed', String(hinten));
+      b.textContent = `${t(hinten ? 'merch.shirt.vorne' : 'merch.shirt.wenden')} ↻`;
+    };
+  });
 
   // Tour-Bilanz: dieses und letztes Jahr
   const jahr = heute.getFullYear();
