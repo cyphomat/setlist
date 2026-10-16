@@ -2,7 +2,8 @@
 // SCHWER, Ansager nach der Einheit — an, aus, und ruhig bei reduzierter Bewegung.
 // Aufruf ueber tools/proben.mjs.
 
-import { P, CONFIG, BILDER, basis, verlauf, kontext, ueberlauf } from './gemeinsam.mjs';
+import { P, CONFIG, verlauf, kontext, ueberlauf } from './gemeinsam.mjs';
+import * as M from '../../js/merch.js';
 
 /** Verlauf, nach dem heute B dran ist — dann sagt der Coach SCHWER. */
 function mitNaechstem(workout) {
@@ -52,7 +53,7 @@ export default async function ({ browser, pruefe }) {
       const lade = src => new Promise(ok => { const i = new Image(); i.onload = () => ok([i.naturalWidth, i.naturalHeight]); i.onerror = () => ok([0, 0]); i.src = src; });
       return { auf: await lade('assets/pixel/aufnaeher.png'), rang: await lade('assets/pixel/raenge.png') };
     });
-    pruefe(`${tag}: Aufnäher-Bogen geladen, ein Bild je Leiter`, bogen.auf[0] === 24 * 22 && bogen.auf[1] === 24, bogen.auf.join('×'));
+    pruefe(`${tag}: Aufnäher-Bogen geladen, ein Bild je Aufnäher`, bogen.auf[0] === 24 * M.BILDER.length && bogen.auf[1] === 24, bogen.auf.join('×'));
     pruefe(`${tag}: Rang-Bogen geladen, sieben Szenen`, bogen.rang[0] === 96 * 7 && bogen.rang[1] === 48, bogen.rang.join('×'));
     const rang = await p.evaluate(() => ({
       gross: !!document.querySelector('#merch-rang .szene.gross[role="img"][aria-label]'),
@@ -69,6 +70,8 @@ export default async function ({ browser, pruefe }) {
         offenGrau: alle.filter(x => x.classList.contains('offen')).every(x => /grayscale/.test(getComputedStyle(x.querySelector('.pix')).filter)) };
     });
     pruefe(`${tag}: jeder Aufnäher mit Bild`, flicken.n > 0 && flicken.n === flicken.mitBild, `${flicken.mitBild}/${flicken.n}`);
+    const lagen = await p.$$eval('#merch-kutte .patch .pix', l => l.map(x => getComputedStyle(x).backgroundPosition));
+    pruefe(`${tag}: keine zwei Aufnäher mit demselben Bild`, new Set(lagen).size === lagen.length, `${new Set(lagen).size}/${lagen.length}`);
     pruefe(`${tag}: offene grau`, flicken.offenGrau);
     const u = await ueberlauf(p);
     pruefe(`${tag}: kein Querlauf`, !u.scroll && !u.raus.length, JSON.stringify(u));

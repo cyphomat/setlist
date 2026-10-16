@@ -129,21 +129,42 @@ function zerlege(b) {
   const anteile = {};
   for (const p of symbol) anteile[p.f] = (anteile[p.f] || 0) + 1;
   const farben = Object.entries(anteile).sort((a, z) => z[1] - a[1]).map(([f]) => f);
-  return { rahmen, symbol, farben, grund, mitte: { x: sx / n, y: sy / n } };
+  return { rahmen, symbol, farben, grund, innen, mitte: { x: sx / n, y: sy / n } };
 }
 
 /* ---------------- Rahmen je Kategorie ---------------- */
 
 const zerlegt = name => zerlege(lies(join(QUELLE, 'aufnaeher', `${name}.png`)));
+/**
+ * Achteck fuer die Kraft, in den Farben der Raute aus "eisen": Kontur,
+ * darin eine Naht im Wechsel Orange/Grund, innen der Grund. Die Raute
+ * selbst laesst oben und unten zu wenig Platz fuer eine Figur mit Hantel.
+ */
+function achteck() {
+  const vorbild = zerlegt('eisen');
+  const kontur = rgba('0a0a0a'), grund = rgba(vorbild.grund), naht = rgba('e04a1f');
+  const b = leer(24, 24);
+  const drin = (x, y) => { const dx = Math.abs(x - 11.5), dy = Math.abs(y - 11.5); return dx <= 11.5 && dy <= 11.5 && dx + dy <= 17; };
+  const rand = (x, y, d) => { for (let i = -d; i <= d; i++) for (let j = -d; j <= d; j++) if (!drin(x + i, y + j)) return true; return false; };
+  for (let y = 0; y < 24; y++) for (let x = 0; x < 24; x++) {
+    if (!drin(x, y)) continue;
+    setze(b, x, y, rand(x, y, 1) ? kontur : rand(x, y, 2) ? ((x + y) % 2 ? naht : grund) : grund);
+  }
+  // Ohne eigenes Symbol: die Symbolfarben kommen von der Raute
+  // Figur hell wie die Raute, Stange und Scheiben in der Nahtfarbe — so zaehlt man sie
+  return { ...zerlege(b), farben: [vorbild.farben[0], 'e04a1f'] };
+}
+
 const RAHMEN = {
-  buehne: zerlegt('serie4'),      // rund, Navy mit Goldnaht
-  kraft: zerlegt('eisen'),        // Raute, Schwarz mit Orange
+  // rund, Navy mit Goldnaht; Akzent im Symbol ist das Gold der Naht
+  buehne: (r => ({ ...r, farben: [r.farben[0], 'd8b44a'] }))(zerlegt('serie4')),
+  kraft: achteck(),               // Achteck, Schwarz mit Orange
   rad: zerlegt('anker'),          // eckig, Gruen
   comeback: zerlegt('lehrmeister'), // Wappen, Weinrot
   serie: zerlegt('legende')       // Stern, Gold
 };
 
-/* Zwei Symbole gibt es nur in Setlist. H = Hauptfarbe, A = Akzent. */
+/* Eigene Zeichnungen, je hoechstens 13 breit. H = Hauptfarbe, A = Akzent. */
 const EIGENE = {
   hangar: [               // Klimmzug: Stange, Haende, Koerper
     'AAAAAAAAAAA',
@@ -167,16 +188,240 @@ const EIGENE = {
     '.HHHH......',
     '.H.........',
     'HH.........'
+  ],
+  ticket: [               // 25 Gigs: Eintrittskarte mit Abriss
+    'HHHHHHHHHHH',
+    'H..A......H',
+    '...A.AAAA..',
+    'H..A......H',
+    'HHHHHHHHHHH'
+  ],
+  plakat: [               // 50 Gigs: Konzertplakat mit Stern
+    'HHHHHHHHH',
+    'H...A...H',
+    'H..AAA..H',
+    'H.AAAAA.H',
+    'H..A.A..H',
+    'H.......H',
+    'H.HHHHH.H',
+    'H.......H',
+    'H.HHH...H',
+    'HHHHHHHHH'
+  ],
+  amp: [                  // 100 Gigs: Topteil auf der Box
+    'HHHHHHHHHHH',
+    'H.A.A.A.A.H',
+    'HHHHHHHHHHH',
+    'H.........H',
+    'H.AAA.AAA.H',
+    'H.A.A.A.A.H',
+    'H.AAA.AAA.H',
+    'H.........H',
+    'HHHHHHHHHHH'
+  ],
+  feuerzeug: [            // 250 Gigs: Feuerzeuge hoch
+    '....A....',
+    '...AAA...',
+    '...AHA...',
+    '....A....',
+    '..HHHHH..',
+    '..H.H.H..',
+    '..HHHHH..',
+    '..H...H..',
+    '..H...H..',
+    '..HHHHH..'
+  ],
+  fahrrad: [              // 100 km
+    '....HHH...HH.',
+    '.....H....H..',
+    '.AAA.HHH.AAA.',
+    'A...AH..A...A',
+    'A.H.A.H.A.H.A',
+    'A...A...A...A',
+    '.AAA.....AAA.'
+  ],
+  kettenblatt: [          // 500 km
+    '....H.H....',
+    '..HHHHHHH..',
+    '.HH.....HH.',
+    'HH..AAA..HH',
+    '.H.A...A.H.',
+    'HH.A.H.A.HH',
+    '.H.A...A.H.',
+    'HH..AAA..HH',
+    '.HH.....HH.',
+    '..HHHHHHH..',
+    '....H.H....'
+  ],
+  strasse: [              // 2500 km: Strasse bis zum Horizont
+    '....H...H....',
+    '....H.A.H....',
+    '...H..A..H...',
+    '...H.....H...',
+    '..H...A...H..',
+    '..H...A...H..',
+    '.H.........H.',
+    '.H....A....H.',
+    'H.....A.....H'
+  ],
+  globus: [               // 5000 km: einmal um die halbe Welt
+    '...HHHHH...',
+    '..H.AA..HH.',
+    '.H.AAA...H.',
+    'H..AAAA...H',
+    'H...AA.AA.H',
+    'H.....AAA.H',
+    'H......AA.H',
+    '.H.A.....H.',
+    '..HAA...H..',
+    '...HHHHH...'
+  ],
+  kalender: [             // 12 Wochen Serie
+    '..H.....H..',
+    'HHHHHHHHHHH',
+    'HAAAAAAAAAH',
+    'H.........H',
+    'H.H.H.H.H.H',
+    'H.........H',
+    'H.H.H.H.H.H',
+    'H.........H',
+    'H.H.H.A.H.H',
+    'HHHHHHHHHHH'
+  ],
+  radhantel: [            // Crossover 10: Rad und Hantel
+    '.AAA...H...H.',
+    'A...A..H...H.',
+    'A.H.AHHHHHHHH',
+    'A...A..H...H.',
+    '.AAA...H...H.'
   ]
 };
 
-/* Welche Gruppe welches Symbol bekommt. */
-const SYMBOL = {
-  debuet: 'firstblood', gigs: 'setlist', jam: 'saitenhexer', unplugged: 'soundcheck', maxout: 'impressive',
+/*
+ * Lift-Figuren von vorn, 17 breit, kraeftig gezeichnet. B ist die Zeile der
+ * Stange; woran man den Lift erkennt, ist vor allem, wo die Stange zur
+ * Figur liegt: ueber dem Kopf (Druecken), im Nacken (Kniebeuge), an den
+ * Schienbeinen (Kreuzheben), am Bauch mit Ellbogen raus (Rudern), ueber
+ * der Brust auf der Bank (Bankdruecken).
+ */
+const POSE = {
+  squat: [
+    '.......HHH.......',
+    '.......HHH.......',
+    'B',
+    '.....HH.H.HH.....',
+    '......HHHHH......',
+    '.......HHH.......',
+    '......HH.HH......',
+    '....HHH...HHH....',
+    '...HH.......HH...',
+    '....HH.....HH....',
+    '.....HH...HH.....'
+  ],
+  bench: [
+    'B',
+    '.....HH...HH.....',
+    '.....HH...HH.....',
+    '.....HHHHHHH.....',
+    '....HHHHHHHHH....',
+    '.................',
+    '..AAAAAAAAAAAAA..',
+    '...A.........A...',
+    '...A.........A...'
+  ],
+  row: [
+    '.......HHH.......',
+    '.....HHHHHHH.....',
+    '...HHH.HHH.HHH...',
+    '....HH.HHH.HH....',
+    'B',
+    '.......HHH.......',
+    '......HH.HH......',
+    '.....HH...HH.....',
+    '.....HH...HH.....',
+    '....HHH...HHH....'
+  ],
+  ohp: [
+    'B',
+    '.....HH...HH.....',
+    '.....HH.H.HH.....',
+    '.....HHHHHHH.....',
+    '......HHHHH......',
+    '.......HHH.......',
+    '.......HHH.......',
+    '......HH.HH......',
+    '......HH.HH......',
+    '.....HHH.HHH.....'
+  ],
+  deadlift: [
+    '.......HHH.......',
+    '.......HHH.......',
+    '.....HHHHHHH.....',
+    '.....H.HHH.H.....',
+    '.....H.HHH.H.....',
+    '.....H.H.H.H.....',
+    '.....H.H.H.H.....',
+    'B',
+    '.....HH...HH.....',
+    '....HHH...HHH....'
+  ],
+  figur: [
+    '.......HHH.......',
+    '.......HHH.......',
+    '.....HHHHHHH.....',
+    '.....H.HHH.H.....',
+    '.....H.HHH.H.....',
+    'B',
+    '......HH.HH......',
+    '......HH.HH......',
+    '......HH.HH......',
+    '.....HHH.HHH.....'
+  ]
+};
+const BREIT = 17;
+
+/**
+ * Lift-Figur als Punkte. scheiben: 1–4 Scheiben je Seite (Plattenclub),
+ * aussen beginnend, im Wechsel gross und klein, damit man sie zaehlen kann.
+ * waage: kurze Stange ohne Scheiben, die Figur steht auf einer Waage
+ * (Koerpergewicht-Marken).
+ */
+function figur(lift, { scheiben = 0, waage = false } = {}) {
+  const pose = POSE[lift] || POSE.figur;
+  const punkte = [];
+  let stange = 0;
+  pose.forEach((zeile, y) => {
+    if (zeile === 'B') {
+      stange = y;
+      const von = waage ? 3 : 0, bis = waage ? BREIT - 4 : BREIT - 1;
+      for (let x = von; x <= bis; x++) punkte.push({ x, y, rolle: 'A' });
+      return;
+    }
+    [...zeile].forEach((z, x) => { if (z !== '.') punkte.push({ x, y, rolle: z }); });
+  });
+  for (let k = 0; k < scheiben; k++) {
+    const hoch = k % 2 ? 2 : 3;
+    for (const x of [k, BREIT - 1 - k]) for (let dy = -hoch; dy <= hoch; dy++) punkte.push({ x, y: stange + dy, rolle: 'A' });
+  }
+  if (waage) {
+    const unten = Math.max(...punkte.map(p => p.y)) + 1;
+    for (let x = 3; x <= BREIT - 4; x++) punkte.push({ x, y: unten, rolle: 'A' });
+    for (const x of [7, 8, 9]) punkte.push({ x, y: unten + 1, rolle: 'H' });
+  }
+  return { punkte };
+}
+
+/* Welcher Aufnaeher welches Motiv bekommt: Quellbild (Name) oder Zeichnung (#Name). */
+const MOTIV = {
+  debuet: 'firstblood', jam: 'saitenhexer', unplugged: 'soundcheck', maxout: 'impressive',
   zugaben: 'gegoennt', tight: 'sitzt25', roadcrew: 'vorbereitet',
-  platten: 'eisen', club: 'eisenhart', koerper: 'ausgeglichen',
-  km: 'tour10', century: 'flawless', doom: 'boss1', openair: 'nacht', crossover: 'kilometer',
-  comeback: 'metal', rueckweg: 'nachgefasst', reunion: 'stammtisch', serie: 'serie4'
+  'gigs-10': 'setlist', 'gigs-25': '#ticket', 'gigs-50': '#plakat', 'gigs-100': '#amp', 'gigs-250': '#feuerzeug',
+  club: 'eisenhart', hangar: '#hangar',
+  'km-100': '#fahrrad', 'km-500': '#kettenblatt', 'km-1000': 'tour10', 'km-2500': '#strasse', 'km-5000': '#globus',
+  hoehe: '#hoehe', century: 'flawless', doom: 'boss1', openair: 'nacht',
+  'crossover-1': 'kilometer', 'crossover-10': '#radhantel', 'crossover-26': 'boss3',
+  comeback: 'metal', rueckweg: 'nachgefasst', reunion: 'stammtisch',
+  'serie-4': 'serie4', 'serie-12': '#kalender', 'serie-26': 'trainingslager', 'serie-52': 'legende'
 };
 /* Symbole, deren Farbe die Aussage ist: Blut bleibt rot. */
 const EIGENE_FARBE = new Set(['debuet']);
@@ -188,25 +433,44 @@ const KATEGORIE = {
   comeback: 'comeback', rueckweg: 'comeback', reunion: 'comeback', serie: 'serie'
 };
 
-function aufnaeher(gruppe) {
-  const r = RAHMEN[KATEGORIE[gruppe]];
-  if (!r) throw new Error(`Keine Kategorie fuer ${gruppe}`);
+const raster = zeilen => {
+  const punkte = [];
+  zeilen.forEach((zeile, y) => [...zeile].forEach((z, x) => { if (z !== '.') punkte.push({ x, y, rolle: z }); }));
+  return { punkte };
+};
+
+function motiv(id) {
+  const [gruppe, a, b] = id.split('-');
+  if (gruppe === 'platten') return figur(a, { scheiben: Number(b) });
+  if (gruppe === 'koerper') return figur(a, { waage: true });
+  const quelle = MOTIV[id];
+  if (!quelle) throw new Error(`Kein Motiv fuer ${id}`);
+  if (quelle.startsWith('#')) return raster(EIGENE[quelle.slice(1)]);
+  const s = zerlegt(quelle);
+  return { punkte: s.symbol.map(p => ({ x: p.x, y: p.y, rolle: p.f === s.farben[0] ? 'H' : 'A',
+    f: EIGENE_FARBE.has(id) ? rgba(p.f) : null })) };
+}
+
+function aufnaeher(id) {
+  const r = RAHMEN[KATEGORIE[id.split('-')[0]]];
+  if (!r) throw new Error(`Keine Kategorie fuer ${id}`);
   const bild = kopie(r.rahmen);
-  let punkte;
-  if (EIGENE[gruppe]) {
-    punkte = [];
-    EIGENE[gruppe].forEach((zeile, y) => [...zeile].forEach((z, x) => { if (z !== '.') punkte.push({ x, y, rolle: z }); }));
-  } else {
-    const s = zerlegt(SYMBOL[gruppe]);
-    punkte = s.symbol.map(p => ({ x: p.x, y: p.y, rolle: p.f === s.farben[0] ? 'H' : 'A',
-      f: EIGENE_FARBE.has(gruppe) ? rgba(p.f) : null }));
+  const { punkte, anker } = motiv(id);
+  // Mittig auf den Innenraum: am Anker, sonst an der Mitte des Motivs
+  let mx, my;
+  if (anker) ({ x: mx, y: my } = anker);
+  else {
+    const xs = punkte.map(p => p.x), ys = punkte.map(p => p.y);
+    mx = (Math.min(...xs) + Math.max(...xs)) / 2; my = (Math.min(...ys) + Math.max(...ys)) / 2;
   }
-  // Mittig auf den Innenraum des Rahmens setzen
-  const xs = punkte.map(p => p.x), ys = punkte.map(p => p.y);
-  const mx = (Math.min(...xs) + Math.max(...xs)) / 2, my = (Math.min(...ys) + Math.max(...ys)) / 2;
   const dx = Math.round(r.mitte.x - mx), dy = Math.round(r.mitte.y - my);
   const haupt = rgba(r.farben[0]), akzent = rgba(r.farben[1] || r.farben[0]);
-  for (const p of punkte) setze(bild, p.x + dx, p.y + dy, p.f || (p.rolle === 'H' ? haupt : akzent));
+  for (const p of punkte) {
+    const x = p.x + dx, y = p.y + dy;
+    // Nie auf Naht oder Kontur: was ueber den Innenraum hinausragt, faellt weg
+    if (x < 0 || y < 0 || x >= bild.w || y >= bild.h || !r.innen(x, y)) continue;
+    setze(bild, x, y, p.f || (p.rolle === 'H' ? haupt : akzent));
+  }
   return bild;
 }
 
@@ -279,8 +543,19 @@ function bogen(teile, w, h) {
   return b;
 }
 
+/** Keine zwei Kacheln duerfen gleich aussehen — sonst waere es wieder dasselbe Abzeichen. */
+function eindeutig(teile, namen) {
+  const gesehen = new Map();
+  teile.forEach((t, i) => {
+    const k = Buffer.from(t.px).toString('base64');
+    if (gesehen.has(k)) throw new Error(`Gleiches Bild: ${gesehen.get(k)} und ${namen[i]}`);
+    gesehen.set(k, namen[i]);
+  });
+  return teile;
+}
+
 const ausgaben = {
-  'aufnaeher.png': bogen(BILDER.map(aufnaeher), 24, 24),
+  'aufnaeher.png': bogen(eindeutig(BILDER.map(aufnaeher), BILDER), 24, 24),
   'raenge.png': bogen(RAENGE.map(r => { const f = SZENE[r.id]; if (!f) throw new Error(`Keine Szene fuer ${r.id}`); return f(); }), 96, 48)
 };
 
@@ -303,5 +578,5 @@ if (process.argv.includes('--pruefe')) {
 
 mkdirSync(ZIEL, { recursive: true });
 for (const [name, b] of Object.entries(ausgaben)) writeFileSync(join(ZIEL, name), kodiere(b));
-console.log(`assets/pixel/aufnaeher.png  ${BILDER.length} × 24×24`);
+console.log(`assets/pixel/aufnaeher.png  ${BILDER.length} × 24×24, alle verschieden`);
 console.log(`assets/pixel/raenge.png     ${RAENGE.length} × 96×48`);

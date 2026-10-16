@@ -359,15 +359,33 @@ export function schallplatten(logs = []) {
  */
 /**
  * Reihenfolge der Bilder im Bogen assets/pixel/aufnaeher.png (je 24×24),
- * gebaut von tools/pixel.mjs: eines je Leiter, die Stufen teilen sich ein
- * Motiv.
+ * gebaut von tools/pixel.mjs. Jeder Aufnaeher hat sein eigenes Motiv —
+ * auch jede Stufe einer Leiter. Fuer eigene Lift-IDs in der config gibt es
+ * am Ende eine neutrale Figur je Stufe.
  */
-export const BILDER = ['debuet', 'gigs', 'jam', 'unplugged', 'maxout', 'zugaben', 'tight', 'roadcrew',
-  'platten', 'club', 'hangar', 'koerper', 'km', 'hoehe', 'century', 'doom', 'openair', 'crossover',
-  'comeback', 'rueckweg', 'reunion', 'serie'];
+const STANDARD_LIFTS = ['squat', 'bench', 'row', 'ohp', 'deadlift'];
+export const BILDER = [
+  'debuet', ...GIG_STUFEN.map(n => `gigs-${n}`), 'jam', 'unplugged', 'maxout', 'zugaben', 'tight', 'roadcrew',
+  ...STANDARD_LIFTS.flatMap(id => PLATTEN_STUFEN.map(n => `platten-${id}-${n}`)),
+  'club', 'hangar', ...KOERPER_MARKEN.map(m => `koerper-${m.lift}`),
+  ...KM_STUFEN.map(n => `km-${n}`), 'hoehe', 'century', 'doom', 'openair', ...CROSSOVER_STUFEN.map(n => `crossover-${n}`),
+  'comeback', 'rueckweg', 'reunion', ...SERIE_STUFEN.map(n => `serie-${n}`),
+  ...PLATTEN_STUFEN.map(n => `platten-figur-${n}`), 'koerper-figur'
+];
 
-/** Platz des Aufnaehers im Bogen, oder -1. "platten-squat" und "koerper-bench" teilen sich je ein Bild. */
-export const bildIndex = a => BILDER.indexOf(String((a && a.gruppe) || '').split('-')[0]);
+/**
+ * Platz des Aufnaehers im Bogen, oder -1. Ein Lift, den der Bogen nicht
+ * kennt (eigene ID in der config), bekommt die neutrale Figur derselben Stufe.
+ */
+export function bildIndex(a) {
+  const id = String((a && a.id) || '');
+  const i = BILDER.indexOf(id);
+  if (i >= 0) return i;
+  const platte = /^platten-.+-(\d+)$/.exec(id);
+  if (platte) return BILDER.indexOf(`platten-figur-${platte[1]}`);
+  if (/^koerper-./.test(id)) return BILDER.indexOf('koerper-figur');
+  return -1;
+}
 
 export const RAENGE = [
   { id: 'garage', wochen: 0 },

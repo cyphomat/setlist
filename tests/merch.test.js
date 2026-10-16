@@ -334,15 +334,22 @@ print('\n--- Pixelbilder ---');
 {
   const voll = M.katalog({ ...config, lifts: { ...config.lifts, squat: { ...config.lifts.squat, reference: 100 } } },
     { mitGewicht: true, mitRad: true, mitHoehe: true, mitPlan: true });
+  eq('der volle Katalog: 57 Aufnaeher', voll.length, 57);
   const ohne = voll.filter(a => M.bildIndex(a) < 0).map(a => a.id);
   eq('jeder Aufnaeher hat ein Bild', ohne.join(), '');
-  eq('Stufen teilen sich ein Bild', M.bildIndex({ gruppe: 'platten-squat' }), M.bildIndex({ gruppe: 'platten-deadlift' }));
-  eq('Gigs: alle Stufen ein Bild', M.bildIndex({ gruppe: 'gigs' }), M.BILDER.indexOf('gigs'));
-  eq('unbekannte Gruppe: kein Bild', M.bildIndex({ gruppe: 'gibtsnicht' }), -1);
+  const indizes = voll.map(a => M.bildIndex(a));
+  eq('keine zwei Aufnaeher teilen sich ein Bild', new Set(indizes).size, voll.length);
+  ok('jede Stufe einer Leiter ein eigenes', M.bildIndex({ id: 'gigs-10' }) !== M.bildIndex({ id: 'gigs-25' })
+    && M.bildIndex({ id: 'platten-squat-1' }) !== M.bildIndex({ id: 'platten-squat-2' })
+    && M.bildIndex({ id: 'platten-squat-1' }) !== M.bildIndex({ id: 'platten-bench-1' }));
+  eq('eigener Lift: neutrale Figur derselben Stufe', M.bildIndex({ id: 'platten-frontsquat-3' }), M.BILDER.indexOf('platten-figur-3'));
+  eq('eigener Lift, Koerpergewicht: neutrale Figur', M.bildIndex({ id: 'koerper-frontsquat' }), M.BILDER.indexOf('koerper-figur'));
+  eq('unbekannter Aufnaeher: kein Bild', M.bildIndex({ id: 'gibtsnicht' }), -1);
   eq('ohne Aufnaeher: kein Bild', M.bildIndex(null), -1);
-  eq('keine Gruppe doppelt im Bogen', new Set(M.BILDER).size, M.BILDER.length);
-  const gruppen = new Set(voll.map(a => a.gruppe.split('-')[0]));
-  eq('kein Bild ohne Aufnaeher', M.BILDER.filter(b => !gruppen.has(b)).join(), '');
+  eq('keine ID doppelt im Bogen', new Set(M.BILDER).size, M.BILDER.length);
+  eq('57 Motive plus 5 neutrale Figuren', M.BILDER.length, 62);
+  const ids = new Set(voll.map(a => a.id));
+  eq('kein Bild ohne Aufnaeher (ausser den Figuren)', M.BILDER.filter(b => !ids.has(b) && !/-figur/.test(b)).join(), '');
   eq('sieben Raenge, sieben Szenen', M.RAENGE.length, 7);
 }
 

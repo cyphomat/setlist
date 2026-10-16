@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1690%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1694%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -159,7 +159,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | **Feel after the session** | Four levels (easy/normal/hard/brutal) on the done screen — makes the call verifiable in hindsight. |
 | **Injury report** | What is nagging, with your own treatment. Two kinds: *recurring* (comes and goes, briefly asked about after a session, can heal) and *structural* (stays, not asked about, blocks permanently). Exercises you block are not rolled by the jam, not picked by Unplugged, and left out of technique and mobility. Main lifts are only flagged, never dropped — the 5×5 mechanics hang on them. The app makes no diagnosis and suggests no treatment. |
 | **Merch stand** | A little play to match the stage: a **battle vest** with patches (plate club, 1000 lb club, bodyweight marks, comeback, streaks, Road crew and Hangar 18 for the aftershow … and for the bike: tour bus kilometres, Stairway to Heaven, Highway Star, Doom for disciplined base rides, Open Air, crossover weeks with strength and bike), **gold and platinum** records for the weight you have moved, a **rank** from garage band to Hall of Fame, and every quarter a **tour shirt** with your training days on the back. After a session the setlist shows up as a taped paper sheet, and the home screen has a weekly dial that only goes to eleven when the plan is done **and** every set was clean. Consistency earns it, never volume: the rank counts weeks, not sessions (bike weeks included), and a logged injury **freezes your streak** instead of breaking it. All calculated from the logs, nothing stored. |
-| **Pixel stage** | Every patch has its own pixel image, and the shape shows the category: stage round, strength diamond, bike square, comeback shield, streak star. Every rank has its scene, from the garage to the Hall of Fame, with the whole tour underneath. On **HEAVY** days a small pixel fire burns behind the word. After a session an **announcer** calls out the big moments: new rank, new patch, back to your pre-break level, a round number like “100 KG”, the weekly dial on eleven, “FLAWLESS”. There is at most one call per session, and you can switch it off under *Backstage → App*. With “reduce motion” on your system there is no fire and no jump. Own pixel art, no third-party graphics. |
+| **Pixel stage** | Every patch has its own pixel image, every step of a ladder included: gigs grow from the setlist sheet through ticket, poster and amp to the raised lighter, kilometres from a bike to the globe, and in the plate club each lift is its own figure with 1–4 plates on the bar. The shape shows the category: stage round, strength octagon, bike square, comeback shield, streak star. Every rank has its scene, from the garage to the Hall of Fame, with the whole tour underneath. On **HEAVY** days a small pixel fire burns behind the word. After a session an **announcer** calls out the big moments: new rank, new patch, back to your pre-break level, a round number like “100 KG”, the weekly dial on eleven, “FLAWLESS”. There is at most one call per session, and you can switch it off under *Backstage → App*. With “reduce motion” on your system there is no fire and no jump. Own pixel art, no third-party graphics. |
 | **Call vs. feel** | In the Tour: every session with both values plus the hit rate — the call and the perceived effort side by side instead of merely asserted. |
 | **Where you are out of balance** | Twelve strength ratios against guidance values *and* against your own level before the layoff. When the same lift stands out in several pairs, the app names it as the cause and suggests extra work — a single skewed pair does not tell you which side causes it. Only values of equal quality are compared. |
 | **Test values** | Pull-up, dip, front squat, single-arm press, step-up, single-leg deadlift and farmer’s carry — what 5×5 does not produce on its own. Enter them in the backstage or **measure them in a max-out**; a measured test beats a typed one and is recorded with its date. They add eight more ratios, including whether your pulling matches your pressing. |
@@ -426,7 +426,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-1690 tests in 23 files. No build, no dependencies.
+1694 tests in 23 files. No build, no dependencies.
 
 ### Browser probes (optional)
 

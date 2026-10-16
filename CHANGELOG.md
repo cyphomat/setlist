@@ -10,6 +10,31 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-16.1
+
+### Geändert
+- **Jeder Aufnäher hat ein eigenes Motiv.** Bisher teilten sich 57 Aufnäher 22 Bilder:
+  Alle Stufen einer Leiter zeigten dasselbe, und alle 20 Plattenclub-Aufnäher dieselbe
+  Hantel. Jetzt wächst jede Leiter sichtbar mit:
+  - **Gigs:** Setlist-Zettel, Ticket, Plakat, Amp, hochgehaltenes Feuerzeug.
+  - **Tourbus:** Fahrrad, Kettenblatt, Bus, Straße, Weltkugel.
+  - **Serie:** Kette, Kalender, Flamme, Krone.
+  - **Crossover:** Kreuzrad, Rad mit Hantel, gekreuzte Klingen.
+  - **Plattenclub:** Jeder Lift ist eine eigene Figur (Kniebeuge, Bankdrücken,
+    Rudern, Drücken, Kreuzheben), mit 1–4 Scheiben an der Stange.
+  - **Körpergewicht-Marken:** dieselbe Figur auf der Waage.
+  - Eigene Lift-IDs in der config bekommen eine neutrale Figur derselben Stufe.
+- **Kraft-Aufnäher sind achteckig statt rautenförmig.** Die Farben bleiben, aber die
+  Raute ließ für Figur und Hantel zu wenig Platz. Stange und Scheiben sind orange, so
+  lassen sie sich zählen.
+
+### Werkzeuge
+- `tools/pixel.mjs` baut ein Bild je Aufnäher-ID und bricht ab, wenn zwei Kacheln
+  gleich aussehen. Was über den Innenraum eines Rahmens hinausragt, wird abgeschnitten.
+- Die Probe `buehne` prüft, dass auf der Kutte keine zwei Aufnäher dasselbe Bild
+  tragen.
+- 1694 Tests.
+
 ## 2026-10-15.1
 
 ### Neu
