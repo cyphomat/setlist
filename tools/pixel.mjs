@@ -161,7 +161,8 @@ const RAHMEN = {
   kraft: achteck(),               // Achteck, Schwarz mit Orange
   rad: zerlegt('anker'),          // eckig, Gruen
   comeback: zerlegt('lehrmeister'), // Wappen, Weinrot
-  serie: zerlegt('legende')       // Stern, Gold
+  serie: zerlegt('legende'),      // Stern, Gold
+  tour: zerlegt('tourkomplett')   // Rechteck, Lila: Monats-Tour und Soundcheck
 };
 
 /* Eigene Zeichnungen, je hoechstens 13 breit. H = Hauptfarbe, A = Akzent. */
@@ -314,6 +315,49 @@ const EIGENE = {
     'A.H.AHHHHHHHH',
     'A...A..H...H.',
     '.AAA...H...H.'
+  ],
+  tourplakat: [           // Tour 3: Tourplakat, oben der Name, darunter drei Termine
+    'HHHHHHHHHHH',
+    'H.........H',
+    'H.AAAAAAA.H',
+    'H.........H',
+    'H.HH.HHHH.H',
+    'H.........H',
+    'H.HH.HHHH.H',
+    'H.........H',
+    'H.HH.HHHH.H',
+    'H.........H',
+    'HHHHHHHHHHH'
+  ],
+  tourbus: [              // Tour 6: Nightliner mit Fenstern
+    'HHHHHHHHHHHH.',
+    'H.A.A.A.A.HHH',
+    'H.A.A.A.A.H.H',
+    'HHHHHHHHHHHHH',
+    'HHHHHHHHHHHHH',
+    '.AA.....AA...'
+  ],
+  lorbeer: [              // Tour 12: Lorbeerkranz um einen Stern
+    'H...........H',
+    'HH....A....HH',
+    'HH...AAA...HH',
+    'HHHAAAAAAAHHH',
+    '.HH.AAAAA.HH.',
+    '.HHHAA.AAHHH.',
+    '..HHA...AHH..',
+    '...HHH.HHH...',
+    '.....HHH.....'
+  ],
+  mischpult: [            // Soundcheck 12: Mischpult, Fader auf verschiedener Hoehe
+    'HHHHHHHHHHHHH',
+    'H...........H',
+    'H.H.A.H.H.H.H',
+    'H.A.H.H.H.A.H',
+    'H.H.H.A.H.H.H',
+    'H.H.H.H.A.H.H',
+    'H.H.H.H.H.H.H',
+    'H...........H',
+    'HHHHHHHHHHHHH'
   ]
 };
 
@@ -442,7 +486,9 @@ const MOTIV = {
   'crossover-1': 'kilometer', 'crossover-10': '#radhantel', 'crossover-26': 'boss3',
   comeback: 'metal', rueckweg: 'nachgefasst', reunion: 'stammtisch',
   'gelenkig-1': 'gelenkig', 'gelenkig-4': '#bruecke', 'gelenkig-12': '#spagat',
-  'serie-4': 'serie4', 'serie-12': '#kalender', 'serie-26': 'trainingslager', 'serie-52': 'legende'
+  'serie-4': 'serie4', 'serie-12': '#kalender', 'serie-26': 'trainingslager', 'serie-52': 'legende',
+  'tour-1': 'tourkomplett', 'tour-3': '#tourplakat', 'tour-6': '#tourbus', 'tour-12': '#lorbeer',
+  'soundcheck-4': 'soundcheck4', 'soundcheck-12': '#mischpult'
 };
 /* Symbole, deren Farbe die Aussage ist: Blut bleibt rot. */
 const EIGENE_FARBE = new Set(['debuet']);
@@ -451,7 +497,8 @@ const KATEGORIE = {
   debuet: 'buehne', gigs: 'buehne', jam: 'buehne', unplugged: 'buehne', maxout: 'buehne', zugaben: 'buehne', tight: 'buehne', roadcrew: 'buehne',
   platten: 'kraft', club: 'kraft', hangar: 'kraft', koerper: 'kraft', gelenkig: 'kraft',
   km: 'rad', hoehe: 'rad', century: 'rad', doom: 'rad', openair: 'rad', crossover: 'rad',
-  comeback: 'comeback', rueckweg: 'comeback', reunion: 'comeback', serie: 'serie'
+  comeback: 'comeback', rueckweg: 'comeback', reunion: 'comeback', serie: 'serie',
+  tour: 'tour', soundcheck: 'tour'
 };
 
 const raster = zeilen => {
@@ -556,6 +603,53 @@ const SZENE = {
   halloffame: hallOfFame
 };
 
+/* ---------------- Endgegner der Monats-Tour ---------------- */
+
+/*
+ * Ein gehoernter Schaedel, 24×24. Zwei Bilder nebeneinander: lebendig mit
+ * gluehenden Augen, besiegt mit Riss und erloschenen Augen.
+ * K Kontur, H Horn, B Knochen, S Schatten, R Auge, D Dunkel.
+ */
+const BOSS = [
+  'KK....................KK',
+  'KHK..................KHK',
+  'KHHK................KHHK',
+  '.KHHK..............KHHK.',
+  '.KHHHK..KKKKKKKK..KHHHK.',
+  '..KHHHKKBBBBBBBBKKHHHK..',
+  '...KHHKBBBBBBBBBBKHHK...',
+  '....KKBBBBBBBBBBBBKK....',
+  '.....KBBBBBBBBBBBBK.....',
+  '....KBBBBBBBBBBBBBBK....',
+  '....KBKKKKBBBBKKKKBK....',
+  '....KBKRRKBBBBKRRKBK....',
+  '....KBKRRKBBBBKRRKBK....',
+  '....KBBKKBBBBBBKKBBK....',
+  '....KSBBBBBKKBBBBBSK....',
+  '.....KSBBBBKKBBBBSK.....',
+  '......KSBBBBBBBBSK......',
+  '......KBKBKBKBKBKK......',
+  '......KBBBBBBBBBBK......',
+  '.......KSBKBKBKSK.......',
+  '........KKKKKKKK........'
+];
+const BOSS_FARBE = { K: '0a0a0a', H: '8a6a48', B: 'e8dcc0', S: 'b0a284', R: 'ff3b1f', D: '3a2e28' };
+const BOSS_RISS = [[12, 5], [11, 6], [11, 7], [12, 8], [13, 9]];
+
+function endgegner() {
+  const b = leer(48, 24);
+  const oben = 24 - BOSS.length;
+  for (const [ox, besiegt] of [[0, false], [24, true]]) {
+    BOSS.forEach((zeile, y) => [...zeile].forEach((z, x) => {
+      if (z === '.') return;
+      const rolle = besiegt && z === 'R' ? 'D' : z;
+      setze(b, ox + x, oben + y, rgba(BOSS_FARBE[rolle]));
+    }));
+    if (besiegt) for (const [x, y] of BOSS_RISS) setze(b, ox + x, oben + y, rgba(BOSS_FARBE.K));
+  }
+  return b;
+}
+
 /* ---------------- Bogen schreiben ---------------- */
 
 function bogen(teile, w, h) {
@@ -577,6 +671,7 @@ function eindeutig(teile, namen) {
 
 const ausgaben = {
   'aufnaeher.png': bogen(eindeutig(BILDER.map(aufnaeher), BILDER), 24, 24),
+  'boss.png': endgegner(),
   'raenge.png': bogen(RAENGE.map(r => { const f = SZENE[r.id]; if (!f) throw new Error(`Keine Szene fuer ${r.id}`); return f(); }), 96, 48)
 };
 
@@ -601,3 +696,4 @@ mkdirSync(ZIEL, { recursive: true });
 for (const [name, b] of Object.entries(ausgaben)) writeFileSync(join(ZIEL, name), kodiere(b));
 console.log(`assets/pixel/aufnaeher.png  ${BILDER.length} × 24×24, alle verschieden`);
 console.log(`assets/pixel/raenge.png     ${RAENGE.length} × 96×48`);
+console.log('assets/pixel/boss.png       2 × 24×24');

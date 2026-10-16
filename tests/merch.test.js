@@ -357,6 +357,51 @@ print('\n--- Mobility und Gelenkig ---');
   ok('kein Training', !P.istTraining(st.history[0]) && P.istTraining({ date: '2026-09-07', type: 'wod' }));
 }
 
+print('\n--- Monats-Tour ---');
+{
+  // Plan: Mo Kraft, Mi Rad, Do Kraft. September 2026: 4 Montage, 4 Donnerstage, 5 Mittwoche.
+  const mob = d => ({ date: d, type: 'mobility', uebung: 'couch' });
+  const tage = ['03', '07', '10', '14', '17', '21', '24', '28'].map(t => `2026-09-${t}`);
+  const sept = [kraft('2026-08-03', [satz('squat', 95)])]
+    .concat(tage.map((d, i) => kraft(d, [satz('squat', 95, i < 4)])))
+    .concat(['02', '09', '16', '23'].map(t => mob(`2026-09-${t}`)));
+  const mt = M.monatsTour(sept, config, '2026-09', { heute: HEUTE });
+  const z = id => mt.ziele.find(x => x.id === id);
+  eq('Kraft-Soll aus dem Plan', z('kraft').soll, 8);
+  eq('sauber: halb so viele', z('sauber').soll, 4);
+  eq('ohne Rad: Ersatzziel', `${z('neben').soll} ${!!z('rad')}`, '4 false');
+  ok('komplett', mt.komplett && !mt.laufend);
+  eq('besiegt am Tag des letzten erfuellten Ziels', mt.besiegtAm, '2026-09-28');
+  eq('sauber war schon frueher erfuellt', z('sauber').am, '2026-09-14');
+  const sieben = M.monatsTour(sept.filter(l => l.date !== '2026-09-28'), config, '2026-09', { heute: HEUTE });
+  ok('eine Einheit fehlt: nicht komplett', !sieben.komplett && sieben.besiegtAm === null && sieben.ziele[0].ist === 7);
+  const extra = M.monatsTour(sept.concat([kraft('2026-09-29', [satz('squat', 95)])]), config, '2026-09', { heute: HEUTE });
+  eq('mehr als geplant: Soll bleibt', extra.ziele[0].soll, 8);
+  const spaet = M.monatsTour(sept.filter(l => l.date >= '2026-09-15'), config, '2026-09', { heute: HEUTE });
+  eq('Start Mitte Monat: Soll ab dem ersten Tag', `${spaet.ziele[0].soll}/${spaet.ziele[1].soll}/${spaet.ziele[2].soll}`, '4/2/2');
+  const verletzt = { ...config, injuries: [{ id: 'knie', was: 'Knie', art: 'akut', status: 'ruhend', seit: '2026-09-01', bis: '2026-09-13' }] };
+  eq('Pausenfenster zaehlt nicht zum Soll', M.monatsTour(sept, verletzt, '2026-09', { heute: HEUTE }).ziele[0].soll, 5);
+  const ganz = { ...config, injuries: [{ id: 'knie', was: 'Knie', art: 'akut', status: 'ruhend', seit: '2026-09-01', bis: '2026-09-30' }] };
+  const pause = M.monatsTour(sept, ganz, '2026-09', { heute: HEUTE });
+  ok('ganzer Monat Pause: kein Gegner', pause.pause && !pause.komplett);
+  const mitRad = { ...config, rides: [{ id: 'z2', name: 'Z2' }] };
+  const fahrten = ['02', '09', '16', '23'].map(t => ({ date: `2026-09-${t}`, km: 30 }));
+  const r = M.monatsTour(sept, mitRad, '2026-09', { heute: HEUTE, fahrten });
+  eq('mit Rad: geplante Mittwoche', `${r.ziele[1].id} ${r.ziele[1].ist}/${r.ziele[1].soll}`, 'rad 4/5');
+  ok('eine Fahrt fehlt', !r.komplett);
+  eq('Rad geplant, aber keine Fahrten: Ersatzziel', M.monatsTour(sept, mitRad, '2026-09', { heute: HEUTE }).ziele[1].id, 'neben');
+  eq('vor der ersten Einheit: keine Tour', M.monatsTour(sept, config, '2026-07', { heute: HEUTE }), null);
+  eq('Zukunft: keine Tour', M.monatsTour(sept, config, '2026-11', { heute: HEUTE }), null);
+  const alle = M.monatsTouren(sept, config, { heute: HEUTE });
+  eq('alle Monate, der juengste zuerst', alle.map(m => m.monat).join(','), '2026-10,2026-09,2026-08');
+  ok('laufender Monat', alle[0].laufend);
+  eq('Tour komplett: Aufnaeher am Siegtag', hat(M.aufnaeher(sept, config, [], HEUTE), 'tour-1'), '2026-09-28');
+  eq('drei Monate noch nicht', hat(M.aufnaeher(sept, config, [], HEUTE), 'tour-3'), null);
+  const ohnePlan = { ...config, week: { slots: [{ day: 3, type: 'ride' }] } };
+  ok('ohne Krafttage: keine Tour, kein Aufnaeher', M.monatsTour(sept, ohnePlan, '2026-09', { heute: HEUTE }) === null &&
+    !M.katalog(ohnePlan).some(a => a.kategorie === 'tour'));
+}
+
 print('\n--- Pixelbilder ---');
 {
   const voll = M.katalog({ ...config, lifts: { ...config.lifts, squat: { ...config.lifts.squat, reference: 100 } } },

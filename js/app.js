@@ -156,6 +156,11 @@ async function load() {
   else if ($('view-history').hidden) show('home');
   loadIntervals();
   pruefeUrsprung();
+  // Ohne Zwischenspeicher (neues Geraet) die Einheiten einmal im
+  // Hintergrund holen — fuer die Monats-Tour im Wochenkopf.
+  if (!geladeneLogs().length) {
+    S.readAllLogs().then(logs => { if (!alleLogs.length) { alleLogs = logs; S.cacheLogs(logs); } renderAmp(); }).catch(() => {});
+  }
 }
 
 /** Nur Beiwerk: Fehler hier duerfen die App nie blockieren — aber sichtbar sein. */
@@ -350,6 +355,17 @@ function serienZeile() {
    dabei auch jeder Satz sauber war — mehr Einheiten drehen ihn nicht
    weiter. Die Logs kommen aus dem letzten Laden; fehlen sie fuer einen
    Tag, bleibt es ehrlich bei zehn (merch.js).                          */
+/** Die Monats-Tour als eine Zeile im Wochenkopf — nur mit geladenen Einheiten. */
+function tourZeile(logs) {
+  if (!logs.length) return '';
+  const m = M.monatsTour(logs, config, P.ymd(new Date()).slice(0, 7), { fahrten: radFuerMerch(logs) });
+  if (!m || m.pause) return '';
+  const titel = tourTitel(m.monat);
+  const text = m.komplett ? t('mt.homeSieg', { titel, boss: bossName(m.monat) })
+    : t('mt.home', { titel, n: m.ziele.filter(z => z.ok).length, gesamt: m.ziele.length });
+  return `<p class="serie monat${m.komplett ? ' sieg' : ''}">${escHtml(text)}</p>`;
+}
+
 function renderAmp() {
   const box = $('amp');
   if (!box || !config || !state) return;
@@ -378,6 +394,7 @@ function renderAmp() {
           <span class="amp-was">${escHtml(t('amp.text', { e: v.erledigt, g: v.geplant }))}</span></div>
         ${v.stufe === 11 ? `<p class="fine">${t('amp.elf')}</p>` : v.stufe === 10 ? `<p class="fine">${t('amp.zehn')}</p>` : ''}
         ${serienZeile()}
+        ${tourZeile(logs)}
       </div>
     </div>`;
 }
@@ -684,7 +701,10 @@ async function trageMobilityEin(uebung, name) {
     { fahrten: radFuerMerch(vorher), planFuer: planFuerDatum });
   try { await commit(log); banner(t('mob.erledigt', { name }), 'ok'); }
   catch { S.queue(log); banner(t('msg.keinNetz'), '', 6000); }
-  if (neu.length && ANS.istAn()) zeigeAnsage(ANS.ansage({ aufnaeher: neu.map(patchName) }));
+  const monat = heute.slice(0, 7);
+  const komplett = logs => { const m = M.monatsTour(logs, config, monat, { fahrten: radFuerMerch(logs) }); return !!(m && m.komplett); };
+  const tour = komplett(nachher) && !komplett(vorher) ? bossName(monat) : null;
+  if ((neu.length || tour) && ANS.istAn()) zeigeAnsage(ANS.ansage({ tour, aufnaeher: neu.map(patchName) }));
   aktualisiereMobility();
 }
 
@@ -4454,7 +4474,12 @@ async function neueAufnaeherZeigen(log, historie) {
   const rVor = M.rang(vorher, radFuerMerch(vorher)), rNach = M.rang(nachher, radFuerMerch(nachher));
   const vVor = M.verstaerker(vorher, config, new Date(), historie);
   const vNach = M.verstaerker(nachher, config, new Date(), state.history || []);
+  // Endgegner des Monats: vorher stand er noch, jetzt ist er gefallen
+  const monat = log.date.slice(0, 7);
+  const tVor = M.monatsTour(vorher, config, monat, { fahrten: radFuerMerch(vorher) });
+  const tNach = M.monatsTour(nachher, config, monat, { fahrten: radFuerMerch(nachher) });
   const info = { neu, rang: rNach.stufe > rVor.stufe ? rNach.id : null,
+    tour: tNach && tNach.komplett && !(tVor && tVor.komplett) ? bossName(monat) : null,
     elf: !!(vNach && vNach.stufe === 11 && !(vVor && vVor.stufe === 11)) };
   if (!neu.length || !box.isConnected) return info;
   box.innerHTML = `<div class="aufnaeher-neu">
@@ -4479,6 +4504,7 @@ function ansagen(log, info) {
   const ref = wins.find(w => w.art === 'referenz'), rund = wins.find(w => w.art === 'rund');
   zeigeAnsage(ANS.ansage({
     rang: info && info.rang ? t(`merch.r.${info.rang}`) : null,
+    tour: info && info.tour,
     aufnaeher: info ? info.neu.map(patchName) : [],
     referenz: ref ? { name: liftName(ref.lift), kg: ref.kg } : null,
     rund: rund ? { name: liftName(rund.lift), kg: rund.kg } : null,
@@ -4520,10 +4546,57 @@ function plakatGlut() {
   glut.start();
 }
 
+/* ============================ Monats-Tour ============================
+   Drei Ziele aus dem eigenen Plan, am Ende der Endgegner des Monats
+   (merch.js, monatsTour). Je erfuelltes Ziel verliert er ein Drittel.   */
+const monatName = monat => new Date(Number(monat.slice(0, 4)), Number(monat.slice(5, 7)) - 1, 1)
+  .toLocaleDateString(locale(), { month: 'long' });
+const bossName = monat => t(`boss.${Number(monat.slice(5, 7))}`);
+const tourTitel = monat => t('mt.titel', { monat: monatName(monat) });
+
+function monatsTourHtml(touren) {
+  const jetzt = touren[0];
+  if (!jetzt) return '';
+  const boss = bossName(jetzt.monat);
+  const offen = jetzt.ziele.filter(z => !z.ok).length;
+  const frueher = touren.slice(1, 13);
+  const zeile = m => {
+    const n = m.ziele.filter(z => z.ok).length;
+    const was = m.pause ? t('mt.pause') : m.komplett
+      ? t('mt.besiegt', { boss: bossName(m.monat), datum: datumKurz(m.besiegtAm) })
+      : `${t('mt.stand', { n, gesamt: m.ziele.length })} · ${bossName(m.monat)} ${t('mt.entkommen')}`;
+    return `<li class="${m.komplett ? 'sieg' : ''}"><span class="d">${escHtml(monatName(m.monat))} ${escHtml(m.monat.slice(0, 4))}</span>
+      <span class="a">${escHtml(was)}</span></li>`;
+  };
+  return `<h2>${escHtml(t('mt.kopf'))}</h2>
+    <div class="card monatstour${jetzt.komplett ? ' besiegt' : ''}">
+      <div class="mt-kopf">
+        <span class="boss${jetzt.komplett ? ' tot' : ''}${jetzt.pause ? ' schlaeft' : ''}" role="img" aria-label="${escHtml(boss)}"></span>
+        <div class="mt-wer">
+          <div class="kicker">${escHtml(tourTitel(jetzt.monat))}</div>
+          <div class="name">${escHtml(jetzt.pause ? t('mt.pause') : t('mt.gegner', { boss }))}</div>
+          ${jetzt.pause ? '' : `<div class="lp" role="img" aria-label="${escHtml(t('mt.lp', { n: offen, gesamt: jetzt.ziele.length }))}">${
+            jetzt.ziele.map(z => `<i class="${z.ok ? 'weg' : ''}"></i>`).join('')}</div>`}
+        </div>
+      </div>
+      ${jetzt.pause ? '' : `<div class="mt-ziele">${jetzt.ziele.map(z => `
+        <div class="mt-ziel${z.ok ? ' ok' : ''}">
+          <div class="h"><span>${escHtml(t(`mt.z.${z.id}`))}</span><b>${z.ok ? '✓ ' : ''}${Math.min(z.ist, z.soll)}/${z.soll}</b></div>
+          <div class="bar"><i style="width:${z.soll ? Math.round(Math.min(1, z.ist / z.soll) * 100) : 100}%"></i></div>
+        </div>`).join('')}</div>
+      <p class="mt-stand">${escHtml(jetzt.komplett
+        ? t('mt.besiegt', { boss, datum: datumKurz(jetzt.besiegtAm) })
+        : t('mt.stand', { n: jetzt.ziele.length - offen, gesamt: jetzt.ziele.length }))}</p>`}
+      ${frueher.length ? `<details class="mt-frueher"><summary>${escHtml(t('mt.frueher'))}</summary>
+        <ol class="termine">${frueher.map(zeile).join('')}</ol></details>` : ''}
+      <p class="fine">${escHtml(t('mt.fine'))}</p>
+    </div>`;
+}
+
 async function zeigeMerch(von = 'home') {
   merchVon = von;
   show('merch');
-  const leeren = () => ['merch-rang', 'merch-kutte', 'merch-platten', 'merch-shirts', 'merch-bilanz']
+  const leeren = () => ['merch-rang', 'merch-monat', 'merch-kutte', 'merch-platten', 'merch-shirts', 'merch-bilanz']
     .forEach(id => { $(id).innerHTML = ''; });
   if (!config) {
     leeren();
@@ -4574,10 +4647,13 @@ function renderMerch(logs) {
         : t('merch.rang.oben'))} ${t('merch.rang.fine')}</p>
     </div>`;
 
+  // Monats-Tour
+  $('merch-monat').innerHTML = monatsTourHtml(M.monatsTouren(logs, config, { fahrten, heute }));
+
   // Kutte
   const w = M.kutte(liste);
   const zeigen = new Set(w.verdient.concat(w.naechste).map(a => a.id));
-  const teile = ['buehne', 'kraft', 'rad', 'comeback', 'serie'].map(k => {
+  const teile = ['buehne', 'kraft', 'rad', 'tour', 'comeback', 'serie'].map(k => {
     const hier = liste.filter(a => a.kategorie === k && zeigen.has(a.id));
     if (!hier.length) return '';
     return `<div class="kutte-teil">

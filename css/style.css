@@ -984,6 +984,31 @@ input[type=checkbox]{accent-color:var(--akzent);width:16px;height:16px}
   background-size:calc(var(--n) * 40px) 40px;background-position:calc(var(--i) * -40px) 0;image-rendering:pixelated;
   filter:drop-shadow(0 2px 2px rgba(0,0,0,.45))}
 
+/* ── Monats-Tour: der Endgegner aus assets/pixel/boss.png (lebendig | besiegt) ── */
+.mt-kopf{display:flex;gap:14px;align-items:center}
+.boss{flex:none;width:72px;height:72px;background:url('../assets/pixel/boss.png') no-repeat 0 0/200% 100%;
+  image-rendering:pixelated;filter:drop-shadow(0 3px 3px rgba(0,0,0,.5))}
+.boss.tot{background-position:100% 0;filter:grayscale(.6) drop-shadow(0 3px 3px rgba(0,0,0,.5))}
+.boss.schlaeft{filter:grayscale(1) brightness(.6);opacity:.6}
+.mt-wer{min-width:0;flex:1}
+.monatstour .name{font-family:var(--display);text-transform:uppercase;letter-spacing:.04em;font-size:1.125rem;
+  line-height:1.2;overflow-wrap:anywhere}
+.lp{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:8px;max-width:180px}
+.lp i{display:block;height:9px;background:var(--rot);border:1px solid var(--line)}
+.lp i.weg{background:var(--sunken)}
+.mt-ziele{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.mt-ziel .h{display:flex;justify-content:space-between;gap:10px;font-size:0.875rem;margin-bottom:4px}
+.mt-ziel .h b{font-family:var(--mono);font-weight:500;white-space:nowrap}
+.mt-ziel.ok .h b{color:var(--gruen)}
+.mt-stand{margin:12px 0 0;font-size:0.875rem;color:var(--fg)}
+.monatstour.besiegt .mt-stand{color:var(--akzent);font-weight:600}
+.mt-frueher{margin-top:12px}
+.mt-frueher summary{cursor:pointer;font-family:var(--mono);font-size:0.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.mt-frueher .termine{columns:auto}
+.mt-frueher .termine li{flex-direction:column;justify-content:flex-start;gap:2px;padding:7px 0}
+.mt-frueher .termine li span.a{font-family:inherit;font-weight:400;white-space:normal;color:var(--muted);overflow-wrap:anywhere}
+.mt-frueher .termine li.sieg span.a{font-weight:600;color:var(--fg)}
+
 /* ── Die Kutte: Denim-Koeper als feine Diagonale, Aufnaeher mit Naht ── */
 .kutte{
   background:
@@ -1147,6 +1172,8 @@ details.shirt[open] .shirt-icon{fill:var(--akzent);stroke:var(--akzent)}
 .serie{margin:0;font-size:0.8125rem;font-weight:600;color:var(--gruen)}
 .serie.pausiert{color:var(--stahl)}
 .serie.leer{font-weight:400;color:var(--muted)}
+.serie.monat{font-weight:400;color:var(--muted)}
+.serie.monat.sieg{font-weight:600;color:var(--akzent)}
 
 /* ── Reunion und Verletzungspause ── */
 .kalender .zelle.pause{background:repeating-linear-gradient(135deg,var(--stahl) 0 1.5px,transparent 1.5px 4px);border-color:var(--stahl)}

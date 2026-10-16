@@ -1,8 +1,9 @@
 // Browserprobe · Bühne: Pixel-Aufnäher und Rangszenen im Merch, Glut hinter
-// SCHWER, Ansager nach der Einheit — an, aus, und ruhig bei reduzierter Bewegung.
+// SCHWER, Ansager nach der Einheit — an, aus, und ruhig bei reduzierter Bewegung —
+// und die Monats-Tour mit ihrem Endgegner.
 // Aufruf ueber tools/proben.mjs.
 
-import { P, CONFIG, verlauf, kontext, ueberlauf } from './gemeinsam.mjs';
+import { P, CONFIG, BILDER, verlauf, kontext, ueberlauf, kontraste } from './gemeinsam.mjs';
 import * as M from '../../js/merch.js';
 
 /** Verlauf, nach dem heute B dran ist — dann sagt der Coach SCHWER. */
@@ -140,6 +141,59 @@ export default async function ({ browser, pruefe }) {
     await p.waitForTimeout(3500);
     pruefe('Aus: nach der Einheit keine Ansage', await p.evaluate(() => document.getElementById('ansager').hidden));
     pruefe('keine Seitenfehler (Aus)', !fehler.length, fehler.join(' | '));
+    await ctx.close();
+  }
+
+  /* 5 · Monats-Tour: Karte im Merch, Zeile auf Home, Ansage beim Sieg */
+  const mobility = ['2026-09-02', '2026-09-09', '2026-09-16', '2026-09-23']
+    .map(d => ({ date: d, type: 'mobility', uebung: 'couch', finished: `${d}T07:00:00.000Z` }));
+  for (const [breite, schrift, theme] of [[320, 'sehr', 'hell'], [390, null, 'dunkel'], [1280, null, 'hell']]) {
+    const tag = `${breite}${schrift ? '/sehr' : ''}/${theme}`;
+    const { ctx, p, fehler } = await kontext(browser, { logs: verlauf('2026-09-28').concat(mobility), config: CONFIG, heute: '2026-10-01', breite, schrift, theme });
+    await p.waitForSelector('#amp .serie.monat', { timeout: 6000 }).catch(() => {});
+    const zeile = (await p.textContent('#amp .serie.monat').catch(() => '')).trim();
+    pruefe(`${tag}: Home nennt die Oktober-Tour`, /^Oktober-Tour: \d von 3$/.test(zeile), zeile);
+    await p.click('#go-merch');
+    await p.waitForSelector('#merch-monat .monatstour');
+    await p.waitForTimeout(300);
+    const karte = await p.evaluate(() => {
+      const k = document.querySelector('#merch-monat .monatstour');
+      return { titel: k.querySelector('.kicker').textContent, name: k.querySelector('.name').textContent,
+        lp: k.querySelectorAll('.lp i').length, ziele: k.querySelectorAll('.mt-ziel').length,
+        boss: getComputedStyle(k.querySelector('.boss')).backgroundImage,
+        frueher: [...k.querySelectorAll('.mt-frueher li')].map(l => l.textContent.replace(/\s+/g, ' ').trim()) };
+    });
+    pruefe(`${tag}: Karte mit Gegner des Monats`, karte.titel === 'Oktober-Tour' && karte.name === 'Endgegner: Nebelfürst', `${karte.titel} / ${karte.name}`);
+    pruefe(`${tag}: drei Ziele, Lebensleiste in drei Teilen`, karte.ziele === 3 && karte.lp === 3, JSON.stringify(karte));
+    pruefe(`${tag}: Boss aus dem Pixelbogen`, /boss\.png/.test(karte.boss), karte.boss);
+    pruefe(`${tag}: September besiegt, August entkommen`, /September.*Erntewolf besiegt am 28\.09/.test(karte.frueher[0] || '') && /August.*entkommen/.test(karte.frueher[1] || ''),
+      karte.frueher.join(' | '));
+    const flicken = await p.$$eval('#merch-kutte .patch b', l => l.map(x => x.textContent));
+    pruefe(`${tag}: Aufnäher Tour komplett`, flicken.includes('Tour komplett'), flicken.join(' | '));
+    await p.click('#merch-monat .mt-frueher summary');
+    const k = (await kontraste(p, '#merch-monat .monatstour .name, #merch-monat .mt-ziel .h span, #merch-monat .mt-ziel .h b, #merch-monat .mt-stand, #merch-monat .fine, #merch-monat .termine span'))
+      .filter(x => x.wert < 4.5);
+    pruefe(`${tag}: Kontrast ≥ 4,5`, !k.length, JSON.stringify(k));
+    await p.locator('#merch-monat').screenshot({ path: BILDER + `buehne-monatstour-${breite}-${theme}.png` });
+    const u = await ueberlauf(p);
+    pruefe(`${tag}: Monats-Tour ohne Querlauf`, !u.scroll && !u.raus.length, JSON.stringify(u));
+    pruefe(`keine Seitenfehler (Monats-Tour ${tag})`, !fehler.length, fehler.join(' | '));
+    await ctx.close();
+  }
+  {
+    // Am 28.09. fehlt nur noch die letzte Krafteinheit des Monats
+    const { ctx, p, fehler } = await kontext(browser, { logs: verlauf('2026-09-24').concat(mobility), config: CONFIG, heute: '2026-09-28' });
+    const vorher = (await p.textContent('#amp .serie.monat').catch(() => '')).trim();
+    pruefe('vor der Einheit: 2 von 3', vorher === 'September-Tour: 2 von 3', vorher);
+    await einheitDurch(p);
+    await p.waitForSelector('#ansager:not([hidden])', { timeout: 8000 }).catch(() => {});
+    const a = await p.evaluate(() => { const e = document.getElementById('ansager');
+      return { ruf: (e.querySelector('.ruf') || {}).textContent || '', unter: (e.querySelector('small') || {}).textContent || '', art: e.className }; });
+    pruefe('Ansage: TOUR KOMPLETT', a.ruf === 'TOUR KOMPLETT' && a.unter === 'Erntewolf besiegt' && /gold/.test(a.art), JSON.stringify(a));
+    await p.click('#done-ok');
+    const nachher = (await p.textContent('#amp .serie.monat').catch(() => '')).trim();
+    pruefe('Home danach: besiegt', nachher === 'September-Tour: Erntewolf besiegt', nachher);
+    pruefe('keine Seitenfehler (Tour-Sieg)', !fehler.length, fehler.join(' | '));
     await ctx.close();
   }
 

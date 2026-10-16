@@ -59,6 +59,8 @@ const SERIE_STUFEN = [4, 12, 26, 52];
 export const GELENKIG_STUFEN = [1, 4, 12];
 export const GELENKIG_TAGE = 3;
 const PLATTEN_STUFEN = [1, 2, 3, 4];
+/** Besiegte Monats-Endgegner — 1, 3, 6, 12 Monate. */
+export const TOUR_STUFEN = [1, 3, 6, 12];
 /** Eine Platte = 20 kg je Seite, wie im Kraftsport ueblich. */
 export const PLATTE_KG = 20;
 /** 1000 lb in kg. */
@@ -143,6 +145,7 @@ export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHo
   if (Object.values(lifts).some(d => d && d.reference)) p('reunion', 'comeback', 'reunion', 'merch.p.reunion');
 
   for (const n of SERIE_STUFEN) p(`serie-${n}`, 'serie', 'serie', 'merch.p.serie', { n });
+  if (kraftGeplant(config)) for (const n of TOUR_STUFEN) p(`tour-${n}`, 'tour', 'tour', 'merch.p.tour', { n });
   return out;
 }
 
@@ -247,6 +250,9 @@ export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Dat
   for (const n of GIG_STUFEN) if (tage.length >= n) setze(`gigs-${n}`, tage[n - 1]);
 
   radAufnaeher(rad, logs, planFuer, setze);
+
+  monatsTouren(logs, config, { fahrten: rad, heute }).filter(m => m.komplett).reverse()
+    .forEach((m, i) => { for (const n of TOUR_STUFEN) if (i + 1 >= n) setze(`tour-${n}`, m.besiegtAm); });
 
   const gelenkig = gelenkigeWochen(logs);
   for (const n of GELENKIG_STUFEN) if (gelenkig.length >= n) setze(`gelenkig-${n}`, gelenkig[n - 1]);
@@ -407,7 +413,7 @@ export const BILDER = [
   ...STANDARD_LIFTS.flatMap(id => PLATTEN_STUFEN.map(n => `platten-${id}-${n}`)),
   'club', 'hangar', ...KOERPER_MARKEN.map(m => `koerper-${m.lift}`), ...GELENKIG_STUFEN.map(n => `gelenkig-${n}`),
   ...KM_STUFEN.map(n => `km-${n}`), 'hoehe', 'century', 'doom', 'openair', ...CROSSOVER_STUFEN.map(n => `crossover-${n}`),
-  'comeback', 'rueckweg', 'reunion', ...SERIE_STUFEN.map(n => `serie-${n}`),
+  'comeback', 'rueckweg', 'reunion', ...SERIE_STUFEN.map(n => `serie-${n}`), ...TOUR_STUFEN.map(n => `tour-${n}`),
   ...PLATTEN_STUFEN.map(n => `platten-figur-${n}`), 'koerper-figur'
 ];
 
@@ -581,4 +587,84 @@ export function verstaerker(logs = [], config = {}, heute = new Date(), history 
     diese.every(l => l.lifts.length && l.lifts.every(e => e.success));
   const stufe = erledigt >= geplant ? (sauber ? 11 : 10) : Math.round((10 * erledigt) / geplant);
   return { stufe, erledigt, geplant, sauber };
+}
+
+/* ============================ Monats-Tour ============================
+   Jeden Monat drei Ziele, alle aus dem eigenen Wochenplan: die geplanten
+   Krafteinheiten, die geplanten Fahrten (oder, ohne Rad, vier Tage Jam,
+   Unplugged oder Mobility) und halb so viele saubere Einheiten. Sind alle
+   drei erfuellt, ist der Endgegner des Monats besiegt.
+
+   Tage vor der ersten Einheit und Tage in einer Verletzungspause zaehlen
+   nicht zum Soll: wer Mitte des Monats anfaengt oder ausfaellt, bekommt
+   ein kleineres Soll statt einer verlorenen Tour. Mehr als geplant bringt
+   nichts — das Soll ist das Ziel, nicht der Anfang.                    */
+
+/** Ersatzziel ohne geplante Fahrten: so viele Tage Jam, Unplugged oder Mobility. */
+export const TOUR_ERSATZ = 4;
+const NEBEN_TYPEN = ['wod', 'unplugged'];
+const wochentag = datum => (new Date(datum + 'T12:00:00').getDay() + 6) % 7 + 1;   // 1 = Mo … 7 = So
+const slotTage = (config, art) => new Set(((config.week && Array.isArray(config.week.slots)) ? config.week.slots : [])
+  .filter(s => s && s.type === art).map(s => s.day));
+const kraftGeplant = config => slotTage(config, 'strength').size > 0;
+const ersterGig = logs => sortiert(logs).find(istGig);
+const einmal = daten => [...new Set(daten)].sort();
+
+/**
+ * Die Tour eines Monats ('JJJJ-MM'). null, wenn keine Krafttage geplant
+ * sind oder der Monat vor der ersten Einheit liegt.
+ * Jedes Ziel: { id, ist, soll, ok, am } — `am` ist der Tag, an dem es erfuellt war.
+ */
+export function monatsTour(logs = [], config = {}, monat, { fahrten = [], heute = new Date() } = {}) {
+  if (!kraftGeplant(config) || !/^\d{4}-\d{2}$/.test(String(monat))) return null;
+  const erster = ersterGig(logs);
+  const start = erster ? erster.date : ymd(heute);
+  const [j, m] = monat.split('-').map(Number);
+  const tage = [];
+  for (let d = new Date(j, m - 1, 1, 12); d.getMonth() === m - 1; d.setDate(d.getDate() + 1)) tage.push(ymd(d));
+  if (tage[tage.length - 1] < start || tage[0] > ymd(heute)) return null;
+  const fenster = pausenFenster(config, ymd(heute));
+  const zaehlt = tage.filter(d => d >= start && !fenster.some(f => f.von <= d && f.bis >= d));
+  const soll = art => { const s = slotTage(config, art); return zaehlt.filter(d => s.has(wochentag(d))).length; };
+  const imMonat = d => d && d.slice(0, 7) === monat;
+  const ziel = (id, daten, n) => ({ id, ist: daten.length, soll: n, ok: daten.length >= n, am: daten.length >= n ? daten[n - 1] || null : null });
+
+  const sollKraft = soll('strength');
+  const kraft = sortiert(logs).filter(l => istKraft(l) && imMonat(l.date));
+  const ziele = [ziel('kraft', einmal(kraft.map(l => l.date)), sollKraft)];
+  const rad = mitDatum(fahrten).filter(f => imMonat(f.date));
+  const sollRad = radGeplant(config) && mitDatum(fahrten).length ? soll('ride') : 0;
+  if (sollRad) ziele.push(ziel('rad', einmal(rad.map(f => f.date)), sollRad));
+  else {
+    const neben = logs.filter(l => l && imMonat(l.date) && NEBEN_TYPEN.includes(typ(l))).map(l => l.date)
+      .concat(mobilityTage(logs).filter(imMonat));
+    // Anteilig wie das Kraft-Soll: wer am 20. anfaengt, braucht nicht vier.
+    const anteil = sollKraft ? Math.max(1, Math.round(TOUR_ERSATZ * zaehlt.length / tage.length)) : 0;
+    ziele.push(ziel('neben', einmal(neben), anteil));
+  }
+  const sauber = kraft.filter(l => l.lifts.length && l.lifts.every(e => e.success)).map(l => l.date);
+  ziele.push(ziel('sauber', einmal(sauber), Math.ceil(sollKraft / 2)));
+
+  // Ein Monat ganz in der Pause hat keinen Gegner: nichts zu besiegen, nichts verloren.
+  const pause = sollKraft === 0;
+  const komplett = !pause && ziele.every(z => z.ok);
+  return {
+    monat, ziele, pause, komplett,
+    besiegtAm: komplett ? ziele.map(z => z.am).filter(Boolean).sort().pop() || null : null,
+    laufend: monat === ymd(heute).slice(0, 7)
+  };
+}
+
+/** Alle Monate seit der ersten Einheit, der juengste zuerst. */
+export function monatsTouren(logs = [], config = {}, { fahrten = [], heute = new Date() } = {}) {
+  const erster = ersterGig(logs);
+  if (!erster || !kraftGeplant(config)) return [];
+  const out = [];
+  const bis = ymd(heute).slice(0, 7);
+  for (let d = new Date(Number(erster.date.slice(0, 4)), Number(erster.date.slice(5, 7)) - 1, 1, 12);
+    ymd(d).slice(0, 7) <= bis; d.setMonth(d.getMonth() + 1)) {
+    const t = monatsTour(logs, config, ymd(d).slice(0, 7), { fahrten, heute });
+    if (t) out.push(t);
+  }
+  return out.reverse();
 }

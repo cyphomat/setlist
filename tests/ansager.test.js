@@ -26,6 +26,11 @@ const alles = { rang: 'Support', aufnaeher: ['Tight'], referenz: { name: 'Back S
 eq('Rang vor allem', A.ansage(alles).ruf, 'NEUER RANG');
 eq('Rang: Name darunter', A.ansage(alles).unter, 'Support');
 eq('Rang ist gold', A.ansage(alles).art, 'gold');
+eq('Rang auch vor der Tour', A.ansage({ ...alles, tour: 'Krampus' }).ruf, 'NEUER RANG');
+const tour = A.ansage({ ...alles, rang: null, tour: 'Krampus' });
+eq('dann Tour komplett, vor dem Aufnaeher', tour.ruf, 'TOUR KOMPLETT');
+eq('Tour: Gegner darunter', tour.unter, 'Krampus besiegt');
+eq('Tour ist gold', tour.art, 'gold');
 eq('dann Aufnaeher', A.ansage({ ...alles, rang: null }).ruf, 'NEUER AUFNÄHER');
 eq('dann zurueck auf altem Stand', A.ansage({ ...alles, rang: null, aufnaeher: [] }).ruf, 'WIEDER DA');
 eq('mit Lift und Gewicht', A.ansage({ ...alles, rang: null, aufnaeher: [] }).unter, 'Back Squat: 100 kg wie vor der Pause');
@@ -47,6 +52,7 @@ eq('Rang', A.ansage({ rang: 'Support' }).ruf, 'NEW RANK');
 eq('Aufnaeher', A.ansage({ aufnaeher: ['Tight', 'Encore!'] }).unter, 'Tight and 1 more');
 eq('sauber bleibt FLAWLESS', A.ansage({ sauber: true }).ruf, 'FLAWLESS');
 eq('Unterzeile englisch', A.ansage({ sauber: true }).unter, 'Every set clean');
+eq('Tour englisch', `${A.ansage({ tour: 'Krampus' }).ruf} / ${A.ansage({ tour: 'Krampus' }).unter}`, 'TOUR COMPLETE / Krampus defeated');
 I.setSprache('de');
 
 print('\n--- Schalter ---');
