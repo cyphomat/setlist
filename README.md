@@ -27,12 +27,12 @@
 
 <p align="center">
   <b>1</b> · Ein <b>privates</b> Repo <code>setlist-data</code> anlegen. Leer genügt, das Programm fragt die App beim ersten Start ab.<br>
-  <b>2</b> · Einen <a href="https://github.com/settings/personal-access-tokens/new">Fine-grained Token</a> erzeugen: nur für dieses Repo, <b>Contents → Read and write</b>, sonst nichts (<a href="#selbst-einrichten">ausführlich</a>).<br>
+  <b>2</b> · Einen <a href="https://github.com/settings/personal-access-tokens/new">Fine-grained Token</a> erzeugen: nur für dieses Repo, <b>Contents → Read and write</b>, sonst nichts (<a href="#-selbst-einrichten">ausführlich</a>).<br>
   <b>3</b> · <a href="https://cyphomat.github.io/setlist/">App öffnen</a>, GitHub-Nutzernamen, Repo und Token eintragen. Auf dem Handy: Teilen → <i>Zum Home-Bildschirm</i>.
 </p>
 
 <p align="center">
-  <sub>Deine Trainingsdaten liegen in deinem privaten Repo, Token und Key nur in deinem Browser. Den Code selbst in der Hand haben? <a href="#selbst-einrichten">Forken und eine eigene Fassung betreiben</a>.</sub>
+  <sub>Deine Trainingsdaten liegen in deinem privaten Repo, Token und Key nur in deinem Browser. Den Code selbst in der Hand haben? <a href="#-selbst-einrichten">Forken und eine eigene Fassung betreiben</a>.</sub>
 </p>
 
 > **Zur Sprache.** Die App gibt es auf Deutsch und Englisch — umschaltbar unter **Tour → ⚙ Backstage → App**. Zweisprachig sind die ganze Oberfläche, die Ansage samt Tageswort, Meilensteine, Minierfolge, Aufnäher und Fehlermeldungen. Deutsch bleiben nur die *Übungsinhalte* — Erklärungen, Cues, typische Fehler, Bewegungsstandards — sowie die mitgelieferten Sprüche, die Jam-Bewegungen und die Rad-Begründungen. Das ist Fachtext, der inhaltlich übersetzt werden muss statt Wort für Wort. In deinen Daten steht das Tageswort immer deutsch, damit „Ansage gegen Gefühl“ in beiden Sprachen gleich zählt.
@@ -513,6 +513,6 @@ Nirgends im Code, nirgends im Repo, in keinem Commit. GitHub-Token und intervals
 Setlist ist von [@cyphomat](https://github.com/cyphomat).
 
 - **Fehler gefunden oder einen Wunsch?** Gern als [Issue](https://github.com/cyphomat/setlist/issues) hier im Original-Repo.
-- **Forken und anpassen ist ausdrücklich erwünscht.** Der Quelltext steht unter der [MIT-Lizenz](LICENSE): verwenden, ändern, weitergeben, auch in einer eigenen Fassung. Wie du deine eigene Instanz aufsetzt, steht unter [Selbst einrichten](#selbst-einrichten).
+- **Forken und anpassen ist ausdrücklich erwünscht.** Der Quelltext steht unter der [MIT-Lizenz](LICENSE): verwenden, ändern, weitergeben, auch in einer eigenen Fassung. Wie du deine eigene Instanz aufsetzt, steht unter [Selbst einrichten](#-selbst-einrichten).
 - **Im Fork** zeigt der Quelltext-Link der App (*Backstage → App → Über Setlist*) auf deinen Fork. Feedback geht weiterhin hierher ans Original.
 - **Ohne Gewähr:** Setlist rechnet Gewichte, Pausen und Ansagen nach Faustregeln. Sie ersetzt weder Trainer noch Arzt. Was du an die Stange lädst, entscheidest du.

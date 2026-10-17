@@ -27,12 +27,12 @@
 
 <p align="center">
   <b>1</b> · Create a <b>private</b> repo called <code>setlist-data</code>. Empty is fine; the app asks for your programme on first start.<br>
-  <b>2</b> · Create a <a href="https://github.com/settings/personal-access-tokens/new">fine-grained token</a>: only for that repo, <b>Contents → Read and write</b>, nothing else (<a href="#setting-it-up-yourself">details</a>).<br>
+  <b>2</b> · Create a <a href="https://github.com/settings/personal-access-tokens/new">fine-grained token</a>: only for that repo, <b>Contents → Read and write</b>, nothing else (<a href="#-setting-it-up-yourself">details</a>).<br>
   <b>3</b> · <a href="https://cyphomat.github.io/setlist/">Open the app</a> and enter your GitHub username, the repo and the token. On a phone: Share → <i>Add to Home Screen</i>.
 </p>
 
 <p align="center">
-  <sub>Your training data lives in your private repo, token and key only in your browser. Want the code in your own hands? <a href="#setting-it-up-yourself">Fork it and run your own version</a>.</sub>
+  <sub>Your training data lives in your private repo, token and key only in your browser. Want the code in your own hands? <a href="#-setting-it-up-yourself">Fork it and run your own version</a>.</sub>
 </p>
 
 > **Note on language.** The app comes in German and English — switch it under **Tour → ⚙ Backstage → App**. Bilingual are the whole interface, the daily call including its one word, milestones, small wins, patches and error messages. Only the *exercise content* stays German — explanations, cues, common mistakes, movement standards — along with the built-in sayings, the jam movements and the bike rationales. That is technical text that needs a proper translation rather than a word-for-word one. In your data the day's word is always stored in German, so “call vs. feel” counts the same in both languages.
@@ -508,6 +508,6 @@ Nowhere in the code, nowhere in the repo, in no commit. The GitHub token and the
 Setlist is by [@cyphomat](https://github.com/cyphomat).
 
 - **Found a bug or missing something?** Please open an [issue](https://github.com/cyphomat/setlist/issues) here in the original repo.
-- **Forking and adapting is explicitly welcome.** The source code is under the [MIT License](LICENSE): use it, change it, pass it on, including as your own version. How to run your own instance is described under [Setting it up yourself](#setting-it-up-yourself).
+- **Forking and adapting is explicitly welcome.** The source code is under the [MIT License](LICENSE): use it, change it, pass it on, including as your own version. How to run your own instance is described under [Setting it up yourself](#-setting-it-up-yourself).
 - **In a fork** the app's source link (*Backstage → App → About Setlist*) points to your fork. Feedback still goes here, to the original.
 - **No warranty:** Setlist works out weights, breaks and calls from rules of thumb. It replaces neither a coach nor a doctor. What you load onto the bar is your call.
