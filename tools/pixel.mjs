@@ -1063,7 +1063,14 @@ function banner() {
       }
     }
   };
-  kegel(36, 'd2564e', 0.38); kegel(156, '6f93ad', 0.38);
+  // Scheinwerfer an der Traverse statt Kegeln: helle Punkte mit Hof
+  for (const [x, c] of [[30, 'd2564e'], [58, 'e8a23d'], [134, 'e8a23d'], [162, '6f93ad']]) {
+    for (let y = 3; y < 8; y++) for (let dx = -3; dx <= 3; dx++) {
+      const u = farbe(b, x + dx, y), a = Math.max(0, 0.5 - Math.hypot(dx, y - 3) * 0.12), k = rgba(c);
+      setze(b, x + dx, y, Uint8Array.from([0, 1, 2].map(i => Math.round(k[i] * a + u[i] * (1 - a))).concat([255])));
+    }
+    setze(b, x, 3, rgba('fff3d6')); setze(b, x - 1, 3, rgba(c)); setze(b, x + 1, 3, rgba(c));
+  }
   // Traverse
   for (let x = 0; x < W; x++) { setze(b, x, 1, rgba(x % 4 < 2 ? '8d929a' : '4a4d52')); setze(b, x, 2, rgba('2a2b2f')); }
   // Publikum und Buehnenkante aus der Arena, zweimal nebeneinander
@@ -1076,12 +1083,12 @@ function banner() {
       setze(b, x, y, rgba(rand ? '0a0a0a' : gitter ? '2c2b30' : '1c1b20'));
     }
     for (let x = ox + 3; x < ox + 13; x++) { setze(b, x, 11, rgba('d9d4c7')); setze(b, x, 22, rgba('d9d4c7')); }
-    legeAuf(b, feuerbild(16, 10, 50, ox + 3, 5), ox, 0);
+    legeAuf(b, feuerbild(16, 16, 60, ox + 3, 7), ox, -7);
   };
   stack(6); stack(170);
   // Buehnenkante, davor eine Feuerwand hinter dem Schriftzug
   for (let x = 0; x < W; x++) { setze(b, x, 30, rgba('5a5d63')); setze(b, x, 31, rgba('1c1b20')); }
-  legeAuf(b, feuerbild(140, 22, 60, 5, 6), 26, 9);
+  legeAuf(b, feuerbild(150, 34, 80, 5, 7), 21, -3);
   // Schriftzug, doppelt gross, mittig
   const logo = gross(schriftzug(), 2);
   legeAuf(b, logo, Math.floor((W - logo.w) / 2), 3);
