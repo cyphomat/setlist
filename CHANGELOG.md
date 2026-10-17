@@ -10,6 +10,13 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-17.3
+
+### Behoben
+- **App-Icon: die Scheiben sitzen richtig.** Die großen Scheiben stehen jetzt innen am Bund,
+  die kleinen außen, wie an einer echten Stange. Bisher war es umgekehrt. Dasselbe gilt für
+  das Hantel-Emblem auf den Tourshirts und im README.
+
 ## 2026-10-17.2
 
 ### Neu

@@ -717,17 +717,17 @@ function shirt(stoff, hinten) {
 const DRUCK = { C: rgba('ece3cb'), A: rgba('e0601f') };
 const feld20 = f => { const z = []; for (let y = 0; y < 20; y++) { let r = ''; for (let x = 0; x < 20; x++) r += f(x + .5, y + .5) || '.'; z.push(r); } return z; };
 const EMBLEM = {
-  Barbell: [
-    '..CC............CC..',
-    '.CCCC..........CCCC.',
-    '.CCCC.C......C.CCCC.',
-    '.CCCC.C......C.CCCC.',
-    'ACCCCACAAAAAACACCCCA',
-    'ACCCCACAAAAAACACCCCA',
-    '.CCCC.C......C.CCCC.',
-    '.CCCC.C......C.CCCC.',
-    '.CCCC..........CCCC.',
-    '..CC............CC..'
+  Barbell: [               // grosse Scheiben innen, kleine aussen
+    '....CC........CC....',
+    '...CCCC......CCCC...',
+    '.C.CCCC......CCCC.C.',
+    '.C.CCCC......CCCC.C.',
+    'ACACCCCAAAAAACCCCACA',
+    'ACACCCCAAAAAACCCCACA',
+    '.C.CCCC......CCCC.C.',
+    '.C.CCCC......CCCC.C.',
+    '...CCCC......CCCC...',
+    '....CC........CC....'
   ],
   Plates: feld20((x, y) => {
     const r = Math.hypot(x - 10, y - 10);
@@ -1024,7 +1024,8 @@ function icon() {
   rechteck(0, 12, 31, 15, kontur);                                   // Stange mit Kontur
   rechteck(1, 13, 30, 14, stange);
   for (let x = 1; x <= 30; x++) setze(b, x, 14, stangeD);
-  const scheiben = [[4, 6, 5, 22], [25, 27, 5, 22], [7, 8, 8, 19], [23, 24, 8, 19]];
+  // Wie an der echten Stange: die grossen Scheiben innen am Bund, die kleinen aussen
+  const scheiben = [[7, 9, 5, 22], [22, 24, 5, 22], [4, 5, 8, 19], [26, 27, 8, 19]];
   for (const [x0, x1, y0, y1] of scheiben) rechteck(x0 - 1, y0 - 1, x1 + 1, y1 + 1, kontur);
   for (const [x0, x1, y0, y1] of scheiben) {
     rechteck(x0, y0, x1, y1, platte);
