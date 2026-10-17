@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.svg" alt="Setlist" width="100%">
+  <img src="assets/readme/banner.png" alt="Setlist — Pixel-Bühne mit Stacks, Feuer und Publikum" width="768">
 </p>
 
 <p align="center">
@@ -39,7 +39,7 @@
 
 ---
 
-## So sieht es aus
+## <img src="assets/readme/i-ansehen.png" width="22" height="22" alt=""> So sieht es aus
 
 <table>
 <tr>
@@ -98,6 +98,16 @@
 
 <sub>Echte Bildschirme mit Beispieldaten, aufgenommen über <code>tools/shot.html</code> und <code>tools/shots.mjs</code>. Keine Mockups.</sub>
 
+<p align="center">
+  <img src="assets/readme/raenge.png" alt="Die sieben Ränge als Pixelszenen: Garagenband, Proberaum, Vorband, Support, Headliner, Festival-Headliner, Hall of Fame" width="792">
+  <br><sub>Sieben Ränge, von der Garage bis zur Hall of Fame.</sub>
+</p>
+
+<p align="center">
+  <img src="assets/readme/merch.png" alt="Merch-Regal: vier Tourshirts, Gold und Platin, eine Reihe Aufnäher" width="792">
+  <br><sub>Tourshirts, Gold und Platin, Aufnäher. Alles eigene Pixel-Art aus <code>tools/pixel.mjs</code>, keine fremden Grafiken.</sub>
+</p>
+
 ---
 
 ## Was sie dir sagt
@@ -139,7 +149,7 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 
 ---
 
-## Funktionen
+## <img src="assets/readme/i-funktionen.png" width="22" height="22" alt=""> Funktionen
 
 ### Kraft
 
@@ -239,7 +249,7 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 
 ---
 
-## Selbst einrichten
+## <img src="assets/readme/i-einrichten.png" width="22" height="22" alt=""> Selbst einrichten
 
 **Nur ausprobieren oder einfach benutzen?** Dann reichen die Schritte 2, 4 und 5 mit der
 gehosteten App unter [cyphomat.github.io/setlist](https://cyphomat.github.io/setlist/)
@@ -347,7 +357,7 @@ Fertig. Die erste Einheit legt `state.json` automatisch an; alles danach ist Abl
 
 ---
 
-## Sicherheit und Datenschutz
+## <img src="assets/readme/i-sicherheit.png" width="22" height="22" alt=""> Sicherheit und Datenschutz
 
 Die App ist für eine Person gebaut und soll auch nur für diese Person sichtbar sein.
 Was das konkret heißt:
@@ -383,7 +393,7 @@ Wiederholungen. Abschaltbar unter *Backstage → Verbindungen*.
 
 ---
 
-## Aufbau
+## <img src="assets/readme/i-aufbau.png" width="22" height="22" alt=""> Aufbau
 
 | Datei | Rolle |
 |---|---|
@@ -415,11 +425,11 @@ Wiederholungen. Abschaltbar unter *Backstage → Verbindungen*.
 | `sw.js` | Cacht die App-Hülle. Trainingsdaten bewusst **nicht**. |
 | `tools/tests.mjs` | Führt alle Tests mit Node aus; dasselbe tut die GitHub Action bei jedem Push. |
 | `tools/proben.mjs` | Browserproben: die echte App im Chromium, mit gestellter GitHub-API (optional, Playwright). |
-| `tools/pixel.mjs` | Baut die Pixel-Bögen in `assets/pixel/` aus den Quellbildern in `tools/pixel/`; `--pruefe` läuft in der Action. |
+| `tools/pixel.mjs` | Baut alle Pixel-Grafiken: die Bögen in `assets/pixel/` (aus den Quellbildern in `tools/pixel/`), Schriftzug und App-Icons (`icons/`) und die README-Bilder (`assets/readme/`); `--pruefe` läuft in der Action. |
 
 ---
 
-## Tests
+## <img src="assets/readme/i-tests.png" width="22" height="22" alt=""> Tests
 
 ```sh
 node tools/tests.mjs
@@ -498,7 +508,7 @@ Nirgends im Code, nirgends im Repo, in keinem Commit. GitHub-Token und intervals
 
 ---
 
-## Mitmachen
+## <img src="assets/readme/i-mitmachen.png" width="22" height="22" alt=""> Mitmachen
 
 Setlist ist von [@cyphomat](https://github.com/cyphomat).
 

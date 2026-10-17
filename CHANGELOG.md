@@ -10,6 +10,29 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-17.1
+
+### Geändert
+- **Neues Logo und App-Icon aus der Pixel-Art.**
+  - Der Schriftzug SETLIST ist jetzt Pixel-Blech in Bernstein mit schwarzer Kontur. Er
+    steht im Kopf von Home und Setup, scharf auf doppelter Größe.
+  - Das App-Icon ist eine Pixel-Hantel über einem Pixelfeuer (derselbe Algorithmus wie
+    hinter SCHWER, eingefroren). Es ist ganzzahlig vergrößert und bleibt deshalb auch
+    auf dem Homescreen scharf.
+- **README im Pixel-Stil.**
+  - Das Banner zeigt eine Bühne bei Nacht mit Stacks, Pyro, Feuerwand und Publikum, in
+    der Mitte den Schriftzug.
+  - Die Hauptabschnitte tragen kleine Pixel-Embleme.
+  - Neu sind zwei Bildstreifen: die sieben Rangszenen und das Merch-Regal mit Shirts,
+    Gold und Platin und einer Reihe Aufnäher.
+
+### Werkzeuge
+- `tools/pixel.mjs` baut jetzt alle Pixel-Grafiken, auch Logo, Icons und README-Bilder;
+  `--pruefe` deckt sie in der Action mit ab. `tools/icon-gen.py` und
+  `assets/banner.svg` entfallen.
+- Die Probe `start` prüft Schriftzug und App-Icons.
+- 1796 Tests, 520 Probenprüfungen.
+
 ## 2026-10-16.3
 
 ### Geändert

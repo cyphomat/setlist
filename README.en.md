@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.svg" alt="Setlist" width="100%">
+  <img src="assets/readme/banner.png" alt="Setlist — pixel stage with stacks, fire and crowd" width="768">
 </p>
 
 <p align="center">
@@ -39,7 +39,7 @@
 
 ---
 
-## What it looks like
+## <img src="assets/readme/i-ansehen.png" width="22" height="22" alt=""> What it looks like
 
 <table>
 <tr>
@@ -98,6 +98,16 @@
 
 <sub>Real screens with sample data, captured via <code>tools/shot.html</code> and <code>tools/shots.mjs</code>. Not mockups.</sub>
 
+<p align="center">
+  <img src="assets/readme/raenge.png" alt="The seven ranks as pixel scenes: garage band, rehearsal room, opening act, support act, headliner, festival headliner, Hall of Fame" width="792">
+  <br><sub>Seven ranks, from the garage to the Hall of Fame.</sub>
+</p>
+
+<p align="center">
+  <img src="assets/readme/merch.png" alt="Merch shelf: four tour shirts, gold and platinum, a row of patches" width="792">
+  <br><sub>Tour shirts, gold and platinum, patches. All original pixel art from <code>tools/pixel.mjs</code>, no third-party graphics.</sub>
+</p>
+
 ---
 
 ## What it tells you
@@ -139,7 +149,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 
 ---
 
-## Features
+## <img src="assets/readme/i-funktionen.png" width="22" height="22" alt=""> Features
 
 ### Strength
 
@@ -239,7 +249,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 
 ---
 
-## Setting it up yourself
+## <img src="assets/readme/i-einrichten.png" width="22" height="22" alt=""> Setting it up yourself
 
 **Just want to try it or simply use it?** Steps 2, 4 and 5 with the hosted app at
 [cyphomat.github.io/setlist](https://cyphomat.github.io/setlist/) are all you need (see
@@ -347,7 +357,7 @@ Done. The first session creates `state.json` automatically; everything after tha
 
 ---
 
-## Security and privacy
+## <img src="assets/readme/i-sicherheit.png" width="22" height="22" alt=""> Security and privacy
 
 The app is built for one person and should only be visible to that person. Concretely:
 
@@ -379,7 +389,7 @@ off under *Backstage → Connections*.
 
 ---
 
-## Layout
+## <img src="assets/readme/i-aufbau.png" width="22" height="22" alt=""> Layout
 
 | File | Role |
 |---|---|
@@ -411,11 +421,11 @@ off under *Backstage → Connections*.
 | `sw.js` | Caches the app shell. Deliberately **not** the training data. |
 | `tools/tests.mjs` | Runs every test with Node; the GitHub Action does the same on every push. |
 | `tools/proben.mjs` | Browser probes: the real app in Chromium against a mocked GitHub API (optional, Playwright). |
-| `tools/pixel.mjs` | Builds the pixel sheets in `assets/pixel/` from the sources in `tools/pixel/`; `--pruefe` runs in the Action. |
+| `tools/pixel.mjs` | Builds every pixel graphic: the sheets in `assets/pixel/` (from the sources in `tools/pixel/`), the wordmark and app icons (`icons/`) and the README images (`assets/readme/`); `--pruefe` runs in the Action. |
 
 ---
 
-## Tests
+## <img src="assets/readme/i-tests.png" width="22" height="22" alt=""> Tests
 
 ```sh
 node tools/tests.mjs
@@ -493,7 +503,7 @@ Nowhere in the code, nowhere in the repo, in no commit. The GitHub token and the
 
 ---
 
-## Contributing
+## <img src="assets/readme/i-mitmachen.png" width="22" height="22" alt=""> Contributing
 
 Setlist is by [@cyphomat](https://github.com/cyphomat).
 

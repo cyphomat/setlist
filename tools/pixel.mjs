@@ -1,13 +1,17 @@
-// Baut die Pixel-Grafiken fuer den Merch-Stand: Aufnaeher und Rangszenen.
+// Baut alle Pixel-Grafiken von Setlist.
 //
-//   node tools/pixel.mjs            baut die Bogen neu
-//   node tools/pixel.mjs --pruefe   prueft nur, ob die Bogen zu den Quellen
+//   node tools/pixel.mjs            baut alles neu
+//   node tools/pixel.mjs --pruefe   prueft nur, ob die Bilder zu den Quellen
 //                                   passen (Exit 1 sonst) — laeuft in der Action
 //
-// Quelle sind die Pixelbilder in tools/pixel/ — eigene Pixel-Art, keine
-// fremden Grafiken. Daraus entstehen zwei Bildbogen:
+// Quelle sind die Pixelbilder in tools/pixel/ und die Zeichnungen hier —
+// eigene Pixel-Art, keine fremden Grafiken. Daraus entstehen:
 //   assets/pixel/aufnaeher.png  je 24×24, Reihenfolge wie M.BILDER
 //   assets/pixel/raenge.png     je 96×48, Reihenfolge wie M.RAENGE
+//   assets/pixel/boss.png, shirts.png, embleme.png, platten.png
+//   assets/pixel/logo.png       der Schriftzug fuer die Kopfzeile
+//   icons/icon-*.png            das App-Icon, ganzzahlig vergroessert
+//   assets/readme/*.png         Banner, Streifen und Icons fuers README
 //
 // Ein Aufnaeher ist Rahmen plus Symbol. Die Rahmenform zeigt die Kategorie
 // (Buehne rund, Kraft Raute, Rad eckig, Comeback Wappen, Serie Stern), das
@@ -22,10 +26,10 @@ import { inflateSync, deflateSync } from 'node:zlib';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BILDER, RAENGE, ADJ, NOMEN, PLATTEN } from '../js/merch.js';
+import { feld as feuerFeld, schritt as feuerSchritt, PALETTE as FEUER } from '../js/feuer.js';
 
 const WURZEL = join(dirname(fileURLToPath(import.meta.url)), '..');
 const QUELLE = join(WURZEL, 'tools', 'pixel');
-const ZIEL = join(WURZEL, 'assets', 'pixel');
 
 /* ---------------- PNG (nur 8 Bit RGBA, wie die Quellen) ---------------- */
 
@@ -945,6 +949,216 @@ function award(id) {
   return b;
 }
 
+/* ---------------- Logo, Icon, README ---------------- */
+
+/* Der Schriftzug: Blockbuchstaben, 2 Pixel Strich, 11 hoch. Gefuellt in
+   drei Baendern (hell, Bernstein, Rost) wie verchromtes Blech, mit
+   schwarzer Kontur und einem Schatten nach unten rechts. */
+const BUCHSTABE = {
+  S: ['.SSSSS.', 'SSSSSSS', 'SS...SS', 'SS.....', 'SSSSSS.', '.SSSSSS', '.....SS', '.....SS', 'SS...SS', 'SSSSSSS', '.SSSSS.'],
+  E: ['EEEEEEE', 'EEEEEEE', 'EE.....', 'EE.....', 'EEEEEE.', 'EEEEEE.', 'EE.....', 'EE.....', 'EE.....', 'EEEEEEE', 'EEEEEEE'],
+  T: ['TTTTTTT', 'TTTTTTT', '..TTT..', '..TTT..', '..TTT..', '..TTT..', '..TTT..', '..TTT..', '..TTT..', '..TTT..', '..TTT..'],
+  L: ['LL.....', 'LL.....', 'LL.....', 'LL.....', 'LL.....', 'LL.....', 'LL.....', 'LL.....', 'LL.....', 'LLLLLLL', 'LLLLLLL'],
+  I: ['IIII', 'IIII', '.II.', '.II.', '.II.', '.II.', '.II.', '.II.', '.II.', 'IIII', 'IIII']
+};
+const BLECH = ['ffe2a0', 'f6c56a', 'f6c56a', 'e8a23d', 'e8a23d', 'e8a23d', 'e8a23d', 'd98a30', 'd98a30', 'c8763f', 'b5622e'];
+
+function schriftzug(wort = 'SETLIST') {
+  const zeichen = [...wort].map(c => BUCHSTABE[c]);
+  const breite = zeichen.reduce((s, z) => s + z[0].length, 0) + zeichen.length - 1;
+  const b = leer(breite + 3, 11 + 3);
+  const voll = new Set();
+  let ox = 1;
+  for (const z of zeichen) {
+    z.forEach((zeile, y) => [...zeile].forEach((c, x) => { if (c !== '.') voll.add(`${ox + x},${1 + y}`); }));
+    ox += z[0].length + 1;
+  }
+  const hat = (x, y) => voll.has(`${x},${y}`);
+  const kontur = rgba('0a0a0a'), schatten = rgba('3a1a08');
+  for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) {
+    if (hat(x, y)) { setze(b, x, y, rgba(BLECH[y - 1])); continue; }
+    if (hat(x - 1, y - 1) || hat(x - 2, y - 1) || hat(x - 1, y - 2)) setze(b, x, y, schatten);
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]) {
+      if (hat(x + dx, y + dy)) { setze(b, x, y, kontur); break; }
+    }
+  }
+  return b;
+}
+
+/** Ein ruhiges Feuer: der Algorithmus aus js/feuer.js mit festem Zufall, eingefroren. */
+function feuerbild(w, h, schritte = 60, saat = 7, kuehlung = 3) {
+  let z = saat >>> 0;
+  const zufall = () => { z = (z + 0x6d2b79f5) >>> 0; let t = z; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  const f = feuerFeld(w, h);
+  for (let i = 0; i < schritte; i++) feuerSchritt(f, true, kuehlung, zufall);
+  const b = leer(w, h);
+  for (let i = 0; i < f.px.length; i++) b.px.set(FEUER[f.px[i]], i * 4);
+  return b;
+}
+/** Halbdurchsichtiges auf deckenden Grund legen. */
+function legeAuf(ziel, quelle, dx, dy) {
+  for (let y = 0; y < quelle.h; y++) for (let x = 0; x < quelle.w; x++) {
+    const c = farbe(quelle, x, y), a = c[3] / 255;
+    if (!a) continue;
+    const tx = dx + x, ty = dy + y;
+    if (tx < 0 || ty < 0 || tx >= ziel.w || ty >= ziel.h) continue;
+    const u = farbe(ziel, tx, ty);
+    setze(ziel, tx, ty, Uint8Array.from([0, 1, 2].map(k => Math.round(c[k] * a + u[k] * (1 - a))).concat([255])));
+  }
+}
+/** Nach dem naechsten Nachbarn vergroessern — Pixel bleiben Pixel. */
+function gross(b, f) {
+  const g = leer(b.w * f, b.h * f);
+  for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) setze(g, x, y, farbe(b, Math.floor(x / f), Math.floor(y / f)));
+  return g;
+}
+
+/* Das App-Icon, 32×32: Hantel ueber Pixelfeuer auf dem Grund der App. */
+const ICON_GRUND = '17161b';
+function icon() {
+  const b = leer(32, 32);
+  for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) setze(b, x, y, rgba(ICON_GRUND));
+  legeAuf(b, feuerbild(32, 16, 50, 11, 5), 0, 16);
+  const stange = rgba('d9d4c7'), stangeD = rgba('8d8a84'), platte = rgba('e8a23d'), platteH = rgba('ffd27a'), platteD = rgba('a9621f'), kontur = rgba('0a0a0a');
+  const rechteck = (x0, y0, x1, y1, c) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) setze(b, x, y, c); };
+  rechteck(0, 12, 31, 15, kontur);                                   // Stange mit Kontur
+  rechteck(1, 13, 30, 14, stange);
+  for (let x = 1; x <= 30; x++) setze(b, x, 14, stangeD);
+  const scheiben = [[4, 6, 5, 22], [25, 27, 5, 22], [7, 8, 8, 19], [23, 24, 8, 19]];
+  for (const [x0, x1, y0, y1] of scheiben) rechteck(x0 - 1, y0 - 1, x1 + 1, y1 + 1, kontur);
+  for (const [x0, x1, y0, y1] of scheiben) {
+    rechteck(x0, y0, x1, y1, platte);
+    for (let y = y0; y <= y1; y++) { setze(b, x0, y, platteH); setze(b, x1, y, platteD); }
+    for (let x = x0; x <= x1; x++) setze(b, x, y1, platteD);
+  }
+  return b;
+}
+/** Icon in einer Zielgroesse: ganzzahlig vergroessert, Rest als Rand im Grundton. */
+function iconIn(groesse) {
+  const f = Math.floor(groesse / 32), g = gross(icon(), f);
+  const b = leer(groesse, groesse);
+  for (let y = 0; y < groesse; y++) for (let x = 0; x < groesse; x++) setze(b, x, y, rgba(ICON_GRUND));
+  klebe(b, g, Math.floor((groesse - g.w) / 2), Math.floor((groesse - g.h) / 2));
+  return b;
+}
+
+/* Das README-Banner, 192×48: Buehne bei Nacht, Lichtkegel, Stacks mit
+   Pyro, das Publikum aus der Arena, in der Mitte der Schriftzug. */
+function banner() {
+  const W = 192, H = 48, b = leer(W, H);
+  const arena = szene('arena');
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const t = y / H;
+    setze(b, x, y, Uint8Array.from([12 + 10 * t, 12 + 8 * t, 16 + 10 * t].map(Math.round).concat([255])));
+  }
+  // Lichtkegel von der Traverse
+  const kegel = (cx, farbeH, breite) => {
+    const c = rgba(farbeH);
+    for (let y = 2; y < 34; y++) {
+      const halb = 1 + y * breite;
+      for (let x = Math.floor(cx - halb); x <= cx + halb; x++) {
+        if (x < 0 || x >= W) continue;
+        const u = farbe(b, x, y), a = 0.24 * (1 - y / 40);
+        setze(b, x, y, Uint8Array.from([0, 1, 2].map(k => Math.round(c[k] * a + u[k] * (1 - a))).concat([255])));
+      }
+    }
+  };
+  kegel(36, 'd2564e', 0.38); kegel(156, '6f93ad', 0.38);
+  // Traverse
+  for (let x = 0; x < W; x++) { setze(b, x, 1, rgba(x % 4 < 2 ? '8d929a' : '4a4d52')); setze(b, x, 2, rgba('2a2b2f')); }
+  // Publikum und Buehnenkante aus der Arena, zweimal nebeneinander
+  for (let y = 31; y < H; y++) for (let x = 0; x < W; x++) setze(b, x, y, farbe(arena, (x + 24) % 96, y));
+  // Stacks links und rechts, oben Pyro
+  const stack = ox => {
+    for (let y = 9; y < 31; y++) for (let x = ox; x < ox + 16; x++) {
+      const rand = x === ox || x === ox + 15 || y === 9 || y === 30 || y === 20;
+      const gitter = (x + y) % 2 === 0;
+      setze(b, x, y, rgba(rand ? '0a0a0a' : gitter ? '2c2b30' : '1c1b20'));
+    }
+    for (let x = ox + 3; x < ox + 13; x++) { setze(b, x, 11, rgba('d9d4c7')); setze(b, x, 22, rgba('d9d4c7')); }
+    legeAuf(b, feuerbild(16, 10, 50, ox + 3, 5), ox, 0);
+  };
+  stack(6); stack(170);
+  // Buehnenkante, davor eine Feuerwand hinter dem Schriftzug
+  for (let x = 0; x < W; x++) { setze(b, x, 30, rgba('5a5d63')); setze(b, x, 31, rgba('1c1b20')); }
+  legeAuf(b, feuerbild(140, 22, 60, 5, 6), 26, 9);
+  // Schriftzug, doppelt gross, mittig
+  const logo = gross(schriftzug(), 2);
+  legeAuf(b, logo, Math.floor((W - logo.w) / 2), 3);
+  return b;
+}
+
+/* README-Icons: ein Emblem mit dunkler Kontur, damit es auf hellem und
+   dunklem GitHub gleich gut steht. */
+const SCHLOSS = [
+  '.......CCCCCC.......',
+  '......CC....CC......',
+  '.....CC......CC.....',
+  '.....CC......CC.....',
+  '.....CC......CC.....',
+  '.....CC......CC.....',
+  '...CCCCCCCCCCCCCC...',
+  '...CAAAAAAAAAAAAC...',
+  '...CAAAAACCAAAAAC...',
+  '...CAAAACCCCAAAAC...',
+  '...CAAAAACCAAAAAC...',
+  '...CAAAAACCAAAAAC...',
+  '...CAAAAAAAAAAAAC...',
+  '...CCCCCCCCCCCCCC...'
+];
+function mitKontur(b) {
+  const o = leer(b.w + 2, b.h + 2);
+  klebe(o, b, 1, 1);
+  const k = rgba('0a0a0a');
+  for (let y = 0; y < o.h; y++) for (let x = 0; x < o.w; x++) {
+    if (farbe(o, x, y)[3]) continue;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx, ny = y + dy;
+      if (nx >= 0 && ny >= 0 && nx < o.w && ny < o.h && farbe(o, nx, ny)[3] && hex(farbe(o, nx, ny)) !== '0a0a0a') { setze(o, x, y, k); break; }
+    }
+  }
+  return o;
+}
+function readmeIcon(name) {
+  if (name === 'Schloss') {
+    const b = leer(20, 20);
+    SCHLOSS.forEach((z, y) => [...z].forEach((r, x) => { if (DRUCK[r]) setze(b, x, 3 + y, DRUCK[r]); }));
+    return gross(mitKontur(b), 2);
+  }
+  return gross(mitKontur(emblem(name)), 2);
+}
+const README_ICONS = { ansehen: 'Amplifier', funktionen: 'Barbell', einrichten: 'Hammer', sicherheit: 'Schloss', aufbau: 'Rack', tests: 'Reps', mitmachen: 'Riffs' };
+
+/* Die sieben Rangszenen als Streifen: vier oben, drei unten mittig. */
+function raengeStreifen() {
+  const s = RAENGE.map(r => SZENE[r.id]()), L = 4, W = 4 * 96 + 3 * L, b = leer(W, 2 * 48 + L);
+  s.forEach((bild, i) => {
+    const reihe = i < 4 ? 0 : 1, n = reihe ? 3 : 4, start = Math.floor((W - (n * 96 + (n - 1) * L)) / 2);
+    klebe(b, bild, start + (i - reihe * 4) * (96 + L), reihe * (48 + L));
+  });
+  return gross(b, 2);
+}
+
+/* Das Merch-Regal: vier Shirts mit Emblem, Gold und Platin, eine Reihe Aufnaeher. */
+function merchStreifen() {
+  const L = 4, W = 4 * 96 + 3 * L, b = leer(W, 60 + 8 + 24);
+  const shirts = [['Molten', 'Plates'], ['Electric', 'Voltage'], ['Savage', 'Riffs'], ['Midnight', 'Anvil']];
+  const breite = 4 * 64 + 3 * L + 8 + 2 * 48 + L;
+  let x = Math.floor((W - breite) / 2);
+  for (const [a, n] of shirts) {
+    const s = shirt(STOFF[a], false);
+    klebe(s, emblem(n), 22, 22);
+    klebe(b, s, x, 0); x += 64 + L;
+  }
+  x += 8 - L;
+  for (const id of ['gold', 'platin']) { klebe(b, award(id), x, 0); x += 48 + L; }
+  const zeige = ['debuet', 'gigs-100', 'jam', 'tight', 'platten-squat-3', 'platten-deadlift-4', 'club', 'hangar',
+    'gelenkig-1', 'km-1000', 'century', 'tour-1', 'soundcheck-4', 'serie-52'];
+  const reihe = zeige.length * 24 + (zeige.length - 1) * L;
+  zeige.forEach((id, i) => klebe(b, aufnaeher(id), Math.floor((W - reihe) / 2) + i * (24 + L), 68));
+  return gross(b, 2);
+}
+
 /* ---------------- Bogen schreiben ---------------- */
 
 function bogen(teile, w, h) {
@@ -965,12 +1179,21 @@ function eindeutig(teile, namen) {
 }
 
 const ausgaben = {
-  'aufnaeher.png': bogen(eindeutig(BILDER.map(aufnaeher), BILDER), 24, 24),
-  'boss.png': endgegner(),
-  'shirts.png': bogen(ADJ.flatMap(a => { if (!STOFF[a]) throw new Error(`Kein Stoff fuer ${a}`); return [shirt(STOFF[a], false), shirt(STOFF[a], true)]; }), SHIRT_W, SHIRT_H),
-  'embleme.png': bogen(eindeutig(NOMEN.map(emblem), NOMEN), 20, 20),
-  'platten.png': bogen(PLATTEN.map(p => award(p.id)), AWARD_W, AWARD_H),
-  'raenge.png': bogen(RAENGE.map(r => { const f = SZENE[r.id]; if (!f) throw new Error(`Keine Szene fuer ${r.id}`); return f(); }), 96, 48)
+  'assets/pixel/aufnaeher.png': bogen(eindeutig(BILDER.map(aufnaeher), BILDER), 24, 24),
+  'assets/pixel/boss.png': endgegner(),
+  'assets/pixel/logo.png': schriftzug(),
+  'icons/icon-180.png': iconIn(180),
+  'icons/icon-192.png': iconIn(192),
+  'icons/icon-512.png': iconIn(512),
+  'icons/icon-1024.png': iconIn(1024),
+  'assets/readme/banner.png': gross(banner(), 4),
+  'assets/readme/raenge.png': raengeStreifen(),
+  'assets/readme/merch.png': merchStreifen(),
+  ...Object.fromEntries(Object.entries(README_ICONS).map(([k, n]) => [`assets/readme/i-${k}.png`, readmeIcon(n)])),
+  'assets/pixel/shirts.png': bogen(ADJ.flatMap(a => { if (!STOFF[a]) throw new Error(`Kein Stoff fuer ${a}`); return [shirt(STOFF[a], false), shirt(STOFF[a], true)]; }), SHIRT_W, SHIRT_H),
+  'assets/pixel/embleme.png': bogen(eindeutig(NOMEN.map(emblem), NOMEN), 20, 20),
+  'assets/pixel/platten.png': bogen(PLATTEN.map(p => award(p.id)), AWARD_W, AWARD_H),
+  'assets/pixel/raenge.png': bogen(RAENGE.map(r => { const f = SZENE[r.id]; if (!f) throw new Error(`Keine Szene fuer ${r.id}`); return f(); }), 96, 48)
 };
 
 if (process.argv.includes('--pruefe')) {
@@ -978,7 +1201,7 @@ if (process.argv.includes('--pruefe')) {
   // anders packen, solange dasselbe Bild herauskommt.
   const abweichend = Object.entries(ausgaben).filter(([name, soll]) => {
     try {
-      const ist = lies(join(ZIEL, name));
+      const ist = lies(join(WURZEL, name));
       return ist.w !== soll.w || ist.h !== soll.h || Buffer.compare(Buffer.from(ist.px), Buffer.from(soll.px)) !== 0;
     } catch { return true; }
   }).map(([name]) => name);
@@ -990,11 +1213,14 @@ if (process.argv.includes('--pruefe')) {
   process.exit(0);
 }
 
-mkdirSync(ZIEL, { recursive: true });
-for (const [name, b] of Object.entries(ausgaben)) writeFileSync(join(ZIEL, name), kodiere(b));
+for (const [name, b] of Object.entries(ausgaben)) {
+  mkdirSync(dirname(join(WURZEL, name)), { recursive: true });
+  writeFileSync(join(WURZEL, name), kodiere(b));
+}
 console.log(`assets/pixel/aufnaeher.png  ${BILDER.length} × 24×24, alle verschieden`);
 console.log(`assets/pixel/raenge.png     ${RAENGE.length} × 96×48`);
 console.log('assets/pixel/boss.png       2 × 24×24');
 console.log(`assets/pixel/shirts.png     ${ADJ.length} × 2 × ${SHIRT_W}×${SHIRT_H}`);
 console.log(`assets/pixel/embleme.png    ${NOMEN.length} × 20×20, alle verschieden`);
 console.log(`assets/pixel/platten.png    ${PLATTEN.length} × ${AWARD_W}×${AWARD_H}`);
+console.log('assets/pixel/logo.png, icons/icon-*.png, assets/readme/*.png');

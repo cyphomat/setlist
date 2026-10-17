@@ -46,6 +46,13 @@ export default async function ({ browser, pruefe }) {
             pruefe(`${tag}: keine Ausnahmen`, hinweise.length === 0, hinweise.join(' | '));
             pruefe(`${tag}: Instrumente`, instr.length >= 3, instr.join(' | '));
             pruefe(`${tag}: kein Wendepunkt`, !wende);
+            const logo = await p.$eval('#view-home h1 img.logo', i => ({ alt: i.alt, w: i.naturalWidth, h: i.naturalHeight, breite: i.getBoundingClientRect().width }));
+            pruefe(`${tag}: Pixel-Schriftzug im Kopf, doppelt groß`, logo.alt === 'Setlist' && logo.w === 55 && logo.h === 14 && logo.breite === 110, JSON.stringify(logo));
+            const icons = await p.evaluate(async () => {
+              const m = await (await fetch('manifest.json')).json();
+              return Promise.all(m.icons.map(async ic => { const i = new Image(); i.src = ic.src; await i.decode(); return `${ic.sizes}=${i.naturalWidth}x${i.naturalHeight}`; }));
+            });
+            pruefe(`${tag}: App-Icons in ihrer Größe`, icons.length === 3 && icons.every(x => x.split('=')[0] === x.split('=')[1]), icons.join(' '));
           }
           if (L.name === 'comeback') {
             pruefe(`${tag}: Pause und Finger als Ausnahmen, Schlaf nur in der Ansage`, hinweise.length === 2

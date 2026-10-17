@@ -115,6 +115,10 @@ h1{
   font-family:var(--display);line-height:1.05;
 }
 h1 .glow{color:var(--akzent)}
+/* Der Pixel-Schriftzug (tools/pixel.mjs): doppelt gross, scharf, nie weich. */
+h1.mit-logo{display:flex;align-items:center;gap:.4em;flex:0 0 auto}
+#view-home .head h1.mit-logo{flex:1 0 auto}
+h1 .logo{flex:none;width:110px;height:28px;image-rendering:pixelated}
 /* Ueberschriften als Streifen Gaffa mit Edding drauf: leicht schief
    geklebt, die Enden gerissen. Die Tinte ist auf beiden Themen dunkel. */
 h2{
