@@ -35,6 +35,15 @@
 <section id="view-setup" class="view" hidden>
   <header class="head"><h1 class="mit-logo"><img class="logo" src="assets/pixel/logo.png" alt="Setlist" width="55" height="14"> · setup</h1></header>
   <div class="pad">
+    <h2 data-i18n="setup.start.h">Loslegen</h2>
+    <p class="lead" data-i18n="setup.start.lead">Ohne Konto und ohne Anmeldung: Programm und Einheiten bleiben in diesem Browser.</p>
+    <button id="lokal-start" class="btn" data-i18n="setup.lokal">Lokal starten</button>
+    <button id="setup-einlesen-knopf" class="btn ghost" data-i18n="setup.einlesen">Sicherung einlesen</button>
+    <input id="setup-einlesen" type="file" accept="application/json,.json" hidden>
+    <p class="fine" data-i18n="setup.lokal.fine">Tipp: Auf dem iPhone in Safari über Teilen → Zum Home-Bildschirm installieren. Sonst räumt Safari den Speicher nach sieben Tagen ohne Besuch auf.</p>
+    <details class="info setup-github">
+    <summary data-i18n="setup.github.summary">Oder: mit eigenem GitHub-Datenrepo</summary>
+    <div class="body">
     <h2 data-i18n="setup.github.h">1 · GitHub — deine Daten</h2>
     <p class="lead" data-i18n="setup.github.lead">Damit liest und schreibt die App dein eigenes privates Datenrepo.</p>
     <input id="owner" type="text" data-i18n-ph="setup.owner.ph" placeholder="Dein GitHub-Nutzername" autocomplete="off" autocapitalize="off" spellcheck="false">
@@ -53,6 +62,8 @@
 
     <button id="save-token" class="btn" data-i18n="setup.verbinden">Verbinden</button>
     <p class="fine" data-i18n="setup.fine">Beide Schlüssel bleiben im Speicher dieses Browsers. Sie werden nie ins Repo geschrieben und tauchen in keinem Commit auf.</p>
+    </div>
+    </details>
     <p id="setup-fuss" class="fuss"></p>
   </div>
 </section>
@@ -399,6 +410,11 @@
     </div>
     <p class="fine" data-i18n="ans.hinweis">Große Einblendung nach der Einheit.</p>
     <h2 data-i18n="bs.export">Daten</h2>
+    <div id="daten-box"></div>
+    <button id="sichern" class="btn ghost" data-i18n="daten.sichern">Sicherung herunterladen</button>
+    <button id="einlesen-knopf" class="btn ghost" data-i18n="daten.einlesen">Sicherung einlesen</button>
+    <input id="einlesen" type="file" accept="application/json,.json" hidden>
+    <button id="umzug" class="btn ghost" data-i18n="daten.umzug" hidden>Aufs Gerät umziehen</button>
     <button id="export-csv" class="btn ghost" data-i18n="bs.exportKnopf">Einheiten als CSV</button>
     <p class="fine" data-i18n="bs.exportHinweis">Eine Zeile je Lift, Hilfsübung, Jam, Unplugged, Max-Out und Anpassung.</p>
     <h2 data-i18n="bs.app">App</h2>

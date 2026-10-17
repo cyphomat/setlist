@@ -100,6 +100,39 @@ print('\n--- Ordnername ---');
 eq('Einheiten liegen unter einem unverfaenglichen Pfad', S.LOG_DIR, 'einheiten');
 
 
+print('\n--- Betriebsart ---');
+{
+  const L = await import('../js/lokal.js');
+  L.setzeSpeicher(L.mapSpeicher());
+  speicher.clear();
+  eq('neu: nicht eingerichtet', S.modus(), null);
+  ok('neu: Setup zeigen', !S.istEingerichtet());
+  speicher.set('setlist.token', 'tok');
+  eq('Bestand mit Token: GitHub', S.modus(), 'github');
+  ok('Bestand startet', S.istEingerichtet() && !S.istLokal());
+  speicher.clear();
+  S.setzeModus('lokal');
+  ok('lokal: startet ohne Token', S.istEingerichtet() && S.istLokal());
+  eq('lokal: kein Repo, also nicht oeffentlich', await S.repoOeffentlich(), false);
+  eq('lokal: leere Ablage', await S.readFile('config.json'), null);
+  await S.writeFile('config.json', { bar: 20 }, 'egal');
+  await S.writeFile('einheiten/2026-10-01.json', { date: '2026-10-01' }, 'egal');
+  await S.writeFile('log/2026-01-01.json', { date: '2026-01-01' }, 'egal');
+  await S.writeFile('soundcheck/2026-W40.json', { woche: '2026-W40' }, 'egal');
+  eq('lokal: gelesen', (await S.readFile('config.json')).data.bar, 20);
+  eq('lokal: Einheiten aus beiden Ordnern', (await S.readAllLogs()).map(l => l.date).sort().join(','), '2026-01-01,2026-10-01');
+  eq('lokal: Ordner', (await S.listeOrdner('soundcheck')).map(f => f.path).join(), 'soundcheck/2026-W40.json');
+  eq('lokal: alle Dateien', (await S.alleDateien()).length, 4);
+  S.setzeModus('quatsch');
+  eq('Unsinn setzt zurueck', S.modus(), null);
+  S.setzeModus('lokal');
+  S.alleDatenEntfernen();
+  eq('Abmelden vergisst die Betriebsart', S.modus(), null);
+  await S.lokalLeeren();
+  S.setzeModus('lokal');
+  eq('lokal leeren: Ablage leer', (await S.alleDateien()).length, 0);
+}
+
 print('\n--- Abmelden raeumt auf ---');
 speicher.clear();
 for (const k of ['setlist.token', 'setlist.owner', 'setlist.repo', 'setlist.icu.key', 'setlist.icu.athlete',

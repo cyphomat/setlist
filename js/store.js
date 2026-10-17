@@ -1,7 +1,12 @@
-// GitHub-API als Datenspeicher. Einziger I/O-Layer der App.
-// Schreibt Klartext-JSON ins private Repo — jede Einheit wird ein Commit.
+// Der Datenspeicher der App, einziger I/O-Layer. Zwei Betriebsarten mit
+// denselben Pfaden (config.json, state.json, einheiten/…, soundcheck/…):
+//   lokal   — alles im Browser dieses Geraets (lokal.js), kein Konto
+//   github  — Klartext-JSON im eigenen privaten Repo, jede Einheit ein Commit
+// app.js kennt nur readFile/writeFile/readAllLogs/listeOrdner und merkt
+// vom Unterschied nichts.
 
 import { t } from './i18n.js';
+import * as L from './lokal.js';
 const API = 'https://api.github.com';
 const TOKEN_KEY = 'setlist.token';
 const QUEUE_KEY = 'setlist.queue';
@@ -33,6 +38,21 @@ export function clearRepo() {
 // Tracking-Daten abfliessen. Der Ordner heisst deshalb neutral.
 export const LOG_DIR = 'einheiten';
 
+const MODUS_KEY = 'setlist.modus';
+/** 'lokal', 'github' oder null (noch nicht eingerichtet). Bestand mit Token ist github. */
+export function modus() {
+  const m = localStorage.getItem(MODUS_KEY);
+  if (m === 'lokal' || m === 'github') return m;
+  return getToken() ? 'github' : null;
+}
+export const istLokal = () => modus() === 'lokal';
+export function setzeModus(m) {
+  if (m === 'lokal' || m === 'github') localStorage.setItem(MODUS_KEY, m);
+  else localStorage.removeItem(MODUS_KEY);
+}
+/** Kann die App starten — lokal, oder mit Token fuers Repo? */
+export const istEingerichtet = () => istLokal() || !!getToken();
+
 export function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
 export function setToken(t) { localStorage.setItem(TOKEN_KEY, t.trim()); }
 export function clearToken() { localStorage.removeItem(TOKEN_KEY); }
@@ -54,7 +74,8 @@ async function api(path, options = {}, versuch = 1) {
     res = await fetch(API + path, {
       ...options,
       headers: {
-        Authorization: `Bearer ${getToken()}`,
+        // Ohne Token kein leerer Bearer: GitHub lehnt den ab, auch fuer oeffentliche Dateien.
+        ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}),
         Accept: 'application/vnd.github+json',
         'X-GitHub-Api-Version': '2022-11-28',
         ...(options.headers || {})
@@ -91,6 +112,7 @@ async function api(path, options = {}, versuch = 1) {
  * Leserecht auf die Metadaten). Unbekannt ist nicht dasselbe wie oeffentlich.
  */
 export async function repoOeffentlich() {
+  if (istLokal()) return false;
   try {
     const j = await api(`/repos/${getOwner()}/${getRepo()}`);
     if (!j || typeof j.private !== 'boolean') return null;
@@ -120,6 +142,7 @@ export async function versionImUrsprung(owner, repo) {
 
 /** Datei lesen. Gibt { data, sha } oder null zurueck. */
 export async function readFile(path) {
+  if (istLokal()) return L.lies(path);
   const j = await api(`/repos/${getOwner()}/${getRepo()}/contents/${path}?ref=main`);
   if (!j || !j.content) return null;
   return { data: JSON.parse(b64decode(j.content)), sha: j.sha };
@@ -127,6 +150,7 @@ export async function readFile(path) {
 
 /** Datei schreiben. sha weglassen heisst "neu anlegen". */
 export async function writeFile(path, data, message, sha) {
+  if (istLokal()) return L.schreib(path, data);
   const body = {
     message,
     content: b64encode(JSON.stringify(data, null, 2) + '\n'),
@@ -146,6 +170,7 @@ export async function writeFile(path, data, message, sha) {
  * Der alte Ordnername wird mitgelesen, damit nichts verloren geht.
  */
 export async function readAllLogs() {
+  if (istLokal()) return (await L.alle()).filter(f => istLogPfad(f.path)).map(f => f.data);
   const tree = await api(`/repos/${getOwner()}/${getRepo()}/git/trees/main?recursive=1`);
   if (!tree || !Array.isArray(tree.tree)) return [];
   const dateien = tree.tree.filter(f =>
@@ -162,8 +187,29 @@ export async function readAllLogs() {
   return out;
 }
 
-/** Die Dateien eines Ordners im Datenrepo als [{ path, sha }] — eine Anfrage, ohne Inhalte. */
+const istLogPfad = p => p.endsWith('.json') && (p.startsWith(`${LOG_DIR}/`) || p.startsWith('log/'));
+
+/**
+ * Alle Dateien mit Pfad und Inhalt — fuer Sicherung und Umzug. Im Repo
+ * ueber den Baum und je Datei einen Blob, wie readAllLogs.
+ */
+export async function alleDateien(passt = () => true) {
+  if (istLokal()) return (await L.alle()).filter(f => passt(f.path));
+  const tree = await api(`/repos/${getOwner()}/${getRepo()}/git/trees/main?recursive=1`);
+  if (!tree || !Array.isArray(tree.tree)) return [];
+  const out = [];
+  for (const f of tree.tree.filter(x => x.type === 'blob' && passt(x.path))) {
+    const blob = await api(`/repos/${getOwner()}/${getRepo()}/git/blobs/${f.sha}`);
+    if (!blob || !blob.content) continue;
+    try { out.push({ path: f.path, data: JSON.parse(b64decode(blob.content)) }); }
+    catch { /* kaputte Datei: auslassen */ }
+  }
+  return out;
+}
+
+/** Die Dateien eines Ordners als [{ path, sha }] — eine Anfrage, ohne Inhalte. */
 export async function listeOrdner(ordner) {
+  if (istLokal()) return L.liste(`${ordner}/`);
   const tree = await api(`/repos/${getOwner()}/${getRepo()}/git/trees/main?recursive=1`);
   if (!tree || !Array.isArray(tree.tree)) return [];
   return tree.tree.filter(f => f.type === 'blob' && f.path.startsWith(`${ordner}/`)).map(f => ({ path: f.path, sha: f.sha }));
@@ -210,6 +256,11 @@ export function alleDatenEntfernen() {
   for (const k of weg) localStorage.removeItem(k);
   return weg;
 }
+
+/** Die lokale Ablage leeren (Einheiten, Programm, Soundchecks auf diesem Geraet). */
+export const lokalLeeren = () => L.leeren();
+/** Den Browser um dauerhaften Speicher bitten. */
+export const dauerhaft = () => L.dauerhaft();
 
 /* ---------- Lesecache ----------
    Damit die App auch ohne Netz sofort anzeigt, was heute ansteht.        */

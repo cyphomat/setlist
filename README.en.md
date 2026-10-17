@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1796%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1861%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -26,13 +26,13 @@
 <h3 align="center">Get started → <a href="https://cyphomat.github.io/setlist/">cyphomat.github.io/setlist</a></h3>
 
 <p align="center">
-  <b>1</b> · Create a <b>private</b> repo called <code>setlist-data</code>. Empty is fine; the app asks for your programme on first start.<br>
-  <b>2</b> · Create a <a href="https://github.com/settings/personal-access-tokens/new">fine-grained token</a>: only for that repo, <b>Contents → Read and write</b>, nothing else (<a href="#-setting-it-up-yourself">details</a>).<br>
-  <b>3</b> · <a href="https://cyphomat.github.io/setlist/">Open the app</a> and enter your GitHub username, the repo and the token. On a phone: Share → <i>Add to Home Screen</i>.
+  <b>1</b> · <a href="https://cyphomat.github.io/setlist/">Open the app</a> and tap <b>Start locally</b>. No account, no sign-up; your programme is set up in a minute.<br>
+  <b>2</b> · Add it to your home screen (iPhone: Safari → Share → <i>Add to Home Screen</i>). Then it runs offline and Safari will not clear your data.<br>
+  <b>3</b> · Now and then, download a backup under <i>Backstage → App → Data</i>. That is also how you move to your next device.
 </p>
 
 <p align="center">
-  <sub>Your training data lives in your private repo, token and key only in your browser. Want the code in your own hands? <a href="#-setting-it-up-yourself">Fork it and run your own version</a>.</sub>
+  <sub>Your training data stays in this browser (<a href="#data">more</a>). Prefer your own private GitHub repo, several devices, or the code in your own hands? <a href="#-setting-it-up-yourself">Set it up yourself</a>.</sub>
 </p>
 
 > **Note on language.** The app comes in German and English — switch it under **Tour → ⚙ Backstage → App**. Bilingual are the whole interface, the daily call including its one word, milestones, small wins, patches and error messages. Only the *exercise content* stays German — explanations, cues, common mistakes, movement standards — along with the built-in sayings, the jam movements and the bike rationales. That is technical text that needs a proper translation rather than a word-for-word one. In your data the day's word is always stored in German, so “call vs. feel” counts the same in both languages.
@@ -251,10 +251,11 @@ Back squat is in both workouts and therefore climbs twice as fast.
 
 ## <img src="assets/readme/i-einrichten.png" width="22" height="22" alt=""> Setting it up yourself
 
-**Just want to try it or simply use it?** Steps 2, 4 and 5 with the hosted app at
-[cyphomat.github.io/setlist](https://cyphomat.github.io/setlist/) are all you need (see
-*Get started* at the top). Fork and Pages (steps 1, 3 and 6) are only for your own,
-independent version whose code you control.
+**Just want to try it or simply use it?** Then you need none of this: open the app, *Start
+locally* (see *Get started* at the top and [Data](#data)). Your own data repo (steps 2, 4 and 5
+with the hosted app at [cyphomat.github.io/setlist](https://cyphomat.github.io/setlist/)) is
+worth it if you want the same state on several devices. Fork and Pages (steps 1, 3 and 6)
+are only for your own, independent version whose code you control.
 
 Setlist is built for exactly one person — you. There is no multi-account login; whoever uses the app is whoever's `setlist-data` repo is configured. To get your own independent instance you need a GitHub account and about ten minutes.
 
@@ -357,11 +358,42 @@ Done. The first session creates `state.json` automatically; everything after tha
 
 ---
 
+## Data
+
+**Without an account, everything stays on the device.** If you begin with *Start locally*,
+your programme, sessions, soundchecks and notes live in this browser (IndexedDB). There is
+no account and no server, and nothing leaves the device unless you connect intervals.icu. The
+app asks the browser to keep the storage persistent. On iPhone this only holds for the
+installed app, though: Safari clears the storage of ordinary websites after seven days
+without a visit. So: *Add to Home Screen*.
+
+**Backup and restore.** Under *Backstage → App → Data* you download a backup as a JSON file
+(`setlist-sicherung-YYYY-MM-DD.json`) and restore it on another device or after deleting.
+Restoring **adds instead of replacing**: sessions are immutable, so the union of both sides
+is the right answer. The same session never arrives twice, and the app shows how much is new
+first. A different programme in the file is only taken over after asking. The state (working
+weights, A/B) is then recomputed from all sessions. If sessions have piled up since the last
+backup and it is two weeks old, the week header reminds you.
+
+**Or with your own GitHub data repo.** If you want Setlist on several devices with the same
+state, connect a private repo in setup (see [Setting it up yourself](#-setting-it-up-yourself)).
+Every session then lives as a file in the repo. If you started that way and would rather
+continue without an account: *Data → Move to this device* brings everything from the repo
+onto this device and disconnects GitHub. Everything stays in the repo. A two-way sync like
+Riffforge's comes later.
+
+**Delete means delete.** In local mode the button is called *Delete everything*. It names
+the number of sessions, and without a backup nothing is left afterwards.
+
+---
+
 ## <img src="assets/readme/i-sicherheit.png" width="22" height="22" alt=""> Security and privacy
 
 The app is built for one person and should only be visible to that person. Concretely:
 
-**Your data lives in your private repo.** The app only ever reads and writes
+**Your data lives on your device or in your private repo.** Locally, everything stays in this
+browser's IndexedDB. It is tied to the address; under `cyphomat.github.io`, however, all pages
+of that account share the same storage area. With a data repo the app only ever reads and writes
 `setlist-data` — sessions, body weight, notes, the injury report (that is, health information) and the names of your gyms. The app code itself (this repo) is public
 but holds no data. On start the app checks your data repo's visibility and **warns loudly
 if it is public** — otherwise you would never notice, because the app works just the same.
@@ -370,11 +402,11 @@ if it is public** — otherwise you would never notice, because the app works ju
 intervals.icu key live in `localStorage` and are only ever sent as an `Authorization`
 header — never in a URL, never in a commit, never in an error message.
 
-**Three external destinations, no others.** `api.github.com` for your data,
+**Three external destinations, no others.** `api.github.com` for your data (only with a data repo),
 `intervals.icu` for bike and form, a YouTube *search link* in the library (no referrer).
 No analytics, no CDN, no fonts from third-party servers.
 
-**Signing out clears the device.** *Backstage → App → Remove credentials* deletes the token, the key **and** all cached data from the browser — sessions, injury report, weight, sleep, rides. Only settings such as theme and text size remain. If unsent sessions are still queued, the confirmation says so first.
+**Signing out clears the device.** Locally the button is called *Delete everything* (see [Data](#data)). With a data repo, *Backstage → App → Remove credentials* deletes the token, the key **and** all cached data from the browser — sessions, injury report, weight, sleep, rides. Only settings such as theme and text size remain. If unsent sessions are still queued, the confirmation says so first.
 
 **Not inside other pages.** If another site loads the app in a frame, it shows a notice and does not start — so nobody can slip clicks under you. GitHub Pages cannot do this with a header, so `js/boot.js` handles it before the first paint.
 
@@ -415,7 +447,9 @@ off under *Backstage → Connections*.
 | `js/ansager.js` | Decides what gets called out after a session. |
 | `js/soundcheck.js` | Weekly soundcheck: calendar weeks, when it is due, streak, cleaning up the input. |
 | `js/boot.js` | Theme, storage migration and the frame block before first paint. |
-| `js/store.js` | GitHub API as storage, offline buffer. |
+| `js/store.js` | Storage: locally in the browser or in the GitHub repo, same paths; offline buffer. |
+| `js/lokal.js` | Local storage: files in IndexedDB. |
+| `js/sicherung.js` | Backup and restore as a JSON file, union instead of replace. |
 | `js/intervals.js` | Reads rides and form; writes strength sessions back. |
 | `js/app.js` | Interface and flow. |
 | `sw.js` | Caches the app shell. Deliberately **not** the training data. |
@@ -441,7 +475,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-1796 tests in 24 files. No build, no dependencies.
+1861 tests in 26 files. No build, no dependencies.
 
 ### Browser probes (optional)
 
@@ -449,7 +483,7 @@ The tests check the maths; the probes check what you see. They open the real app
 Chromium against a mocked GitHub API, a mocked intervals.icu and a frozen date:
 
 ```sh
-node tools/proben.mjs                 # all: start, einheit, tour, merch, buehne, bibliothek, rueckschau, sicherheit, englisch, ueber
+node tools/proben.mjs                 # all: start, einheit, tour, merch, buehne, bibliothek, rueckschau, lokal, sicherheit, englisch, ueber
 node tools/proben.mjs start merch     # just these
 node tools/proben.mjs -v              # also list every passing check
 ```

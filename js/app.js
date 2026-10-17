@@ -21,6 +21,7 @@ import * as X from './export.js';
 import * as F from './feuer.js';
 import * as ANS from './ansager.js';
 import * as SC from './soundcheck.js';
+import * as SI from './sicherung.js';
 
 // Eingebettet in eine fremde Seite (siehe boot.js) startet die App gar nicht
 // erst — kein Laden, kein Token-Gebrauch. Der throw beendet das Modul hier.
@@ -294,7 +295,7 @@ function renderConnections() {
   const n = icu.anzahl;
   const push = ICU.pushAktiv();
   box.innerHTML =
-    zeile('GitHub', gh[0], gh[1]) +
+    (S.istLokal() ? zeile(t('conn.lokal.name'), 'ok', t('conn.lokal')) : zeile('GitHub', gh[0], gh[1])) +
     zeile('intervals.icu', icu.stand === 'laedt' ? 'aus' : (icu.stand === 'ok' ? 'ok' : icu.stand),
       icu.stand === 'ok'
         ? `${t(n === 1 ? 'conn.icu.ok' : 'conn.icu.ok.mehr', { n })}${icu.letzte ? t('conn.icu.zuletzt', { datum: icu.letzte.date }) : ''}.`
@@ -377,7 +378,7 @@ function renderAmp() {
   if (!box || !config || !state) return;
   const logs = alleLogs.length ? alleLogs : ((S.cachedLogs() || {}).logs || []);
   const v = M.verstaerker(logs, config, new Date(), state.history || []);
-  if (!v) { box.innerHTML = `<div class="woche-kopf">${serienZeile()}</div>${soundcheckZeile()}`; bindeSoundcheck(); return; }
+  if (!v) { box.innerHTML = `<div class="woche-kopf">${serienZeile()}</div>${soundcheckZeile()}${sicherungZeile(logs)}`; bindeSoundcheck(); return; }
   const punkt = (grad, r) => {
     const a = grad * Math.PI / 180;
     return [Math.round(Math.sin(a) * r * 100) / 100, Math.round(-Math.cos(a) * r * 100) / 100];
@@ -402,7 +403,7 @@ function renderAmp() {
         ${serienZeile()}
         ${tourZeile(logs)}
       </div>
-    </div>${soundcheckZeile()}`;
+    </div>${soundcheckZeile()}${sicherungZeile(logs)}`;
   bindeSoundcheck();
 }
 
@@ -1374,6 +1375,7 @@ $('save-token').onclick = async () => {
   if (!tok) return banner(t('msg.tokenFehlt'), 'err');
   S.setRepo(owner, $('repo').value.trim());
   S.setToken(tok);
+  S.setzeModus('github');
   const k = $('icukey').value.trim();
   if (k) {
     ICU.setCreds('', k);
@@ -1429,6 +1431,27 @@ $('export-csv').onclick = exportiereCsv;
  * von eben drin ist; ohne Netz aus dem Zwischenspeicher. Die Datei
  * entsteht im Browser und geht an keinen Dienst.
  */
+/**
+ * Eine Datei herausgeben. Als Home-Bildschirm-App auf iOS verpuffen
+ * Download-Links; dort fuehrt das Teilen-Blatt zu "In Dateien sichern".
+ * Gibt false zurueck, wenn das Teilen abgebrochen wurde.
+ */
+async function gibDatei(text, datei, typ) {
+  const blob = new Blob([text], { type: `${typ};charset=utf-8` });
+  const file = typeof File === 'function' ? new File([blob], datei, { type: typ }) : null;
+  if (navigator.standalone === true && file && navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: datei }); }
+    catch (e) { if (e && e.name !== 'AbortError') throw e; return false; }
+    return true;
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = datei; a.rel = 'noopener';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  return true;
+}
+
 async function exportiereCsv() {
   const knopf = $('export-csv');
   knopf.disabled = true;
@@ -1441,21 +1464,7 @@ async function exportiereCsv() {
       name: (art, id) => art === 'mobility' ? mobilityName(id) : t(art === 'hilfs' ? `hilfs.${id}` : `chk.${id}`),
       kopf: Object.fromEntries(X.SPALTEN.map(sp => [sp, t(`exp.sp.${sp}`)]))
     });
-    const datei = X.dateiname(new Date());
-    const blob = new Blob([text], { type: 'text/csv;charset=utf-8' });
-    // Als Home-Bildschirm-App auf iOS verpuffen Download-Links; dort
-    // fuehrt das Teilen-Blatt zu "In Dateien sichern".
-    const file = typeof File === 'function' ? new File([blob], datei, { type: 'text/csv' }) : null;
-    if (navigator.standalone === true && file && navigator.canShare && navigator.canShare({ files: [file] })) {
-      try { await navigator.share({ files: [file], title: datei }); }
-      catch (e) { if (e && e.name !== 'AbortError') throw e; return; }
-    } else {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = datei; a.rel = 'noopener';
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 10000);
-    }
+    if (!(await gibDatei(text, X.dateiname(new Date()), 'text/csv'))) return;
     banner(t('exp.fertig', { n: X.zeilen(logs, config).length }), 'ok');
   } catch (e) {
     banner(t('exp.fehler', { msg: e.message }), 'err', 5000);
@@ -1463,13 +1472,21 @@ async function exportiereCsv() {
     knopf.disabled = false;
   }
 }
-$('logout').onclick = () => {
-  // Ungesendete Einheiten gingen dabei verloren — das muss man vorher wissen.
-  // (Die Warteschlange nach intervals.icu zaehlt nicht: diese Einheiten
-  // liegen schon im Repo, es fehlt nur die Kopie dort.)
-  const frage = t('bs.logoutFrage') + (S.pending().length
-    ? `\n\n${tn('bs.logoutOffen', S.pending().length)}` : '');
-  if (!confirm(frage)) return;
+$('logout').onclick = async () => {
+  // Lokal ist das kein Abmelden, sondern Loeschen — ohne Sicherung endgueltig.
+  if (S.istLokal()) {
+    let n = geladeneLogs().length;
+    try { n = (await S.readAllLogs()).length; } catch { /* dann die bekannte Zahl */ }
+    if (!confirm(t('daten.loeschenFrage', { n }))) return;
+  } else {
+    // Ungesendete Einheiten gingen dabei verloren — das muss man vorher wissen.
+    // (Die Warteschlange nach intervals.icu zaehlt nicht: diese Einheiten
+    // liegen schon im Repo, es fehlt nur die Kopie dort.)
+    const frage = t('bs.logoutFrage') + (S.pending().length
+      ? `\n\n${tn('bs.logoutOffen', S.pending().length)}` : '');
+    if (!confirm(frage)) return;
+  }
+  try { await S.lokalLeeren(); } catch { /* nichts lokal */ }
   S.alleDatenEntfernen();
   location.reload();
 };
@@ -1608,7 +1625,7 @@ window.addEventListener('online', flushQueue);
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 
 pruefeVersion();
-if (S.getToken()) {
+if (S.istEingerichtet()) {
   show('home');
   $('today').innerHTML = `<div class="kicker">${t('home.verbinde')}</div><div class="name neon">···</div>`;
   load();
@@ -4595,6 +4612,8 @@ function soundcheckZeile() {
 function bindeSoundcheck() {
   const b = $('go-soundcheck');
   if (b) b.onclick = () => zeigeSoundcheck(b.dataset.woche);
+  const s = $('go-sichern');
+  if (s) s.onclick = sichere;
 }
 
 function zeigeSoundcheck(key) {
@@ -4680,6 +4699,132 @@ function renderSoundcheckArchiv() {
     </div>` : '').join('') || `<p class="fine">${escHtml(t('sc.leer'))}</p>`;
   });
 }
+
+/* ============================ Daten: lokal, Sicherung, Umzug ============================
+   Ohne Konto liegt alles im Browser (lokal.js); eine Sicherung als Datei
+   nimmt den Stand mit (sicherung.js). Wer mit GitHub angefangen hat,
+   zieht per Knopf aufs Geraet um — im Repo bleibt alles liegen.        */
+const GESICHERT_KEY = 'setlist.gesichert';
+const letzteSicherung = () => { try { return localStorage.getItem(GESICHERT_KEY); } catch { return null; } };
+
+function renderDaten() {
+  const box = $('daten-box');
+  if (!box) return;
+  const zuletzt = letzteSicherung();
+  box.innerHTML = `<p class="fine" style="margin-top:0">${escHtml(S.istLokal() ? t('daten.lokal') : t('daten.github', { repo: `${S.getOwner()}/${S.getRepo()}` }))}
+    ${escHtml(zuletzt ? t('daten.zuletzt', { datum: datumLang(zuletzt.slice(0, 10)) }) : t('daten.nie'))}</p>`;
+  $('umzug').hidden = S.istLokal();
+  $('logout').textContent = t(S.istLokal() ? 'daten.loeschen' : 'bs.logout');
+}
+
+/** Faellig: ein Knopf im Wochenkopf, wie beim Soundcheck. */
+function sicherungZeile(logs) {
+  const neueste = logs.reduce((m, l) => (l && l.date > m ? l.date : m), '');
+  if (!SI.sicherungFaellig({ lokal: S.istLokal(), letzte: letzteSicherung(), neuesteEinheit: neueste || null })) return '';
+  return `<button type="button" class="sc-faellig" id="go-sichern">${escHtml(t('daten.faellig'))} →</button>`;
+}
+
+async function sichere() {
+  const knopf = $('sichern');
+  if (knopf) knopf.disabled = true;
+  try {
+    banner(t('daten.sammle'), '', 0);
+    const dateien = await S.alleDateien(SI.erlaubt);
+    const paket = SI.paket(dateien);
+    if (!(await gibDatei(JSON.stringify(paket, null, 2), SI.dateiname(new Date()), 'application/json'))) return;
+    try { localStorage.setItem(GESICHERT_KEY, new Date().toISOString()); } catch { /* egal */ }
+    banner(t('daten.gesichert', { n: dateien.filter(f => SI.istLog(f.path)).length }), 'ok');
+    renderDaten();
+    renderAmp();
+  } catch (e) {
+    banner(e.message, 'err', 8000);
+  } finally {
+    if (knopf) knopf.disabled = false;
+  }
+}
+
+/** Den Zustand aus allen Einheiten neu ableiten und ablegen — nach Einlesen und Umzug. */
+async function zustandAusLogs() {
+  const c = await S.readFile('config.json');
+  if (!c) return;
+  const logs = await S.readAllLogs();
+  const neu = P.deriveState(c.data, logs);
+  const cur = await S.readFile('state.json');
+  await S.writeFile('state.json', neu, `Neuberechnung aus ${logs.length} Einheiten`, cur ? cur.sha : null);
+  alleLogs = logs;
+  S.cacheLogs(logs);
+}
+
+async function liesSicherung(datei, ausSetup = false) {
+  if (!datei) return;
+  let json;
+  try { json = JSON.parse(await datei.text()); }
+  catch { banner(t('daten.kaputt'), 'err', 6000); return; }
+  const g = SI.pruefe(json);
+  if (!g.ok) { banner(t(`daten.fehler.${g.fehler}`), 'err', 8000); return; }
+  if (ausSetup) { S.setzeModus('lokal'); S.dauerhaft(); }
+  try {
+    const hier = await S.alleDateien(SI.erlaubt);
+    const z = SI.zusammenfuehren(hier, g.dateien);
+    if (!z.schreiben.length && !z.ersetzbar.length) {
+      banner(t('daten.nichtsNeu'), 'ok');
+      if (ausSetup) { show('home'); load(); }
+      return;
+    }
+    if (hier.length && z.schreiben.length && !confirm(t('daten.vorschau', { e: z.einheiten, s: z.soundchecks, g: z.gleich }))) return;
+    const ersetzen = z.ersetzbar.filter(f => confirm(t('daten.ersetzen', { was: t(`daten.datei.${f.path}`) })));
+    banner(t('daten.liest'), '', 0);
+    for (const f of z.schreiben.concat(ersetzen)) {
+      const cur = S.istLokal() ? null : await S.readFile(f.path);
+      await S.writeFile(f.path, f.data, `Aus Sicherung: ${f.path}`, cur ? cur.sha : undefined);
+    }
+    await zustandAusLogs();
+    banner(t('daten.eingelesen', { e: z.einheiten, s: z.soundchecks }), 'ok');
+    show('home');
+    load();
+  } catch (e) {
+    banner(e.message, 'err', 8000);
+  }
+}
+
+async function umziehen() {
+  if (S.istLokal()) return;
+  if (!confirm(t('daten.umzugFrage', { repo: `${S.getOwner()}/${S.getRepo()}` }))) return;
+  const knopf = $('umzug');
+  knopf.disabled = true;
+  banner(t('daten.umzugLaeuft'), '', 0);
+  let dateien;
+  try { dateien = await S.alleDateien(SI.erlaubt); }
+  catch (e) { knopf.disabled = false; banner(e.message, 'err', 8000); return; }
+  try {
+    await S.lokalLeeren();
+    S.setzeModus('lokal');
+    // Ueber die Vereinigung, damit alte log/-Pfade sauber unter einheiten/ landen.
+    for (const f of SI.zusammenfuehren([], dateien).schreiben) await S.writeFile(f.path, f.data);
+    await zustandAusLogs();
+    S.dauerhaft();
+    S.clearToken();
+    S.clearRepo();
+    location.reload();
+  } catch (e) {
+    S.setzeModus('github');
+    knopf.disabled = false;
+    banner(e.message, 'err', 8000);
+  }
+}
+
+$('lokal-start').onclick = () => {
+  S.setzeModus('lokal');
+  S.dauerhaft();
+  show('home');
+  load();
+};
+$('setup-einlesen-knopf').onclick = () => $('setup-einlesen').click();
+$('setup-einlesen').onchange = e => { liesSicherung(e.target.files[0], true); e.target.value = ''; };
+$('einlesen-knopf').onclick = () => $('einlesen').click();
+$('einlesen').onchange = e => { liesSicherung(e.target.files[0]); e.target.value = ''; };
+$('sichern').onclick = sichere;
+$('umzug').onclick = umziehen;
 
 /* ============================ Tourshirts ============================
    Ein Bandshirt je Quartal, Pixel-Art aus tools/pixel.mjs: der Stoff kommt
@@ -4972,6 +5117,7 @@ function zeigeBackstage() {
   waehleReiter('bs', gemerkterReiter('bs', 'persoenlich'));
   renderVersion();
   renderConnections();
+  renderDaten();
   renderGymVerwaltung();
   renderPersoenlich();
 }

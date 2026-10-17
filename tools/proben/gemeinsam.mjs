@@ -176,8 +176,13 @@ export async function kontext(browser, { logs, config, heute, breite = 390, hoeh
       return extra().has(path) ? j({ content: b64(extra().get(path)), sha: 'x1' }) : r.fulfill({ status: 404, body: '' });
     }
     if (u.includes('git/trees'))
-      return j({ tree: alle().map((l, i) => ({ path: `einheiten/${l.date}-${i}.json`, type: 'blob', sha: `s${i}` }))
+      return j({ tree: [{ path: 'config.json', type: 'blob', sha: 'cfg' }, { path: 'state.json', type: 'blob', sha: 'st' }]
+        .concat(alle().map((l, i) => ({ path: `einheiten/${l.date}-${i}.json`, type: 'blob', sha: `s${i}` })))
         .concat([...extra().keys()].map((path, i) => ({ path, type: 'blob', sha: `x${i}` }))) });
+    if (u.endsWith('git/blobs/cfg')) return j({ content: b64(config), encoding: 'base64' });
+    if (u.endsWith('git/blobs/st')) return j({ content: b64(state), encoding: 'base64' });
+    const xblob = u.match(/git\/blobs\/x(\d+)$/);
+    if (xblob) { const e = [...extra().values()][+xblob[1]]; if (e) return j({ content: b64(e), encoding: 'base64' }); }
     const blob = u.match(/git\/blobs\/s(\d+)/);
     if (blob && alle()[+blob[1]]) return j({ content: b64(alle()[+blob[1]]), encoding: 'base64' });
     if (/\/repos\/[^/]+\/[^/]+$/.test(new URL(u).pathname)) return j({ private: true });

@@ -10,6 +10,39 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-17.2
+
+### Neu
+- **Setlist ohne GitHub.** Im Setup steht jetzt zuerst **Lokal starten**: kein Konto,
+  kein Token, kein Repo.
+  - Programm, Einheiten, Soundchecks und Notizen liegen in der IndexedDB dieses Browsers,
+    mit denselben Pfaden wie im Datenrepo.
+  - Die App bittet den Browser, den Speicher dauerhaft zu halten. Der Tipp „Zum
+    Home-Bildschirm“ steht gleich dabei, weil Safari sonst nach sieben Tagen aufräumt.
+- **Sichern und Einlesen** unter *Backstage → App → Daten*, auch im Setup:
+  - Die Sicherung ist eine JSON-Datei mit allen Dateien außer `state.json`.
+  - Einlesen legt dazu statt zu ersetzen. Dieselbe Einheit kommt nicht doppelt, und ein
+    anderes Programm wird nur nach Rückfrage übernommen.
+  - Der Zustand wird danach aus allen Einheiten neu berechnet.
+  - Im lokalen Modus erinnert der Wochenkopf an eine Sicherung, wenn die letzte zwei
+    Wochen her ist und seitdem trainiert wurde.
+- **Aufs Gerät umziehen.** Wer mit Datenrepo trainiert, holt mit einem Knopf alles auf
+  dieses Gerät und trennt GitHub. Im Repo bleibt alles liegen.
+
+### Geändert
+- Die GitHub-Betriebsart bleibt unverändert, im Setup eingeklappt unter „Oder: mit eigenem
+  GitHub-Datenrepo“.
+- Im lokalen Modus heißt „Zugänge entfernen“ **Alles löschen**. Die Rückfrage nennt die
+  Zahl der Einheiten.
+- Anfragen an GitHub ohne Token schicken keinen leeren `Authorization`-Header mehr.
+
+### Werkzeuge
+- Neu: `js/lokal.js`, `js/sicherung.js` und die Probe `lokal`. Sie prüft, dass im lokalen
+  Modus keine einzige Anfrage an GitHub geht.
+- Die GitHub-Attrappe der Proben liefert jetzt auch `config.json` und `state.json` im
+  Dateibaum.
+- 1861 Tests, 558 Probenprüfungen.
+
 ## 2026-10-17.1
 
 ### Geändert

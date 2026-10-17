@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="App öffnen" src="https://img.shields.io/badge/App-öffnen-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1796%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1861%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-keiner-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Abhängigkeiten" src="https://img.shields.io/badge/Abhängigkeiten-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="Lizenz: MIT" src="https://img.shields.io/badge/Lizenz-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -26,13 +26,13 @@
 <h3 align="center">Loslegen → <a href="https://cyphomat.github.io/setlist/">cyphomat.github.io/setlist</a></h3>
 
 <p align="center">
-  <b>1</b> · Ein <b>privates</b> Repo <code>setlist-data</code> anlegen. Leer genügt, das Programm fragt die App beim ersten Start ab.<br>
-  <b>2</b> · Einen <a href="https://github.com/settings/personal-access-tokens/new">Fine-grained Token</a> erzeugen: nur für dieses Repo, <b>Contents → Read and write</b>, sonst nichts (<a href="#-selbst-einrichten">ausführlich</a>).<br>
-  <b>3</b> · <a href="https://cyphomat.github.io/setlist/">App öffnen</a>, GitHub-Nutzernamen, Repo und Token eintragen. Auf dem Handy: Teilen → <i>Zum Home-Bildschirm</i>.
+  <b>1</b> · <a href="https://cyphomat.github.io/setlist/">App öffnen</a> und <b>Lokal starten</b>. Kein Konto, keine Anmeldung; das Programm ist in einer Minute angelegt.<br>
+  <b>2</b> · Auf den Home-Bildschirm legen (iPhone: Safari → Teilen → <i>Zum Home-Bildschirm</i>). Dann läuft sie offline, und Safari räumt deine Daten nicht weg.<br>
+  <b>3</b> · Ab und zu unter <i>Backstage → App → Daten</i> eine Sicherung herunterladen. Damit ziehst du auch aufs nächste Gerät um.
 </p>
 
 <p align="center">
-  <sub>Deine Trainingsdaten liegen in deinem privaten Repo, Token und Key nur in deinem Browser. Den Code selbst in der Hand haben? <a href="#-selbst-einrichten">Forken und eine eigene Fassung betreiben</a>.</sub>
+  <sub>Deine Trainingsdaten bleiben in diesem Browser (<a href="#daten">mehr dazu</a>). Lieber in einem eigenen privaten GitHub-Repo, auf mehreren Geräten, oder den Code selbst in der Hand? <a href="#-selbst-einrichten">Selbst einrichten</a>.</sub>
 </p>
 
 > **Zur Sprache.** Die App gibt es auf Deutsch und Englisch — umschaltbar unter **Tour → ⚙ Backstage → App**. Zweisprachig sind die ganze Oberfläche, die Ansage samt Tageswort, Meilensteine, Minierfolge, Aufnäher und Fehlermeldungen. Deutsch bleiben nur die *Übungsinhalte* — Erklärungen, Cues, typische Fehler, Bewegungsstandards — sowie die mitgelieferten Sprüche, die Jam-Bewegungen und die Rad-Begründungen. Das ist Fachtext, der inhaltlich übersetzt werden muss statt Wort für Wort. In deinen Daten steht das Tageswort immer deutsch, damit „Ansage gegen Gefühl“ in beiden Sprachen gleich zählt.
@@ -251,10 +251,12 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 
 ## <img src="assets/readme/i-einrichten.png" width="22" height="22" alt=""> Selbst einrichten
 
-**Nur ausprobieren oder einfach benutzen?** Dann reichen die Schritte 2, 4 und 5 mit der
-gehosteten App unter [cyphomat.github.io/setlist](https://cyphomat.github.io/setlist/)
-(siehe *Loslegen* oben). Fork und Pages (Schritte 1, 3 und 6) brauchst du nur für eine
-eigene, unabhängige Fassung, deren Code du selbst in der Hand hast.
+**Nur ausprobieren oder einfach benutzen?** Dann brauchst du nichts davon: App öffnen,
+*Lokal starten* (siehe *Loslegen* oben und [Daten](#daten)). Ein eigenes Datenrepo (Schritte 2,
+4 und 5 mit der gehosteten App unter [cyphomat.github.io/setlist](https://cyphomat.github.io/setlist/))
+lohnt sich, wenn du denselben Stand auf mehreren Geräten willst. Fork und Pages (Schritte 1,
+3 und 6) brauchst du nur für eine eigene, unabhängige Fassung, deren Code du selbst in der
+Hand hast.
 
 Setlist ist für genau eine Person gebaut — dich. Es gibt keinen Login mit mehreren Konten; wer die App benutzt, ist der oder die, dessen `setlist-data`-Repo hinterlegt ist. Um eine eigene, unabhängige Instanz zu bekommen, brauchst du ein GitHub-Konto und etwa zehn Minuten.
 
@@ -357,13 +359,45 @@ Fertig. Die erste Einheit legt `state.json` automatisch an; alles danach ist Abl
 
 ---
 
+## Daten
+
+**Ohne Konto liegt alles auf dem Gerät.** Wer mit *Lokal starten* beginnt, hat Programm,
+Einheiten, Soundchecks und Notizen in diesem Browser (IndexedDB). Es gibt kein Konto und keinen
+Server, und nichts verlässt das Gerät, außer du verbindest intervals.icu. Die App bittet
+den Browser, den Speicher dauerhaft zu halten. Auf dem iPhone gilt das aber nur für die
+installierte App: Safari räumt den Speicher normaler Webseiten nach sieben Tagen ohne Besuch
+auf. Also *Zum Home-Bildschirm*.
+
+**Sichern und Einlesen.** Unter *Backstage → App → Daten* lädst du eine Sicherung als
+JSON-Datei herunter (`setlist-sicherung-JJJJ-MM-TT.json`) und liest sie auf einem anderen
+Gerät oder nach dem Löschen wieder ein. Einlesen **legt dazu, statt zu ersetzen**:
+Einheiten sind unveränderlich, also ist die Vereinigung beider Seiten richtig. Dieselbe
+Einheit kommt nicht doppelt, und vorher zeigt die App, wie viel neu ist. Ein anderes
+Programm in der Datei wird nur nach Rückfrage übernommen. Der Zustand (Arbeitsgewichte,
+A/B) wird danach aus allen Einheiten neu berechnet. Haben sich seit der letzten Sicherung
+Einheiten angesammelt und liegt sie zwei Wochen zurück, erinnert der Wochenkopf daran.
+
+**Oder mit eigenem GitHub-Datenrepo.** Wer Setlist auf mehreren Geräten mit demselben
+Stand nutzen will, verbindet im Setup ein privates Repo (siehe
+[Selbst einrichten](#-selbst-einrichten)). Dann liegt jede Einheit als Datei im Repo. Wer so
+angefangen hat und lieber ohne Konto weitermacht: *Daten → Aufs Gerät umziehen* holt alles
+aus dem Repo auf dieses Gerät und trennt GitHub. Im Repo bleibt alles liegen. Ein Abgleich
+in beide Richtungen wie bei Riffforge folgt.
+
+**Löschen heißt löschen.** Im lokalen Modus heißt der Knopf *Alles löschen*. Er nennt die
+Zahl der Einheiten, und ohne Sicherung ist danach nichts mehr da.
+
+---
+
 ## <img src="assets/readme/i-sicherheit.png" width="22" height="22" alt=""> Sicherheit und Datenschutz
 
 Die App ist für eine Person gebaut und soll auch nur für diese Person sichtbar sein.
 Was das konkret heißt:
 
-**Deine Daten liegen in deinem privaten Repo.** Die App liest und schreibt ausschließlich
-in `setlist-data` — Einheiten, Körpergewicht, Notizen, der Injury Report (also Gesundheitsangaben) und die Namen deiner Studios. Der App-Code selbst (dieses Repo)
+**Deine Daten liegen auf deinem Gerät oder in deinem privaten Repo.** Lokal bleibt alles in
+der IndexedDB dieses Browsers. Sie ist an die Adresse gebunden; unter `cyphomat.github.io`
+teilen sich allerdings alle Seiten dieses Kontos denselben Speicherbereich. Mit Datenrepo
+liest und schreibt die App ausschließlich in `setlist-data` — Einheiten, Körpergewicht, Notizen, der Injury Report (also Gesundheitsangaben) und die Namen deiner Studios. Der App-Code selbst (dieses Repo)
 ist öffentlich, enthält aber keine Daten. Beim Start prüft die App die Sichtbarkeit deines
 Datenrepos und **warnt unübersehbar, wenn es öffentlich steht** — sonst würde man es nie
 merken, weil die App genauso funktioniert.
@@ -373,11 +407,11 @@ intervals.icu-Key liegen im `localStorage` und werden ausschließlich als
 `Authorization`-Header mitgeschickt — nie in einer Adresse, nie in einem Commit, nie in
 einer Fehlermeldung.
 
-**Drei externe Ziele, sonst keine.** `api.github.com` für deine Daten, `intervals.icu` für
+**Drei externe Ziele, sonst keine.** `api.github.com` für deine Daten (nur mit Datenrepo), `intervals.icu` für
 Rad und Form, ein YouTube-*Suchlink* in der Bibliothek (ohne Referrer). Keine Analytics,
 kein CDN, keine Schriften von fremden Servern.
 
-**Abmelden räumt das Gerät leer.** *Backstage → App → Zugänge entfernen* löscht Token, Key **und** alle zwischengespeicherten Daten aus dem Browser — Einheiten, Injury Report, Gewicht, Schlaf, Fahrten. Es bleiben nur Einstellungen wie Thema und Schriftgröße. Liegen noch ungesendete Einheiten in der Warteschlange, sagt die Rückfrage das vorher.
+**Abmelden räumt das Gerät leer.** Lokal heißt der Knopf *Alles löschen* (siehe [Daten](#daten)). Mit Datenrepo löscht *Backstage → App → Zugänge entfernen* löscht Token, Key **und** alle zwischengespeicherten Daten aus dem Browser — Einheiten, Injury Report, Gewicht, Schlaf, Fahrten. Es bleiben nur Einstellungen wie Thema und Schriftgröße. Liegen noch ungesendete Einheiten in der Warteschlange, sagt die Rückfrage das vorher.
 
 **Nicht in fremden Seiten.** Lädt eine andere Adresse die App in einem Rahmen, zeigt sie nur einen Hinweis und startet nicht — so lassen sich keine Klicks unterschieben. Auf GitHub Pages geht das nicht per Header, deshalb erledigt es `js/boot.js` vor dem ersten Bild.
 
@@ -419,7 +453,9 @@ Wiederholungen. Abschaltbar unter *Backstage → Verbindungen*.
 | `js/ansager.js` | Entscheidet, was nach der Einheit angesagt wird. |
 | `js/soundcheck.js` | Wochen-Soundcheck: Kalenderwochen, Fälligkeit, Serie, Bereinigen der Eingaben. |
 | `js/boot.js` | Thema, Speicherumzug und Einbett-Sperre vor dem ersten Bild. |
-| `js/store.js` | GitHub-API als Speicher, Offline-Puffer. |
+| `js/store.js` | Datenspeicher: lokal im Browser oder im GitHub-Repo, dieselben Pfade; Offline-Puffer. |
+| `js/lokal.js` | Die lokale Ablage: Dateien in IndexedDB. |
+| `js/sicherung.js` | Sichern und Einlesen als JSON-Datei, Vereinigung statt Ersetzen. |
 | `js/intervals.js` | Liest Fahrten und Form; schreibt Krafteinheiten zurück. |
 | `js/app.js` | Oberfläche und Ablauf. |
 | `sw.js` | Cacht die App-Hülle. Trainingsdaten bewusst **nicht**. |
@@ -445,7 +481,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-1796 Tests in 24 Dateien. Kein Build, keine Abhängigkeiten.
+1861 Tests in 26 Dateien. Kein Build, keine Abhängigkeiten.
 
 ### Browserproben (optional)
 
@@ -453,7 +489,7 @@ Die Tests prüfen die Rechnung, die Proben das, was man sieht. Sie öffnen die e
 in Chromium, mit gestellter GitHub-API, gestelltem intervals.icu und einem festen Datum:
 
 ```sh
-node tools/proben.mjs                 # alle: start, einheit, tour, merch, buehne, bibliothek, rueckschau, sicherheit, englisch, ueber
+node tools/proben.mjs                 # alle: start, einheit, tour, merch, buehne, bibliothek, rueckschau, lokal, sicherheit, englisch, ueber
 node tools/proben.mjs start merch     # einzelne
 node tools/proben.mjs -v              # auch jede bestandene Prüfung
 ```

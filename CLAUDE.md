@@ -8,6 +8,7 @@
 
 ## Daten
 - Private Datenrepos (z. B. `cyphomat/setlist-data`) nie anfassen.
+- Zwei Betriebsarten mit denselben Pfaden: lokal (IndexedDB, `js/lokal.js`) oder GitHub-Repo. Jeder Datenzugriff läuft über `js/store.js` (`readFile`, `writeFile`, `readAllLogs`, `listeOrdner`, `alleDateien`), nie direkt.
 - Der Zustand wird aus den Logs abgeleitet (`deriveState`). Änderungen am Programm laufen als Log-Eintrag (`type: 'anpassung'`), nie durch Überschreiben von `state.json`.
 
 ## Oberfläche
