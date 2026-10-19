@@ -10,6 +10,14 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-19.2
+
+### Behoben
+- **Abstand unter dem Motto auf breiten Bildschirmen.** In der zweispaltigen Ansicht
+  klebte das Plakat direkt unter „Lift Heavy Shit“. Jetzt hat es dieselbe Luft wie die
+  Überschrift rechts und beginnt auf einer Linie mit ihr. Auf dem Handy bleibt alles,
+  wie es war.
+
 ## 2026-10-19.1
 
 ### Neu
