@@ -190,6 +190,14 @@ print('\n--- Rang ---');
   const viel = Array.from({ length: 210 }, (_, i) => ({ date: P.ymd(new Date(2020, 0, 6 + i * 7)), type: 'wod' }));
   eq('ganz oben: Hall of Fame', M.rang(viel).id, 'halloffame');
   eq('darueber gibt es nichts', M.rang(viel).naechste, null);
+  const f = M.rang(vier).freigespielt;
+  eq('Garage ab dem ersten Gig', f[0], '2026-08-03');
+  eq('Proberaum am Tag der vierten Woche', f[1], '2026-09-21');
+  eq('Vorband noch nicht', f[2], null);
+  eq('ein Datum je Rang', f.length, M.RAENGE.length);
+  eq('ohne Gigs nichts freigespielt', M.rang([]).freigespielt.every(x => x === null), true);
+  const mitRad = M.rang(vier.slice(0, 3), [{ date: '2026-09-25', km: 30 }]);
+  eq('eine Radwoche zaehlt mit', mitRad.freigespielt[1], '2026-09-25');
 }
 
 print('\n--- Tourshirts ---');

@@ -10,6 +10,20 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-19.1
+
+### Neu
+- **Freigespielte Ränge lassen sich wieder ansehen.** Im Merch sind die schon erreichten
+  Stationen der Tour-Leiste Knöpfe. Antippen zeigt die Szene groß, mit Namen und dem Tag,
+  an dem der Rang freigespielt wurde. Beim aktuellen Rang steht „Dein Rang seit …“.
+  Kommende Ränge bleiben dunkel und gesperrt.
+- `M.rang()` liefert dazu je Rang das Datum. Es ist der Gig, mit dem die Zahl der Wochen
+  die Schwelle erreichte; Fahrten zählen mit.
+
+### Werkzeuge
+- Die Probe `buehne` prüft Knöpfe, Klick, Datum, Rückweg und Kontrast.
+- 1867 Tests.
+
 ## 2026-10-17.3
 
 ### Behoben

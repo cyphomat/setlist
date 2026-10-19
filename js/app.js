@@ -4923,8 +4923,11 @@ function monatsTourHtml(touren) {
     </div>`;
 }
 
+let rangGewaehlt = null;   // im Merch angesehener Rang; beim Oeffnen wieder der aktuelle
+
 async function zeigeMerch(von = 'home') {
   merchVon = von;
+  rangGewaehlt = null;
   show('merch');
   const leeren = () => ['merch-rang', 'merch-monat', 'merch-kutte', 'merch-platten', 'merch-shirts', 'merch-bilanz']
     .forEach(id => { $(id).innerHTML = ''; });
@@ -4956,26 +4959,48 @@ function renderMerch(logs) {
   const fahrten = radFuerMerch(logs);
   const liste = M.aufnaeher(logs, config, gewichtsPunkte, heute, { fahrten, planFuer: planFuerDatum, soundchecks });
 
-  // Rang
+  // Rang — freigespielte Stationen lassen sich wieder ansehen
   const r = M.rang(logs, fahrten);
+  if (rangGewaehlt === null || rangGewaehlt > r.stufe) rangGewaehlt = r.stufe;
   $('merch-rang').innerHTML = `
     <div class="card rang">
       <div class="kicker">${escHtml(tn('merch.rang.wochen', r.wochen))}</div>
-      <div class="name">${escHtml(t(`merch.r.${r.id}`))}</div>
-      <div class="szene gross" role="img" aria-label="${escHtml(t('merch.szene', { name: t(`merch.r.${r.id}`) }))}"
-        style="--i:${r.stufe};--n:${M.RAENGE.length}"></div>
+      <div class="name" id="rang-name"></div>
+      <div class="szene gross" id="rang-szene" role="img"></div>
+      <p class="rang-wann" id="rang-wann"></p>
       <div class="tour-leiste">${M.RAENGE.map((x, i) => {
         const name = t(`merch.r.${x.id}`);
-        const zustand = i < r.stufe ? 'erreicht' : i === r.stufe ? 'jetzt' : 'kommt';
-        return `<figure class="tstop ${zustand}" title="${escHtml(i <= r.stufe ? name : tn('merch.rang.ab', x.wochen, { name }))}">
-          <span class="szene" style="--i:${i};--n:${M.RAENGE.length}" aria-hidden="true"></span>
-          <figcaption>${escHtml(name)}</figcaption></figure>`;
+        const szene = `<span class="szene" style="--i:${i};--n:${M.RAENGE.length}" aria-hidden="true"></span>`;
+        if (i > r.stufe) {
+          return `<figure class="tstop kommt" title="${escHtml(tn('merch.rang.ab', x.wochen, { name }))}">
+            ${szene}<figcaption>${escHtml(name)}</figcaption></figure>`;
+        }
+        return `<button type="button" class="tstop ${i === r.stufe ? 'jetzt' : 'erreicht'}" data-i="${i}"
+          aria-label="${escHtml(t('merch.rang.zeige', { name }))}" title="${escHtml(name)}">
+          ${szene}<span class="tname">${escHtml(name)}</span></button>`;
       }).join('')}</div>
       <div class="bar"><i style="width:${Math.round(r.anteil * 100)}%"></i></div>
       <p class="fine">${escHtml(r.naechste
         ? tn('merch.rang.naechste', r.naechste.fehlt, { name: t(`merch.r.${r.naechste.id}`) })
         : t('merch.rang.oben'))} ${t('merch.rang.fine')}</p>
     </div>`;
+  const zeigeRang = i => {
+    rangGewaehlt = i;
+    const x = M.RAENGE[i], name = t(`merch.r.${x.id}`), am = r.freigespielt[i];
+    $('rang-name').textContent = name;
+    const sz = $('rang-szene');
+    sz.style.cssText = `--i:${i};--n:${M.RAENGE.length}`;
+    sz.setAttribute('aria-label', t('merch.szene', { name }));
+    $('rang-wann').textContent = !am ? '' : i === r.stufe
+      ? t('merch.rang.seit', { datum: datumLang(am) }) : t('merch.rang.erreicht', { datum: datumLang(am) });
+    $('merch-rang').querySelectorAll('button.tstop').forEach(b => {
+      const an = Number(b.dataset.i) === i;
+      b.classList.toggle('gewaehlt', an);
+      b.setAttribute('aria-pressed', String(an));
+    });
+  };
+  $('merch-rang').querySelectorAll('button.tstop').forEach(b => { b.onclick = () => zeigeRang(Number(b.dataset.i)); });
+  zeigeRang(rangGewaehlt);
 
   // Monats-Tour
   $('merch-monat').innerHTML = monatsTourHtml(M.monatsTouren(logs, config, { fahrten, heute }));

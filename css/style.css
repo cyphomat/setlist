@@ -1000,12 +1000,22 @@ input[type=checkbox]{accent-color:var(--akzent);width:16px;height:16px}
 .rang .szene.gross{margin:12px 0 10px;max-width:576px}
 .tour-leiste{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin:0 0 10px}
 .tstop{margin:0;display:flex;flex-direction:column;gap:3px;min-width:0}
+/* Freigespielte Stationen sind Knoepfe: antippen zeigt die Szene gross. */
+button.tstop{padding:3px 0;background:none;border:0;color:inherit;font:inherit;cursor:pointer;text-align:center}
+button.tstop:focus-visible{outline:2px solid var(--akzent);outline-offset:2px}
+button.tstop:hover .szene{border-color:var(--muted)}
+.tstop .tname{font-family:var(--mono);font-size:0.5625rem;line-height:1.25;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--muted);text-align:center;overflow-wrap:anywhere}
+.tstop.gewaehlt .szene{border-color:var(--fg);box-shadow:0 0 0 1px var(--fg)}
+.tstop.gewaehlt .tname, .tstop.jetzt .tname{color:var(--fg)}
+.rang-wann{margin:-4px 0 10px;font-size:0.8125rem;color:var(--muted)}
+.rang-wann:empty{display:none}
 .tstop figcaption{font-family:var(--mono);font-size:0.5625rem;line-height:1.25;letter-spacing:.04em;text-transform:uppercase;
   color:var(--muted);text-align:center;overflow-wrap:anywhere}
 .tstop.kommt .szene{filter:grayscale(1) brightness(.45)}
 .tstop.jetzt .szene{border-color:var(--akzent);box-shadow:0 0 0 1px var(--akzent)}
 .tstop.jetzt figcaption{color:var(--fg)}
-@media (max-width:539px){ .tstop figcaption{display:none} }
+@media (max-width:539px){ .tstop figcaption, .tstop .tname{display:none} }
 .pix{flex:none;width:40px;height:40px;background:url('../assets/pixel/aufnaeher.png') no-repeat;
   background-size:calc(var(--n) * 40px) 40px;background-position:calc(var(--i) * -40px) 0;image-rendering:pixelated;
   filter:drop-shadow(0 2px 2px rgba(0,0,0,.45))}

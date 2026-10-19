@@ -58,13 +58,31 @@ export default async function ({ browser, pruefe }) {
     pruefe(`${tag}: Rang-Bogen geladen, sieben Szenen`, bogen.rang[0] === 96 * 7 && bogen.rang[1] === 48, bogen.rang.join('×'));
     const rang = await p.evaluate(() => ({
       gross: !!document.querySelector('#merch-rang .szene.gross[role="img"][aria-label]'),
-      stationen: [...document.querySelectorAll('#merch-rang .tstop')].map(f => f.className.replace('tstop ', '')),
+      stationen: [...document.querySelectorAll('#merch-rang .tstop')].map(f => ['erreicht', 'jetzt', 'kommt'].find(k => f.classList.contains(k))),
       grau: getComputedStyle(document.querySelector('#merch-rang .tstop.kommt .szene') || document.body).filter
     }));
     pruefe(`${tag}: große Szene mit Beschriftung`, rang.gross);
     pruefe(`${tag}: sieben Stationen, genau eine jetzt`, rang.stationen.length === 7 && rang.stationen.filter(s => s === 'jetzt').length === 1,
       rang.stationen.join(','));
     pruefe(`${tag}: kommende abgedunkelt`, /grayscale/.test(rang.grau), rang.grau);
+    // Freigespielte Ränge lassen sich ansehen, kommende nicht
+    const knoepfe = await p.$$eval('#merch-rang button.tstop', l => l.map(b => b.dataset.i));
+    pruefe(`${tag}: nur freigespielte Stationen sind Knöpfe`, knoepfe.length === rang.stationen.filter(x => x !== 'kommt').length && knoepfe.length >= 2, knoepfe.join());
+    const vorher = (await p.textContent('#rang-name')).trim();
+    await p.click('#merch-rang button.tstop[data-i="0"]');
+    const alt = await p.evaluate(() => ({ name: document.getElementById('rang-name').textContent, wann: document.getElementById('rang-wann').textContent,
+      lage: getComputedStyle(document.getElementById('rang-szene')).backgroundPosition, label: document.getElementById('rang-szene').getAttribute('aria-label'),
+      gedrueckt: document.querySelector('#merch-rang button.tstop[data-i="0"]').getAttribute('aria-pressed') }));
+    pruefe(`${tag}: Klick zeigt die Garage groß`, alt.name === 'Garagenband' && /Garagenband/.test(alt.label) && alt.gedrueckt === 'true', JSON.stringify(alt));
+    pruefe(`${tag}: mit dem Tag, an dem sie freigespielt wurde`, /^Freigespielt am \d{1,2}\.\d{1,2}\.2026$/.test(alt.wann), alt.wann);
+    const kommend = await p.$('#merch-rang figure.tstop.kommt');
+    pruefe(`${tag}: kommende bleiben gesperrt`, !!kommend && !(await p.$('#merch-rang button.tstop.kommt')));
+    if (breite === 390) await p.locator('#merch-rang').screenshot({ path: BILDER + 'buehne-rang-garage.png' });
+    await p.click('#merch-rang button.tstop.jetzt');
+    const zurueck = await p.evaluate(() => ({ name: document.getElementById('rang-name').textContent, wann: document.getElementById('rang-wann').textContent }));
+    pruefe(`${tag}: zurück zum aktuellen Rang`, zurueck.name === vorher && /^Dein Rang seit /.test(zurueck.wann), JSON.stringify(zurueck));
+    const kr = (await kontraste(p, '#rang-wann, #merch-rang .tname')).filter(x => x.wert < 4.5);
+    pruefe(`${tag}: Kontrast ≥ 4,5`, !kr.length, JSON.stringify(kr));
     const flicken = await p.evaluate(() => {
       const alle = [...document.querySelectorAll('#merch-kutte .patch')];
       return { n: alle.length, mitBild: alle.filter(x => x.querySelector('.pix')).length,

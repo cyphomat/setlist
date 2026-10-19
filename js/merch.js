@@ -456,13 +456,21 @@ const montagKey = datum => {
 };
 
 export function rang(logs = [], fahrten = []) {
-  const wochen = new Set(logs.filter(istGig).map(l => l.date)
-    .concat(mitDatum(fahrten).map(f => f.date)).map(montagKey)).size;
+  // Je Rang der Tag, an dem er freigespielt wurde: der Gig, mit dem die
+  // Zahl der Wochen die Schwelle erreichte. Die Garage gibt es ab dem ersten.
+  const tage = [...new Set(logs.filter(istGig).map(l => l.date).concat(mitDatum(fahrten).map(f => f.date)))].sort();
+  const gezaehlt = new Set();
+  const freigespielt = RAENGE.map(() => null);
+  for (const d of tage) {
+    gezaehlt.add(montagKey(d));
+    RAENGE.forEach((x, k) => { if (!freigespielt[k] && gezaehlt.size >= Math.max(1, x.wochen)) freigespielt[k] = d; });
+  }
+  const wochen = gezaehlt.size;
   let i = 0;
   while (i + 1 < RAENGE.length && wochen >= RAENGE[i + 1].wochen) i++;
   const r = RAENGE[i], n = RAENGE[i + 1] || null;
   return {
-    id: r.id, stufe: i, wochen,
+    id: r.id, stufe: i, wochen, freigespielt,
     naechste: n ? { id: n.id, wochen: n.wochen, fehlt: n.wochen - wochen } : null,
     anteil: n ? (wochen - r.wochen) / (n.wochen - r.wochen) : 1
   };
