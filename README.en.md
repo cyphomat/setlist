@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1867%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1875%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -171,7 +171,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | **Merch stand** | A little play to match the stage: a **battle vest** with patches (plate club, 1000 lb club, bodyweight marks, comeback, streaks, Road crew and Hangar 18 for the aftershow … and for the bike: tour bus kilometres, Stairway to Heaven, Highway Star, Doom for disciplined base rides, Open Air, crossover weeks with strength and bike), **gold and platinum** records for the weight you have moved, framed on the studio wall, a **rank** from garage band to Hall of Fame, and every quarter a **tour shirt** as a pixel band shirt: fabric colour and emblem come from the tour name, screen print on the front, your training days on the back — flip it over. After a session the setlist shows up as a taped paper sheet, and the home screen has a weekly dial that only goes to eleven when the plan is done **and** every set was clean. Consistency earns it, never volume: the rank counts weeks, not sessions (bike weeks included), and a logged injury **freezes your streak** instead of breaking it. All calculated from the logs, nothing stored. |
 | **Pixel stage** | Every patch has its own pixel image, every step of a ladder included: gigs grow from the setlist sheet through ticket, poster and amp to the raised lighter, kilometres from a bike to the globe, and in the plate club each lift is its own figure with 1–4 plates on the bar. The shape shows the category: stage round, strength octagon, bike square, comeback shield, streak star. Every rank has its scene, from the garage to the Hall of Fame, with the whole tour underneath; unlocked stops can be tapped to see them large again, with the day they were unlocked. On **HEAVY** days a small pixel fire burns behind the word. After a session an **announcer** calls out the big moments: new rank, new patch, back to your pre-break level, a round number like “100 KG”, the weekly dial on eleven, “FLAWLESS”. There is at most one call per session, and you can switch it off under *Backstage → App*. With “reduce motion” on your system there is no fire and no jump. Own pixel art, no third-party graphics. |
 | **Monthly tour** | Every month three goals from your own weekly plan: the planned strength sessions, the planned rides (without a bike: four days of jam, unplugged or mobility) and half as many clean sessions. At the end waits the month's **final boss**, from the Frost Giant in January to Krampus in December, with a health bar that loses a third for every goal you meet. Days before your first session and during an injury break do not count towards the target. When the boss falls, the announcer calls **TOUR COMPLETE**; there are patches for 1, 3, 6 and 12 defeated months. The card sits in the merch stand, the line in the week header. |
-| **Weekly soundcheck** | On Sunday for the current week, on Monday and Tuesday still for the week just gone: the week's numbers (sessions, jams, mobility, rides, tonnes, clean sets), plus “Went well”, “Snags” and three resolutions. It is stored as its own file in the data repo (`soundcheck/YYYY-Www.json`) and queued when offline. The resolutions then show in the week header, earlier soundchecks in the tour. Patches for 4 and 12 weeks in a row. |
+| **Weekly soundcheck** | On Sunday for the current week, on Monday and Tuesday still for the week just gone: the week's numbers (sessions, jams, mobility, rides, tonnes, clean sets), as a mixing desk with one fader per number (measured against your own best of the eight weeks before), plus “Went well”, “Snags” and three resolutions on a paper setlist. It is stored as its own file in the data repo (`soundcheck/YYYY-Www.json`) and queued when offline. The resolutions then show in the week header, earlier soundchecks in the tour. Patches for 4 and 12 weeks in a row. |
 | **Flightcase look** | Cards with metal corner protectors like a road case, headings as strips of gaffer tape in marker lettering, the word of the day in Anton. Both fonts live in the repo (`assets/fonts/`, licences alongside); nothing is loaded from outside. |
 | **Call vs. feel** | In the Tour: every session with both values plus the hit rate — the call and the perceived effort side by side instead of merely asserted. |
 | **Where you are out of balance** | Twelve strength ratios against guidance values *and* against your own level before the layoff. When the same lift stands out in several pairs, the app names it as the cause and suggests extra work — a single skewed pair does not tell you which side causes it. Only values of equal quality are compared. |
@@ -445,7 +445,7 @@ off under *Backstage → Connections*.
 | `js/export.js` | Sessions as CSV, safe against formulas. |
 | `js/feuer.js` | Pixel fire (the Doom algorithm, own implementation). |
 | `js/ansager.js` | Decides what gets called out after a session. |
-| `js/soundcheck.js` | Weekly soundcheck: calendar weeks, when it is due, streak, cleaning up the input. |
+| `js/soundcheck.js` | Weekly soundcheck: calendar weeks, when it is due, streak, fader level, cleaning up the input. |
 | `js/boot.js` | Theme, storage migration and the frame block before first paint. |
 | `js/store.js` | Storage: locally in the browser or in the GitHub repo, same paths; offline buffer. |
 | `js/lokal.js` | Local storage: files in IndexedDB. |
@@ -475,7 +475,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-1867 tests in 26 files. No build, no dependencies.
+1875 tests in 26 files. No build, no dependencies.
 
 ### Browser probes (optional)
 

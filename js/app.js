@@ -4599,6 +4599,11 @@ async function ladeSoundchecks() {
   } catch (e) { console.warn('Soundchecks:', e.message); }
 }
 
+/** Die Vorsaetze als Setlist auf Papier: nummeriert, mit Edding. */
+const papierSetlist = (kopf, vorsaetze, klasse = '') => `<div class="scsetlist${klasse}">
+    <p class="scsetkopf">${escHtml(kopf)}</p>
+    <ol>${vorsaetze.map(x => `<li>${escHtml(x)}</li>`).join('')}</ol></div>`;
+
 /** Faellig: ein Knopf im Wochenkopf. Sonst die Vorsaetze dieser Woche. */
 function soundcheckZeile() {
   const key = scFaellig();
@@ -4606,8 +4611,7 @@ function soundcheckZeile() {
   const jetzt = SC.wochenKey(new Date());
   const v = scVorsaetze && [jetzt, SC.vorige(jetzt)].includes(scVorsaetze.woche) ? scVorsaetze.vorsaetze : [];
   if (!v.length) return '';
-  return `<div class="sc-vorsaetze"><span class="kicker">${escHtml(t('sc.vorsaetzeKopf'))}</span>
-    <ul>${v.map(x => `<li>${escHtml(x)}</li>`).join('')}</ul></div>`;
+  return `<div class="sc-vorsaetze">${papierSetlist(t('sc.vorsaetzeKopf'), v, ' klein')}</div>`;
 }
 function bindeSoundcheck() {
   const b = $('go-soundcheck');
@@ -4616,30 +4620,44 @@ function bindeSoundcheck() {
   if (s) s.onclick = sichere;
 }
 
+/** Leuchten fuer die Serie: so viele Wochen, wie das Pult Massstab nimmt. */
+const serienLeds = n => `<span class="scleds" aria-hidden="true">${Array.from({ length: SC.PEGEL_WOCHEN },
+  (_, i) => `<i${i < n ? ' class="an"' : ''}></i>`).join('')}</span>`;
+
 function zeigeSoundcheck(key) {
   if (!config || !SC.istKey(key)) return;
   const logs = geladeneLogs();
-  const z = ST.wochenRueckschau(logs, radFuerMerch(logs), SC.montagVon(key));
-  const zahl = (k, v) => `<div class="stat"><div class="n">${escHtml(t(`sc.z.${k}`))}</div><div class="v">${escHtml(v)}</div></div>`;
+  const rad = radFuerMerch(logs);
+  const z = ST.wochenRueckschau(logs, rad, SC.montagVon(key));
+  // Die Wochen davor: der Massstab fuer die Fader
+  const davor = [];
+  for (let k = SC.vorige(key), i = 0; i < SC.PEGEL_WOCHEN; i++, k = SC.vorige(k)) davor.push(ST.wochenRueckschau(logs, rad, SC.montagVon(k)));
+  const kanal = (k, v, p) => `<div class="scch"><b>${escHtml(v)}</b>
+    <div class="sctrack" aria-hidden="true"><i class="sckn" style="--p:${p}"></i></div>
+    <span>${escHtml(t(`sc.z.${k}`))}</span></div>`;
+  const zug = k => kanal(k, z[k].toLocaleString(locale(), { maximumFractionDigits: 1 }), SC.pegel(z[k], davor.map(w => w[k])));
   const n = SC.serie(soundchecks, new Date());
+  const feld = (id, ton, ph) => `<label class="sc-feld sc-case ${ton}"><span class="gaffa">${escHtml(t(`sc.${id}`))}</span>
+      <textarea id="sc-${id}" rows="3" maxlength="${SC.TEXT_MAX}" placeholder="${escHtml(t(ph))}"></textarea></label>`;
   $('sc-body').innerHTML = `
     <p class="kicker">${escHtml(t('sc.kopf', { kw: kwNr(key), von: datumKurz(z.montag), bis: datumKurz(z.bis) }))}</p>
     <p class="lead">${escHtml(t('sc.lead'))}</p>
-    <div class="stats">
-      ${zahl('einheiten', z.einheiten)}${zahl('jams', z.jams)}${zahl('mobility', z.mobility)}
-      ${z.fahrten ? zahl('fahrten', z.fahrten) + zahl('km', z.km.toLocaleString(locale())) : ''}
-      ${zahl('tonnen', z.tonnen.toLocaleString(locale(), { maximumFractionDigits: 1 }))}
-      ${z.saetze.gesamt ? zahl('saetze', `${z.saetze.sauber}/${z.saetze.gesamt}`) : ''}
+    <div class="scmixer">
+      ${zug('einheiten')}${zug('jams')}${zug('mobility')}
+      ${z.fahrten ? zug('fahrten') + zug('km') : ''}
+      ${zug('tonnen')}
+      ${z.saetze.gesamt ? kanal('saetze', `${z.saetze.sauber}/${z.saetze.gesamt}`, Math.round(z.saetze.sauber / z.saetze.gesamt * 100) / 100) : ''}
     </div>
-    ${n ? `<p class="serie">${escHtml(tn('sc.serie', n))}</p>` : ''}
-    <label class="sc-feld"><span>${escHtml(t('sc.lief'))}</span>
-      <textarea id="sc-lief" rows="3" maxlength="${SC.TEXT_MAX}" placeholder="${escHtml(t('sc.lief.ph'))}"></textarea></label>
-    <label class="sc-feld"><span>${escHtml(t('sc.hakt'))}</span>
-      <textarea id="sc-hakt" rows="3" maxlength="${SC.TEXT_MAX}" placeholder="${escHtml(t('sc.hakt.ph'))}"></textarea></label>
-    <fieldset class="sc-feld"><legend>${escHtml(t('sc.vorsaetze'))}</legend>
-      ${Array.from({ length: SC.VORSAETZE }, (_, i) => `<input type="text" class="sc-vorsatz" maxlength="${SC.VORSATZ_MAX}"
-        aria-label="${escHtml(t('sc.vorsatz.ph', { n: i + 1 }))}" placeholder="${escHtml(t('sc.vorsatz.ph', { n: i + 1 }))}">`).join('')}
-    </fieldset>
+    ${n ? `<p class="serie">${serienLeds(n)}${escHtml(tn('sc.serie', n))}</p>` : ''}
+    ${feld('lief', 'gut', 'sc.lief.ph')}
+    ${feld('hakt', 'hakt', 'sc.hakt.ph')}
+    <div class="scsetlist">
+      <p class="scsetkopf">${escHtml(t('sc.setlistKopf', { kw: kwNr(SC.naechste(key)) }))}</p>
+      <fieldset class="sc-feld"><legend>${escHtml(t('sc.vorsaetze'))}</legend>
+        <ol>${Array.from({ length: SC.VORSAETZE }, (_, i) => `<li><input type="text" class="sc-vorsatz" maxlength="${SC.VORSATZ_MAX}"
+          aria-label="${escHtml(t('sc.vorsatz.ph', { n: i + 1 }))}" placeholder="${escHtml(t('sc.vorsatz.ph', { n: i + 1 }))}"></li>`).join('')}</ol>
+      </fieldset>
+    </div>
     <button class="btn" id="sc-speichern">${escHtml(t('sc.abschliessen'))}</button>
     <p class="fine">${escHtml(t('sc.fine'))}</p>`;
   $('sc-speichern').onclick = () => speichereSoundcheck(key);
@@ -4691,12 +4709,17 @@ function renderSoundcheckArchiv() {
     const keys = soundchecks.slice().reverse().slice(0, 26);
     const eintraege = await Promise.all(keys.map(k => S.readFile(SC.pfad(k)).then(f => f && f.data).catch(() => null)));
     const text = v => typeof v === 'string' ? v : '';
-    $('sc-archiv-body').innerHTML = eintraege.map((e, i) => e ? `<div class="sc-eintrag">
-      <p class="kicker">${escHtml(t('sc.kw', { kw: kwNr(keys[i]) }))} · ${escHtml(keys[i].slice(0, 4))}</p>
+    $('sc-archiv-body').innerHTML = eintraege.map((e, i) => {
+      if (!e) return '';
+      const vors = Array.isArray(e.vorsaetze) ? e.vorsaetze.filter(x => typeof x === 'string' && x) : [];
+      return `<article class="sc-eintrag sc-case">
+      <h3 class="gaffa">${escHtml(t('sc.kw', { kw: kwNr(keys[i]) }))} · ${escHtml(keys[i].slice(0, 4))}</h3>
       ${text(e.lief) ? `<p><b>${escHtml(t('sc.lief'))}:</b> ${escHtml(text(e.lief))}</p>` : ''}
       ${text(e.hakt) ? `<p><b>${escHtml(t('sc.hakt'))}:</b> ${escHtml(text(e.hakt))}</p>` : ''}
-      ${Array.isArray(e.vorsaetze) && e.vorsaetze.length ? `<ul>${e.vorsaetze.filter(x => typeof x === 'string').map(x => `<li>${escHtml(x)}</li>`).join('')}</ul>` : ''}
-    </div>` : '').join('') || `<p class="fine">${escHtml(t('sc.leer'))}</p>`;
+      ${vors.length ? papierSetlist(t('sc.vorsaetzeKopf'), vors, ' klein') : ''}
+      <p class="sc-stempel"><span class="scstamp">${escHtml(t('sc.stempel'))}</span></p>
+    </article>`;
+    }).join('') || `<p class="fine">${escHtml(t('sc.leer'))}</p>`;
   });
 }
 

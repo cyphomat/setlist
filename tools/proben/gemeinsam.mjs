@@ -119,10 +119,10 @@ const b64 = o => Buffer.from(JSON.stringify(o)).toString('base64');
  *          etwa 'http://jens.github.io/setlist/' fuer einen Fork.
  * Gibt die Seite, gesammelte Seitenfehler und alles Geschriebene zurueck.
  */
-export async function kontext(browser, { logs, config, heute, breite = 390, hoehe = 900, schrift = null, theme = 'dunkel', fahrten = null, vorher = null, adresse = null, ohneToken = false, dateien = {} }) {
+export async function kontext(browser, { logs, config, heute, breite = 390, hoehe = 900, schrift = null, theme = 'dunkel', fahrten = null, vorher = null, adresse = null, ohneToken = false, dateien = {}, touch = false }) {
   const state = P.deriveState(config, logs);
   const geschrieben = [];
-  const ctx = await browser.newContext({ viewport: { width: breite, height: hoehe }, deviceScaleFactor: 1 });
+  const ctx = await browser.newContext({ viewport: { width: breite, height: hoehe }, deviceScaleFactor: 1, ...(touch ? { hasTouch: true, isMobile: true } : {}) });
   if (vorher) await vorher(ctx);
   if (adresse) await unterAdresse(ctx, adresse);
   const icuAufrufe = [];
@@ -233,6 +233,11 @@ export const kontraste = (p, selektor) => p.$$eval(selektor, els => {
     return { text: el.textContent.trim().slice(0, 30), wert: Math.round(((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)) * 100) / 100 };
   });
 });
+
+/** Sichtbare Eingabefelder unter 16px: auf dem iPhone zoomt das beim Antippen. */
+export const kleineFelder = p => p.evaluate(() => [...document.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]), textarea, select')]
+  .filter(el => el.getClientRects().length && !el.closest('[hidden]') && parseFloat(getComputedStyle(el).fontSize) < 16)
+  .map(el => `${el.tagName}.${el.className || el.id} ${getComputedStyle(el).fontSize}`));
 
 /** Ragt etwas sichtbar ueber den rechten Rand? */
 export const ueberlauf = p => p.evaluate(() => {

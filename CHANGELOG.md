@@ -10,6 +10,30 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-21.1
+
+### Geändert
+- **Metallwinkel an den Cases.** Die Karten haben statt der kleinen Dreiecke jetzt
+  Eckschoner aus zwei Schenkeln mit Lichtkante, dazu einen kräftigeren Rand und einen
+  Schatten, der sie vom Boden hebt. In beiden Themen.
+- **Der Wochen-Soundcheck ist ein Mischpult.** Jede Zahl der Woche hat einen Kanalzug:
+  oben der Wert, darunter ein Fader. Der Fader steht gegen die eigene Bestmarke der acht
+  Wochen davor; wer eine neue Bestmarke hat, schiebt ihn ganz nach oben. Die Serie
+  leuchtet als Reihe von LEDs.
+- **„Lief gut“ und „Hakt“ als kleine Cases.** Die Überschrift klebt als Gaffa-Streifen
+  über der Kante, die Kante links ist grün bzw. rostrot.
+- **Vorsätze auf einer Setlist aus Papier.** Nummeriert, mit Edding, für die nächste
+  Kalenderwoche. Im Wochenkopf hängt danach derselbe Zettel, klein.
+- **Archiv mit Stempel.** Frühere Soundchecks in der Tour stehen je Woche in einem Case
+  mit Gaffa-Titel, die Vorsätze als Zettel, und jede Woche ist „Erledigt“ gestempelt.
+
+### Behoben
+- **Kein Zoom mehr beim Antippen auf dem iPhone.** Auswahllisten standen auf der
+  Browservorgabe von etwa 13 px, und iOS zoomte beim Antippen hinein. Auf Touch-Geräten
+  hat jetzt jedes Feld mindestens 16 px; größere Felder und „Sehr groß“ bleiben, wie sie sind.
+
+---
+
 ## 2026-10-19.2
 
 ### Behoben

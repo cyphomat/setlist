@@ -63,4 +63,14 @@ eq('ohne Woche nichts', SC.bereinige({ lief: 'x' }), null);
 eq('kaputte Woche nichts', SC.bereinige({ woche: '../state' }), null);
 eq('ohne Angaben: leere Felder', JSON.stringify(SC.bereinige({ woche: '2026-W40' }, new Date(0)).vorsaetze), '[]');
 
+print('\n--- Pegel ---');
+eq('leer: unten', SC.pegel(0, []), 0);
+eq('ohne Vorwochen: oben', SC.pegel(3, []), 1);
+eq('neue Bestmarke: oben', SC.pegel(5, [2, 4, 3]), 1);
+eq('die Haelfte', SC.pegel(2, [4, 1]), 0.5);
+eq('gerundet', SC.pegel(1, [3]), 0.33);
+eq('kaputte Werte zaehlen nicht', SC.pegel(NaN, [-2, 'x', null]), 0);
+eq('negative Vorwoche ignoriert', SC.pegel(2, [-9]), 1);
+eq('Massstab: acht Wochen', SC.PEGEL_WOCHEN, 8);
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

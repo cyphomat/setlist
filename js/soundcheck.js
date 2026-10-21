@@ -101,6 +101,19 @@ export function serienMarken(erledigt = [], stufen = []) {
   return out;
 }
 
+/** Wie viele Wochen davor der Fader als Massstab nimmt. */
+export const PEGEL_WOCHEN = 8;
+/**
+ * Faderstand im Soundcheck, 0 bis 1: der Wert dieser Woche gegen die
+ * eigene Bestmarke der Wochen davor. Eine neue Bestmarke steht oben.
+ */
+export function pegel(wert, frueher = []) {
+  const zahl = v => (typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : 0);
+  const w = zahl(wert);
+  const max = Math.max(w, ...frueher.map(zahl));
+  return max > 0 ? Math.round(w / max * 100) / 100 : 0;
+}
+
 const text = (s, max) => String(s == null ? '' : s).replace(/\r\n?/g, '\n').trim().slice(0, max);
 
 /** Was geschrieben wird: nur die bekannten Felder, gekuerzt, ohne leere Vorsaetze. */

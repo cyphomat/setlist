@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="App öffnen" src="https://img.shields.io/badge/App-öffnen-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1867%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1875%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-keiner-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Abhängigkeiten" src="https://img.shields.io/badge/Abhängigkeiten-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="Lizenz: MIT" src="https://img.shields.io/badge/Lizenz-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -171,7 +171,7 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 | **Merch-Stand** | Ein bisschen Spiel, passend zur Bühne: eine **Kutte** mit Aufnähern (Plattenclub, 1000-lb-Club, Körpergewicht-Marken, Comeback, Serien, Roadcrew und Hangar 18 für die Aftershow … und fürs Rad: Tourbus-Kilometer, Stairway to Heaven, Highway Star, Doom für disziplinierte Grundlage, Open Air, Crossover-Wochen mit Kraft und Rad), **Gold und Platin** fürs bewegte Gewicht als gerahmte Auszeichnungen an der Studiowand, ein **Rang** von der Garagenband bis zur Hall of Fame und jedes Quartal ein **Tourshirt** als Pixel-Bandshirt: Stofffarbe und Emblem kommen aus dem Tournamen, vorne Siebdruck, hinten deine Trainingstage — zum Umdrehen. Nach der Einheit kommt die Setlist als Zettel mit Gaffa-Tape, auf Home steht ein Wochenregler, der nur bei erfülltem Plan **und** sauberen Sätzen auf elf geht. Belohnt wird Regelmäßigkeit, nie Menge: der Rang zählt Wochen statt Einheiten (Radwochen eingeschlossen), und eine eingetragene Verletzung **friert die Serie ein** statt sie reißen zu lassen. Alles aus den Logs berechnet, nichts gespeichert. |
 | **Pixel-Bühne** | Jeder Aufnäher hat ein eigenes Pixelbild, auch jede Stufe einer Leiter: die Gigs wachsen vom Setlist-Zettel über Ticket, Plakat und Amp bis zum hochgehaltenen Feuerzeug, die Kilometer vom Fahrrad bis zur Weltkugel, und im Plattenclub steht jeder Lift als eigene Figur mit 1–4 Scheiben an der Stange. Die Form zeigt die Kategorie: Bühne rund, Kraft achteckig, Rad eckig, Comeback Wappen, Serie Stern. Jeder Rang hat seine Szene, von der Garage bis zur Hall of Fame, darunter die Tour mit allen Stationen; freigespielte lassen sich antippen und wieder groß ansehen, mit dem Tag, an dem sie dazukamen. An Tagen mit **SCHWER** brennt hinter dem Wort ein kleines Pixelfeuer. Nach der Einheit sagt ein **Ansager** die großen Momente an: neuer Rang, neuer Aufnäher, wieder auf dem Stand vor der Pause, eine runde Marke wie „100 KG“, der Wochenregler auf elf, „FLAWLESS“. Es gibt höchstens eine Ansage je Einheit, und unter *Backstage → App* lässt sie sich abschalten. Mit „Bewegung reduzieren“ im System gibt es kein Feuer und keinen Sprung. Eigene Pixel-Art, keine fremden Grafiken. |
 | **Monats-Tour** | Jeden Monat drei Ziele aus deinem eigenen Wochenplan: die geplanten Krafteinheiten, die geplanten Fahrten (ohne Rad: vier Tage Jam, Unplugged oder Mobility) und halb so viele saubere Einheiten. Am Ende wartet der **Endgegner** des Monats, vom Frostriesen im Januar bis zum Krampus im Dezember, mit einer Lebensleiste, die mit jedem erfüllten Ziel ein Drittel verliert. Tage vor der ersten Einheit und in einer Verletzungspause zählen nicht zum Soll. Fällt der Gegner, sagt der Ansager **TOUR KOMPLETT**; dazu Aufnäher für 1, 3, 6 und 12 besiegte Monate. Die Karte steht im Merch, die Zeile im Wochenkopf. |
-| **Wochen-Soundcheck** | Sonntags für die laufende Woche, montags und dienstags noch für die vergangene: die Zahlen der Woche (Einheiten, Jams, Mobility, Fahrten, Tonnen, saubere Sätze), dazu „Lief gut“, „Hakt“ und drei Vorsätze. Er liegt als eigene Datei im Datenrepo (`soundcheck/JJJJ-Www.json`), ohne Netz in der Warteschlange. Die Vorsätze stehen danach im Wochenkopf, frühere Soundchecks in der Tour. Aufnäher für 4 und 12 Wochen in Folge. |
+| **Wochen-Soundcheck** | Sonntags für die laufende Woche, montags und dienstags noch für die vergangene: die Zahlen der Woche (Einheiten, Jams, Mobility, Fahrten, Tonnen, saubere Sätze), als Mischpult mit einem Fader je Zahl (gemessen an der eigenen Bestmarke der acht Wochen davor), dazu „Lief gut“, „Hakt“ und drei Vorsätze auf einer Setlist aus Papier. Er liegt als eigene Datei im Datenrepo (`soundcheck/JJJJ-Www.json`), ohne Netz in der Warteschlange. Die Vorsätze stehen danach im Wochenkopf, frühere Soundchecks in der Tour. Aufnäher für 4 und 12 Wochen in Folge. |
 | **Flightcase-Look** | Karten mit Kantenschutz an den Ecken wie am Case, Überschriften als Gaffa-Streifen mit Edding-Schrift, das Tageswort in Anton. Beide Schriften liegen im Repo (`assets/fonts/`, Lizenzen daneben), es wird nichts von außen geladen. |
 | **Ansage gegen Gefühl** | In der Tour: jede Einheit mit beiden Werten, dazu die Trefferquote — Ansage und gefühlte Schwere nebeneinander statt nur behauptet. |
 | **Wo du schief stehst** | Zwölf Kraftverhältnisse gegen Richtwerte *und* gegen deinen eigenen Stand vor der Pause. Fällt derselbe Lift in mehreren Paaren auf, nennt die App ihn als Ursache und schlägt Zusatzarbeit vor — ein einzelnes schiefes Paar sagt nicht, an welcher Seite es liegt. Verglichen werden nur Werte gleicher Güte. |
@@ -451,7 +451,7 @@ Wiederholungen. Abschaltbar unter *Backstage → Verbindungen*.
 | `js/export.js` | Einheiten als CSV, sicher gegen Formeln. |
 | `js/feuer.js` | Pixelfeuer (Doom-Algorithmus, eigene Umsetzung). |
 | `js/ansager.js` | Entscheidet, was nach der Einheit angesagt wird. |
-| `js/soundcheck.js` | Wochen-Soundcheck: Kalenderwochen, Fälligkeit, Serie, Bereinigen der Eingaben. |
+| `js/soundcheck.js` | Wochen-Soundcheck: Kalenderwochen, Fälligkeit, Serie, Faderstand, Bereinigen der Eingaben. |
 | `js/boot.js` | Thema, Speicherumzug und Einbett-Sperre vor dem ersten Bild. |
 | `js/store.js` | Datenspeicher: lokal im Browser oder im GitHub-Repo, dieselben Pfade; Offline-Puffer. |
 | `js/lokal.js` | Die lokale Ablage: Dateien in IndexedDB. |
@@ -481,7 +481,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-1867 Tests in 26 Dateien. Kein Build, keine Abhängigkeiten.
+1875 Tests in 26 Dateien. Kein Build, keine Abhängigkeiten.
 
 ### Browserproben (optional)
 

@@ -39,7 +39,8 @@
 
   --display:'Oswald',"Helvetica Neue",Helvetica,Arial,sans-serif;
   /* Flightcase: Gaffa fuer die Ueberschriften, Metall fuer die Ecken */
-  --tape:#e6dfcd; --corner:#57535c;
+  --tape:#e6dfcd; --corner:#57535c; --corner-hi:#a39fa8;
+  --case-shadow:0 10px 22px rgba(0,0,0,.42);
   --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,monospace;
   color-scheme:dark;
 
@@ -89,6 +90,13 @@ html{font-size:16px}
 html[data-schrift="gross"]{font-size:17.6px}
 html[data-schrift="sehr"]{font-size:19.2px}
 html,body{margin:0;padding:0}
+/* iPhone: Felder unter 16px loesen beim Antippen einen Zoom aus, der nicht
+   zurueckspringt. Auswahllisten stehen sonst auf der Browservorgabe (~13px);
+   auf Touch-Geraeten bekommt jedes Feld mindestens 16px. Ohne !important,
+   damit groessere Felder und "Sehr gross" bleiben, wie sie sind. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+select{font-size:1rem;font-family:inherit}
+@media (pointer:coarse){ input,textarea,select{font-size:max(16px,1rem)} }
 body{
   background:var(--bg); color:var(--fg);
   font:1rem/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
@@ -577,7 +585,8 @@ p.quelle{margin-top:10px;color:var(--dim);font-style:italic;line-height:1.5}
   --line:#ddd7cc;
 
   --akzent:#8a5410; --stahl:#3f5f78; --gruen:#4a6b33; --rost:#9c4a1c; --rot:#a33028;
-  --tape:#e2d6b6; --corner:#a99f90;
+  --tape:#e2d6b6; --corner:#a99f90; --corner-hi:#d8d0c3;
+  --case-shadow:0 6px 16px rgba(26,24,21,.10);
 
   --sunken:#efebe2;
   --leiste:linear-gradient(180deg,#ffffff,#f6f3ec);
@@ -1312,7 +1321,6 @@ button.tstop:hover .szene{border-color:var(--muted)}
   text-transform:uppercase;color:var(--dim)}
 .zitat figcaption::before{content:'— '}
 #zitat .meilenstein{margin-top:18px}
-:root[data-theme="light"] .plakat{box-shadow:0 1px 2px rgba(26,24,21,.05), 0 6px 16px rgba(26,24,21,.05)}
 
 /* ── Wochen-Soundcheck ──
    Faellig: ein Knopf unter dem Wochenkopf. Danach die Vorsaetze an derselben Stelle. */
@@ -1322,33 +1330,93 @@ button.tstop:hover .szene{border-color:var(--muted)}
   color:var(--fg);background:var(--tint-akzent);border:1px solid var(--akzent);border-radius:2px;
 }
 .sc-faellig:focus-visible{outline:2px solid var(--akzent);outline-offset:2px}
-.sc-vorsaetze{margin:0 15px 12px;padding-top:8px;border-top:1px solid var(--line)}
-.sc-vorsaetze ul{margin:4px 0 0;padding-left:18px;font-size:0.875rem;line-height:1.5;color:var(--fg)}
-.sc-vorsaetze li{overflow-wrap:anywhere}
-#sc-body .stats{grid-template-columns:repeat(auto-fill,minmax(min(130px,100%),1fr))}
-#sc-body .stat{min-width:0}
-#sc-body .stat .n{letter-spacing:.08em;overflow-wrap:anywhere;hyphens:auto}
-#sc-body .serie{margin-top:12px}
-.sc-feld{display:block;margin:16px 0 0;padding:0;border:0;min-width:0}
-.sc-feld > span, .sc-feld > legend{display:block;padding:0;margin-bottom:6px;font-family:var(--mono);font-size:0.75rem;
-  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+/* Die Vorsaetze dieser Woche: ein kleiner Zettel im Wochenkopf */
+.sc-vorsaetze{margin:4px 15px 14px}
+
+/* Pult: ein Kanalzug je Zahl der Woche. Der Fader steht gegen die
+   eigene Bestmarke der acht Wochen davor (soundcheck.js pegel). */
+.scmixer{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(6.5rem,100%),1fr));gap:12px 6px;
+  margin-top:14px;padding:12px 8px;border:2px solid var(--line);border-radius:2px;
+  background:repeating-linear-gradient(90deg,var(--raster) 0 1px,transparent 1px 14px),var(--sunken)}
+.scch{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0}
+.scch b{font-family:'Anton',var(--display);font-weight:400;font-size:clamp(1.25rem,6vw,1.75rem);line-height:1;
+  color:var(--fg);font-variant-numeric:tabular-nums;max-width:100%;overflow-wrap:anywhere;text-align:center}
+.scch span{font-family:var(--mono);font-size:0.6875rem;line-height:1.3;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.03em;text-align:center;max-width:100%;overflow-wrap:break-word;hyphens:auto}
+.sctrack{position:relative;width:8px;height:84px;background:var(--bg);border:1px solid var(--line);border-radius:4px}
+.sckn{position:absolute;left:50%;bottom:calc(var(--p,0) * (100% - 12px));width:30px;height:12px;margin-left:-15px;
+  background:linear-gradient(180deg,var(--corner-hi),var(--corner));border:1px solid rgba(0,0,0,.6);border-radius:2px;
+  box-shadow:0 2px 3px rgba(0,0,0,.45)}
+.sckn::after{content:'';position:absolute;left:3px;right:3px;top:4px;height:2px;background:var(--akzent)}
+@media (max-width:420px){ .sctrack{height:60px} }
+/* Serie als Leuchten */
+#sc-body .serie{margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.scleds{display:inline-flex;gap:5px}
+.scleds i{width:10px;height:10px;border-radius:50%;background:var(--sunken);border:1px solid var(--line)}
+.scleds i.an{background:var(--akzent);border-color:var(--akzent);box-shadow:0 0 6px var(--akzent)}
+
+/* Kleine Cases mit Gaffa-Titel, ueber die obere Kante geklebt */
+.sc-case{--ton:var(--line);position:relative;display:block;margin:26px 0 0;padding:22px 14px 12px;min-width:0;
+  border:2px solid var(--line);border-left:5px solid var(--ton);border-radius:2px;
+  background:linear-gradient(180deg,var(--panel2),var(--panel) 40px) var(--panel);box-shadow:var(--case-shadow)}
+.sc-case.gut{--ton:var(--gruen)} .sc-case.hakt{--ton:var(--rost)}
+.gaffa{position:absolute;top:-13px;left:8px;z-index:3;margin:0;max-width:calc(100% - 16px);
+  font-family:'Permanent Marker',var(--display);font-weight:400;font-size:0.9375rem;line-height:1.25;
+  letter-spacing:.03em;text-transform:uppercase;color:var(--bg);background:var(--tape);padding:3px 12px 2px;
+  transform:rotate(-1.2deg);overflow-wrap:anywhere;box-shadow:0 2px 3px rgba(0,0,0,.3);
+  clip-path:polygon(0 8%,3% 0,97% 5%,100% 0,99% 92%,96% 100%,4% 95%,0 100%)}
+.sc-case:nth-of-type(even) > .gaffa{transform:rotate(1deg)}
+:root[data-theme="light"] .gaffa{color:var(--fg)}
 #sc-body .sc-feld textarea{width:100%;margin:0}
-#sc-body .sc-vorsatz{display:block;width:100%;margin:0 0 8px}
-#sc-speichern{margin-top:10px}
-.sc-archiv .sc-eintrag + .sc-eintrag{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+
+/* Die Vorsaetze als Setlist auf Papier: Klebestreifen oben, Zahlen in
+   Anton, Edding auf gestrichelter Linie. Die Tinte wie bei den Gaffa-Titeln. */
+.scsetlist{--tinte:var(--bg);position:relative;margin:26px auto 0;padding:16px 18px 12px;max-width:560px;
+  background:var(--tape);color:var(--tinte);border-radius:1px;box-shadow:0 8px 16px rgba(0,0,0,.35);transform:rotate(-.6deg)}
+:root[data-theme="light"] .scsetlist{--tinte:var(--fg);box-shadow:0 6px 14px rgba(26,24,21,.16)}
+.scsetlist::before{content:'';position:absolute;top:-9px;left:42%;width:84px;height:20px;background:rgba(255,255,255,.4);transform:rotate(-3deg)}
+.scsetkopf{margin:0 0 4px;font-family:'Anton',var(--display);font-size:1.5rem;line-height:1.1;letter-spacing:.06em;
+  text-transform:uppercase;overflow-wrap:anywhere}
+.scsetlist .sc-feld{display:block;margin:0;padding:0;border:0;min-width:0}
+.scsetlist .sc-feld > legend{display:block;padding:0;margin-bottom:6px;font-family:var(--mono);font-size:0.75rem;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--tinte)}
+.scsetlist ol{margin:0;padding:0 0 0 30px;list-style:none;counter-reset:sc}
+.scsetlist li{counter-increment:sc;position:relative;padding:2px 0;font-family:'Permanent Marker',var(--display);
+  font-size:1.125rem;line-height:1.45;overflow-wrap:anywhere}
+.scsetlist li::before{content:counter(sc);position:absolute;left:-30px;top:2px;font-family:'Anton',var(--display);font-size:1.25rem}
+#sc-body .scsetlist .sc-vorsatz{display:block;width:100%;margin:0;padding:2px 0;background:transparent;color:var(--tinte);
+  border:0;border-bottom:2px dashed color-mix(in srgb,var(--tinte) 45%,transparent);border-radius:0;
+  font-family:'Permanent Marker',var(--display);font-size:1.125rem}
+#sc-body .scsetlist .sc-vorsatz::placeholder{color:color-mix(in srgb,var(--tinte) 70%,var(--tape));opacity:1}
+#sc-body .scsetlist .sc-vorsatz:focus{box-shadow:none;border-bottom-style:solid;border-bottom-color:var(--tinte);
+  outline:2px solid var(--tinte);outline-offset:2px}
+.scsetlist.klein{margin-top:14px;padding:12px 14px 8px;max-width:none}
+.scsetlist.klein .scsetkopf{font-size:1.0625rem}
+.scsetlist.klein li{font-size:1rem}
+.scsetlist.klein::before{width:60px;height:16px;top:-7px}
+#sc-speichern{margin-top:22px}
+
+/* Archiv: jede Woche ein Case, gestempelt */
+.sc-archiv .sc-case:first-child{margin-top:16px}
 .sc-eintrag p{margin:4px 0;font-size:0.875rem;overflow-wrap:anywhere}
-.sc-eintrag ul{margin:4px 0 0;padding-left:18px;font-size:0.875rem;overflow-wrap:anywhere}
+.sc-stempel{margin:12px 0 0 !important;text-align:right}
+.scstamp{display:inline-block;padding:0 8px;font-family:'Anton',var(--display);font-size:1.125rem;line-height:1.4;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--gruen);border:3px solid var(--gruen);border-radius:2px;transform:rotate(-6deg)}
 
 /* ── Flightcase ──
-   Kantenschutz aus Metall an allen vier Ecken der Karten, wie am Case.
-   Nur Deko: liegt ueber der Kante, faengt keine Klicks. */
+   Kantenschutz aus Metall: an jeder Ecke ein Winkel, zwei Schenkel mit
+   Lichtkante. Liegt ueber der Kante, faengt keine Klicks. Dazu ein Rand
+   wie am Case und ein Schatten, der die Kiste vom Boden hebt. */
 .card, .plakat, .woche-karte, .kutte, .monatstour{position:relative}
-.card::after, .plakat::after, .woche-karte::after, .kutte::after{
-  content:'';position:absolute;inset:-1px;pointer-events:none;z-index:2;
+.card, .plakat, .woche-karte, .kutte{border-width:2px}
+.plakat{border-top-width:3px}
+.card::after, .plakat::after, .woche-karte::after, .kutte::after, .sc-case::after{
+  content:'';position:absolute;inset:-4px;pointer-events:none;z-index:2;
+  --k:linear-gradient(135deg,var(--corner-hi),var(--corner));
   background:
-    linear-gradient(135deg,var(--corner) 0 8px,transparent 8px) top left/13px 13px no-repeat,
-    linear-gradient(225deg,var(--corner) 0 8px,transparent 8px) top right/13px 13px no-repeat,
-    linear-gradient(45deg,var(--corner) 0 8px,transparent 8px) bottom left/13px 13px no-repeat,
-    linear-gradient(315deg,var(--corner) 0 8px,transparent 8px) bottom right/13px 13px no-repeat;
+    var(--k) left top/16px 4px no-repeat, var(--k) left top/4px 16px no-repeat,
+    var(--k) right top/16px 4px no-repeat, var(--k) right top/4px 16px no-repeat,
+    var(--k) left bottom/16px 4px no-repeat, var(--k) left bottom/4px 16px no-repeat,
+    var(--k) right bottom/16px 4px no-repeat, var(--k) right bottom/4px 16px no-repeat;
 }
-.card, .plakat, .woche-karte{box-shadow:0 2px 0 rgba(0,0,0,.28)}
+.card, .plakat, .woche-karte, .kutte{box-shadow:var(--case-shadow)}
