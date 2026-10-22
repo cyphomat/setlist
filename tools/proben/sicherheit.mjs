@@ -130,4 +130,22 @@ export default async function ({ browser, pruefe }) {
     pruefe('keine Seitenfehler (CSV)', !fehler.length, fehler.join(' | '));
     await ctx.close();
   }
+
+  /* 5 · Felder aus Einheiten bleiben Text — auch Workout-Name und Datum in der Tour */
+  {
+    const roh = verlauf('2026-09-28');
+    const letzteKraft = roh.map(l => l.type).lastIndexOf('strength');
+    const eigene = roh.map((l, i) => i === letzteKraft
+      ? { ...l, workout: '<b>X</b><img src=x onerror="window.__xss=1">', angesagt: 'HART', gefuehlt: 'hart' } : l);
+    const { ctx, p, fehler } = await kontext(browser, { logs: eigene, config: CONFIG, heute: '2026-10-01' });
+    await p.click('#go-history');
+    await p.click('#tour-tab-kraft');
+    await p.waitForFunction(() => /Workout/.test(document.getElementById('hist-ansage').textContent), null, { timeout: 8000 }).catch(() => {});
+    const ansage = (await p.textContent('#hist-ansage')).replace(/\s+/g, ' ');
+    pruefe('Ansage gegen Gefühl: Workout-Name als Text', ansage.includes('<b>X</b>'), ansage.slice(0, 160));
+    pruefe('Ansage gegen Gefühl: kein <b> und kein <img> im DOM', !(await p.$('#hist-ansage b')) && !(await p.$('#hist-ansage img')));
+    pruefe('Workout-Name führt keinen Code aus', !(await p.evaluate(() => window.__xss === 1)));
+    pruefe('keine Seitenfehler (Workout-Name)', !fehler.length, fehler.join(' | '));
+    await ctx.close();
+  }
 }

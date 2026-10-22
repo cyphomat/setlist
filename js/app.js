@@ -1200,7 +1200,7 @@ function renderDone(before, log) {
     ${setlistZettel(log)}
     <div id="done-aufnaeher"></div>
     ${kopf ? `<div class="erfolg-kopf">
-      <span class="kicker">Workout ${log.workout} · ${log.date.slice(8)}.${log.date.slice(5,7)}.</span>
+      <span class="kicker">Workout ${escHtml(log.workout)} · ${escHtml(log.date.slice(8))}.${escHtml(log.date.slice(5, 7))}.</span>
       <p class="gross">${escHtml(kopf.text)}</p>
     </div>` : ''}
     ${rest.length ? `<div class="erfolge">${rest.map(w => `<div class="erfolg">${escHtml(w.text)}</div>`).join('')}</div>` : ''}
@@ -2096,7 +2096,7 @@ async function wodAbschliessen() {
   $('stopwatch').hidden = true;
   $('done-body').innerHTML = `
     <div class="card">
-      <div class="kicker">${log.date} · WOD</div>
+      <div class="kicker">${escHtml(log.date)} · WOD</div>
       <div class="name">${Math.floor(swSek / 60)}:${String(swSek % 60).padStart(2, '0')}</div>
       <ul>${wod.teile.map(teil => `<li><span>${teil.name}</span><span>${teil.menge ? `${teil.menge} ${teil.einheit}` : '20/10'}</span></li>`).join('')}</ul>
     </div>
@@ -3030,7 +3030,7 @@ function renderAnsageAbgleich(logs) {
 
   const zeilen = a.eintraege.map(e => `
     <div class="pr" style="border-left:2px solid ${URTEIL_FARBE[e.urteil]}">
-      <div class="k">${e.date.slice(8)}.${e.date.slice(5, 7)}. · Workout ${e.workout}</div>
+      <div class="k">${escHtml(e.date.slice(8))}.${escHtml(e.date.slice(5, 7))}. · Workout ${escHtml(e.workout)}</div>
       <div class="reihe"><span class="l">${t('ans.angesagt')}</span>
         <span class="v"><span class="tone ${ANSAGE_TONE[e.angesagt]}" style="font-size:0.59375rem;padding:2px 7px">${escHtml(tonWort(e.angesagt))}</span></span></div>
       <div class="reihe"><span class="l">${t('ans.gefuehlt')}</span><span class="v">${gefuehlLabel(e.gefuehlt)}</span></div>
@@ -4003,7 +4003,7 @@ function plakatHtml(d, plan) {
     ${hinweise ? `<div class="hinweise">${hinweise}</div>` : ''}
     <div class="programm">
       <div class="kicker">${t(workoutOverride ? 'home.selbstGewaehlt' : 'home.alsNaechstes')}</div>
-      <div class="name">WORKOUT ${plan.workout}</div>
+      <div class="name">WORKOUT ${escHtml(plan.workout)}</div>
       <ul>${plan.lifts.map(l => `
         <li><span class="ln">${escHtml(l.name)}</span><span class="num">${l.sets}×${l.reps}</span><span class="kg">${P.fmtWeight(l.weight)}</span></li>`).join('')}
       </ul>

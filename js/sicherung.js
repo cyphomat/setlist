@@ -24,6 +24,16 @@ export const erlaubt = p => typeof p === 'string' && !p.includes('..') &&
 const objekt = v => v !== null && typeof v === 'object' && !Array.isArray(v);
 const DATUM = /^\d{4}-\d{2}-\d{2}$/;
 
+/**
+ * Textfelder einer Einheit muessen Text sein. Eine fremde Datei kann
+ * `workout: {}` tragen; die Anzeige wuerde daran scheitern. Vorhanden
+ * heisst: nicht null und nicht undefined.
+ */
+const TEXTFELDER = ['type', 'workout', 'lift', 'check', 'uebung', 'grund', 'angesagt', 'gefuehlt'];
+const logGueltig = d => DATUM.test(String(d.date || ''))
+  && TEXTFELDER.every(k => d[k] == null || typeof d[k] === 'string')
+  && (d.lifts == null || Array.isArray(d.lifts));
+
 /** Die Sicherung aus [{ path, data }]. */
 export function paket(dateien = [], jetzt = new Date()) {
   const out = {};
@@ -43,7 +53,7 @@ export function pruefe(json) {
   const dateien = [];
   let verworfen = 0;
   for (const [path, data] of Object.entries(json.dateien)) {
-    const gut = erlaubt(path) && objekt(data) && (!istLog(path) || DATUM.test(String(data.date || '')));
+    const gut = erlaubt(path) && objekt(data) && (!istLog(path) || logGueltig(data));
     if (gut) dateien.push({ path, data }); else verworfen++;
   }
   dateien.sort((a, b) => a.path.localeCompare(b.path));

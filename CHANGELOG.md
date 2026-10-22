@@ -10,6 +10,24 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-22.2
+
+### Behoben — Sicherheit
+- **Felder aus eingelesenen Sicherungen werden überall maskiert.** Seit man Sicherungen
+  einlesen kann, können Einheiten aus einer fremden Datei stammen. An vier Stellen
+  (Ansage gegen Gefühl in der Tour, Fertig-Ansicht, WOD-Abschluss, Programm auf Home)
+  standen Workout-Name und Datum ohne Maskierung im HTML. Code konnte darüber wegen der
+  Content-Security-Policy nie laufen, aber fremdes HTML wäre sichtbar gewesen. Jetzt
+  erscheint es als Text.
+- **Einheiten mit falschen Feldtypen werden beim Einlesen verworfen.** Ein Workout-Name,
+  der kein Text ist, oder `lifts`, das keine Liste ist, ließ die Tour früher beim
+  Anzeigen scheitern. Solche Einheiten fallen jetzt heraus und werden als verworfen
+  gezählt, wie schon bei einem kaputten Datum.
+
+Abhängigkeiten gibt es nach wie vor keine, die Actions sind auf Commits festgelegt.
+
+---
+
 ## 2026-10-22.1
 
 ### Neu

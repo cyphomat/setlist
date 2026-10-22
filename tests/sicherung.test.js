@@ -83,4 +83,21 @@ ok('vor drei Wochen, seitdem trainiert: ja', SI.sicherungFaellig({ lokal: true, 
 ok('vor drei Wochen, seitdem nichts: nein', !SI.sicherungFaellig({ lokal: true, letzte: '2026-09-26T08:00:00Z', neuesteEinheit: '2026-09-20', heute }));
 eq('Dateiname', SI.dateiname(new Date(2026, 9, 7)), 'setlist-sicherung-2026-10-07.json');
 
+print('\n--- Felder mit falschem Typ ---');
+{
+  const roh = (extra, name = 'einheiten/2026-10-01.json') => ({ app: 'setlist', format: 1,
+    dateien: { [name]: einheit('2026-10-01', extra), 'einheiten/gut.json': einheit('2026-10-02') } });
+  const mit = extra => SI.pruefe(roh(extra));
+  eq('workout als Objekt: verworfen', mit({ workout: {} }).dateien.length, 1);
+  eq('und gezaehlt', mit({ workout: {} }).verworfen, 1);
+  eq('lifts als Text: verworfen', mit({ lifts: 'x' }).dateien.length, 1);
+  eq('type als Zahl: verworfen', mit({ type: 7 }).dateien.length, 1);
+  eq('Unsinn in lift: verworfen', mit({ lift: ['squat'] }).dateien.length, 1);
+  eq('angesagt als Objekt: verworfen', mit({ angesagt: { a: 1 } }).dateien.length, 1);
+  eq('workout als Text mit HTML bleibt (maskiert wird bei der Anzeige)', mit({ workout: '<b>A</b>' }).dateien.length, 2);
+  eq('null zaehlt als nicht vorhanden', mit({ grund: null }).dateien.length, 2);
+  eq('alte Einheit ohne die Felder bleibt', SI.pruefe(roh({ lifts: undefined })).dateien.length, 2);
+  eq('Programm bleibt ohne diese Pruefung', SI.pruefe({ app: 'setlist', format: 1, dateien: { 'config.json': { workout: {} } } }).dateien.length, 1);
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);
