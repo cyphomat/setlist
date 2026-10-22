@@ -158,9 +158,16 @@ export function directive(state, config, today = new Date(), letzterLog = null, 
 // damit. Es bleibt deshalb in jeder Sprache deutsch — uebersetzt wird nur
 // die Anzeige (tonWort in app.js). Der Satz dazu ist reine Anzeige.
 function intensitaet(situation, workout, erholung) {
+  if (erholung && erholung.stufe === 'belastet' && erholung.grund === 'puls') {
+    return { stufe: 'technik', label: 'TECHNIK',
+      text: t('coach.int.puls', { puls: erholung.ruhepuls, basis: erholung.ruhepulsBasis }) };
+  }
   if (erholung && erholung.stufe === 'belastet') {
     return { stufe: 'technik', label: 'TECHNIK',
       text: t('coach.int.hrv', { hrv: erholung.hrv, basis: erholung.basis }) };
+  }
+  if (erholung && erholung.stufe === 'muede') {
+    return { stufe: 'technik', label: 'TECHNIK', text: t('coach.int.muede') };
   }
   if (erholung && erholung.stufe === 'kurz') {
     return { stufe: 'technik', label: 'TECHNIK',
@@ -263,23 +270,37 @@ export function formLage(wellness) {
  * Trainingslast) nicht erfasst — Krankheit, Stress, eine kurze Nacht.
  */
 export function erholung(wellness = []) {
-  const clean = [...wellness].filter(w => w.hrv != null || w.sleepSecs != null)
-    .sort((a, b) => a.date.localeCompare(b.date));
+  const zaehlt = w => w.hrv != null || w.sleepSecs != null || w.restingHR != null || w.soreness != null || w.fatigue != null;
+  const clean = [...wellness].filter(zaehlt).sort((a, b) => a.date.localeCompare(b.date));
   if (!clean.length) return null;
   const heute = clean[clean.length - 1];
+  const davor = clean.slice(0, -1);
+  // Grundlinie: Schnitt der bis zu sieben Tage davor, ab drei Werten
+  const basisAus = feld => {
+    const werte = davor.filter(w => w[feld] != null).slice(-7).map(w => w[feld]);
+    return werte.length >= 3 ? Math.round(werte.reduce((s, v) => s + v, 0) / werte.length) : null;
+  };
 
-  const vorherigeHrv = clean.slice(0, -1).filter(w => w.hrv != null).slice(-7).map(w => w.hrv);
-  const basis = vorherigeHrv.length >= 3
-    ? Math.round(vorherigeHrv.reduce((s, v) => s + v, 0) / vorherigeHrv.length)
-    : null;
+  const basis = basisAus('hrv');
   const hrv = heute.hrv != null ? Math.round(heute.hrv) : null;
   const schlafStunden = heute.sleepSecs != null ? Math.round(heute.sleepSecs / 360) / 10 : null;
+  // Ein Ruhepuls sieben Schlaege ueber der eigenen Grundlinie ist ein
+  // klassisches Zeichen fuer Infekt, Stress oder zu wenig Erholung.
+  const ruhepulsBasis = basisAus('restingHR');
+  const ruhepuls = heute.restingHR != null ? heute.restingHR : null;
+  // Eigene Einschaetzung 1–4, 4 ist am schlechtesten
+  const befinden = {};
+  for (const k of ['soreness', 'fatigue', 'stress', 'mood', 'motivation', 'sleepQuality']) if (heute[k] != null) befinden[k] = heute[k];
+  const kater = befinden.soreness || 0, muede = befinden.fatigue || 0;
 
-  let stufe = 'ok';
-  if (basis != null && hrv != null && hrv < basis * 0.85) stufe = 'belastet';
-  else if (schlafStunden != null && schlafStunden < 6) stufe = 'kurz';
+  let stufe = 'ok', grund = null;
+  if (basis != null && hrv != null && hrv < basis * 0.85) { stufe = 'belastet'; grund = 'hrv'; }
+  else if (ruhepulsBasis != null && ruhepuls != null && ruhepuls >= ruhepulsBasis + 7) { stufe = 'belastet'; grund = 'puls'; }
+  else if (kater >= 4 || muede >= 4 || (kater >= 3 && muede >= 3)) { stufe = 'muede'; grund = 'befinden'; }
+  else if (schlafStunden != null && schlafStunden < 6) { stufe = 'kurz'; grund = 'schlaf'; }
 
-  return { stufe, hrv, basis, schlafStunden, datum: heute.date };
+  return { stufe, grund, hrv, basis, schlafStunden, ruhepuls, ruhepulsBasis, befinden,
+    schlafwert: heute.sleepScore != null ? heute.sleepScore : null, datum: heute.date };
 }
 
 /* ---------------------------------------------------------------

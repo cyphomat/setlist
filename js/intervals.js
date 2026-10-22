@@ -129,6 +129,27 @@ export function normalisiere(fahrten = []) {
   });
 }
 
+/** Ganze Zahl in [von, bis] — sonst null. */
+const ganzZwischen = (v, von, bis) => (Number.isInteger(v) && v >= von && v <= bis ? v : null);
+
+/**
+ * Neue Bestwerte einer Fahrt aus `icu_achievements`. ACHTUNG, ungeprueft:
+ * Die Form der Eintraege ist nicht belegt. Gelesen wird deshalb nur, was
+ * den erwarteten Typ hat — `type`, `secs`, `watts` oder `value`, `message` —
+ * und alles andere faellt still heraus.
+ */
+function bestwerte(liste) {
+  if (!Array.isArray(liste)) return null;
+  const zahl = v => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+  const out = liste.filter(x => x && typeof x === 'object' && !Array.isArray(x)).map(x => ({
+    typ: typeof x.type === 'string' ? x.type.slice(0, 40) : null,
+    secs: zahl(x.secs) > 0 ? Math.round(x.secs) : null,
+    wert: zahl(x.watts) ?? zahl(x.value),
+    text: typeof x.message === 'string' && x.message.trim() ? x.message.trim().slice(0, 120) : null
+  })).filter(b => b.text || (b.secs && b.wert != null)).slice(0, 10);
+  return out.length ? out : null;
+}
+
 /** Eine Radaktivitaet aus intervals.icu, auf das Noetige reduziert. */
 export function alsFahrt(a) {
   return {
@@ -173,6 +194,12 @@ export function alsFahrt(a) {
     // Beide Namen aus dem Activity-Schema, wie die Watt-Felder oben.
     kadenz: a.average_cadence > 0 ? Math.round(a.average_cadence) : null,
     kcal: a.calories > 0 ? Math.round(a.calories) : null,
+    // ACHTUNG, ungeprueft: `icu_rpe` (1–10) und `feel` (1 = stark … 5 = schwach)
+    // stammen aus Community-Quellen, nicht aus dem Schema. Was ausserhalb der
+    // Skala liegt, wird verworfen statt umgedeutet.
+    rpe: ganzZwischen(a.icu_rpe, 1, 10),
+    gefuehl: ganzZwischen(a.feel, 1, 5),
+    bestwerte: bestwerte(a.icu_achievements),
     trainer: !!a.trainer,
     // {id, secs} je Zone. Nur die belegten, sonst blaeht das den
     // Zwischenspeicher fuer nichts auf.
@@ -191,23 +218,43 @@ export async function rides(from, to) {
   return entdoppeln(list.filter(a => RIDE_TYPES.includes(a.type)).map(alsFahrt));
 }
 
+/** Ein Wellness-Tag aus intervals.icu, auf das Noetige reduziert. */
+export function alsWellness(w = {}) {
+  const zahl = v => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+  const stufe = v => ganzZwischen(v, 1, 4);
+  return {
+    date: w.id,
+    weight: w.weight || null,
+    eftp: w.eftp || null,
+    ctl: w.ctl != null ? w.ctl : null,
+    atl: w.atl != null ? w.atl : null,
+    restingHR: zahl(w.restingHR) > 0 ? Math.round(w.restingHR) : null,
+    // hrv kommt bei Apple-Health-Quellen (z.B. via HealthFit) als SDNN in ms.
+    hrv: w.hrv != null ? w.hrv : null,
+    sleepSecs: w.sleepSecs != null ? w.sleepSecs : null,
+    // ACHTUNG, ungeprueft: Namen und Skalen aus Community-Quellen. Die
+    // eigenen Einschaetzungen laufen in intervals.icu von 1 bis 4, und 4
+    // ist jeweils die schlechteste Stufe (Kater, Muedigkeit, Stress extrem;
+    // Stimmung mies; Motivation niedrig; Schlaf schlecht).
+    soreness: stufe(w.soreness),
+    fatigue: stufe(w.fatigue),
+    stress: stufe(w.stress),
+    mood: stufe(w.mood),
+    motivation: stufe(w.motivation),
+    sleepQuality: stufe(w.sleepQuality),
+    sleepScore: zahl(w.sleepScore) != null && w.sleepScore >= 0 && w.sleepScore <= 100 ? Math.round(w.sleepScore) : null,
+    // Wie schnell die Fitness (ctl) je Woche steigt.
+    rampRate: zahl(w.rampRate)
+  };
+}
+
 /** Wellness-Daten: Gewicht, Fitness (ctl), Ermuedung (atl), HRV und Schlaf. */
 export async function wellness(from, to) {
   const id = localStorage.getItem(KEY_ID);
   if (!id) return [];
   const list = await get(`/athlete/${id}/wellness?oldest=${from}&newest=${to}`);
   if (!Array.isArray(list)) return [];
-  return list.map(w => ({
-    date: w.id,
-    weight: w.weight || null,
-    eftp: w.eftp || null,
-    ctl: w.ctl != null ? w.ctl : null,
-    atl: w.atl != null ? w.atl : null,
-    restingHR: w.restingHR || null,
-    // hrv kommt bei Apple-Health-Quellen (z.B. via HealthFit) als SDNN in ms.
-    hrv: w.hrv != null ? w.hrv : null,
-    sleepSecs: w.sleepSecs != null ? w.sleepSecs : null
-  }));
+  return list.map(alsWellness);
 }
 
 /** Der juengste Eintrag mit Fitness- und Ermuedungswert. */

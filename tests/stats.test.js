@@ -1002,4 +1002,32 @@ print('\n--- Rad: Kopfzahlen, Zone, Kadenz, NP ---');
   eq('ohne Paare kein Aufschlag', S.wattGegenNp([]).aufschlag, null);
 }
 
+print('\n--- Rampe, RPE, Rad-Bestwerte ---');
+{
+  const fv = S.formVerlauf([{ date: '2026-10-01', ctl: 40, atl: 50, rampRate: 6.24 }, { date: '2026-10-02', ctl: 41, atl: 49 }]);
+  eq('Rampe wird gerundet durchgereicht', fv[0].rampe, 6.2);
+  eq('ohne Rampe null', fv[1].rampe, null);
+  eq('juengste Rampe mit Wert zaehlt', S.rampenLage(fv).stufe, 'steil');
+  eq('unter null: ruhig', S.rampenLage([{ date: 'a', rampe: -2 }]).stufe, 'ruhig');
+  eq('0 bis unter 5: Aufbau', S.rampenLage([{ date: 'a', rampe: 4.9 }]).stufe, 'aufbau');
+  eq('genau 8: noch steil', S.rampenLage([{ date: 'a', rampe: 8 }]).stufe, 'steil');
+  eq('ueber 8: zu steil', S.rampenLage([{ date: 'a', rampe: 8.1 }]).stufe, 'zuSteil');
+  eq('ohne Werte: null', S.rampenLage([{ date: 'a', rampe: null }]), null);
+  const ab = S.intensitaetsAbgleich([{ date: '2026-10-01', intensitaet: 0.7, rpe: 4, gefuehl: 2 }], () => ({ label: 'Z2', ftp: [0.6, 0.75] }));
+  ok('Abgleich reicht RPE und Gefuehl durch', ab[0].rpe === 4 && ab[0].gefuehl === 2);
+  const bil = S.rpeBilanz([{ stufe: 'imZiel', rpe: 4 }, { stufe: 'imZiel', rpe: 5 }, { stufe: 'zuHart', rpe: 8 }, { stufe: 'zuLocker' }]);
+  eq('RPE im Ziel', bil.imZiel, 4.5);
+  eq('eine Fahrt reicht nicht', bil.zuHart, null);
+  eq('ohne RPE keine Bilanz', S.rpeBilanz([{ stufe: 'imZiel' }]), null);
+  const bw = S.radBestwerte([
+    { date: '2026-10-01', name: 'A', bestwerte: [{ secs: 300, wert: 200, text: null }] },
+    { date: '2026-10-05', name: 'B', bestwerte: [{ text: 'Neuer 20-min-Bestwert' }, { secs: 5, wert: 600 }] },
+    { date: '2026-10-03', name: 'C' }
+  ]);
+  eq('Bestwerte: neueste Fahrt zuerst', bw.map(b => b.fahrt).join(), 'B,B,A');
+  eq('mit Datum', bw[2].date, '2026-10-01');
+  eq('hoechstens zwoelf', S.radBestwerte([{ date: '2026-10-01', bestwerte: Array.from({ length: 10 }, () => ({ text: 'x' })) },
+    { date: '2026-10-02', bestwerte: Array.from({ length: 10 }, () => ({ text: 'y' })) }]).length, 12);
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

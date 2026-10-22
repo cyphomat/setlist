@@ -580,6 +580,12 @@ p.quelle{margin-top:10px;color:var(--dim);font-style:italic;line-height:1.5}
 .radbar .legende{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:7px;font-family:var(--mono);font-size:0.71875rem;color:var(--muted)}
 .radbar .legende i{display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px}
 .radbar .legende i.watt{background:var(--stahl)} .radbar .legende i.np{background:var(--akzent)}
+.fahrt .chip.best{color:var(--akzent);border-color:var(--akzent)}
+.bestliste{list-style:none;margin:0;padding:0}
+.bestliste li{display:flex;flex-direction:column;gap:2px;padding:7px 0;border-top:1px solid var(--line);min-width:0}
+.bestliste li:first-child{border-top:0;padding-top:0}
+.bestliste .best-wann{font-family:var(--mono);font-size:0.71875rem;color:var(--muted);overflow-wrap:anywhere}
+.bestliste .best-was{font-size:0.875rem;color:var(--fg);overflow-wrap:anywhere}
 
 /* ═══════════════════════════════════════════════════════════
    Helle Fassung. Keine Invertierung: Leuchten werden abgeschaltet

@@ -114,4 +114,33 @@ export default async function ({ browser, pruefe }) {
       }
     }
   }
+
+  /* Ruhepuls und Befinden aus intervals.icu: Technik statt Last */
+  {
+    const basis = (extra = {}) => Array.from({ length: 10 }, (_, i) => {
+      const d = new Date(2026, 8, 22 + i);
+      return { id: P.ymd(d), ctl: 40, atl: 38, sleepSecs: 7.5 * 3600, restingHR: 48, ...(i === 9 ? extra : {}) };
+    });
+    for (const [name, w, erwartet, chip] of [
+      ['ruhepuls', basis({ restingHR: 57 }), /Ruhepuls 57 statt sonst 48/, /Ruhepuls 57/],
+      ['muskelkater', basis({ soreness: 4 }), /starken Muskelkater/, /Muskelkater hoch/]
+    ]) {
+      for (const [breite, schrift, theme] of [[390, null, 'dunkel'], [360, 'sehr', 'hell']]) {
+        const tag = `${name}/${theme}/${breite}${schrift ? '/sehr' : ''}`;
+        const { ctx, p, fehler } = await kontext(browser, { logs: verlauf('2026-09-28'), config: CONFIG, heute: '2026-10-01',
+          breite, schrift, theme, vorher: icu(w, []) });
+        await p.waitForTimeout(900);
+        const heute = (await p.textContent('#today')).replace(/\s+/g, ' ');
+        pruefe(`${tag}: Ansage nennt den Grund`, erwartet.test(heute), heute.slice(0, 220));
+        const instr = await p.$$eval('#instrumente .instr', l => l.map(x => x.textContent.trim()));
+        pruefe(`${tag}: Instrument zeigt es`, instr.some(x => chip.test(x)), instr.join(' | '));
+        const k = (await kontraste(p, '#today .tageswort, #today p, #instrumente .instr')).filter(x => x.wert < 4.5);
+        pruefe(`${tag}: Kontrast ≥ 4,5`, !k.length, JSON.stringify(k.slice(0, 3)));
+        const u = await ueberlauf(p);
+        pruefe(`${tag}: kein Querlauf`, !u.scroll && !u.raus.length, JSON.stringify(u));
+        pruefe(`keine Seitenfehler (${tag})`, !fehler.length, fehler.join(' | '));
+        await ctx.close();
+      }
+    }
+  }
 }

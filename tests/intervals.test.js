@@ -226,4 +226,28 @@ print('\n--- Fahrt aus intervals.icu ---');
   ok('ohne Werte: null', leer.kadenz === null && leer.kcal === null);
 }
 
+print('\n--- RPE, Gefuehl, Bestwerte, Wellness ---');
+{
+  const f = I.alsFahrt({ id: 'i3', icu_rpe: 6, feel: 2, icu_achievements: [
+    { type: 'BEST_POWER', secs: 300, watts: 210, message: 'Neuer 5-min-Bestwert: 210 W' },
+    { secs: 20, value: 400 }, 'kaputt', null, [1], { foo: 1 }, { message: '<b>fett</b>' }] });
+  eq('RPE', f.rpe, 6);
+  eq('Gefuehl', f.gefuehl, 2);
+  eq('nur brauchbare Bestwerte', f.bestwerte.length, 3);
+  eq('Typ, Dauer, Wert, Text', JSON.stringify(f.bestwerte[0]), JSON.stringify({ typ: 'BEST_POWER', secs: 300, wert: 210, text: 'Neuer 5-min-Bestwert: 210 W' }));
+  eq('value statt watts', f.bestwerte[1].wert, 400);
+  eq('HTML bleibt Text, die Anzeige maskiert', f.bestwerte[2].text, '<b>fett</b>');
+  const aus = I.alsFahrt({ id: 'i4', icu_rpe: 11, feel: 0, icu_achievements: [] });
+  ok('ausserhalb der Skala und leer: null', aus.rpe === null && aus.gefuehl === null && aus.bestwerte === null);
+  eq('hoechstens zehn', I.alsFahrt({ icu_achievements: Array.from({ length: 15 }, () => ({ message: 'x' })) }).bestwerte.length, 10);
+  const w = I.alsWellness({ id: '2026-10-01', restingHR: 51.4, soreness: 3, fatigue: 5, mood: 2.5, sleepScore: 82, rampRate: 6.3, hrv: 48 });
+  eq('Wellness: Datum', w.date, '2026-10-01');
+  eq('Ruhepuls gerundet', w.restingHR, 51);
+  eq('Kater 3', w.soreness, 3);
+  ok('ausserhalb 1–4 oder krumm: null', w.fatigue === null && w.mood === null);
+  eq('Schlafwert', w.sleepScore, 82);
+  eq('Rampe', w.rampRate, 6.3);
+  ok('fehlt alles: null', I.alsWellness({ id: 'x' }).restingHR === null && I.alsWellness({ id: 'x' }).rampRate === null);
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

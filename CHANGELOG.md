@@ -10,6 +10,25 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-22.1
+
+### Neu
+- **Ruhepuls und Befinden fließen in die Ansage ein.** Liegt der Ruhepuls 7 Schläge über
+  deinem Schnitt der Tage davor, oder hast du in intervals.icu starken Muskelkater oder
+  große Müdigkeit eingetragen, sagt die App TECHNIK an und nennt den Grund. Das Instrument
+  „Erholung“ auf Home zeigt Ruhepuls, Schlafwert, Muskelkater und Müdigkeit.
+- **Rampe unter Fitness und Ermüdung.** Wie schnell deine Fitness je Woche steigt, mit
+  Einordnung: ruhiger Aufbau, steil, oder über 8 zu steil für Sehnen und Gelenke.
+- **RPE und Gefühl je Fahrt.** Was du in intervals.icu einträgst, steht an jeder Fahrt;
+  bei *Plan gegen Ist* steht der Ø RPE der Fahrten im Ziel und daneben.
+- **Rad-Bestwerte.** Neue Leistungs-Bestwerte, die intervals.icu je Fahrt meldet, stehen
+  gesammelt unter *Tour → Rad*, und die Fahrt trägt einen Stern.
+
+Die neuen Feldnamen stammen nicht aus der offiziellen API-Beschreibung, sondern aus
+Community-Quellen. Fehlt ein Feld oder kommt es anders, fällt die Anzeige still weg.
+
+---
+
 ## 2026-10-21.2
 
 ### Neu

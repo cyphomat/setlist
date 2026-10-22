@@ -3075,13 +3075,20 @@ function formZeile() {
 /** HRV/Schlaf aus intervals.icu — separat von Form, weil beide etwas anderes sehen. */
 function erholungsZeile() {
   if (!erholung) return '';
-  const farbe = { ok: 'var(--gruen)', kurz: 'var(--rost)', belastet: 'var(--rot)' }[erholung.stufe];
+  const farbe = FARBE.erholung[erholung.stufe];
   const label = t(`erh.${erholung.stufe}`);
   const teile = [];
   if (erholung.hrv != null) teile.push(erholung.basis != null
     ? t('erh.hrvBasis', { v: erholung.hrv, b: erholung.basis })
     : t('erh.hrv', { v: erholung.hrv }));
+  if (erholung.ruhepuls != null) teile.push(erholung.ruhepulsBasis != null
+    ? t('erh.ruhepulsBasis', { v: erholung.ruhepuls, b: erholung.ruhepulsBasis })
+    : t('erh.ruhepuls', { v: erholung.ruhepuls }));
   if (erholung.schlafStunden != null) teile.push(t('erh.schlaf', { h: erholung.schlafStunden }));
+  if (erholung.schlafwert != null) teile.push(t('erh.schlafwert', { v: erholung.schlafwert }));
+  const bf = erholung.befinden || {};
+  if (bf.soreness >= 3) teile.push(t('erh.kater'));
+  if (bf.fatigue >= 3) teile.push(t('erh.muedigkeit'));
   return `<p class="formzeile" style="border-top-color:${farbe}">
     <span class="fw" style="color:${farbe}">${t('erh.zeile', { label })}</span>
     <span class="ft">${teile.join(' · ') || t('erh.keineWerte')}</span>
@@ -3202,6 +3209,7 @@ function renderRad() {
     </div>
     ${kadenzKarte(fahrten)}
     ${npKarte(fahrten)}
+    ${bestwerteKarte(fahrten)}
     ${sortiert.slice(0, 20).map(fahrtZeile).join('')}
     ${sortiert.length > 20 ? `<p class="fine">${t('rad.weitere', { n: sortiert.length - 20 })}</p>` : ''}`;
 }
@@ -3215,7 +3223,9 @@ function fahrtZeile(r) {
   const zone = ST.hauptZone(r.zonen);
   const ifWert = r.intensitaet > 0 ? r.intensitaet.toLocaleString(locale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : null;
   const werte = [chip('watt', r.watt && Math.round(r.watt)), chip('np', r.np && Math.round(r.np)), chip('if', ifWert),
-    chip('last', r.load && Math.round(r.load)), chip('hf', r.hf && Math.round(r.hf)), chip('kadenz', r.kadenz)].join('');
+    chip('last', r.load && Math.round(r.load)), chip('hf', r.hf && Math.round(r.hf)), chip('kadenz', r.kadenz),
+    chip('rpe', r.rpe), r.gefuehl ? `<span class="chip">${escHtml(t(`rad.gefuehl.${r.gefuehl}`))}</span>` : '',
+    Array.isArray(r.bestwerte) && r.bestwerte.length ? `<span class="chip best">${escHtml(t('rad.chip.best'))}</span>` : ''].join('');
   return `
       <div class="fahrt">
         <div class="d">${escHtml(r.date)}</div>
@@ -3253,6 +3263,20 @@ function kadenzKarte(fahrten) {
       <div class="h" style="margin:7px 0 0"><span class="t">${escHtml(punkte[0].date.slice(5))}</span>
         <span class="t ziel">${t('rad.kadenzZiel', { ziel: k.ziel })}</span></div>
       <p class="fine" style="margin:6px 0 0">${escHtml(satz)}</p>
+    </div>`;
+}
+
+/** Neue Leistungs-Bestwerte, wie intervals.icu sie je Fahrt meldet. */
+function bestwerteKarte(fahrten) {
+  const liste = ST.radBestwerte(fahrten);
+  if (!liste.length) return '';
+  const dauer = s => s < 60 ? t('rad.dauer.s', { n: s }) : t('rad.dauer.min', { n: Math.round(s / 6) / 10 });
+  return `
+    <div class="radbar bestwerte">
+      <div class="h"><span class="t">${t('rad.bestwerte')}</span><span class="r">★ ${liste.length}</span></div>
+      <ul class="bestliste">${liste.map(b => `<li>
+        <span class="best-wann">${escHtml(b.date)}${b.fahrt ? ` · ${escHtml(b.fahrt)}` : ''}</span>
+        <span class="best-was">${escHtml(b.text || t('rad.bestwertWert', { dauer: dauer(b.secs), w: Math.round(b.wert) }))}</span></li>`).join('')}</ul>
     </div>`;
 }
 
@@ -3989,7 +4013,7 @@ function plakatHtml(d, plan) {
 
 const FARBE = {
   form: { frisch: 'var(--gruen)', neutral: 'var(--muted)', muede: 'var(--rost)', platt: 'var(--rot)' },
-  erholung: { ok: 'var(--gruen)', kurz: 'var(--rost)', belastet: 'var(--rot)' },
+  erholung: { ok: 'var(--gruen)', kurz: 'var(--rost)', muede: 'var(--rost)', belastet: 'var(--rot)' },
   stoerung: { stark: 'var(--rost)', leicht: 'var(--akzent)', gering: 'var(--dim)' },
   abnehmen: { fenster: 'var(--gruen)', haltend: 'var(--akzent)', traege: 'var(--muted)',
               schnell: 'var(--rost)', teuer: 'var(--rot)', rauf: 'var(--rost)' }
@@ -4042,8 +4066,12 @@ function renderInstrumente() {
   if (form) liste.push({ id: 'form', farbe: FARBE.form[form.stufe],
     text: t('form.zeile', { v: `${form.form > 0 ? '+' : ''}${form.form}` }), detail: formZeile });
   if (erholung) liste.push({ id: 'erholung', farbe: FARBE.erholung[erholung.stufe],
-    text: erholung.schlafStunden != null ? t('erh.schlaf', { h: zahl(erholung.schlafStunden) })
-      : erholung.hrv != null ? t('erh.hrv', { v: erholung.hrv }) : t('erh.zeile', { label: t(`erh.${erholung.stufe}`) }),
+    // Der Chip zeigt, was auffaellt: Ruhepuls oder Befinden, sonst Schlaf oder HRV
+    text: erholung.grund === 'puls' ? t('erh.ruhepuls', { v: erholung.ruhepuls })
+      : erholung.grund === 'befinden' ? t((erholung.befinden || {}).soreness >= 3 ? 'erh.kater' : 'erh.muedigkeit')
+      : erholung.schlafStunden != null ? t('erh.schlaf', { h: zahl(erholung.schlafStunden) })
+      : erholung.hrv != null ? t('erh.hrv', { v: erholung.hrv })
+      : erholung.ruhepuls != null ? t('erh.ruhepuls', { v: erholung.ruhepuls }) : t('erh.zeile', { label: t(`erh.${erholung.stufe}`) }),
     detail: erholungsZeile });
   if (abnehmen && abnehmen.lage && abnehmen.rate) liste.push({ id: 'gewicht', farbe: FARBE.abnehmen[abnehmen.lage.stufe],
     text: t('instr.gewicht', { kg: `${abnehmen.rate.proWoche > 0 ? '+' : abnehmen.rate.proWoche < 0 ? '−' : ''}${zahl(Math.abs(abnehmen.rate.proWoche), 2)}` }),
@@ -4390,7 +4418,16 @@ function renderIntensitaet() {
         t('int.warnung', { label: escHtml(letzte.label), ist: Math.round(letzte.ist * 100),
                            bis: Math.round(letzte.ziel[1] * 100) })}</p>` : ''}
       ${bil.unklar ? `<p class="fine" style="margin:6px 0 0">${t('int.unklarHinweis', { n: bil.unklar })}</p>` : ''}
+      ${rpeZeile(ST.rpeBilanz(eintraege))}
     </div>`;
+}
+
+/** Was du in intervals.icu als RPE eingetragen hast, je Stufe des Abgleichs. */
+function rpeZeile(b) {
+  if (!b) return '';
+  const zahl = v => v.toLocaleString(locale(), { maximumFractionDigits: 1 });
+  const teile = ['imZiel', 'zuHart', 'zuLocker'].filter(k => b[k] != null).map(k => t(`rad.rpe.${k}`, { v: zahl(b[k]) }));
+  return `<p class="fine rpe" style="margin:6px 0 0">${escHtml(t('rad.rpeBilanz', { teile: teile.join(' · ') }))}</p>`;
 }
 
 /**
@@ -4434,7 +4471,16 @@ function renderFormVerlauf() {
         <span class="t" style="color:var(--akzent)">${t('form.fitness', { n: Math.round(jetzt.ctl) })}</span>
         <span class="t" style="color:var(--stahl)">${t('form.ermuedung', { n: Math.round(jetzt.atl) })}</span>
         <span class="t">${t('form.flaeche')}</span></div>
+      ${rampenZeile(ST.rampenLage(formPunkte))}
     </div>`;
+}
+
+/** Wie steil die Fitness steigt — ueber acht je Woche wird es riskant. */
+function rampenZeile(r) {
+  if (!r) return '';
+  const farbe = { ruhig: 'var(--gruen)', aufbau: 'var(--gruen)', steil: 'var(--akzent)', zuSteil: 'var(--rost)' }[r.stufe];
+  const wert = `${r.rampe > 0 ? '+' : r.rampe < 0 ? '−' : ''}${Math.abs(r.rampe).toLocaleString(locale(), { maximumFractionDigits: 1 })}`;
+  return `<p class="fine rampe" style="margin:6px 0 0;color:${farbe}">${escHtml(t(`rampe.${r.stufe}`, { r: wert }))}</p>`;
 }
 
 /* ============================== Merch ==============================

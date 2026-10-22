@@ -628,7 +628,7 @@ export function intensitaetsAbgleich(fahrten = [], planFuer = () => null) {
     .map(f => {
       const plan = planFuer(f.date);
       const ist = Math.round(f.intensitaet * 100) / 100;
-      const basis = { date: f.date, ist, minuten: f.minutes || null, name: f.name || null };
+      const basis = { date: f.date, ist, minuten: f.minutes || null, name: f.name || null, rpe: f.rpe ?? null, gefuehl: f.gefuehl ?? null };
       if (!plan || !Array.isArray(plan.ftp) || plan.ftp.length !== 2) {
         return { ...basis, stufe: 'ohnePlan', label: plan ? plan.label : null, ziel: null };
       }
@@ -647,6 +647,24 @@ export function abgleichBilanz(eintraege = []) {
   const beurteilt = z.imZiel + z.zuHart + z.zuLocker;
   return { ...z, gesamt: eintraege.length, beurteilt,
            quote: beurteilt ? Math.round((z.imZiel / beurteilt) * 100) : null };
+}
+
+/** Ø RPE je Stufe des Abgleichs — erst ab zwei Fahrten mit RPE, sonst null. */
+export function rpeBilanz(eintraege = []) {
+  const out = {};
+  for (const stufe of ['imZiel', 'zuHart', 'zuLocker']) {
+    const werte = eintraege.filter(e => e.stufe === stufe && Number.isInteger(e.rpe)).map(e => e.rpe);
+    out[stufe] = werte.length >= 2 ? Math.round(werte.reduce((s, v) => s + v, 0) / werte.length * 10) / 10 : null;
+  }
+  return out.imZiel == null && out.zuHart == null && out.zuLocker == null ? null : out;
+}
+
+/** Neue Bestwerte aus den Fahrten, die juengsten zuerst. */
+export function radBestwerte(fahrten = [], max = 12) {
+  return fahrten.filter(f => f && Array.isArray(f.bestwerte) && f.date)
+    .sort((a, b) => (b.zeit || b.date).localeCompare(a.zeit || a.date))
+    .flatMap(f => f.bestwerte.map(b => ({ ...b, date: f.date, fahrt: f.name || null })))
+    .slice(0, max);
 }
 
 export function radWochen(rides = [], wochen = 12, heute = new Date()) {
@@ -790,8 +808,22 @@ export function wochenTonnage(logs = [], wochen = 12, heute = new Date()) {
 export function formVerlauf(wellness = []) {
   return wellness
     .filter(w => w.ctl != null && w.atl != null && w.date)
-    .map(w => ({ date: w.date, ctl: w.ctl, atl: w.atl, form: Math.round((w.ctl - w.atl) * 10) / 10 }))
+    .map(w => ({ date: w.date, ctl: w.ctl, atl: w.atl, form: Math.round((w.ctl - w.atl) * 10) / 10,
+      rampe: typeof w.rampRate === 'number' && Number.isFinite(w.rampRate) ? Math.round(w.rampRate * 10) / 10 : null }))
     .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/**
+ * Wie steil die Fitness gerade steigt (ctl je Woche). Ueber acht ist die
+ * klassische Warnschwelle: Der Koerper kommt mit der Anpassung nicht mehr
+ * nach, Sehnen und Gelenke noch weniger als die Muskeln.
+ */
+export function rampenLage(punkte = []) {
+  const p = [...punkte].reverse().find(x => x && x.rampe != null);
+  if (!p) return null;
+  const r = p.rampe;
+  const stufe = r < 0 ? 'ruhig' : r < 5 ? 'aufbau' : r <= 8 ? 'steil' : 'zuSteil';
+  return { rampe: r, stufe, datum: p.date };
 }
 
 /* ── Zum Angeben ──────────────────────────────────────────────────

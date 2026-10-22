@@ -112,7 +112,12 @@ export default async function ({ browser, pruefe }) {
       start_date_local: `2026-09-${String(10 + i * 2).padStart(2, '0')}T18:00:00`, moving_time: 1800 + i * 300, distance: 15000,
       icu_training_load: 40 + i * 3, icu_intensity: Math.round(NP[i] / 142 * 100), icu_average_watts: WATT[i], icu_weighted_avg_watts: NP[i],
       average_heartrate: 110 + i, average_cadence: k, calories: 200 + i * 20, icu_ftp: 142,
-      icu_zone_times: [{ id: i % 3 ? 'Z2' : 'Z4', secs: 1200 }, { id: 'Z3', secs: 300 }] }));
+      icu_zone_times: [{ id: i % 3 ? 'Z2' : 'Z4', secs: 1200 }, { id: 'Z3', secs: 300 }],
+      icu_rpe: [4, 3, 5, 7, 8, 7, 5, 4][i], feel: [2, 3, 2, 4, 4, 3, 2, 1][i],
+      icu_achievements: i === 7 ? [{ type: 'BEST_POWER', secs: 1200, watts: 135, message: 'Neuer 20-min-Bestwert: 135 W' }, { secs: 5, watts: 410 }]
+        : i === 4 ? [{ message: '<b>fett</b>' }] : undefined }));
+    // Fitness mit steiler Rampe zuletzt
+    const wellness = Array.from({ length: 20 }, (_, i) => ({ id: `2026-09-${String(10 + i).padStart(2, '0')}`, ctl: 30 + i, atl: 32 + i, rampRate: i === 19 ? 9.2 : 4 }));
     // Die Reiterleiste scrollt absichtlich seitlich; gezaehlt wird nur der Rad-Bereich
     const querlauf = async p => {
       const w = await p.evaluate(() => document.documentElement.clientWidth);
@@ -128,7 +133,7 @@ export default async function ({ browser, pruefe }) {
     };
     for (const [breite, schrift, theme] of [[390, null, 'dunkel'], [320, 'sehr', 'hell'], [1280, null, 'hell']]) {
       const tag = `Rad ${breite}${schrift ? '/sehr' : ''}/${theme}`;
-      const { ctx, p, fehler } = await kontext(browser, { logs, config: CONFIG, heute: '2026-10-01', breite, schrift, theme, fahrten });
+      const { ctx, p, fehler } = await kontext(browser, { logs, config: CONFIG, heute: '2026-10-01', breite, schrift, theme, fahrten, wellness });
       await zurRad(p);
       const kopf = await p.$$eval('#hist-rad .stats .stat', l => l.map(s => s.querySelector('.n').textContent + '=' + s.querySelector('.v').textContent.replace(/\s+/g, ' ').trim()));
       pruefe(`${tag}: Kopfzahlen mit Last, Energie, Ø Leistung`, kopf.some(x => x.startsWith('Last gesamt=')) && kopf.includes('Energie=2.160 kcal')
@@ -144,8 +149,20 @@ export default async function ({ browser, pruefe }) {
       pruefe(`${tag}: NP-Satz`, /^NP liegt im Schnitt \d+ % über Ø — (gleichmäßig|wechselhaft)/.test(np), np);
       const erste = (await p.textContent('#hist-rad .fahrt .werte')).replace(/\s+/g, ' ');
       pruefe(`${tag}: Werte der jüngsten Fahrt`, /Z2/.test(erste) && /Ø 116 W/.test(erste) && /NP 124 W/.test(erste) && /IF 0,87/.test(erste)
-        && /♥ 117/.test(erste) && /81 rpm/.test(erste), erste);
-      const k = (await kontraste(p, '#hist-rad .stat .n, #hist-rad .stat .s, #hist-rad .radbar .t, #hist-rad .radbar .r, #hist-rad .legende span, #hist-rad .radbar .fine, #hist-rad .chip, #hist-rad .zone'))
+        && /♥ 117/.test(erste) && /81 rpm/.test(erste) && /RPE 4/.test(erste) && /Gefühl stark/.test(erste) && /★ Bestwert/.test(erste), erste);
+      const best = await p.$$eval('#hist-rad .bestliste li .best-was', l => l.map(x => x.textContent.trim()));
+      pruefe(`${tag}: Bestwerte — Text, Dauer und Watt, neueste zuerst`, best.join(' | ') === 'Neuer 20-min-Bestwert: 135 W | 5 s: 410 W | <b>fett</b>', best.join(' | '));
+      pruefe(`${tag}: Bestwerte ohne eingeschleustes HTML`, !(await p.$('#hist-rad .bestliste b')));
+      const rpe = (await p.textContent('#hist-intensitaet').catch(() => '')).replace(/\s+/g, ' ');
+      pruefe(`${tag}: Plan gegen Ist ohne Plan — keine RPE-Zeile erfunden`, !/Gefühlt: $/.test(rpe));
+      await p.click('#tour-tab-koerper');
+      await p.waitForSelector('#hist-form .rampe', { timeout: 6000 }).catch(() => {});
+      const rampe = (await p.textContent('#hist-form .rampe').catch(() => '')).trim();
+      pruefe(`${tag}: Rampe zu steil`, rampe === 'Rampe +9,2 pro Woche — zu steil. Über 8 kommen Sehnen und Gelenke nicht mehr mit.', rampe);
+      const kr = (await kontraste(p, '#hist-form .rampe')).filter(x => x.wert < 4.5);
+      pruefe(`${tag}: Rampe Kontrast ≥ 4,5`, !kr.length, JSON.stringify(kr));
+      await p.click('#tour-tab-rad');
+      const k = (await kontraste(p, '#hist-rad .stat .n, #hist-rad .stat .s, #hist-rad .radbar .t, #hist-rad .radbar .r, #hist-rad .legende span, #hist-rad .radbar .fine, #hist-rad .chip, #hist-rad .zone, #hist-rad .bestliste span'))
         .filter(x => x.wert < 4.5);
       pruefe(`${tag}: Kontrast ≥ 4,5`, !k.length, JSON.stringify(k.slice(0, 4)));
       const u = await querlauf(p);

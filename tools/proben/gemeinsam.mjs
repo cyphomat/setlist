@@ -119,7 +119,7 @@ const b64 = o => Buffer.from(JSON.stringify(o)).toString('base64');
  *          etwa 'http://jens.github.io/setlist/' fuer einen Fork.
  * Gibt die Seite, gesammelte Seitenfehler und alles Geschriebene zurueck.
  */
-export async function kontext(browser, { logs, config, heute, breite = 390, hoehe = 900, schrift = null, theme = 'dunkel', fahrten = null, vorher = null, adresse = null, ohneToken = false, dateien = {}, touch = false }) {
+export async function kontext(browser, { logs, config, heute, breite = 390, hoehe = 900, schrift = null, theme = 'dunkel', fahrten = null, vorher = null, adresse = null, ohneToken = false, dateien = {}, touch = false, wellness = null }) {
   const state = P.deriveState(config, logs);
   const geschrieben = [];
   const ctx = await browser.newContext({ viewport: { width: breite, height: hoehe }, deviceScaleFactor: 1, ...(touch ? { hasTouch: true, isMobile: true } : {}) });
@@ -139,6 +139,7 @@ export async function kontext(browser, { logs, config, heute, breite = 390, hoeh
         const von = u.searchParams.get('oldest'), bis = u.searchParams.get('newest');
         body = fahrten.filter(f => f.start_date_local.slice(0, 10) >= von && f.start_date_local.slice(0, 10) <= bis);
       }
+      if (u.pathname.endsWith('/wellness') && wellness) body = wellness;
       return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
     });
   }

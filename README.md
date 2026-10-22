@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="App öffnen" src="https://img.shields.io/badge/App-öffnen-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1906%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1952%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-keiner-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Abhängigkeiten" src="https://img.shields.io/badge/Abhängigkeiten-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="Lizenz: MIT" src="https://img.shields.io/badge/Lizenz-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -115,7 +115,7 @@
 Der Unterschied zu einem Logbuch: sie hat eine Meinung zum heutigen Tag — aus Daten, nicht aus dem Bauch.
 
 - **Die Ansage** liest Trainingspause, offene Fehlversuche, laufende Serie und Form vom Rad und entscheidet zwischen `TECHNIK`, `SOLIDE`, `HART` und `SCHWER` — und fragt nach der Einheit, wie sich das wirklich angefühlt hat. Die Ansage bleibt damit überprüfbar statt behauptet.
-- **HRV und Schlaf gehen vor.** Fällt die HRV deutlich unter den eigenen Schnitt der letzten Tage oder war die Nacht zu kurz, sagt die App TECHNIK an — auch wenn Trainingsplan oder offene Fehlversuche eigentlich etwas anderes verlangen würden. Beides sieht etwas, das reine Trainingslast nicht erfasst.
+- **HRV, Ruhepuls, Befinden und Schlaf gehen vor.** Fällt die HRV deutlich unter den eigenen Schnitt der letzten Tage, liegt der Ruhepuls 7 Schläge darüber, hast du starken Muskelkater oder große Müdigkeit eingetragen oder war die Nacht zu kurz, sagt die App TECHNIK an — auch wenn Trainingsplan oder offene Fehlversuche eigentlich etwas anderes verlangen würden. Beides sieht etwas, das reine Trainingslast nicht erfasst.
 - **Interferenz-Warnung**, wenn eine harte Fahrt weniger als vier Stunden her ist — die letzten Sätze werden zäh, das Maximalkraftniveau bleibt unberührt.
 - **Meilensteine** kennen die alten Bestleistungen samt Datum:
 
@@ -185,11 +185,11 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 
 | | |
 |---|---|
-| **Radfahrten** | Fahrten, Stunden, Kilometer, Last, Energie, Ø Leistung mit Anteil an der FTP und die Wochenlast über zwölf Wochen — aus intervals.icu. Dazu die **Trittfrequenz** je Fahrt gegen dein Ziel (unter *Backstage → Persönlich*, ohne Eintrag 80 rpm; 2 rpm darunter zählen noch), **Ø Watt gegen NP** als Balkenpaare (wie gleichmäßig du fährst) und je Fahrt Ø Watt, NP, IF, Last, Puls, Kadenz und die Zone mit der meisten Zeit. |
+| **Radfahrten** | Fahrten, Stunden, Kilometer, Last, Energie, Ø Leistung mit Anteil an der FTP und die Wochenlast über zwölf Wochen — aus intervals.icu. Dazu die **Trittfrequenz** je Fahrt gegen dein Ziel (unter *Backstage → Persönlich*, ohne Eintrag 80 rpm; 2 rpm darunter zählen noch), **Ø Watt gegen NP** als Balkenpaare (wie gleichmäßig du fährst) und je Fahrt Ø Watt, NP, IF, Last, Puls, Kadenz, RPE, Gefühl und die Zone mit der meisten Zeit. Neue Leistungs-Bestwerte, die intervals.icu meldet, stehen gesammelt darüber; bei *Plan gegen Ist* steht, wie hart sich die Fahrten im Ziel und daneben angefühlt haben (Ø RPE). |
 | **Trainingskalender** | 26 Wochen als Raster: Kraft bernstein, Jam grün, Rad stahlblau. |
 | **Wochenlast gestapelt** | Kraft und Rad in einem Balken — die eine Kurve, wegen der beides zusammengehört. |
 | **Fitness gegen Ermüdung** | Zwei Linien aus intervals.icu — die Fläche dazwischen *ist* die Form. |
-| **Erholung (HRV/Schlaf)** | Aus intervals.icu, meist via HealthFit aus Apple Health. HRV nur relativ zur eigenen Basis der letzten Tage bewertet, nicht absolut. Fließt in die Ansage ein. |
+| **Erholung (HRV/Ruhepuls/Befinden/Schlaf)** | Aus intervals.icu, meist via HealthFit aus Apple Health. HRV und Ruhepuls nur relativ zur eigenen Basis der letzten Tage bewertet, nicht absolut. Muskelkater und Müdigkeit, wie du sie in intervals.icu einträgst (1–4), dazu der Schlafwert. Fließt in die Ansage ein. |
 | **Wattziele** | Aus der eFTP statt Prozentangaben. |
 | **Unplugged** | Fünfzehn Minuten, nur Körpergewicht, im Zweifel leise. Feste Intervalle mit geführter Uhr statt Wiederholungszahlen — für den Morgen, an dem noch jemand schläft. Der Leise-Modus lässt alles Springende weg und gibt keinen Ton, nur Vibration. |
 | **Jam** | Fünf Formate, 31 Übungen, Lasten aus dem aktuellen Stand. Nie zwei Langhantelteile. |
@@ -481,7 +481,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-1906 Tests in 26 Dateien. Kein Build, keine Abhängigkeiten.
+1952 Tests in 26 Dateien. Kein Build, keine Abhängigkeiten.
 
 ### Browserproben (optional)
 

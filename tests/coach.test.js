@@ -487,4 +487,29 @@ print('\n--- Was auf Home sprechen darf ---');
   eq('nach oben schon', C.ausnahmen({ abnehmStufe: 'rauf' })[0].art, 'abnehmen');
 }
 
+print('\n--- Ruhepuls und Befinden ---');
+{
+  const puls = Array.from({ length: 7 }, (_, i) => ({ date: `2026-09-0${i + 1}`, restingHR: 48 }));
+  const e = C.erholung([...puls, { date: '2026-09-08', restingHR: 55 }]);
+  eq('Ruhepuls 7 ueber dem Schnitt: belastet', e.stufe, 'belastet');
+  eq('Grund: Puls', e.grund, 'puls');
+  eq('Basis aus den Tagen davor', e.ruhepulsBasis, 48);
+  eq('6 darueber: ok', C.erholung([...puls, { date: '2026-09-08', restingHR: 54 }]).stufe, 'ok');
+  eq('ohne drei Basiswerte kein Ausschlag', C.erholung([{ date: '2026-09-01', restingHR: 45 }, { date: '2026-09-02', restingHR: 60 }]).stufe, 'ok');
+  eq('nur Ruhepuls reicht fuer eine Erholung', C.erholung([{ date: '2026-09-01', restingHR: 50 }]).ruhepuls, 50);
+  eq('Muskelkater 4: muede', C.erholung([{ date: '2026-09-01', soreness: 4 }]).stufe, 'muede');
+  eq('Kater 3 und Muedigkeit 3: muede', C.erholung([{ date: '2026-09-01', soreness: 3, fatigue: 3 }]).stufe, 'muede');
+  eq('nur Muedigkeit 3: ok', C.erholung([{ date: '2026-09-01', fatigue: 3 }]).stufe, 'ok');
+  eq('Befinden wird mitgegeben', C.erholung([{ date: '2026-09-01', soreness: 2, mood: 4 }]).befinden.mood, 4);
+  eq('Schlafwert wird mitgegeben', C.erholung([{ date: '2026-09-01', sleepSecs: 8 * 3600, sleepScore: 82 }]).schlafwert, 82);
+  eq('HRV geht vor Puls', C.erholung([...puls.map((p, i) => ({ ...p, hrv: 50 })), { date: '2026-09-08', restingHR: 60, hrv: 38 }]).grund, 'hrv');
+  eq('Puls geht vor Befinden', C.erholung([...puls, { date: '2026-09-08', restingHR: 60, soreness: 4 }]).grund, 'puls');
+  eq('Befinden geht vor kurzem Schlaf', C.erholung([{ date: '2026-09-01', soreness: 4, sleepSecs: 4 * 3600 }]).grund, 'befinden');
+  const sb = base(); sb.history = [{ date: '2026-09-14' }]; sb.next = 'B';
+  const ip = C.directive(sb, config, HEUTE, null, null, { stufe: 'belastet', grund: 'puls', ruhepuls: 56, ruhepulsBasis: 48 }).intensitaet;
+  ok('erhoehter Ruhepuls: Technik mit Pulstext', ip.label === 'TECHNIK' && ip.text.includes('56') && ip.text.includes('48'), ip.text);
+  const im = C.directive(sb, config, HEUTE, null, null, { stufe: 'muede', grund: 'befinden' }).intensitaet;
+  ok('muede: Technik mit eigenem Text', im.label === 'TECHNIK' && /Muskelkater/.test(im.text), im.text);
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1906%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1952%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -115,7 +115,7 @@
 The difference from a logbook: it has an opinion about today — from data, not from a gut feeling.
 
 - **The call** reads training layoff, outstanding failed attempts, current streak and form from the bike, and decides between `TECHNIK`, `SOLIDE`, `HART` and `SCHWER` — then asks after the session how it actually felt. That keeps the call verifiable instead of merely asserted.
-- **HRV and sleep take priority.** If HRV drops well below your own average of recent days, or the night was too short, the app calls TECHNIK — even when the plan or outstanding failures would suggest otherwise. Both see something raw training load does not capture.
+- **HRV, resting heart rate, how you feel and sleep take priority.** If HRV drops well below your own average of recent days, your resting heart rate is 7 beats above it, you logged heavy soreness or real fatigue, or the night was too short, the app calls TECHNIK — even when the plan or outstanding failures would suggest otherwise. Both see something raw training load does not capture.
 - **Interference warning** when a hard ride was less than four hours ago — the last sets get sluggish, maximal strength itself is untouched.
 - **Milestones** know your old bests including the date:
 
@@ -185,11 +185,11 @@ Back squat is in both workouts and therefore climbs twice as fast.
 
 | | |
 |---|---|
-| **Bike rides** | Rides, hours, kilometres, load, energy, average power with its share of FTP and the weekly load over twelve weeks — from intervals.icu. Plus **cadence** per ride against your target (under *Backstage → Personal*, 80 rpm if empty; 2 rpm below still counts), **avg watts vs NP** as bar pairs (how steadily you ride) and for each ride avg watts, NP, IF, load, heart rate, cadence and the zone with the most time. |
+| **Bike rides** | Rides, hours, kilometres, load, energy, average power with its share of FTP and the weekly load over twelve weeks — from intervals.icu. Plus **cadence** per ride against your target (under *Backstage → Personal*, 80 rpm if empty; 2 rpm below still counts), **avg watts vs NP** as bar pairs (how steadily you ride) and for each ride avg watts, NP, IF, load, heart rate, cadence, RPE, feel and the zone with the most time. New power bests reported by intervals.icu are collected above; *plan vs actual* shows how hard rides on and off target felt (avg RPE). |
 | **Training calendar** | 26 weeks as a grid: strength amber, jam green, bike steel blue. |
 | **Stacked weekly load** | Strength and bike in one bar — the single curve that makes both belong together. |
 | **Fitness vs. fatigue** | Two lines from intervals.icu — the area between them *is* your form. |
-| **Recovery (HRV/sleep)** | From intervals.icu, usually via HealthFit out of Apple Health. HRV is judged only relative to your own baseline of recent days, never absolutely. Feeds into the call. |
+| **Recovery (HRV/resting HR/wellbeing/sleep)** | From intervals.icu, usually via HealthFit out of Apple Health. HRV and resting heart rate are judged only relative to your own baseline of recent days, never absolutely. Soreness and fatigue as you log them in intervals.icu (1–4), plus the sleep score. Feeds into the call. |
 | **Power targets** | From eFTP instead of percentages. |
 | **Unplugged** | Fifteen minutes, bodyweight only, quiet if needed. Fixed intervals with a guided clock instead of rep counts — for the morning when someone is still asleep. Quiet mode drops everything that jumps and makes no sound, only vibration. |
 | **Jam** | Five formats, 31 movements, loads from your current state. Never two barbell parts. |
@@ -475,7 +475,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-1906 tests in 26 files. No build, no dependencies.
+1952 tests in 26 files. No build, no dependencies.
 
 ### Browser probes (optional)
 
