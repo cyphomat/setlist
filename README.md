@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="App öffnen" src="https://img.shields.io/badge/App-öffnen-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1875%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1906%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-keiner-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Abhängigkeiten" src="https://img.shields.io/badge/Abhängigkeiten-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="Lizenz: MIT" src="https://img.shields.io/badge/Lizenz-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -185,7 +185,7 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 
 | | |
 |---|---|
-| **Radfahrten** | Fahrten, Stunden, Kilometer, Wochenlast über zwölf Wochen — aus intervals.icu. |
+| **Radfahrten** | Fahrten, Stunden, Kilometer, Last, Energie, Ø Leistung mit Anteil an der FTP und die Wochenlast über zwölf Wochen — aus intervals.icu. Dazu die **Trittfrequenz** je Fahrt gegen dein Ziel (unter *Backstage → Persönlich*, ohne Eintrag 80 rpm; 2 rpm darunter zählen noch), **Ø Watt gegen NP** als Balkenpaare (wie gleichmäßig du fährst) und je Fahrt Ø Watt, NP, IF, Last, Puls, Kadenz und die Zone mit der meisten Zeit. |
 | **Trainingskalender** | 26 Wochen als Raster: Kraft bernstein, Jam grün, Rad stahlblau. |
 | **Wochenlast gestapelt** | Kraft und Rad in einem Balken — die eine Kurve, wegen der beides zusammengehört. |
 | **Fitness gegen Ermüdung** | Zwei Linien aus intervals.icu — die Fläche dazwischen *ist* die Form. |
@@ -481,7 +481,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-1875 Tests in 26 Dateien. Kein Build, keine Abhängigkeiten.
+1906 Tests in 26 Dateien. Kein Build, keine Abhängigkeiten.
 
 ### Browserproben (optional)
 

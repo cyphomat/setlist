@@ -10,6 +10,26 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-21.2
+
+### Neu
+- **Mehr aus intervals.icu unter *Tour → Rad*.** Zu Fahrten und Zeit im Sattel kommen
+  die Last gesamt, die Energie in kcal und die Ø Leistung, nach Minuten gewichtet und mit
+  dem Anteil an der FTP.
+- **Trittfrequenz gegen ein Ziel.** Ein Verlauf der Ø-Kadenz je Fahrt mit dem Ziel als
+  gestrichelter Linie. Fahrten am Ziel leuchten grün, darunter steht, wie viele der
+  letzten Fahrten es geschafft haben oder wie viel noch fehlt. Das Ziel stellst du unter
+  *Backstage → Persönlich* ein; ohne Eintrag gilt 80 rpm, und 2 rpm darunter zählen noch.
+- **Ø Watt gegen NP.** Je Fahrt ein Balkenpaar und der mittlere Aufschlag der NP. Bis
+  5 % gilt die Fahrt als gleichmäßig, darüber als wechselhaft.
+- **Jede Fahrt mit ihren Werten.** Ø Watt, NP, IF, Last, Puls, Kadenz und ein Abzeichen
+  für die Zone mit der meisten Zeit.
+
+Neu abgefragt werden nur zwei Felder: die mittlere Trittfrequenz und die Energie. Bei
+Fahrten aus einem älteren Zwischenspeicher fehlen sie, bis die Fahrten neu geladen sind.
+
+---
+
 ## 2026-10-21.1
 
 ### Geändert

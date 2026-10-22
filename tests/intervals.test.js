@@ -215,4 +215,15 @@ eq('ohne Wert bleibt null', norm[2].intensitaet, null);
 eq('unveraenderte Fahrten werden nicht kopiert', norm[1], roh[1]);
 eq('leere Liste bleibt leer', I.normalisiere([]).length, 0);
 
+print('\n--- Fahrt aus intervals.icu ---');
+{
+  const f = I.alsFahrt({ id: 'i1', start_date_local: '2026-10-05T07:00:00', moving_time: 1860, distance: 15000,
+    icu_average_watts: 116, icu_weighted_avg_watts: 124, average_cadence: 77.6, calories: 320, average_heartrate: 125 });
+  eq('Kadenz gerundet', f.kadenz, 78);
+  eq('kcal', f.kcal, 320);
+  eq('Datum', f.date, '2026-10-05');
+  const leer = I.alsFahrt({ id: 'i2', average_cadence: 0, calories: null });
+  ok('ohne Werte: null', leer.kadenz === null && leer.kcal === null);
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

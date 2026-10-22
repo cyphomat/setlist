@@ -3179,13 +3179,19 @@ function renderRad() {
   }).join('');
 
   const sortiert = [...fahrten].sort((a, b) => b.date.localeCompare(a.date));
+  const zahl = n => Number(n).toLocaleString(locale());
+  const stat = (name, wert, einheit, unter) => `<div class="stat"><div class="n">${escHtml(name)}</div>
+    <div class="v">${escHtml(wert)}${einheit ? `<span style="font-size:0.875rem"> ${escHtml(einheit)}</span>` : ''}</div>
+    ${unter ? `<div class="s">${escHtml(unter)}</div>` : ''}</div>`;
 
   box.innerHTML = `
     <div class="stats">
-      <div class="stat"><div class="n">${t('rad.fahrten')}</div><div class="v">${st.anzahl}</div>
-        <div class="s">${t('rad.proWoche', { n: st.proWoche ?? '—' })}</div></div>
-      <div class="stat"><div class="n">${t('rad.imSattel')}</div><div class="v">${st.stunden}<span style="font-size:0.875rem"> h</span></div>
-        <div class="s">${st.km} km</div></div>
+      ${stat(t('rad.fahrten'), st.anzahl, '', t('rad.proWoche', { n: st.proWoche ?? '—' }))}
+      ${stat(t('rad.imSattel'), zahl(st.stunden), 'h', `${zahl(st.km)} km`)}
+      ${stat(t('rad.lastGesamt'), zahl(st.last), '', st.anzahl ? t('rad.lastSchnitt', { n: Math.round(st.last / st.anzahl) }) : '')}
+      ${st.kcal ? stat(t('rad.energie'), zahl(st.kcal), 'kcal', '') : ''}
+      ${st.wattSchnitt ? stat(t('rad.leistung'), st.wattSchnitt, 'W',
+        st.ftpAnteil ? t('rad.ftpAnteil', { p: st.ftpAnteil, ftp: Math.round(st.ftp) }) : t('rad.ohneFtp')) : ''}
     </div>
     <div class="radbar">
       <div class="h"><span class="t">${t('rad.wochenlast')}</span><span class="r">${t('rad.gesamt', { n: st.last })}</span></div>
@@ -3194,13 +3200,84 @@ function renderRad() {
         <span class="t">${wochen[0].woche.slice(5)}</span>
         <span class="t">${t('rad.dieseWoche')}</span></div>
     </div>
-    ${sortiert.slice(0, 20).map(r => `
+    ${kadenzKarte(fahrten)}
+    ${npKarte(fahrten)}
+    ${sortiert.slice(0, 20).map(fahrtZeile).join('')}
+    ${sortiert.length > 20 ? `<p class="fine">${t('rad.weitere', { n: sortiert.length - 20 })}</p>` : ''}`;
+}
+
+/** Zone als Abzeichen: ruhig gruen, Schwelle stahl, darueber rost. */
+const zonenTon = z => /^Z[12]$/.test(z) ? 'ruhig' : /^(Z3|SS)$/.test(z) ? 'mittel' : 'hart';
+
+/** Eine Fahrt mit ihren Werten. Was fehlt, faellt weg. */
+function fahrtZeile(r) {
+  const chip = (k, n) => n ? `<span class="chip">${escHtml(t(`rad.chip.${k}`, { n }))}</span>` : '';
+  const zone = ST.hauptZone(r.zonen);
+  const ifWert = r.intensitaet > 0 ? r.intensitaet.toLocaleString(locale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : null;
+  const werte = [chip('watt', r.watt && Math.round(r.watt)), chip('np', r.np && Math.round(r.np)), chip('if', ifWert),
+    chip('last', r.load && Math.round(r.load)), chip('hf', r.hf && Math.round(r.hf)), chip('kadenz', r.kadenz)].join('');
+  return `
       <div class="fahrt">
-        <div class="d">${escHtml(r.date)}${r.load ? ` · LOAD ${escHtml(r.load)}` : ''}</div>
+        <div class="d">${escHtml(r.date)}</div>
         <div class="n">${escHtml(r.name)}</div>
         <div class="m">${escHtml(r.minutes)} Min · ${escHtml(r.km)} km</div>
-      </div>`).join('')}
-    ${sortiert.length > 20 ? `<p class="fine">${t('rad.weitere', { n: sortiert.length - 20 })}</p>` : ''}`;
+        ${werte || zone ? `<div class="werte">${zone ? `<span class="zone ${zonenTon(zone)}" title="${escHtml(t('rad.chip.zone', { z: zone }))}">${escHtml(zone)}</span>` : ''}${werte}</div>` : ''}
+      </div>`;
+}
+
+/** Trittfrequenz je Fahrt gegen das eigene Ziel (Backstage, Vorgabe 80 rpm). */
+function kadenzKarte(fahrten) {
+  const k = ST.kadenzReihe(fahrten, PS.kadenzZiel(config));
+  const kopf = `<div class="h"><span class="t">${t('rad.kadenz')}</span>
+      ${k.schnitt5 ? `<span class="r">${escHtml(k.schnitt5)} rpm</span>` : ''}</div>`;
+  if (k.punkte.length < 2) return `<div class="radbar kadenz">${kopf}<p class="fine">${t('rad.kadenzLeer')}</p></div>`;
+  const punkte = k.punkte.slice(-24);
+  const breite = 300, hoehe = 90, rand = 8;
+  const werte = punkte.map(p => p.kadenz).concat(k.ziel);
+  const min = Math.min(...werte) - 3, max = Math.max(...werte) + 3;
+  const x = i => rand + (i / (punkte.length - 1)) * (breite - 2 * rand);
+  const y = v => rand + (1 - (v - min) / (max - min)) * (hoehe - 2 * rand);
+  const linie = punkte.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.kadenz).toFixed(1)}`).join(' ');
+  const satz = k.serie
+    ? tn('rad.kadenzAm', k.serie, { ab: k.ab })
+    : t('rad.kadenzFehlt', { d: Math.max(1, k.ziel - (k.schnitt5 || 0)), ziel: k.ziel });
+  return `
+    <div class="radbar kadenz">
+      ${kopf}
+      <svg class="frei" viewBox="0 0 ${breite} ${hoehe}" aria-hidden="true">
+        <line x1="0" x2="${breite}" y1="${y(k.ziel).toFixed(1)}" y2="${y(k.ziel).toFixed(1)}" stroke="var(--gruen)" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <path d="${linie}" fill="none" stroke="var(--stahl)" stroke-width="2" stroke-linejoin="round"/>
+        ${punkte.map((p, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(p.kadenz).toFixed(1)}" r="${p.amZiel ? 4 : 3}"
+          fill="${p.amZiel ? 'var(--gruen)' : 'var(--stahl)'}"${p.amZiel ? ' class="am"' : ''}/>`).join('')}
+      </svg>
+      <div class="h" style="margin:7px 0 0"><span class="t">${escHtml(punkte[0].date.slice(5))}</span>
+        <span class="t ziel">${t('rad.kadenzZiel', { ziel: k.ziel })}</span></div>
+      <p class="fine" style="margin:6px 0 0">${escHtml(satz)}</p>
+    </div>`;
+}
+
+/** Ø Watt und NP je Fahrt nebeneinander: wie gleichmaessig gefahren wurde. */
+function npKarte(fahrten) {
+  const { reihe, aufschlag } = ST.wattGegenNp(fahrten, 12);
+  if (reihe.length < 2) return '';
+  const breite = 300, hoehe = 64;
+  const max = Math.max(...reihe.map(f => f.np));
+  const slot = breite / reihe.length, b = Math.min(10, slot * 0.36);
+  const rect = (x, v, farbe, klasse) => {
+    const h = Math.max(2, v / max * hoehe);
+    return `<rect class="${klasse}" x="${x.toFixed(1)}" y="${(hoehe - h).toFixed(1)}" width="${b.toFixed(1)}" height="${h.toFixed(1)}" fill="${farbe}"/>`;
+  };
+  const balken = reihe.map((f, i) => {
+    const mitte = i * slot + slot / 2;
+    return rect(mitte - b - 1, f.watt, 'var(--stahl)', 'watt') + rect(mitte + 1, f.np, 'var(--akzent)', 'np');
+  }).join('');
+  return `
+    <div class="radbar np">
+      <div class="h"><span class="t">${t('rad.np')}</span><span class="r">+${escHtml(aufschlag)} %</span></div>
+      <svg viewBox="0 0 ${breite} ${hoehe}" preserveAspectRatio="none" aria-hidden="true">${balken}</svg>
+      <div class="legende"><span><i class="watt"></i>${t('rad.legendeWatt')}</span><span><i class="np"></i>${t('rad.legendeNp')}</span></div>
+      <p class="fine" style="margin:6px 0 0">${escHtml(t(aufschlag <= 5 ? 'rad.npGleich' : 'rad.npWechsel', { p: aufschlag }))}</p>
+    </div>`;
 }
 
 
@@ -3265,6 +3342,7 @@ function renderChecks() {
     </div>`).join('');
 
   $('pers-bw').value = PS.checkKoerpergewicht(config);
+  $('pers-kadenz').value = config.rad && config.rad.kadenzZiel ? PS.kadenzZiel(config) : '';
   // Mit angebundener Waage ist das Feld ueberfluessig — es waere ein
   // zweiter Ort fuer dieselbe Zahl, und zwei Orte laufen auseinander.
   const vonWaage = gewichtsPunkte.length > 0;
@@ -3301,8 +3379,8 @@ $('pers-speichern').onclick = async () => {
     // stellt, soll nicht zusaetzlich ein Datum eintippen muessen.
     const verletzungen = VL.stempleEnde(VL.baueVerletzungen(injEntwurf || VL.entwurf(config)),
       VL.alle(datei.data), P.ymd(new Date()));
-    const neu = VL.setzeInConfig(PS.setzeChecks(
-      PS.setzeInConfig(datei.data, { grund: $('pers-grund').value, rekorde }), checks), verletzungen);
+    const neu = PS.setzeKadenzZiel(VL.setzeInConfig(PS.setzeChecks(
+      PS.setzeInConfig(datei.data, { grund: $('pers-grund').value, rekorde }), checks), verletzungen), $('pers-kadenz').value);
     await S.writeFile('config.json', neu, 'Persönliches aktualisiert', datei.sha);
     config = neu;
 

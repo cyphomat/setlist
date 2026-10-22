@@ -129,59 +129,66 @@ export function normalisiere(fahrten = []) {
   });
 }
 
+/** Eine Radaktivitaet aus intervals.icu, auf das Noetige reduziert. */
+export function alsFahrt(a) {
+  return {
+    id: a.id,
+    external_id: a.external_id || null,
+    date: (a.start_date_local || '').slice(0, 10),
+    // Uhrzeit wird gebraucht: der Abstand zwischen Fahrt und Eisen
+    // entscheidet, ob sich die beiden ins Gehege kommen.
+    zeit: a.start_date_local || null,
+    name: a.name || 'Fahrt',
+    minutes: Math.round((a.moving_time || 0) / 60),
+    km: Math.round((a.distance || 0) / 100) / 10,
+    // ACHTUNG, ungeprueft wie `entkopplung`: dass `total_elevation_gain` in
+    // Metern kommt, folgt aus dem Strava-Vorbild, nicht aus dem Schema.
+    // Beim ersten echten Wert gegen die Weboberflaeche pruefen.
+    hm: a.total_elevation_gain != null ? Math.round(a.total_elevation_gain) : null,
+    load: a.icu_training_load || null,
+    // Ab hier die Felder fuer die Auswertung. Namen sind nicht geraten,
+    // sondern aus dem Schema unter /api/v1/docs (Activity) gelesen: es
+    // heisst `icu_average_watts`, ein `average_watts` gibt es nicht.
+    intensitaet: alsAnteil(a.icu_intensity),
+    np: a.icu_weighted_avg_watts || null,
+    watt: a.icu_average_watts || null,
+    hf: a.average_heartrate || null,
+    hfMax: a.max_heartrate || null,
+    effizienz: a.icu_efficiency_factor != null ? a.icu_efficiency_factor : null,
+    // ACHTUNG, ungeprueft: ob `decoupling` als Prozentzahl (5.1) oder als
+    // Anteil (0.051) kommt, ist nicht belegt — die Weboberflaeche zeigt den
+    // Wert im Kopf einer Aktivitaet nicht an, und das Schema nennt keine
+    // Einheit. Anders als bei der Intensitaet gibt es hier KEINE saubere
+    // Grenze zwischen beiden Schreibweisen, also wird nicht geraten. Der
+    // Wert wird nur angezeigt, nie verglichen: eine falsche Einheit faellt
+    // dann auf, statt still zu wirken. Beim ersten echten Wert pruefen.
+    entkopplung: a.decoupling != null ? a.decoupling : null,
+    // Wie viele Minuten zusammenhaengende Grundlage hinter dem
+    // Leistung:HF-Wert stehen. Das ist die Stichprobengroesse der
+    // Entkopplung — ohne sie waere jede Kurve daraus geraten.
+    pwhr: a.icu_power_hr_z2 != null ? a.icu_power_hr_z2 : null,
+    pwhrMin: a.icu_power_hr_z2_mins || 0,
+    ftpDamals: a.icu_ftp || null,
+    // Fuer die Rad-Tour: mittlere Trittfrequenz (rpm) und Energie (kcal).
+    // Beide Namen aus dem Activity-Schema, wie die Watt-Felder oben.
+    kadenz: a.average_cadence > 0 ? Math.round(a.average_cadence) : null,
+    kcal: a.calories > 0 ? Math.round(a.calories) : null,
+    trainer: !!a.trainer,
+    // {id, secs} je Zone. Nur die belegten, sonst blaeht das den
+    // Zwischenspeicher fuer nichts auf.
+    zonen: Array.isArray(a.icu_zone_times)
+      ? a.icu_zone_times.filter(z => z && z.secs).map(z => ({ id: z.id, secs: z.secs }))
+      : null
+  };
+}
+
 /** Radaktivitaeten in einem Zeitraum, auf das Noetige reduziert. */
 export async function rides(from, to) {
   const id = localStorage.getItem(KEY_ID);
   if (!id) return [];
   const list = await get(`/athlete/${id}/activities?oldest=${from}&newest=${to}`);
   if (!Array.isArray(list)) return [];
-  return entdoppeln(list
-    .filter(a => RIDE_TYPES.includes(a.type))
-    .map(a => ({
-      id: a.id,
-      external_id: a.external_id || null,
-      date: (a.start_date_local || '').slice(0, 10),
-      // Uhrzeit wird gebraucht: der Abstand zwischen Fahrt und Eisen
-      // entscheidet, ob sich die beiden ins Gehege kommen.
-      zeit: a.start_date_local || null,
-      name: a.name || 'Fahrt',
-      minutes: Math.round((a.moving_time || 0) / 60),
-      km: Math.round((a.distance || 0) / 100) / 10,
-      // ACHTUNG, ungeprueft wie `entkopplung`: dass `total_elevation_gain` in
-      // Metern kommt, folgt aus dem Strava-Vorbild, nicht aus dem Schema.
-      // Beim ersten echten Wert gegen die Weboberflaeche pruefen.
-      hm: a.total_elevation_gain != null ? Math.round(a.total_elevation_gain) : null,
-      load: a.icu_training_load || null,
-      // Ab hier die Felder fuer die Auswertung. Namen sind nicht geraten,
-      // sondern aus dem Schema unter /api/v1/docs (Activity) gelesen: es
-      // heisst `icu_average_watts`, ein `average_watts` gibt es nicht.
-      intensitaet: alsAnteil(a.icu_intensity),
-      np: a.icu_weighted_avg_watts || null,
-      watt: a.icu_average_watts || null,
-      hf: a.average_heartrate || null,
-      hfMax: a.max_heartrate || null,
-      effizienz: a.icu_efficiency_factor != null ? a.icu_efficiency_factor : null,
-      // ACHTUNG, ungeprueft: ob `decoupling` als Prozentzahl (5.1) oder als
-      // Anteil (0.051) kommt, ist nicht belegt — die Weboberflaeche zeigt den
-      // Wert im Kopf einer Aktivitaet nicht an, und das Schema nennt keine
-      // Einheit. Anders als bei der Intensitaet gibt es hier KEINE saubere
-      // Grenze zwischen beiden Schreibweisen, also wird nicht geraten. Der
-      // Wert wird nur angezeigt, nie verglichen: eine falsche Einheit faellt
-      // dann auf, statt still zu wirken. Beim ersten echten Wert pruefen.
-      entkopplung: a.decoupling != null ? a.decoupling : null,
-      // Wie viele Minuten zusammenhaengende Grundlage hinter dem
-      // Leistung:HF-Wert stehen. Das ist die Stichprobengroesse der
-      // Entkopplung — ohne sie waere jede Kurve daraus geraten.
-      pwhr: a.icu_power_hr_z2 != null ? a.icu_power_hr_z2 : null,
-      pwhrMin: a.icu_power_hr_z2_mins || 0,
-      ftpDamals: a.icu_ftp || null,
-      trainer: !!a.trainer,
-      // {id, secs} je Zone. Nur die belegten, sonst blaeht das den
-      // Zwischenspeicher fuer nichts auf.
-      zonen: Array.isArray(a.icu_zone_times)
-        ? a.icu_zone_times.filter(z => z && z.secs).map(z => ({ id: z.id, secs: z.secs }))
-        : null
-    })));
+  return entdoppeln(list.filter(a => RIDE_TYPES.includes(a.type)).map(alsFahrt));
 }
 
 /** Wellness-Daten: Gewicht, Fitness (ctl), Ermuedung (atl), HRV und Schlaf. */

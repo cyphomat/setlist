@@ -569,6 +569,17 @@ p.quelle{margin-top:10px;color:var(--dim);font-style:italic;line-height:1.5}
 .fahrt .d{font-family:var(--mono);font-size:0.78125rem;color:var(--stahl);letter-spacing:.06em}
 .fahrt .n{font-size:0.875rem;color:var(--fg);margin-top:3px}
 .fahrt .m{font-family:var(--mono);font-size:0.75rem;color:var(--muted);margin-top:3px}
+.fahrt .werte{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.fahrt .chip,.fahrt .zone{font-family:var(--mono);font-size:0.6875rem;line-height:1.4;padding:1px 6px;border:1px solid var(--line);
+  border-radius:2px;color:var(--muted);white-space:nowrap}
+.fahrt .zone{font-weight:700;border-color:currentColor}
+.fahrt .zone.ruhig{color:var(--gruen)} .fahrt .zone.mittel{color:var(--stahl)} .fahrt .zone.hart{color:var(--rost)}
+/* Kadenz: Punkte bleiben rund, also ohne Verzerrung */
+.radbar svg.frei{height:auto}
+.radbar .h .t.ziel{color:var(--gruen)}
+.radbar .legende{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:7px;font-family:var(--mono);font-size:0.71875rem;color:var(--muted)}
+.radbar .legende i{display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px}
+.radbar .legende i.watt{background:var(--stahl)} .radbar .legende i.np{background:var(--akzent)}
 
 /* ═══════════════════════════════════════════════════════════
    Helle Fassung. Keine Invertierung: Leuchten werden abgeschaltet

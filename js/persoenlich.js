@@ -194,3 +194,26 @@ export function setzeChecks(config, checks) {
   else delete neu.checks;
   return neu;
 }
+
+/* Rad: das Ziel fuer die Trittfrequenz. Ohne Eintrag gilt 80 rpm. */
+export const KADENZ_STANDARD = 80;
+const KADENZ_MIN = 50, KADENZ_MAX = 120;
+const kadenzGueltig = v => Number.isInteger(v) && v >= KADENZ_MIN && v <= KADENZ_MAX;
+
+/** Das Kadenz-Ziel aus der Konfiguration — oder die Vorgabe. */
+export function kadenzZiel(config) {
+  const v = config && config.rad ? Number(config.rad.kadenzZiel) : NaN;
+  return kadenzGueltig(v) ? v : KADENZ_STANDARD;
+}
+
+/** Ziel setzen; leer oder Unsinn nimmt es heraus, dann gilt wieder die Vorgabe. */
+export function setzeKadenzZiel(config, wert) {
+  const neu = JSON.parse(JSON.stringify(config || {}));
+  const v = String(wert ?? '').trim() === '' ? NaN : Math.round(Number(wert));
+  if (kadenzGueltig(v)) neu.rad = { ...(neu.rad || {}), kadenzZiel: v };
+  else if (neu.rad) {
+    delete neu.rad.kadenzZiel;
+    if (!Object.keys(neu.rad).length) delete neu.rad;
+  }
+  return neu;
+}

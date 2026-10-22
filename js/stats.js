@@ -197,6 +197,13 @@ export function radStats(rides = []) {
     const tage = (new Date(daten[daten.length - 1]) - new Date(daten[0])) / 86400000;
     proWoche = tage > 0 ? Math.round((rides.length / (tage / 7)) * 10) / 10 : null;
   }
+  const mitKcal = rides.filter(r => r.kcal > 0);
+  // Ø Leistung nach Minuten gewichtet: eine Stunde zaehlt doppelt so viel
+  // wie eine halbe, sonst zieht jede kurze Ausrollfahrt den Schnitt.
+  const mitWatt = rides.filter(r => r.watt > 0 && r.minutes > 0);
+  const wattMin = mitWatt.reduce((s, r) => s + r.minutes, 0);
+  const wattSchnitt = wattMin ? Math.round(mitWatt.reduce((s, r) => s + r.watt * r.minutes, 0) / wattMin) : null;
+  const ftp = (rides.filter(r => r.ftpDamals > 0).sort((a, b) => b.date.localeCompare(a.date))[0] || {}).ftpDamals || null;
   return {
     anzahl: rides.length,
     minuten,
@@ -205,8 +212,51 @@ export function radStats(rides = []) {
     last: Math.round(last),
     proWoche,
     von: daten[0] || null,
-    bis: daten[daten.length - 1] || null
+    bis: daten[daten.length - 1] || null,
+    kcal: mitKcal.length ? Math.round(mitKcal.reduce((s, r) => s + r.kcal, 0)) : null,
+    wattSchnitt,
+    ftp,
+    ftpAnteil: wattSchnitt && ftp ? Math.round(wattSchnitt / ftp * 100) : null
   };
+}
+
+/** Die Zone, in der eine Fahrt die meiste Zeit lag (`Z2`, `SS` …). */
+export function hauptZone(zonen) {
+  if (!Array.isArray(zonen)) return null;
+  const beste = zonen.filter(z => z && typeof z.id === 'string' && z.secs > 0).sort((a, b) => b.secs - a.secs)[0];
+  return beste ? beste.id : null;
+}
+
+/** NP durch Ø Watt: 1,00 heisst ganz gleichmaessig gefahren. */
+export function variabilitaet(f = {}) {
+  return f.np > 0 && f.watt > 0 ? Math.round(f.np / f.watt * 100) / 100 : null;
+}
+
+/**
+ * Trittfrequenz je Fahrt gegen ein Ziel. Am Ziel ist, wer hoechstens
+ * `toleranz` darunter liegt — 78 bei 80 ist kein verfehltes Ziel.
+ * `serie`: so viele der juengsten Fahrten in Folge am Ziel.
+ */
+export function kadenzReihe(fahrten = [], ziel = 80, toleranz = 2) {
+  const punkte = fahrten.filter(f => f && f.kadenz > 0 && f.date)
+    .sort((a, b) => (a.zeit || a.date).localeCompare(b.zeit || b.date))
+    .map(f => ({ date: f.date, kadenz: f.kadenz, amZiel: f.kadenz >= ziel - toleranz }));
+  let serie = 0;
+  for (let i = punkte.length - 1; i >= 0 && punkte[i].amZiel; i--) serie++;
+  const letzte = punkte.slice(-5);
+  return {
+    punkte, serie, ziel, ab: ziel - toleranz,
+    schnitt5: letzte.length ? Math.round(letzte.reduce((s, p) => s + p.kadenz, 0) / letzte.length) : null
+  };
+}
+
+/** Die juengsten Fahrten mit Ø Watt und NP, dazu der mittlere Aufschlag der NP in Prozent. */
+export function wattGegenNp(fahrten = [], n = 12) {
+  const reihe = fahrten.filter(f => f && f.watt > 0 && f.np > 0 && f.date)
+    .sort((a, b) => (a.zeit || a.date).localeCompare(b.zeit || b.date)).slice(-n)
+    .map(f => ({ date: f.date, watt: Math.round(f.watt), np: Math.round(f.np), vi: variabilitaet(f) }));
+  const aufschlag = reihe.length ? Math.round((reihe.reduce((s, f) => s + f.np / f.watt, 0) / reihe.length - 1) * 100) : null;
+  return { reihe, aufschlag };
 }
 
 /** Wochenweise Last — zeigt Rhythmus und Lücken deutlicher als eine Liste. */

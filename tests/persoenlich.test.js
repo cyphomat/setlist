@@ -101,4 +101,14 @@ ok('nur programm ist weg', geleert.records.programm === undefined);
 eq('ziele bleibt, weil sonstiges drin ist', geleert.ziele.sonstiges, 'bleibt');
 ok('nur warum ist weg', geleert.ziele.warum === undefined);
 
+print('\n--- Kadenz-Ziel ---');
+eq('Vorgabe 80', PS.kadenzZiel({}), 80);
+eq('eingetragen', PS.kadenzZiel({ rad: { kadenzZiel: 85 } }), 85);
+eq('Unsinn: Vorgabe', PS.kadenzZiel({ rad: { kadenzZiel: '<b>' } }), 80);
+eq('zu hoch: Vorgabe', PS.kadenzZiel({ rad: { kadenzZiel: 300 } }), 80);
+eq('setzen', PS.setzeKadenzZiel({ bar: 20 }, '90').rad.kadenzZiel, 90);
+ok('Rest bleibt', PS.setzeKadenzZiel({ bar: 20 }, '90').bar === 20);
+ok('leeren nimmt rad heraus', !('rad' in PS.setzeKadenzZiel({ rad: { kadenzZiel: 90 } }, '')));
+eq('Unsinn wird nicht gespeichert', PS.kadenzZiel(PS.setzeKadenzZiel({}, '40')), 80);
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

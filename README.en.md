@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1875%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1906%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -185,7 +185,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 
 | | |
 |---|---|
-| **Bike rides** | Rides, hours, kilometres, weekly load over twelve weeks — from intervals.icu. |
+| **Bike rides** | Rides, hours, kilometres, load, energy, average power with its share of FTP and the weekly load over twelve weeks — from intervals.icu. Plus **cadence** per ride against your target (under *Backstage → Personal*, 80 rpm if empty; 2 rpm below still counts), **avg watts vs NP** as bar pairs (how steadily you ride) and for each ride avg watts, NP, IF, load, heart rate, cadence and the zone with the most time. |
 | **Training calendar** | 26 weeks as a grid: strength amber, jam green, bike steel blue. |
 | **Stacked weekly load** | Strength and bike in one bar — the single curve that makes both belong together. |
 | **Fitness vs. fatigue** | Two lines from intervals.icu — the area between them *is* your form. |
@@ -475,7 +475,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-1875 tests in 26 files. No build, no dependencies.
+1906 tests in 26 files. No build, no dependencies.
 
 ### Browser probes (optional)
 

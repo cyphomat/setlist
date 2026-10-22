@@ -967,4 +967,39 @@ print('\n--- Wochen-Rueckschau ---');
   eq('leere Woche', `${leer.einheiten}/${leer.saetze.gesamt}/${leer.km}`, '0/0/0');
 }
 
+print('\n--- Rad: Kopfzahlen, Zone, Kadenz, NP ---');
+{
+  const f = [
+    { date: '2026-10-01', minutes: 60, watt: 120, np: 130, kcal: 400, ftpDamals: 140 },
+    { date: '2026-10-03', minutes: 30, watt: 90, np: 100, kcal: 200, ftpDamals: 145 },
+    { date: '2026-10-02', minutes: 20 }
+  ];
+  const st = S.radStats(f);
+  eq('kcal summiert', st.kcal, 600);
+  eq('Ø Watt nach Minuten gewichtet', st.wattSchnitt, 110);
+  eq('FTP der juengsten Fahrt', st.ftp, 145);
+  eq('Anteil an der FTP', st.ftpAnteil, 76);
+  const leer = S.radStats([{ date: '2026-10-01', minutes: 30 }]);
+  ok('ohne Werte: null statt 0', leer.kcal === null && leer.wattSchnitt === null && leer.ftpAnteil === null);
+  eq('Hauptzone: meiste Sekunden', S.hauptZone([{ id: 'Z1', secs: 300 }, { id: 'Z2', secs: 1800 }, { id: 'Z3', secs: 600 }]), 'Z2');
+  eq('Hauptzone ohne Zonen', S.hauptZone(null), null);
+  eq('Hauptzone: kaputte Eintraege zaehlen nicht', S.hauptZone([{ id: 7, secs: 9e9 }, { id: 'SS', secs: 10 }]), 'SS');
+  eq('Variabilitaet', S.variabilitaet({ np: 131, watt: 125 }), 1.05);
+  eq('Variabilitaet ohne NP', S.variabilitaet({ watt: 125 }), null);
+  const k = S.kadenzReihe([
+    { date: '2026-10-01', kadenz: 72 }, { date: '2026-10-05', kadenz: 78 }, { date: '2026-10-03', kadenz: 63 },
+    { date: '2026-10-07', kadenz: 81 }, { date: '2026-10-08' }
+  ], 80);
+  eq('Kadenz: nur Fahrten mit Wert, nach Datum', k.punkte.map(p => p.kadenz).join(), '72,63,78,81');
+  ok('78 zaehlt bei Ziel 80', k.punkte[2].amZiel && !k.punkte[1].amZiel);
+  eq('Serie am Ziel', k.serie, 2);
+  eq('ab', k.ab, 78);
+  eq('Schnitt der letzten fuenf', k.schnitt5, 74);
+  eq('leere Kadenzreihe', S.kadenzReihe([], 80).schnitt5, null);
+  const n = S.wattGegenNp([{ date: '2026-10-02', watt: 100, np: 110 }, { date: '2026-10-01', watt: 100, np: 100 }, { date: '2026-10-03', watt: 90 }]);
+  eq('Ø gegen NP: nur mit beiden, nach Datum', n.reihe.map(f => f.np).join(), '100,110');
+  eq('mittlerer Aufschlag', n.aufschlag, 5);
+  eq('ohne Paare kein Aufschlag', S.wattGegenNp([]).aufschlag, null);
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);
