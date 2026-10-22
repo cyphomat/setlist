@@ -1,5 +1,17 @@
 # Setlist — Hinweise für die Arbeit an diesem Repo
 
+## Arbeitsweise
+
+Ich arbeite mit einem privaten Abo, das Kontingent ist schnell leer. Ich neige dazu, überall Opus zu nehmen, weil ich es von der Arbeit gewohnt bin.
+
+Sag mir deshalb zu Beginn jeder neuen Aufgabe in einem Satz, welches Modell dafür reicht (Haiku, Sonnet oder Opus). Standard ist Sonnet. Opus nur, wenn die Aufgabe wirklich schwer ist oder Sonnet schon zweimal gescheitert ist. Wenn ich gerade auf einem größeren Modell arbeite als nötig, sag es mir.
+
+Wenn die Aufgabe mehrere Dateien oder mehrere Schritte betrifft oder schwer rückgängig zu machen wäre, schlag mir erst einen kurzen Plan vor. Ich gebe ihn frei, dann setzt du um. Bei einer kleinen Änderung an einer Datei brauchst du keinen Plan.
+
+Spar Kontingent: Lies nur die Dateien, die du für die Aufgabe brauchst. Starte keine Subagents oder parallelen Aufgaben ohne meine Aufforderung. Sag mir, wenn die Unterhaltung so lang geworden ist, dass eine neue Session sinnvoll wäre.
+
+Kommuniziere auf Deutsch, kurz und konkret.
+
 ## Lizenz und Autor
 - Lizenz: **MIT** (`LICENSE`). Copyright-Zeile „Copyright (c) <erstes Jahr>[–<aktuelles Jahr>] cyphomat“; ein Bereich erst, wenn die Jahre verschieden sind.
 - Autor erscheint **nur** als „@cyphomat“, verlinkt auf https://github.com/cyphomat.
