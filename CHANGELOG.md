@@ -10,6 +10,40 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-23.2
+
+### Neu
+- **Zusammen trainieren.** In der Einheit gibt es unter der Ansage „Zu zweit trainieren?“:
+  einchecken, mit wem man heute trainiert. Das ist eine Datei im Datenrepo
+  (`zusammen/JJJJ-MM-TT-<Kennung>.json`), getrennt von den Einheiten; sie ändert nichts am
+  Programm. Eine gemeinsame Einheit ist eine Verabredung **plus** eine Einheit am selben Tag.
+  Wer nur eincheckt und nicht trainiert, bekommt nichts. Auch ohne Netz: der Check-in wird
+  nachgetragen.
+- **I go, you go.** Wer eingecheckt hat, sieht in der Pause „Max ist dran“, der Knopf heißt
+  „Fertig“, und läuft die Zeit ab, steht dort „Du bist dran“. Nur Beschriftung der
+  bestehenden Pausenleiste, nichts wird gespeichert.
+- **Handschlag.** Beide bestätigen die Verabredung über zwei Links, die sie sich selbst
+  schicken (Teilen-Menü oder Kopieren) und in der App einfügen — oder öffnen. Es gibt keinen
+  Server dazwischen; im Link stehen nur Kennung, Schritt und Name. Eine Einladung wird nie
+  ungefragt angenommen. „Bestätigt“ heißt: beide Telefone waren beteiligt, nicht
+  fälschungssicher. Einladungen aus fremden Links werden streng geprüft (Kennung, Schritt,
+  Namenslänge, Steuer- und Richtungszeichen) und nur als Text angezeigt.
+- **Acht neue Aufnäher** mit eigenem Pixelbild je Stufe: Duett (erste gemeinsame Einheit),
+  Faustgruß (von beiden bestätigt), Tourpartner (5, 15, 30 gemeinsame Tage) und feste
+  Verabredung (2, 4, 8 Wochen in Folge). Sie erscheinen erst, wenn es eine Verabredung gibt —
+  wer allein trainiert, sieht keine leeren Kreise. Gezählt werden Tage und Wochen; es gibt
+  keinen Vergleich zwischen Personen.
+- **Minierfolg** „Zu zweit trainiert, mit …“ auf dem Abschlussbild.
+- Unter Backstage → Persönlich: der eigene Name für Trainingspartner.
+- Die Sicherung nimmt `zusammen/` mit; beim Einlesen geht eine Verabredung nur von offen auf
+  bestätigt, nie zurück.
+
+### Hinweise
+- Ein Check-in lässt sich nicht zurücknehmen; die App kann Dateien im Datenrepo nicht löschen.
+  Ohne Einheit am selben Tag zählt er aber nicht.
+- Ein neuer Test prüft für jeden Aufnäher im Katalog, dass Name und Bedingung in beiden
+  Sprachen existieren.
+
 ## 2026-10-23.1
 
 ### Neu

@@ -123,3 +123,88 @@ export const kurz = (name, max = 10) => {
   const n = [...String(name == null ? '' : name)];
   return n.length > max ? `${n.slice(0, max - 1).join('')}…` : n.join('');
 };
+
+/* ---------------------------------------------------------------
+   Der Handschlag. Zwei Links, die sich die Personen selbst schicken;
+   kein Server dazwischen, und im Link steht nur Kennung, Schritt und
+   Name — nichts aus dem Datenrepo.
+
+     Schritt 1  die einladende Person teilt ihn
+     Schritt 2  die eingeladene Person schickt ihn zurueck
+
+   Beide Seiten fuehren nur ihre eigene Datei. "Bestaetigt" heisst:
+   beide Telefone waren am Handschlag beteiligt. Fälschungssicher ist
+   das nicht und soll es nicht sein.                                  */
+
+export const LINK_MAX = 500;
+
+/** Der Link, der geteilt wird. `basis` ist die Adresse der App; was dahinter steht, faellt weg. */
+export function einladungsLink(basis, { id, schritt, von } = {}) {
+  if (!istId(id) || (schritt !== 1 && schritt !== 2)) return null;
+  const name = bereinigeName(von);
+  const b = String(basis == null ? '' : basis).split('#')[0];
+  return `${b}#zusammen=${id}&schritt=${schritt}${name ? `&von=${encodeURIComponent(name)}` : ''}`;
+}
+
+const AM_RAND = '(?:^|[#&?\\s])';
+
+/**
+ * Aus Text eine Einladung lesen: der volle Link, nur der Teil hinter dem #,
+ * oder die Parameter allein — so wie man sie aus einer Nachricht kopiert.
+ * Null bei allem, was nicht genau passt. Der Name ist gesaeubert, kann
+ * aber null sein.
+ */
+export function lies(text) {
+  const t = String(text == null ? '' : text);
+  if (t.length > LINK_MAX) return null;
+  const id = new RegExp(`${AM_RAND}zusammen=([a-z2-7]{10})(?![a-z2-7])`).exec(t);
+  const schritt = new RegExp(`${AM_RAND}schritt=([12])(?![0-9])`).exec(t);
+  if (!id || !schritt) return null;
+  const von = new RegExp(`${AM_RAND}von=([^&#\\s]*)`).exec(t);
+  let name = null;
+  if (von) { try { name = bereinigeName(decodeURIComponent(von[1])); } catch { name = null; } }
+  return { id: id[1], schritt: Number(schritt[1]), von: name };
+}
+
+/**
+ * Was mit einer Einladung geschaehe, ohne etwas zu schreiben:
+ *   neu        — kann uebernommen werden
+ *   schon      — gibt es hier schon (nochmal annehmen schadet nicht, aendert nichts)
+ *   eigene     — die eigene Einladung, nicht annehmbar
+ *   unbekannt  — eine Antwort ohne Einladung von diesem Geraet
+ *   falsch     — eine Antwort, wo eine Einladung gebraucht wird
+ *   ungueltig  — keine Einladung
+ */
+export function pruefe(einladung, eintraege = []) {
+  if (!einladung) return { art: 'ungueltig', eintrag: null };
+  const da = eintraege.find(e => e && e.id === einladung.id) || null;
+  if (einladung.schritt === 1) {
+    if (!da) return { art: 'neu', eintrag: null };
+    return { art: da.rolle === 'einlader' ? 'eigene' : 'schon', eintrag: da };
+  }
+  if (!da) return { art: 'unbekannt', eintrag: null };
+  if (da.rolle !== 'einlader') return { art: 'falsch', eintrag: da };
+  return { art: da.bestaetigt ? 'schon' : 'neu', eintrag: da };
+}
+
+/**
+ * Der Eintrag, der zu schreiben ist — oder null, wenn nichts zu tun ist.
+ * Schritt 1 legt die Seite der eingeladenen Person an, noch nicht bestaetigt:
+ * bestaetigt ist sie, wenn sie die Antwort losgeschickt hat (antwortGesendet).
+ * Schritt 2 bestaetigt die Seite der einladenden Person. So hat jede Seite
+ * etwas getan, bevor der Handschlag zaehlt.
+ */
+export function uebernehme(einladung, eintraege = [], datum) {
+  const p = pruefe(einladung, eintraege);
+  if (p.art !== 'neu') return null;
+  if (einladung.schritt === 1) {
+    return eintrag({ id: einladung.id, datum, mit: einladung.von, rolle: 'gast', bestaetigt: false });
+  }
+  return eintrag({ ...p.eintrag, mit: p.eintrag.mit || einladung.von, bestaetigt: true });
+}
+
+/** Die eingeladene Person hat die Antwort geteilt oder kopiert — ihre Seite ist bestaetigt. Sonst null. */
+export function antwortGesendet(e) {
+  if (!e || e.rolle !== 'gast' || e.bestaetigt) return null;
+  return eintrag({ ...e, bestaetigt: true });
+}

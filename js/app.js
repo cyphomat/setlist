@@ -62,6 +62,7 @@ let bibliothek = {};            // eigene Notizen/Videos je Uebung, aus biblioth
 let bibZufall = null, bibKategorie = null;
 let soundchecks = [];           // Wochen mit Soundcheck ('JJJJ-Www'), aus soundcheck/
 let zusammen = [];              // Verabredungen zum gemeinsamen Training, aus zusammen/
+const OFFEN_KEY = 'setlist.zusammen';   // eine noch nicht verarbeitete Einladung (steht VOR dem Start, deshalb hier oben)
 let scVorsaetze = null;         // { woche, vorsaetze } des juengsten Soundchecks
 
 const $ = id => document.getElementById(id);
@@ -171,7 +172,7 @@ async function load() {
     S.readAllLogs().then(logs => { if (!alleLogs.length) { alleLogs = logs; S.cacheLogs(logs); } renderAmp(); }).catch(() => {});
   }
   ladeSoundchecks();
-  ladeZusammen();
+  ladeZusammen().then(pruefeEinladung);
 }
 
 /** Nur Beiwerk: Fehler hier duerfen die App nie blockieren — aber sichtbar sein. */
@@ -1651,6 +1652,7 @@ $('icu-save').onclick = async () => {
 window.addEventListener('online', flushQueue);
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 
+merkeEinladung();
 pruefeVersion();
 if (S.istEingerichtet()) {
   show('home');
@@ -4870,15 +4872,134 @@ async function eincheckenZusammen(name) {
   if (e) await speichereZusammen(e, t('zu.gespeichert', { name: e.mit }));
 }
 
-/** Die Zeile "Zu zweit trainieren" unter der Ansage. Nach dem Einchecken nur noch die Bestaetigung. */
+/* ----- Handschlag: Einladung teilen, annehmen, bestaetigen ----- */
+
+/** Die Adresse der App ohne alles Weitere — die Basis fuer Einladungslinks. */
+const appAdresse = () => `${location.origin}${location.pathname}`;
+
+/**
+ * Ein Link mit Einladung im Fragment wird vor allem anderen gemerkt und aus
+ * der Adresszeile genommen: so geht er beim Einrichten und bei einem
+ * Neuladen nicht verloren, steht nicht im Verlauf und wird nicht zweimal
+ * verarbeitet. Verarbeitet wird er erst, wenn die App steht (pruefeEinladung).
+ */
+function merkeEinladung() {
+  if (!/zusammen=/.test(location.hash)) return;
+  try { localStorage.setItem(OFFEN_KEY, location.hash.slice(0, ZU.LINK_MAX)); } catch { /* ohne Speicher: dann eben nicht */ }
+  try { history.replaceState(null, '', location.pathname + location.search); } catch { /* egal */ }
+}
+
+async function pruefeEinladung() {
+  let roh = null;
+  try { roh = localStorage.getItem(OFFEN_KEY); localStorage.removeItem(OFFEN_KEY); } catch { /* egal */ }
+  if (roh) await verarbeiteEinladung(roh);
+}
+
+/**
+ * Eine Einladung oder Antwort aus einem Link oder eingefuegtem Text. Eine
+ * Einladung wird nie ungefragt angenommen; die Antwort auf die eigene
+ * Einladung schon, sie aendert nur die eigene Datei. Gibt zurueck, ob es
+ * danach in Ordnung ist.
+ */
+async function verarbeiteEinladung(text) {
+  const e = ZU.lies(text);
+  const p = ZU.pruefe(e, zusammen);
+  const name = (e && e.von) || t('zu.partnerOhneName');
+  switch (p.art) {
+    case 'ungueltig': banner(t('zu.link.ungueltig'), 'err', 5000); return false;
+    case 'eigene': banner(t('zu.link.eigene'), 'err', 5000); return false;
+    case 'unbekannt': banner(t('zu.link.unbekannt'), 'err', 6000); return false;
+    case 'falsch': banner(t('zu.link.falsch'), 'err', 6000); return false;
+    case 'schon': banner(t('zu.link.schon', { name }), '', 4000); return true;
+  }
+  // confirm zeigt den Namen als Text; ein Name aus einem Link kann kein HTML einschleusen.
+  if (e.schritt === 1 && !confirm(t('zu.link.frage', { name }))) return false;
+  const neu = ZU.uebernehme(e, zusammen, P.ymd(new Date()));
+  if (!neu) return false;
+  await speichereZusammen(neu, t(e.schritt === 1 ? 'zu.link.angenommen' : 'zu.link.bestaetigt', { name: neu.mit || name }));
+  return true;
+}
+
+/** Teilen ueber das Teilen-Menue; ohne das in die Zwischenablage, zuletzt zum Abtippen. */
+async function teileLink(link, text) {
+  if (navigator.share) {
+    try { await navigator.share({ title: 'Setlist', text, url: link }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  await kopiereLink(link);
+}
+
+async function kopiereLink(link) {
+  try { await navigator.clipboard.writeText(link); banner(t('zu.kopiert'), 'ok'); }
+  catch { prompt(t('zu.linkManuell'), link); }
+}
+
+/** Der eigene Name aus einer Einladung wird gemerkt, wenn noch keiner in der Konfiguration steht. */
+async function merkeEigenenNamen(n) {
+  if (!n || PS.eigenerName(config)) return;
+  try {
+    const datei = await S.readFile('config.json');
+    if (!datei) return;
+    const neu = PS.setzeName(datei.data, n);
+    await S.writeFile('config.json', neu, 'Name für Trainingspartner', datei.sha);
+    config = neu;
+  } catch { /* der Link geht auch ohne gespeicherten Namen */ }
+}
+
+/** Eine Verabredung von heute als Zeile; je nach Rolle mit dem Weg zum Handschlag darunter. */
+function zusammenKarte(e) {
+  const name = e.mit || t('zu.partnerOhneName');
+  const ich = `<label class="feld"><span>${escHtml(t('zu.deinName'))}</span>
+    <input class="zu-ich" type="text" maxlength="${ZU.NAME_MAX}" autocomplete="off"
+      value="${escHtml(PS.eigenerName(config) || '')}"></label>`;
+  const knoepfe = teilen => `<div class="zu-knoepfe">
+    <button type="button" class="btn zu-teilen">${escHtml(teilen)}</button>
+    <button type="button" class="btn zu-kopieren">${escHtml(t('zu.kopieren'))}</button></div>`;
+  let aktion = '';
+  if (e.rolle === 'einlader' && !e.bestaetigt) {
+    aktion = `<details class="info"><summary>${escHtml(t('zu.handschlagTitel', { name }))}</summary><div class="body">
+      <p>${escHtml(t('zu.handschlagHinweis'))}</p>${ich}${knoepfe(t('zu.teilen'))}
+      <label class="feld"><span>${escHtml(t('zu.antwortEinfuegen'))}</span>
+        <input class="zu-antwort" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
+      <button type="button" class="btn zu-bestaetigen">${escHtml(t('zu.bestaetigen'))}</button></div></details>`;
+  } else if (e.rolle === 'gast') {
+    aktion = `<details class="info"><summary>${escHtml(t('zu.antwortTitel', { name }))}</summary><div class="body">
+      <p>${escHtml(t('zu.antwortHinweis', { name }))}</p>${ich}${knoepfe(t('zu.antwortTeilen'))}</div></details>`;
+  }
+  return `<div data-zid="${escHtml(e.id)}"><p class="zu-heute"><b>${escHtml(t('zu.heute'))}</b>
+    ${escHtml(name)} · ${escHtml(t(e.bestaetigt ? 'zu.bestaetigtMarke' : e.rolle === 'gast' ? 'zu.angenommen' : 'zu.offen'))}</p>${aktion}</div>`;
+}
+
+function bindeZusammenKarte(karte, e) {
+  const feld = k => karte.querySelector(k);
+  const ich = () => ZU.bereinigeName(feld('.zu-ich') && feld('.zu-ich').value);
+  const link = () => ZU.einladungsLink(appAdresse(), { id: e.id, schritt: e.rolle === 'einlader' ? 1 : 2, von: ich() });
+  const text = () => (ich() ? t('zu.teilenText', { name: ich() }) : t('zu.teilenTextOhne'));
+  // Teilen muss synchron aus dem Tipp heraus starten, sonst verweigert es der Browser;
+  // das Merken des Namens geht danach.
+  // Die eingeladene Person gilt als bestaetigt, sobald sie die Antwort losschickt.
+  const gesendet = () => {
+    const neu = ZU.antwortGesendet(e);
+    if (neu) speichereZusammen(neu, t('zu.link.bestaetigt', { name: e.mit || t('zu.partnerOhneName') }));
+  };
+  if (feld('.zu-teilen')) feld('.zu-teilen').onclick = () => { teileLink(link(), text()); merkeEigenenNamen(ich()); gesendet(); };
+  if (feld('.zu-kopieren')) feld('.zu-kopieren').onclick = () => { kopiereLink(link()); merkeEigenenNamen(ich()); gesendet(); };
+  if (feld('.zu-bestaetigen')) {
+    feld('.zu-bestaetigen').onclick = async () => {
+      const eingabe = feld('.zu-antwort');
+      if (await verarbeiteEinladung(eingabe.value)) eingabe.value = '';
+    };
+  }
+}
+
+/** Die Zeile "Zu zweit trainieren" unter der Ansage: erst einchecken oder Einladung einfuegen, dann der Weg zum Handschlag. */
 function renderZusammen() {
   const box = $('session-zusammen');
   if (!box || !session) return;
   const heute = ZU.amTag(zusammen, session.date);
   if (heute.length) {
-    const namen = [...new Set(heute.map(e => e.mit).filter(Boolean))];
-    box.innerHTML = `<p class="zu-heute"><b>${escHtml(t('zu.heute'))}</b>
-      ${escHtml(namen.join(' & ') || t('zu.partnerOhneName'))}</p>`;
+    box.innerHTML = heute.map(zusammenKarte).join('');
+    box.querySelectorAll('[data-zid]').forEach(k => bindeZusammenKarte(k, heute.find(e => e.id === k.dataset.zid)));
     return;
   }
   const letzte = ZU.zuletztMit(zusammen);
@@ -4890,6 +5011,10 @@ function renderZusammen() {
       <label class="feld"><span>${escHtml(t('zu.mitWem'))}</span>
         <input id="zu-name" type="text" maxlength="${ZU.NAME_MAX}" autocomplete="off"></label>
       <button type="button" id="zu-los" class="btn">${escHtml(t('zu.einchecken'))}</button>
+      <label class="feld"><span>${escHtml(t('zu.einladungHast'))}</span>
+        <input id="zu-einladung" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
+          placeholder="${escHtml(t('zu.einladungPh'))}"></label>
+      <button type="button" id="zu-pruefen" class="btn">${escHtml(t('zu.pruefen'))}</button>
     </div></details>`;
   const feld = $('zu-name');
   box.querySelectorAll('.chips button').forEach(b => {
@@ -4900,6 +5025,7 @@ function renderZusammen() {
     if (!name) { banner(t('zu.nameFehlt'), 'err', 4000); feld.focus(); return; }
     eincheckenZusammen(name);
   };
+  $('zu-pruefen').onclick = () => verarbeiteEinladung($('zu-einladung').value);
 }
 
 async function commitSoundcheck(eintrag) {

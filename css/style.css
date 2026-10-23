@@ -1442,3 +1442,6 @@ button.tstop:hover .szene{border-color:var(--muted)}
 .zu-heute{margin:12px 0 0;padding:10px 14px;border-left:3px solid var(--gruen);background:var(--panel);font-size:0.9375rem;color:var(--fg)}
 .zu-heute b{font-family:var(--mono);font-size:0.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-right:6px;font-weight:normal}
 #session-zusammen .btn{margin-top:14px;width:100%}
+#session-zusammen .zu-knoepfe{display:flex;gap:10px}
+#session-zusammen .zu-knoepfe .btn{flex:1;width:auto}
+#session-zusammen input{width:100%}
