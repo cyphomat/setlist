@@ -433,10 +433,51 @@ print('\n--- Soundcheck-Serie ---');
   eq('ohne Soundchecks nicht', hat(M.aufnaeher([], config, [], HEUTE), 'soundcheck-4'), null);
 }
 
+print('\n--- Zusammen trainiert ---');
+{
+  const ID = 'abcdefgh23';
+  const v = (datum, extra = {}) => ({ id: ID, datum, mit: 'Max', rolle: 'einlader', bestaetigt: false, ...extra });
+  const mo = ['2026-08-03', '2026-08-10', '2026-08-17', '2026-08-24', '2026-08-31'];   // W32 bis W36
+  const logs = ds => ds.map(d => kraft(d, [satz('squat', 100)]));
+  const gruppen = ['duett', 'faustgruss', 'partner', 'verabredung'];
+
+  eq('allein: keine Kreise dafuer', M.katalog(config).filter(a => gruppen.includes(a.gruppe)).length, 0);
+  eq('mit Verabredung: acht Aufnaeher', M.katalog(config, { mitZusammen: true }).filter(a => gruppen.includes(a.gruppe)).length, 8);
+  eq('ein Verabredungsdatum reicht, damit sie erscheinen',
+    M.aufnaeher([], config, [], HEUTE, { zusammen: [v('2026-08-03')] }).filter(a => gruppen.includes(a.gruppe)).length, 8);
+  eq('ohne Verabredung fehlt auch die Gruppe', M.aufnaeher(logs(mo), config, [], HEUTE).filter(a => gruppen.includes(a.gruppe)).length, 0);
+
+  eq('eingecheckt, aber nicht trainiert: kein Duett',
+    hat(M.aufnaeher([], config, [], HEUTE, { zusammen: [v('2026-08-03')] }), 'duett'), null);
+  eq('eingecheckt und trainiert: Duett am Tag',
+    hat(M.aufnaeher(logs(['2026-08-03']), config, [], HEUTE, { zusammen: [v('2026-08-03')] }), 'duett'), '2026-08-03');
+  eq('Training an einem anderen Tag zaehlt nicht',
+    hat(M.aufnaeher(logs(['2026-08-04']), config, [], HEUTE, { zusammen: [v('2026-08-03')] }), 'duett'), null);
+  eq('Handschlag nur bestaetigt',
+    hat(M.aufnaeher(logs(['2026-08-03']), config, [], HEUTE, { zusammen: [v('2026-08-03')] }), 'faustgruss'), null);
+  eq('bestaetigt: Handschlag am Tag',
+    hat(M.aufnaeher(logs(['2026-08-03']), config, [], HEUTE, { zusammen: [v('2026-08-03', { bestaetigt: true })] }), 'faustgruss'), '2026-08-03');
+
+  const fuenf = M.aufnaeher(logs(mo), config, [], HEUTE, { zusammen: mo.map(d => v(d)) });
+  eq('fuenf gemeinsame Tage: Partner 5 am fuenften', hat(fuenf, 'partner-5'), '2026-08-31');
+  eq('15 noch nicht', hat(fuenf, 'partner-15'), null);
+  eq('zwei Wochen in Folge: am Sonntag der zweiten', hat(fuenf, 'verabredung-2'), '2026-08-16');
+  eq('vier Wochen in Folge: am Sonntag der vierten', hat(fuenf, 'verabredung-4'), '2026-08-30');
+  eq('acht noch nicht', hat(fuenf, 'verabredung-8'), null);
+  const luecke = ['2026-08-03', '2026-08-10', '2026-08-24', '2026-08-31'];
+  eq('mit Wochenluecke keine Serie von vier',
+    hat(M.aufnaeher(logs(luecke), config, [], HEUTE, { zusammen: luecke.map(d => v(d)) }), 'verabredung-4'), null);
+  const zweiAmTag = M.aufnaeher(logs(['2026-08-03']), config, [], HEUTE,
+    { zusammen: [v('2026-08-03'), v('2026-08-03', { id: 'zyxwvuts77', mit: 'Anna' })] });
+  eq('zwei Verabredungen am selben Tag zaehlen einmal', hat(zweiAmTag, 'partner-5'), null);
+  const neu = M.neueAufnaeher([], logs(['2026-08-03']), config, [], HEUTE, { zusammen: [v('2026-08-03')] });
+  ok('das Duett ist nach der Einheit neu', neu.some(a => a.id === 'duett'));
+}
+
 print('\n--- Pixelbilder ---');
 {
   const voll = M.katalog({ ...config, lifts: { ...config.lifts, squat: { ...config.lifts.squat, reference: 100 } } },
-    { mitGewicht: true, mitRad: true, mitHoehe: true, mitPlan: true });
+    { mitGewicht: true, mitRad: true, mitHoehe: true, mitPlan: true, mitZusammen: true });
   const ohne = voll.filter(a => M.bildIndex(a) < 0).map(a => a.id);
   eq('jeder Aufnaeher hat ein Bild', ohne.join(), '');
   const indizes = voll.map(a => M.bildIndex(a));

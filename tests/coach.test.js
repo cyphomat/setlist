@@ -342,6 +342,21 @@ const zehn = Array.from({length:10}, (_,i) => ({ date:`2026-09-0${(i%9)+1}`, typ
 ok('zehnte Einheit insgesamt',
    C.erfolge(vorEinheit, nachEinheit, cfgE, logE, zehn, new Date(2026,8,10)).some(x=>x.art==='anzahl'));
 
+print('\n--- Zu zweit trainiert ---');
+const ver = (datum, mit) => ({ id:'abcdefgh23', datum, mit, rolle:'einlader', bestaetigt:false });
+const zus = (z) => C.erfolge(vorEinheit, nachEinheit, cfgE, logE, [logE], new Date(2026,8,10), z).filter(x=>x.art==='zusammen');
+eq('ohne Verabredung kein Erfolg', zus([]).length, 0);
+eq('ohne den Parameter auch nicht', C.erfolge(vorEinheit, nachEinheit, cfgE, logE, [logE], new Date(2026,8,10)).filter(x=>x.art==='zusammen').length, 0);
+eq('Verabredung am Tag: ein Erfolg', zus([ver('2026-09-10', 'Max')]).length, 1);
+ok('nennt den Namen', zus([ver('2026-09-10', 'Max')])[0].text.includes('Max'), zus([ver('2026-09-10', 'Max')])[0].text);
+eq('Verabredung an einem anderen Tag nicht', zus([ver('2026-09-09', 'Max')]).length, 0);
+eq('zwei Partner in einem Satz', zus([ver('2026-09-10', 'Max'), { ...ver('2026-09-10', 'Anna'), id:'zyxwvuts77' }]).length, 1);
+ok('beide Namen stehen drin', /Max/.test(zus([ver('2026-09-10', 'Max'), ver('2026-09-10', 'Anna')])[0].text) && /Anna/.test(zus([ver('2026-09-10', 'Max'), ver('2026-09-10', 'Anna')])[0].text));
+eq('derselbe Name zweimal nur einmal', (zus([ver('2026-09-10', 'Max'), ver('2026-09-10', 'Max')])[0].text.match(/Max/g) || []).length, 1);
+ok('HTML im Namen wird maskiert', !zus([ver('2026-09-10', '<img src=x>')])[0].text.includes('<img'),
+   zus([ver('2026-09-10', '<img src=x>')])[0].text);
+eq('leerer Name gibt keinen Erfolg', zus([ver('2026-09-10', '')]).length, 0);
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);
 
 print('\n--- Keine falschen Artikel in erzeugten Saetzen ---');

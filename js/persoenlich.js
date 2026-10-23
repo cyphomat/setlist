@@ -13,6 +13,8 @@
 //
 // Reine Funktionen, kein I/O.
 
+import { bereinigeName } from './zusammen.js';
+
 /** Aus einem Textfeld eine Liste — leere Zeilen fliegen raus. */
 export function zeilenAusText(text) {
   return String(text ?? '')
@@ -255,4 +257,17 @@ export function warmupZeilen(allgemein, config, detail, maskiere = s => s) {
   const e = einstieg(config);
   if (!e || !allgemein || !allgemein.length) return allgemein || [];
   return [{ t: `${e.minuten} Min`, was: maskiere(e.art), detail }, ...allgemein.slice(1)];
+}
+
+/* Zusammen trainieren: der eigene Name, so wie ihn die andere Person sieht. */
+
+/** Der eigene Name aus der Konfiguration — oder null, wenn keiner steht. */
+export const eigenerName = config => (config && typeof config.name === 'string' ? bereinigeName(config.name) : null);
+
+/** Namen setzen; leer nimmt ihn heraus. Dieselbe Bereinigung wie bei Namen aus fremden Links. */
+export function setzeName(config, wert) {
+  const neu = JSON.parse(JSON.stringify(config || {}));
+  const n = bereinigeName(wert);
+  if (n) neu.name = n; else delete neu.name;
+  return neu;
 }
