@@ -100,4 +100,36 @@ print('\n--- Felder mit falschem Typ ---');
   eq('Programm bleibt ohne diese Pruefung', SI.pruefe({ app: 'setlist', format: 1, dateien: { 'config.json': { workout: {} } } }).dateien.length, 1);
 }
 
+print('\n--- Verabredungen ---');
+{
+  const ID = 'abcdefgh23', ID2 = 'zyxwvuts77';
+  const pfad = (id, tag = '2026-10-23') => `zusammen/${tag}-${id}.json`;
+  const v = (id, extra = {}) => ({ id, datum: '2026-10-23', mit: 'Max', rolle: 'einlader', bestaetigt: false, ...extra });
+  ok('Pfad erlaubt', SI.erlaubt(pfad(ID)));
+  ok('falsche Kennung im Pfad nicht', !SI.erlaubt('zusammen/2026-10-23-x.json'));
+  ok('Unterordner nicht', !SI.erlaubt(`zusammen/x/2026-10-23-${ID}.json`));
+  ok('Sicherung traegt sie', SI.paket([{ path: pfad(ID), data: v(ID) }]).dateien[pfad(ID)] !== undefined);
+
+  const roh = dateien => SI.pruefe({ app: 'setlist', format: 1, dateien });
+  eq('gueltige kommt durch', roh({ [pfad(ID)]: v(ID) }).dateien.length, 1);
+  eq('falsche Rolle faellt heraus', roh({ [pfad(ID)]: v(ID, { rolle: 'boss' }) }).dateien.length, 0);
+  eq('falsches Datum faellt heraus', roh({ [pfad(ID)]: v(ID, { datum: 'heute' }) }).dateien.length, 0);
+  eq('Datei ohne Kennung faellt heraus', roh({ [pfad(ID)]: { datum: '2026-10-23', rolle: 'gast' } }).dateien.length, 0);
+  eq('und wird als verworfen gezaehlt', roh({ [pfad(ID)]: v(ID, { rolle: 'boss' }) }).verworfen, 1);
+
+  let z = SI.zusammenfuehren([], [{ path: pfad(ID), data: v(ID) }]);
+  eq('neue wird geschrieben', z.schreiben.length, 1);
+  eq('und gezaehlt', z.verabredungen, 1);
+  z = SI.zusammenfuehren([{ path: pfad(ID), data: v(ID) }], [{ path: pfad(ID), data: v(ID) }]);
+  eq('gleiche bleibt', z.schreiben.length, 0);
+  eq('zaehlt als gleich', z.gleich, 1);
+  z = SI.zusammenfuehren([{ path: pfad(ID), data: v(ID) }], [{ path: pfad(ID), data: v(ID, { bestaetigt: true }) }]);
+  eq('bestaetigt gewinnt', z.schreiben.length === 1 && z.schreiben[0].data.bestaetigt, true);
+  z = SI.zusammenfuehren([{ path: pfad(ID), data: v(ID, { bestaetigt: true }) }], [{ path: pfad(ID), data: v(ID) }]);
+  eq('offen ersetzt nie bestaetigt', z.schreiben.length, 0);
+  z = SI.zusammenfuehren([{ path: pfad(ID), data: v(ID) }], [{ path: pfad(ID2), data: v(ID2) }]);
+  eq('andere Kennung kommt dazu', z.schreiben.length, 1);
+  eq('nichts ersetzbar', z.ersetzbar.length, 0);
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

@@ -18,6 +18,7 @@ import { tonnage, gewichtsReihe, wochenSerie, intensitaetsAbgleich } from './sta
 import { pausenFenster } from './verletzung.js';
 import { HILFS, bereinige } from './hilfs.js';
 import { serienMarken } from './soundcheck.js';
+import * as ZU from './zusammen.js';
 
 /** Was als Gig zaehlt: alles, wofuer man ins Studio gegangen ist — und jede Fahrt. */
 export const GIG_TYPEN = ['strength', 'wod', 'unplugged', 'maxout'];
@@ -64,6 +65,10 @@ const PLATTEN_STUFEN = [1, 2, 3, 4];
 export const TOUR_STUFEN = [1, 3, 6, 12];
 /** Wochen-Soundcheck so viele Wochen in Folge. */
 export const SOUNDCHECK_STUFEN = [4, 12];
+/** Gemeinsame Trainingstage insgesamt: 5, 15, 30. Tage, nicht Saetze — wie beim Rang zaehlt Verlaesslichkeit. */
+export const PARTNER_STUFEN = [5, 15, 30];
+/** Wochen in Folge mit mindestens einer gemeinsamen Einheit. */
+export const VERABREDUNG_STUFEN = [2, 4, 8];
 /** Eine Platte = 20 kg je Seite, wie im Kraftsport ueblich. */
 export const PLATTE_KG = 20;
 /** 1000 lb in kg. */
@@ -102,7 +107,7 @@ const CROSSOVER_STUFEN = [1, 10, 26];
  * `gruppe` ist die Leiter: an der Wand steht je Gruppe nur der naechste
  * fehlende, damit keine Weste voller leerer Kreise entsteht.
  */
-export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHoehe = false, mitPlan = false } = {}) {
+export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHoehe = false, mitPlan = false, mitZusammen = false } = {}) {
   const lifts = config.lifts || {};
   const bar = config.bar || 20;
   const out = [];
@@ -150,6 +155,14 @@ export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHo
   for (const n of SERIE_STUFEN) p(`serie-${n}`, 'serie', 'serie', 'merch.p.serie', { n });
   if (kraftGeplant(config)) for (const n of TOUR_STUFEN) p(`tour-${n}`, 'tour', 'tour', 'merch.p.tour', { n });
   for (const n of SOUNDCHECK_STUFEN) p(`soundcheck-${n}`, 'tour', 'soundcheck', 'merch.p.soundcheck', { n });
+  // Wer nie mit jemandem verabredet war, bekommt keine leeren Kreise dafuer —
+  // wie bei den Fahrten: was es ohne die Daten nicht gibt, fehlt nicht.
+  if (mitZusammen) {
+    p('duett', 'buehne', 'duett', 'merch.p.duett');
+    p('faustgruss', 'buehne', 'faustgruss', 'merch.p.faustgruss');
+    for (const n of PARTNER_STUFEN) p(`partner-${n}`, 'buehne', 'partner', 'merch.p.partner', { n });
+    for (const n of VERABREDUNG_STUFEN) p(`verabredung-${n}`, 'buehne', 'verabredung', 'merch.p.verabredung', { n });
+  }
   return out;
 }
 
@@ -169,14 +182,15 @@ function waageFuer(reihe, datum) {
  * Alle Aufnaeher mit dem Tag, an dem sie verdient wurden (oder null).
  * "Gehoben" heisst: ein geschaffter Arbeitssatz oder ein Max-Out-Lift.
  */
-export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Date(), { fahrten = [], planFuer = null, soundchecks = [] } = {}) {
+export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Date(), { fahrten = [], planFuer = null, soundchecks = [], zusammen = [] } = {}) {
   const reihe = gewichtsReihe(wellness);
   const rad = mitDatum(fahrten);
   const kat = katalog(config, {
     mitGewicht: reihe.length > 0,
     mitRad: rad.length > 0,
     mitHoehe: rad.some(f => f.hm != null),
-    mitPlan: !!planFuer && radGeplant(config)
+    mitPlan: !!planFuer && radGeplant(config),
+    mitZusammen: zusammen.length > 0
   });
   const gibt = new Set(kat.map(k => k.id));
   const verdient = {};
@@ -260,6 +274,17 @@ export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Dat
 
   const marken = serienMarken(soundchecks, SOUNDCHECK_STUFEN);
   for (const n of SOUNDCHECK_STUFEN) if (marken[n]) setze(`soundcheck-${n}`, marken[n]);
+
+  // Zusammen: Verabredung UND ein Gig-Log am selben Tag. Fahrten zaehlen nicht —
+  // die kommen von intervals.icu, und niemand faehrt im Keller zu zweit.
+  const gemTage = ZU.gemeinsameTage(zusammen, new Set(logs.filter(istGig).map(l => l.date)));
+  if (gemTage.length) setze('duett', gemTage[0].datum);
+  const faustgruss = gemTage.find(x => x.bestaetigt);
+  if (faustgruss) setze('faustgruss', faustgruss.datum);
+  const partner = ZU.tageMarken(gemTage, PARTNER_STUFEN);
+  for (const n of PARTNER_STUFEN) if (partner[n]) setze(`partner-${n}`, partner[n]);
+  const woche = serienMarken(ZU.wochen(gemTage), VERABREDUNG_STUFEN);
+  for (const n of VERABREDUNG_STUFEN) if (woche[n]) setze(`verabredung-${n}`, woche[n]);
 
   const gelenkig = gelenkigeWochen(logs);
   for (const n of GELENKIG_STUFEN) if (gelenkig.length >= n) setze(`gelenkig-${n}`, gelenkig[n - 1]);
@@ -422,6 +447,7 @@ export const BILDER = [
   ...KM_STUFEN.map(n => `km-${n}`), 'hoehe', 'century', 'doom', 'openair', ...CROSSOVER_STUFEN.map(n => `crossover-${n}`),
   'comeback', 'rueckweg', 'reunion', ...SERIE_STUFEN.map(n => `serie-${n}`), ...TOUR_STUFEN.map(n => `tour-${n}`),
   ...SOUNDCHECK_STUFEN.map(n => `soundcheck-${n}`),
+  'duett', 'faustgruss', ...PARTNER_STUFEN.map(n => `partner-${n}`), ...VERABREDUNG_STUFEN.map(n => `verabredung-${n}`),
   ...PLATTEN_STUFEN.map(n => `platten-figur-${n}`), 'koerper-figur'
 ];
 

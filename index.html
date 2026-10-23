@@ -143,6 +143,7 @@
   </header>
   <div class="pad">
     <div id="session-intent"></div>
+    <div id="session-zusammen"></div>
     <div id="warmup"></div>
     <div id="session-body"></div>
     <div id="hilfs"></div>
@@ -365,6 +366,11 @@
     <label id="pers-bw-zeile"><span data-i18n="chk.koerpergewicht">Körpergewicht</span>
       <input id="pers-bw" type="number" inputmode="decimal" step="0.1" min="0" placeholder="kg"></label>
     <p class="fine" id="pers-bw-hinweis" data-i18n="chk.bwHinweis">Nur nötig für Klimmzug und Dip, weil dort dein eigener Körper mitzählt. Mit verbundener Waage kommt der Wert von dort.</p>
+
+    <h2 data-i18n="pers.zusammen">Zusammen trainieren</h2>
+    <label class="feld"><span data-i18n="pers.name">Dein Name für Trainingspartner</span>
+      <input id="pers-name" type="text" maxlength="24" data-i18n-ph="pers.namePh" placeholder="Alex"></label>
+    <p class="fine" data-i18n="pers.nameHinweis">So sieht dich, wer mit dir trainiert. Er steht nur in deinen Einladungen und bleibt sonst in deinem Datenrepo.</p>
 
     <h2 data-i18n="pers.warmup">Warm-up</h2>
     <label class="feld"><span data-i18n="pers.einstiegArt">Eigener Einstieg</span>

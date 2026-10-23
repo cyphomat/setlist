@@ -1437,3 +1437,11 @@ button.tstop:hover .szene{border-color:var(--muted)}
     var(--k) right bottom/16px 4px no-repeat, var(--k) right bottom/4px 16px no-repeat;
 }
 .card, .plakat, .woche-karte, .kutte{box-shadow:var(--case-shadow)}
+
+/* Zusammen trainieren: nach dem Einchecken nur noch eine Zeile */
+.zu-heute{margin:12px 0 0;padding:10px 14px;border-left:3px solid var(--gruen);background:var(--panel);font-size:0.9375rem;color:var(--fg)}
+.zu-heute b{font-family:var(--mono);font-size:0.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-right:6px;font-weight:normal}
+#session-zusammen .btn{margin-top:14px;width:100%}
+#session-zusammen .zu-knoepfe{display:flex;gap:10px}
+#session-zusammen .zu-knoepfe .btn{flex:1;width:auto}
+#session-zusammen input{width:100%}

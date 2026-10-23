@@ -143,4 +143,17 @@ eq('Art wird maskiert', PS.warmupZeilen(liste, { warmup: { einstieg: { art: '<b>
 gleich('leere Liste', PS.warmupZeilen([], { warmup: { einstieg: { art: 'Rudern', minuten: 15 } } }, 'd'), []);
 gleich('keine Liste', PS.warmupZeilen(undefined, {}, 'd'), []);
 
+print('\n--- Eigener Name (zusammen trainieren) ---');
+eq('ohne Eintrag null', PS.eigenerName({}), null);
+eq('ohne Config null', PS.eigenerName(null), null);
+eq('eingetragen', PS.eigenerName({ name: 'Daniel' }), 'Daniel');
+eq('Leerraum faellt weg', PS.eigenerName({ name: '  Daniel ' }), 'Daniel');
+eq('Unsinn: kein Text', PS.eigenerName({ name: { x: 1 } }), null);
+eq('zu lang wird gekuerzt', PS.eigenerName({ name: 'x'.repeat(40) }).length, 24);
+eq('setzen', PS.setzeName({ bar: 20 }, 'Daniel').name, 'Daniel');
+ok('Rest bleibt', PS.setzeName({ bar: 20 }, 'Daniel').bar === 20);
+ok('Eingabe bleibt unveraendert', (() => { const c = { bar: 20 }; PS.setzeName(c, 'D'); return !('name' in c); })());
+ok('leer nimmt ihn heraus', !('name' in PS.setzeName({ name: 'Daniel' }, '  ')));
+eq('Steuerzeichen raus', PS.setzeName({}, 'Da\u202eniel').name, 'Da niel');
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

@@ -3,6 +3,7 @@
 // etwas behauptet, das nicht aus deinen Daten folgt.
 
 import { VOICE } from './content.js';
+import { escHtml } from './sicher.js';
 import { t, tn, locale } from './i18n.js';
 import { mondayOf, ymd, PAUSE_AB, istTraining } from './program.js';
 import { pausenFenster, wocheInPause } from './verletzung.js';
@@ -457,7 +458,7 @@ export function meilensteine(state, config, heute = new Date()) {
    jede Einheit in der Woche. Es geht nicht um Rekorde, sondern
    darum, dass sich Regelmaessigkeit anfuehlt wie Fortschritt.      */
 
-export function erfolge(vorher, nachher, config, log, alleLogs = [], heute = new Date()) {
+export function erfolge(vorher, nachher, config, log, alleLogs = [], heute = new Date(), zusammen = []) {
   const out = [];
   const lifts = Array.isArray(log.lifts) ? log.lifts : [];
 
@@ -518,6 +519,13 @@ export function erfolge(vorher, nachher, config, log, alleLogs = [], heute = new
   const gesamt = alleLogs.filter(l => (l.type || 'strength') === 'strength').length;
   if (gesamt > 0 && (gesamt % 10 === 0 || gesamt === 5)) {
     out.push({ art: 'anzahl', rang: 1, text: t('coach.erf.anzahl', { n: gesamt }) });
+  }
+
+  // Zu zweit trainiert. Der Name kann aus einem fremden Link stammen und
+  // landet im HTML des Abschlussbilds — deshalb maskiert.
+  const mit = [...new Set(zusammen.filter(z => z && z.datum === log.date && z.mit).map(z => z.mit))];
+  if (mit.length) {
+    out.push({ art: 'zusammen', rang: 1, text: t('coach.erf.zusammen', { name: escHtml(mit.join(' & ')) }) });
   }
 
   return out.sort((a, b) => a.rang - b.rang);

@@ -362,8 +362,78 @@ const EIGENE = {
     'H.H.H.H.H.H.H',
     'H...........H',
     'HHHHHHHHHHHHH'
+  ],
+  duett: [                // Duett: zwei Mikrofone auf Staendern
+    '.HHH...HHH.',
+    'HHAHH.HHAHH',
+    '.HHH...HHH.',
+    '..H.....H..',
+    '..H.....H..',
+    '..H.....H..',
+    '.AAA...AAA.'
+  ],
+  faustgruss: [           // Faustgruss: zwei Faeuste, dazwischen der Funke
+    '.HHHH...HHHH.',
+    'HHHHH.A.HHHHH',
+    'HHHHHAAAHHHHH',
+    'HHHHH.A.HHHHH',
+    'HHHHH...HHHHH',
+    '.HHHH...HHHH.'
+  ],
+  tickets: [              // Tourpartner 5: zwei Eintrittskarten, uebereinander geschoben
+    'HHHHHHHH...',
+    'H.A....H...',
+    'H.A.HHHHHHH',
+    'HHHHH.A...H',
+    '....H.A.A.H',
+    '....HHHHHHH'
+  ],
+  backstage: [            // Tourpartner 15: Backstage-Pass am Band
+    'H.......H',
+    '.H.....H.',
+    '..H...H..',
+    '...HHH...',
+    '..HHHHH..',
+    '..HAAAH..',
+    '..HAHAH..',
+    '..HAAAH..',
+    '..HHHHH..'
+  ],
+  allaccess: [            // Tourpartner 30: All-Access-Pass mit Stern
+    'H.......H',
+    '.H.....H.',
+    '..H...H..',
+    '..HHHHH..',
+    '.HHHHHHH.',
+    '.HHHAHHH.',
+    '.HHAAAHH.',
+    '.HAAAAAH.',
+    '.HHA.AHH.',
+    '.HHHHHHH.'
   ]
 };
+
+/*
+ * Kalenderblatt mit acht Feldern, davon n gefuellt (der Rest bleibt leer): 2, 4, 8 Wochen in Folge.
+ * Gezeichnet statt von Hand, damit die drei Stufen sich nur in der Zahl der
+ * gefuellten Felder unterscheiden — genau das soll man sehen.
+ */
+const kalenderBlatt = n => {
+  const zeile = (von) => 'H.' + [0, 1, 2, 3].map(i => (von + i < n ? 'A' : '.')).join('.') + '.H';
+  return [
+    '.H.......H.',
+    'HHHHHHHHHHH',
+    'H.........H',
+    zeile(0),
+    'H.........H',
+    zeile(4),
+    'H.........H',
+    'HHHHHHHHHHH'
+  ];
+};
+EIGENE.verabredung2 = kalenderBlatt(2);
+EIGENE.verabredung4 = kalenderBlatt(4);
+EIGENE.verabredung8 = kalenderBlatt(8);
 
 /*
  * Lift-Figuren von vorn, 17 breit, kraeftig gezeichnet. B ist die Zeile der
@@ -492,7 +562,10 @@ const MOTIV = {
   'gelenkig-1': 'gelenkig', 'gelenkig-4': '#bruecke', 'gelenkig-12': '#spagat',
   'serie-4': 'serie4', 'serie-12': '#kalender', 'serie-26': 'trainingslager', 'serie-52': 'legende',
   'tour-1': 'tourkomplett', 'tour-3': '#tourplakat', 'tour-6': '#tourbus', 'tour-12': '#lorbeer',
-  'soundcheck-4': 'soundcheck4', 'soundcheck-12': '#mischpult'
+  'soundcheck-4': 'soundcheck4', 'soundcheck-12': '#mischpult',
+  duett: '#duett', faustgruss: '#faustgruss',
+  'partner-5': '#tickets', 'partner-15': '#backstage', 'partner-30': '#allaccess',
+  'verabredung-2': '#verabredung2', 'verabredung-4': '#verabredung4', 'verabredung-8': '#verabredung8'
 };
 /* Symbole, deren Farbe die Aussage ist: Blut bleibt rot. */
 const EIGENE_FARBE = new Set(['debuet']);
@@ -502,7 +575,8 @@ const KATEGORIE = {
   platten: 'kraft', club: 'kraft', hangar: 'kraft', koerper: 'kraft', gelenkig: 'kraft',
   km: 'rad', hoehe: 'rad', century: 'rad', doom: 'rad', openair: 'rad', crossover: 'rad',
   comeback: 'comeback', rueckweg: 'comeback', reunion: 'comeback', serie: 'serie',
-  tour: 'tour', soundcheck: 'tour'
+  tour: 'tour', soundcheck: 'tour',
+  duett: 'buehne', faustgruss: 'buehne', partner: 'buehne', verabredung: 'buehne'
 };
 
 const raster = zeilen => {

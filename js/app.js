@@ -21,6 +21,7 @@ import * as X from './export.js';
 import * as F from './feuer.js';
 import * as ANS from './ansager.js';
 import * as SC from './soundcheck.js';
+import * as ZU from './zusammen.js';
 import * as SI from './sicherung.js';
 
 // Eingebettet in eine fremde Seite (siehe boot.js) startet die App gar nicht
@@ -60,6 +61,8 @@ let eftp = null;                // geschaetzte FTP, fuer Wattziele
 let bibliothek = {};            // eigene Notizen/Videos je Uebung, aus bibliothek.json
 let bibZufall = null, bibKategorie = null;
 let soundchecks = [];           // Wochen mit Soundcheck ('JJJJ-Www'), aus soundcheck/
+let zusammen = [];              // Verabredungen zum gemeinsamen Training, aus zusammen/
+const OFFEN_KEY = 'setlist.zusammen';   // eine noch nicht verarbeitete Einladung (steht VOR dem Start, deshalb hier oben)
 let scVorsaetze = null;         // { woche, vorsaetze } des juengsten Soundchecks
 
 const $ = id => document.getElementById(id);
@@ -149,6 +152,7 @@ async function load() {
   if (zwischen.gewichtsReihe) { gewichtsReihe = zwischen.gewichtsReihe; berechneAbnehmen(); }
   if (zwischen.eftp) eftp = zwischen.eftp;
   if (Array.isArray(zwischen.soundchecks)) soundchecks = zwischen.soundchecks.filter(SC.istKey);
+  if (Array.isArray(zwischen.zusammen)) zusammen = zwischen.zusammen.map(ZU.ausDatei).filter(Boolean);
   if (zwischen.scVorsaetze) scVorsaetze = zwischen.scVorsaetze;
 
   await flushQueue();
@@ -168,6 +172,7 @@ async function load() {
     S.readAllLogs().then(logs => { if (!alleLogs.length) { alleLogs = logs; S.cacheLogs(logs); } renderAmp(); }).catch(() => {});
   }
   ladeSoundchecks();
+  ladeZusammen().then(pruefeEinladung);
 }
 
 /** Nur Beiwerk: Fehler hier duerfen die App nie blockieren — aber sichtbar sein. */
@@ -706,7 +711,7 @@ async function trageMobilityEin(uebung, name) {
   state = P.applyLog(state, config, log);
   S.cache({ state });
   const neu = M.neueAufnaeher(vorher, nachher, config, gewichtsPunkte, new Date(),
-    { fahrten: radFuerMerch(vorher), planFuer: planFuerDatum, soundchecks });
+    { fahrten: radFuerMerch(vorher), planFuer: planFuerDatum, soundchecks, zusammen });
   try { await commit(log); banner(t('mob.erledigt', { name }), 'ok'); }
   catch { S.queue(log); banner(t('msg.keinNetz'), '', 6000); }
   const monat = heute.slice(0, 7);
@@ -818,6 +823,7 @@ function startSession() {
   $('session-intent').innerHTML = `
     <div class="directive"><span class="tone ${d.intensitaet.stufe}">${escHtml(tonWort(d.intensitaet.label))}</span>
     <p class="txt">${d.intensitaet.text}</p>${stoerungsZeile()}</div>`;
+  renderZusammen();
 
   const skill = C.tagesAuswahl(VL.ohneGesperrte(SKILL, config), new Date(), 'skill');
   const mobility = C.mobilityDran(state) ? C.tagesAuswahl(VL.ohneGesperrte(MOBILITY, config), new Date(), 'mob') : null;
@@ -1103,15 +1109,34 @@ function toene(frequenzen, dauerMs = 160) {
   } catch { /* Web Audio nicht verfuegbar — Vibration bleibt */ }
 }
 
+/**
+ * Zu zweit ist die Pause der Satz der anderen Person: erst "Max ist dran",
+ * mit dem Knopf "Fertig" geht es weiter, und laeuft die Zeit ab, steht
+ * "Du bist dran". Nichts davon wird gespeichert — es ist nur Beschriftung.
+ */
+function restBeschriftung(bereit) {
+  const lbl = $('rest').querySelector('.lbl'), skip = $('rest-skip');
+  const partner = session ? ZU.partnerHeute(zusammen, session.date) : null;
+  if (!partner && !(session && ZU.amTag(zusammen, session.date).length)) {
+    lbl.textContent = t('ses.pause'); skip.textContent = t('ses.weiter');
+    return;
+  }
+  const name = ZU.kurz(partner || t('zu.partnerOhneName'), 8).toLocaleUpperCase(locale());
+  lbl.textContent = bereit ? t('zu.duDran') : t('zu.istDran', { name });
+  skip.textContent = bereit ? t('ses.weiter') : t('zu.fertig');
+}
+
 function startRest(seconds) {
   restLeft = seconds;
   $('rest').hidden = false;
   $('rest-time').textContent = restLeft;
+  restBeschriftung(false);
   clearInterval(restTimer);
   restTimer = setInterval(() => {
     restLeft--;
     $('rest-time').textContent = restLeft > 0 ? restLeft : t('ses.los');
     if (restLeft <= 0) {
+      restBeschriftung(true);
       clearInterval(restTimer);
       if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
       toene([880]);
@@ -1125,6 +1150,7 @@ const stopRest = () => { clearInterval(restTimer); $('rest').hidden = true; };
 function verstellePause(delta) {
   restLeft = Math.max(0, restLeft + delta);
   $('rest-time').textContent = restLeft > 0 ? restLeft : t('ses.los');
+  restBeschriftung(restLeft <= 0);
 }
 
 async function finishSession() {
@@ -1170,6 +1196,7 @@ async function commit(log) {
   if (log.type === 'anpassung') return commitAnpassung(log);
   if (log.type === 'mobility') return commitMobility(log);
   if (log.type === 'soundcheck') return commitSoundcheck(log);
+  if (log.type === 'zusammen') return commitZusammen(log);
   let path = `${S.LOG_DIR}/${log.date}.json`;
   if (await S.readFile(path)) path = `${S.LOG_DIR}/${log.date}-2.json`;
   // Ohne workout — etwa bei einer Anpassung — waere hier "Einheit undefined"
@@ -1192,7 +1219,7 @@ function renderDone(before, log) {
   const d = C.directive(state, config, new Date(), log, stimme, erholung, radFuerMerch());
   // Erst der Erfolg, dann der Bericht. Eine Tabelle mit Pfeilen sagt, was
   // passiert ist; sie sagt nicht, dass du gerade etwas geschafft hast.
-  const wins = C.erfolge(before, state, config, log, alleLogs.concat([log]), new Date());
+  const wins = C.erfolge(before, state, config, log, alleLogs.concat([log]), new Date(), zusammen);
   letzteErfolge = wins;
   const kopf = wins[0];
   const rest = wins.slice(1, 5);
@@ -1625,6 +1652,7 @@ $('icu-save').onclick = async () => {
 window.addEventListener('online', flushQueue);
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 
+merkeEinladung();
 pruefeVersion();
 if (S.istEingerichtet()) {
   show('home');
@@ -3368,6 +3396,7 @@ function renderChecks() {
 
   $('pers-bw').value = PS.checkKoerpergewicht(config);
   $('pers-kadenz').value = config.rad && config.rad.kadenzZiel ? PS.kadenzZiel(config) : '';
+  $('pers-name').value = PS.eigenerName(config) || '';
   const einstieg = PS.einstieg(config);
   $('pers-einstieg-art').value = einstieg ? einstieg.art : '';
   $('pers-einstieg-min').value = einstieg ? einstieg.minuten : '';
@@ -3407,9 +3436,9 @@ $('pers-speichern').onclick = async () => {
     // stellt, soll nicht zusaetzlich ein Datum eintippen muessen.
     const verletzungen = VL.stempleEnde(VL.baueVerletzungen(injEntwurf || VL.entwurf(config)),
       VL.alle(datei.data), P.ymd(new Date()));
-    const neu = PS.setzeEinstieg(PS.setzeKadenzZiel(VL.setzeInConfig(PS.setzeChecks(
+    const neu = PS.setzeName(PS.setzeEinstieg(PS.setzeKadenzZiel(VL.setzeInConfig(PS.setzeChecks(
       PS.setzeInConfig(datei.data, { grund: $('pers-grund').value, rekorde }), checks), verletzungen), $('pers-kadenz').value),
-      $('pers-einstieg-art').value, $('pers-einstieg-min').value);
+      $('pers-einstieg-art').value, $('pers-einstieg-min').value), $('pers-name').value);
     await S.writeFile('config.json', neu, 'Persönliches aktualisiert', datei.sha);
     config = neu;
 
@@ -4625,7 +4654,7 @@ async function neueAufnaeherZeigen(log, historie) {
   if (!historie.every(h => tage.has(h.date))) return null;
   const nachher = vorher.concat([log]);
   const neu = M.neueAufnaeher(vorher, nachher, config, gewichtsPunkte, new Date(),
-    { fahrten: radFuerMerch(vorher), planFuer: planFuerDatum, soundchecks });
+    { fahrten: radFuerMerch(vorher), planFuer: planFuerDatum, soundchecks, zusammen });
   // Rang und Wochenregler: vorher gegen nachher, aus denselben Logs
   const rVor = M.rang(vorher, radFuerMerch(vorher)), rNach = M.rang(nachher, radFuerMerch(nachher));
   const vVor = M.verstaerker(vorher, config, new Date(), historie);
@@ -4793,6 +4822,212 @@ function zeigeSoundcheck(key) {
   show('soundcheck');
 }
 
+/* ---------- Zusammen trainieren ---------- */
+
+/**
+ * Die Verabredungen aus dem Datenrepo. Eine Anfrage fuer die Pfade; gelesen
+ * werden nur Dateien, die noch nicht bestaetigt im Zwischenspeicher stehen —
+ * bestaetigt aendert sich nie wieder.
+ */
+async function ladeZusammen() {
+  try {
+    const dateien = (await S.listeOrdner(ZU.ORDNER)).filter(f => ZU.istPfad(f.path));
+    const bekannt = new Map(zusammen.map(e => [ZU.pfad(e.datum, e.id), e]));
+    const liste = [];
+    for (const f of dateien) {
+      let e = bekannt.get(f.path);
+      if (!e || !e.bestaetigt) {
+        const d = await S.readFile(f.path);
+        e = d ? ZU.ausDatei(d.data) : null;
+      }
+      if (e) liste.push(e);
+    }
+    zusammen = liste.sort((a, b) => a.datum.localeCompare(b.datum));
+    S.cache({ zusammen });
+    if (session) renderZusammen();
+  } catch { /* offline: der Zwischenspeicher bleibt, wie er ist */ }
+}
+
+async function commitZusammen(eintrag) {
+  const daten = ZU.ausDatei(eintrag);
+  if (!daten) return null;
+  const path = ZU.pfad(daten.datum, daten.id);
+  const cur = await S.readFile(path);
+  await S.writeFile(path, daten, `Zusammen ${daten.datum}`, cur ? cur.sha : undefined);
+  return path;
+}
+
+/** Eintrag im Speicher und Zwischenspeicher fuehren; geschrieben wird danach, offline spaeter. */
+async function speichereZusammen(e, meldung) {
+  zusammen = zusammen.filter(x => !(x.id === e.id && x.datum === e.datum)).concat([e])
+    .sort((a, b) => a.datum.localeCompare(b.datum));
+  S.cache({ zusammen });
+  if (session) renderZusammen();
+  try { await commitZusammen(e); if (meldung) banner(meldung, 'ok'); }
+  catch { S.queue({ type: 'zusammen', ...e }); banner(t('msg.keinNetz'), '', 6000); }
+}
+
+async function eincheckenZusammen(name) {
+  const e = ZU.eintrag({ id: ZU.neueId(), datum: session.date, mit: name, rolle: 'einlader' });
+  if (e) await speichereZusammen(e, t('zu.gespeichert', { name: e.mit }));
+}
+
+/* ----- Handschlag: Einladung teilen, annehmen, bestaetigen ----- */
+
+/** Die Adresse der App ohne alles Weitere — die Basis fuer Einladungslinks. */
+const appAdresse = () => `${location.origin}${location.pathname}`;
+
+/**
+ * Ein Link mit Einladung im Fragment wird vor allem anderen gemerkt und aus
+ * der Adresszeile genommen: so geht er beim Einrichten und bei einem
+ * Neuladen nicht verloren, steht nicht im Verlauf und wird nicht zweimal
+ * verarbeitet. Verarbeitet wird er erst, wenn die App steht (pruefeEinladung).
+ */
+function merkeEinladung() {
+  if (!/zusammen=/.test(location.hash)) return;
+  try { localStorage.setItem(OFFEN_KEY, location.hash.slice(0, ZU.LINK_MAX)); } catch { /* ohne Speicher: dann eben nicht */ }
+  try { history.replaceState(null, '', location.pathname + location.search); } catch { /* egal */ }
+}
+
+async function pruefeEinladung() {
+  let roh = null;
+  try { roh = localStorage.getItem(OFFEN_KEY); localStorage.removeItem(OFFEN_KEY); } catch { /* egal */ }
+  if (roh) await verarbeiteEinladung(roh);
+}
+
+/**
+ * Eine Einladung oder Antwort aus einem Link oder eingefuegtem Text. Eine
+ * Einladung wird nie ungefragt angenommen; die Antwort auf die eigene
+ * Einladung schon, sie aendert nur die eigene Datei. Gibt zurueck, ob es
+ * danach in Ordnung ist.
+ */
+async function verarbeiteEinladung(text) {
+  const e = ZU.lies(text);
+  const p = ZU.pruefe(e, zusammen);
+  const name = (e && e.von) || t('zu.partnerOhneName');
+  switch (p.art) {
+    case 'ungueltig': banner(t('zu.link.ungueltig'), 'err', 5000); return false;
+    case 'eigene': banner(t('zu.link.eigene'), 'err', 5000); return false;
+    case 'unbekannt': banner(t('zu.link.unbekannt'), 'err', 6000); return false;
+    case 'falsch': banner(t('zu.link.falsch'), 'err', 6000); return false;
+    case 'schon': banner(t('zu.link.schon', { name }), '', 4000); return true;
+  }
+  // confirm zeigt den Namen als Text; ein Name aus einem Link kann kein HTML einschleusen.
+  if (e.schritt === 1 && !confirm(t('zu.link.frage', { name }))) return false;
+  const neu = ZU.uebernehme(e, zusammen, P.ymd(new Date()));
+  if (!neu) return false;
+  await speichereZusammen(neu, t(e.schritt === 1 ? 'zu.link.angenommen' : 'zu.link.bestaetigt', { name: neu.mit || name }));
+  return true;
+}
+
+/** Teilen ueber das Teilen-Menue; ohne das in die Zwischenablage, zuletzt zum Abtippen. */
+async function teileLink(link, text) {
+  if (navigator.share) {
+    try { await navigator.share({ title: 'Setlist', text, url: link }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  await kopiereLink(link);
+}
+
+async function kopiereLink(link) {
+  try { await navigator.clipboard.writeText(link); banner(t('zu.kopiert'), 'ok'); }
+  catch { prompt(t('zu.linkManuell'), link); }
+}
+
+/** Der eigene Name aus einer Einladung wird gemerkt, wenn noch keiner in der Konfiguration steht. */
+async function merkeEigenenNamen(n) {
+  if (!n || PS.eigenerName(config)) return;
+  try {
+    const datei = await S.readFile('config.json');
+    if (!datei) return;
+    const neu = PS.setzeName(datei.data, n);
+    await S.writeFile('config.json', neu, 'Name für Trainingspartner', datei.sha);
+    config = neu;
+  } catch { /* der Link geht auch ohne gespeicherten Namen */ }
+}
+
+/** Eine Verabredung von heute als Zeile; je nach Rolle mit dem Weg zum Handschlag darunter. */
+function zusammenKarte(e) {
+  const name = e.mit || t('zu.partnerOhneName');
+  const ich = `<label class="feld"><span>${escHtml(t('zu.deinName'))}</span>
+    <input class="zu-ich" type="text" maxlength="${ZU.NAME_MAX}" autocomplete="off"
+      value="${escHtml(PS.eigenerName(config) || '')}"></label>`;
+  const knoepfe = teilen => `<div class="zu-knoepfe">
+    <button type="button" class="btn zu-teilen">${escHtml(teilen)}</button>
+    <button type="button" class="btn zu-kopieren">${escHtml(t('zu.kopieren'))}</button></div>`;
+  let aktion = '';
+  if (e.rolle === 'einlader' && !e.bestaetigt) {
+    aktion = `<details class="info"><summary>${escHtml(t('zu.handschlagTitel', { name }))}</summary><div class="body">
+      <p>${escHtml(t('zu.handschlagHinweis'))}</p>${ich}${knoepfe(t('zu.teilen'))}
+      <label class="feld"><span>${escHtml(t('zu.antwortEinfuegen'))}</span>
+        <input class="zu-antwort" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
+      <button type="button" class="btn zu-bestaetigen">${escHtml(t('zu.bestaetigen'))}</button></div></details>`;
+  } else if (e.rolle === 'gast') {
+    aktion = `<details class="info"><summary>${escHtml(t('zu.antwortTitel', { name }))}</summary><div class="body">
+      <p>${escHtml(t('zu.antwortHinweis', { name }))}</p>${ich}${knoepfe(t('zu.antwortTeilen'))}</div></details>`;
+  }
+  return `<div data-zid="${escHtml(e.id)}"><p class="zu-heute"><b>${escHtml(t('zu.heute'))}</b>
+    ${escHtml(name)} · ${escHtml(t(e.bestaetigt ? 'zu.bestaetigtMarke' : e.rolle === 'gast' ? 'zu.angenommen' : 'zu.offen'))}</p>${aktion}</div>`;
+}
+
+function bindeZusammenKarte(karte, e) {
+  const feld = k => karte.querySelector(k);
+  const ich = () => ZU.bereinigeName(feld('.zu-ich') && feld('.zu-ich').value);
+  const link = () => ZU.einladungsLink(appAdresse(), { id: e.id, schritt: e.rolle === 'einlader' ? 1 : 2, von: ich() });
+  const text = () => (ich() ? t('zu.teilenText', { name: ich() }) : t('zu.teilenTextOhne'));
+  // Teilen muss synchron aus dem Tipp heraus starten, sonst verweigert es der Browser;
+  // das Merken des Namens geht danach.
+  // Die eingeladene Person gilt als bestaetigt, sobald sie die Antwort losschickt.
+  const gesendet = () => {
+    const neu = ZU.antwortGesendet(e);
+    if (neu) speichereZusammen(neu, t('zu.link.bestaetigt', { name: e.mit || t('zu.partnerOhneName') }));
+  };
+  if (feld('.zu-teilen')) feld('.zu-teilen').onclick = () => { teileLink(link(), text()); merkeEigenenNamen(ich()); gesendet(); };
+  if (feld('.zu-kopieren')) feld('.zu-kopieren').onclick = () => { kopiereLink(link()); merkeEigenenNamen(ich()); gesendet(); };
+  if (feld('.zu-bestaetigen')) {
+    feld('.zu-bestaetigen').onclick = async () => {
+      const eingabe = feld('.zu-antwort');
+      if (await verarbeiteEinladung(eingabe.value)) eingabe.value = '';
+    };
+  }
+}
+
+/** Die Zeile "Zu zweit trainieren" unter der Ansage: erst einchecken oder Einladung einfuegen, dann der Weg zum Handschlag. */
+function renderZusammen() {
+  const box = $('session-zusammen');
+  if (!box || !session) return;
+  const heute = ZU.amTag(zusammen, session.date);
+  if (heute.length) {
+    box.innerHTML = heute.map(zusammenKarte).join('');
+    box.querySelectorAll('[data-zid]').forEach(k => bindeZusammenKarte(k, heute.find(e => e.id === k.dataset.zid)));
+    return;
+  }
+  const letzte = ZU.zuletztMit(zusammen);
+  box.innerHTML = `<details class="info"><summary>${escHtml(t('zu.titel'))}</summary>
+    <div class="body">
+      <p>${escHtml(t('zu.hinweis'))}</p>
+      ${letzte.length ? `<div class="chips">${letzte.map(n =>
+        `<button type="button" data-name="${escHtml(n)}">${escHtml(n)}</button>`).join('')}</div>` : ''}
+      <label class="feld"><span>${escHtml(t('zu.mitWem'))}</span>
+        <input id="zu-name" type="text" maxlength="${ZU.NAME_MAX}" autocomplete="off"></label>
+      <button type="button" id="zu-los" class="btn">${escHtml(t('zu.einchecken'))}</button>
+      <label class="feld"><span>${escHtml(t('zu.einladungHast'))}</span>
+        <input id="zu-einladung" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
+          placeholder="${escHtml(t('zu.einladungPh'))}"></label>
+      <button type="button" id="zu-pruefen" class="btn">${escHtml(t('zu.pruefen'))}</button>
+    </div></details>`;
+  const feld = $('zu-name');
+  box.querySelectorAll('.chips button').forEach(b => {
+    b.onclick = () => { feld.value = b.dataset.name; feld.focus(); };
+  });
+  $('zu-los').onclick = () => {
+    const name = ZU.bereinigeName(feld.value);
+    if (!name) { banner(t('zu.nameFehlt'), 'err', 4000); feld.focus(); return; }
+    eincheckenZusammen(name);
+  };
+  $('zu-pruefen').onclick = () => verarbeiteEinladung($('zu-einladung').value);
+}
+
 async function commitSoundcheck(eintrag) {
   const { type, ...daten } = eintrag;
   const path = SC.pfad(daten.woche);
@@ -4815,7 +5050,7 @@ async function speichereSoundcheck(key) {
   try { await commitSoundcheck({ type: 'soundcheck', ...eintrag }); banner(t('sc.gespeichert', { kw: kwNr(key) }), 'ok'); }
   catch { S.queue({ type: 'soundcheck', ...eintrag }); banner(t('msg.keinNetz'), '', 6000); }
   const logs = geladeneLogs();
-  const opts = soundchecks => ({ fahrten: radFuerMerch(logs), planFuer: planFuerDatum, soundchecks });
+  const opts = soundchecks => ({ fahrten: radFuerMerch(logs), planFuer: planFuerDatum, soundchecks, zusammen });
   const alt = new Set(M.aufnaeher(logs, config, gewichtsPunkte, new Date(), opts(vorher)).filter(a => a.verdient).map(a => a.id));
   const neu = M.aufnaeher(logs, config, gewichtsPunkte, new Date(), opts(soundchecks)).filter(a => a.verdient && !alt.has(a.id));
   renderOrtKnopf();
@@ -5109,7 +5344,7 @@ async function zeigeMerch(von = 'home') {
 function renderMerch(logs) {
   const heute = new Date();
   const fahrten = radFuerMerch(logs);
-  const liste = M.aufnaeher(logs, config, gewichtsPunkte, heute, { fahrten, planFuer: planFuerDatum, soundchecks });
+  const liste = M.aufnaeher(logs, config, gewichtsPunkte, heute, { fahrten, planFuer: planFuerDatum, soundchecks, zusammen });
 
   // Rang — freigespielte Stationen lassen sich wieder ansehen
   const r = M.rang(logs, fahrten);

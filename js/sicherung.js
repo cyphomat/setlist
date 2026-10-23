@@ -11,6 +11,8 @@
 //
 // Reine Funktionen, kein I/O.
 
+import { istPfad as istZusammen, ausDatei as zusammenAusDatei } from './zusammen.js';
+
 export const FORMAT = 1;
 const LOG = /^(einheiten|log)\/[^/]+\.json$/;
 const SOUNDCHECK = /^soundcheck\/\d{4}-W\d{2}\.json$/;
@@ -19,7 +21,7 @@ const EINZELN = ['config.json', 'stimme.json', 'bibliothek.json'];
 export const istLog = p => LOG.test(p);
 /** Nur diese Pfade kommen in eine Sicherung und aus ihr heraus. */
 export const erlaubt = p => typeof p === 'string' && !p.includes('..') &&
-  (EINZELN.includes(p) || LOG.test(p) || SOUNDCHECK.test(p));
+  (EINZELN.includes(p) || LOG.test(p) || SOUNDCHECK.test(p) || istZusammen(p));
 
 const objekt = v => v !== null && typeof v === 'object' && !Array.isArray(v);
 const DATUM = /^\d{4}-\d{2}-\d{2}$/;
@@ -53,7 +55,8 @@ export function pruefe(json) {
   const dateien = [];
   let verworfen = 0;
   for (const [path, data] of Object.entries(json.dateien)) {
-    const gut = erlaubt(path) && objekt(data) && (!istLog(path) || logGueltig(data));
+    const gut = erlaubt(path) && objekt(data) && (!istLog(path) || logGueltig(data))
+      && (!istZusammen(path) || zusammenAusDatei(data) !== null);
     if (gut) dateien.push({ path, data }); else verworfen++;
   }
   dateien.sort((a, b) => a.path.localeCompare(b.path));
@@ -70,14 +73,14 @@ export const kennung = l => [l.date, l.type || 'strength', l.finished || l.start
  *   schreiben  — was ohne Rueckfrage geschrieben wird (neue Einheiten,
  *                neue Soundchecks, Programm/Notizen, wo lokal keine sind)
  *   ersetzbar  — Programm/Notizen, die hier schon anders existieren
- *   einheiten, soundchecks, gleich — Zahlen fuer die Vorschau
+ *   einheiten, soundchecks, verabredungen, gleich — Zahlen fuer die Vorschau
  */
 export function zusammenfuehren(lokal = [], rein = []) {
   const pfade = new Set(lokal.map(f => f.path));
   const hier = new Map(lokal.map(f => [f.path, f.data]));
   const bekannt = new Set(lokal.filter(f => istLog(f.path)).map(f => kennung(f.data)));
   const schreiben = [], ersetzbar = [];
-  let einheiten = 0, soundchecks = 0, gleich = 0;
+  let einheiten = 0, soundchecks = 0, verabredungen = 0, gleich = 0;
   for (const f of rein) {
     if (!erlaubt(f.path)) continue;
     if (istLog(f.path)) {
@@ -95,6 +98,19 @@ export function zusammenfuehren(lokal = [], rein = []) {
       pfade.add(f.path);
       schreiben.push(f);
       soundchecks++;
+    } else if (istZusammen(f.path)) {
+      // Eine Verabredung geht nur von offen auf bestaetigt, nie zurueck:
+      // wer den Handschlag auf einem Geraet gemacht hat, behaelt ihn.
+      const da = hier.get(f.path);
+      const neu = zusammenAusDatei(f.data);
+      if (!pfade.has(f.path)) {
+        pfade.add(f.path);
+        schreiben.push({ path: f.path, data: neu });
+        verabredungen++;
+      } else if (da && da.bestaetigt !== true && neu && neu.bestaetigt) {
+        schreiben.push({ path: f.path, data: { ...zusammenAusDatei(da), bestaetigt: true } });
+        verabredungen++;
+      } else gleich++;
     } else if (!pfade.has(f.path)) {
       pfade.add(f.path);
       schreiben.push(f);
@@ -102,7 +118,7 @@ export function zusammenfuehren(lokal = [], rein = []) {
       ersetzbar.push(f);
     }
   }
-  return { schreiben, ersetzbar, einheiten, soundchecks, gleich };
+  return { schreiben, ersetzbar, einheiten, soundchecks, verabredungen, gleich };
 }
 
 /** Dateiname der Sicherung. */

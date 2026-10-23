@@ -149,4 +149,24 @@ print('\n--- Coach auf Englisch ---');
 // Fuer die folgenden Testdateien im selben Prozess: Deutsch und kein Rest.
 I.setSprache('de');
 
+print('\n--- Jeder Aufnaeher hat Name und Bedingung, in beiden Sprachen ---');
+{
+  // Die Schluessel werden in app.js aus dem Katalog gebaut (merch.p.* -> merch.pb.*);
+  // ein fehlender Text faellt dort erst auf, wenn jemand den Bildschirm oeffnet.
+  const M = await import('../js/merch.js');
+  const lifts = { squat: { name: 'Squat', reference: 100 }, bench: { name: 'Bench' }, row: { name: 'Row' },
+    ohp: { name: 'OHP' }, deadlift: { name: 'Deadlift' } };
+  const kat = M.katalog({ bar: 20, lifts, week: { slots: [{ day: 1, type: 'strength' }, { day: 3, type: 'ride' }] } },
+    { mitGewicht: true, mitRad: true, mitHoehe: true, mitPlan: true, mitZusammen: true });
+  ok('der Katalog ist nicht leer', kat.length > 50, `(${kat.length})`);
+  for (const sp of ['de', 'en']) {
+    I.setSprache(sp);
+    const ohneName = kat.filter(a => I.t(a.key, a.vars) === a.key).map(a => a.id);
+    const ohneBed = kat.filter(a => { const k = a.key.replace('merch.p.', 'merch.pb.'); return I.t(k, a.vars) === k; }).map(a => a.id);
+    eq(`${sp}: jeder Aufnaeher hat einen Namen`, ohneName.join(), '');
+    eq(`${sp}: jeder Aufnaeher hat eine Bedingung`, ohneBed.join(), '');
+  }
+  I.setSprache('de');
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);
