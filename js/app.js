@@ -45,6 +45,7 @@ let restTimer = null, restLeft = 0;
 // bleibt die Wahrheit darueber, was eigentlich dran waere.
 let workoutOverride = null;
 let wod = null, wodSeed = 0, swTimer = null, swSek = 0, swLaeuft = false;
+let jamZweier = null;           // I go, you go im Jam: Stand der beiden, nur solange die Ansicht lebt
 let alleLogs = [];              // zuletzt geladene Einheiten, fuer Bestwerte
 let mo = { lift: 'squat' };     // laufender Krafttest
 let form = null;                // Form aus intervals.icu (ctl - atl)
@@ -1431,6 +1432,7 @@ $('wod-back').onclick = () => { stopUhr(); show('home'); };
 $('wod-reroll').onclick = () => { starteWod((wodSeed * 7919 + 13) >>> 0); };
 $('wod-finish').onclick = wodAbschliessen;
 $('sw-toggle').onclick = () => swLaeuft ? stopUhr() : startUhr();
+$('sw-wechsel').onclick = wechselZweier;
 $('go-history').onclick = renderHistory;
 $('go-backstage').onclick = zeigeBackstage;
 // Zurueck in die Tour. War sie noch nie offen (Backstage direkt nach dem
@@ -1946,6 +1948,8 @@ $('ein-anlegen').onclick = async () => {
 function starteWod(seed) {
   wodSeed = seed >>> 0;
   wod = WOD.generateWod(state, wodSeed, config, gymGeraete());
+  // Neu wuerfeln bleibt zu zweit, aber die Zaehler fangen von vorn an.
+  if (jamZweier) jamZweier = WOD.zweierNeu(jamZweier.start);
   swSek = 0; stopUhr();
   $('sw-time').textContent = '0:00';
   $('wod-finish').disabled = true;
@@ -2049,6 +2053,7 @@ function renderWod() {
   renderWodGymHinweis();
   const mobility = C.mobilityDran(state) ? C.tagesAuswahl(VL.ohneGesperrte(MOBILITY, config), new Date(), 'mob') : null;
   $('wod-body').innerHTML = `
+    <div id="wod-zweier-box"></div>
     <div class="card">
       <div class="kicker">${wod.dauer ? t('wod.minuten', { n: wod.dauer }) : wod.runden > 1 ? t('wod.runden', { n: wod.runden }) : t('wod.aufZeit')}</div>
       <div class="wod-format">${wod.format.toUpperCase()}</div>
@@ -2080,6 +2085,7 @@ function renderWod() {
       </div>
     </details>` : ''}`;
   $('sw-start').onclick = startUhr;
+  renderZweier();
   $('wod-body').querySelectorAll('[data-raus]').forEach(b => {
     b.onclick = () => uebungAusschliessen(b.dataset.raus, b.dataset.name);
   });
@@ -2104,6 +2110,53 @@ function stopUhr() {
   clearInterval(swTimer);
   $('sw-toggle').textContent = t('wod.weiter');
   if (swSek === 0) $('stopwatch').hidden = true;
+  aktualisiereWechsel();
+}
+
+/* ----- I go, you go: ein Geraet in der Mitte, eine arbeitet, die andere ruht ----- */
+
+/** Der Wechsel-Knopf in der Uhrleiste: nur zu zweit sichtbar, nur bei laufender Uhr benutzbar. */
+function aktualisiereWechsel() {
+  const b = $('sw-wechsel');
+  if (!b) return;
+  b.hidden = !jamZweier;
+  b.disabled = !swLaeuft;
+}
+
+/**
+ * Chip, Anzeige und Zaehler ueber der Karte. Wird einzeln gezeichnet statt mit
+ * renderWod, damit ein Wechsel die aufgeklappten Erklaerungen darunter nicht zuklappt.
+ */
+function renderZweier() {
+  const box = $('wod-zweier-box');
+  if (!box) return;
+  const z = jamZweier;
+  const chip = `<div class="chips"><button type="button" id="wod-zweier" class="${z ? 'an' : ''}">${escHtml(t('wod.zweier'))}</button></div>`;
+  if (!z) box.innerHTML = chip;
+  else {
+    const start = z.wechsel === 0
+      ? `<div class="chips">${['du', 'partner'].map(w =>
+          `<button type="button" data-start="${w}" class="${z.start === w ? 'an' : ''}">${escHtml(t(`wod.zweier.start.${w}`))}</button>`).join('')}</div>`
+      : '';
+    box.innerHTML = `${chip}<div class="wod-zweier ${z.dran}">
+      <span class="zw-dran">${escHtml(t(`wod.zweier.dran.${z.dran}`))}</span>
+      ${start}
+      <p class="zw-zahl">${escHtml(t('wod.zweier.zahl', { du: z.du, partner: z.partner }))}</p>
+      <p class="fine">${escHtml(t('wod.zweier.hinweis'))}</p></div>`;
+  }
+  $('wod-zweier').onclick = () => { jamZweier = jamZweier ? null : WOD.zweierNeu(); renderZweier(); };
+  box.querySelectorAll('[data-start]').forEach(b => {
+    b.onclick = () => { jamZweier = WOD.zweierStart(jamZweier, b.dataset.start); renderZweier(); };
+  });
+  aktualisiereWechsel();
+}
+
+function wechselZweier() {
+  if (!jamZweier || !swLaeuft) return;
+  jamZweier = WOD.zweierWechsel(jamZweier);
+  toene([660]);
+  if (navigator.vibrate) navigator.vibrate(80);
+  renderZweier();
 }
 
 async function wodAbschliessen() {
@@ -2119,15 +2172,21 @@ async function wodAbschliessen() {
   };
   const ort = ortName();
   if (ort) log.ort = ort;
+  // Zu zweit: nur die Bilanz kommt ins Log, ganze Zahlen und gedeckelt.
+  const zweier = WOD.zweierLog(jamZweier);
+  if (zweier) log.zuZweit = zweier;
+  jamZweier = null;
   const vorherHist = state.history || [];
   state = P.applyLog(state, config, log);
   S.cache({ state });
   $('stopwatch').hidden = true;
+  aktualisiereWechsel();
   $('done-body').innerHTML = `
     <div class="card">
       <div class="kicker">${escHtml(log.date)} · WOD</div>
       <div class="name">${Math.floor(swSek / 60)}:${String(swSek % 60).padStart(2, '0')}</div>
       <ul>${wod.teile.map(teil => `<li><span>${teil.name}</span><span>${teil.menge ? `${teil.menge} ${teil.einheit}` : '20/10'}</span></li>`).join('')}</ul>
+      ${zweier ? `<p class="fine">${escHtml(t('wod.zweier.fertig', zweier))}</p>` : ''}
     </div>
     <p class="spruch">${t('wod.spruch')}</p>
     <div id="done-aufnaeher"></div>`;

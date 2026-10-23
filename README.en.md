@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-2182%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-2219%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -193,7 +193,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | **Recovery (HRV/resting HR/wellbeing/sleep)** | From intervals.icu, usually via HealthFit out of Apple Health. HRV and resting heart rate are judged only relative to your own baseline of recent days, never absolutely. Soreness and fatigue as you log them in intervals.icu (1–4), plus the sleep score. Feeds into the call. |
 | **Power targets** | From eFTP instead of percentages. |
 | **Unplugged** | Fifteen minutes, bodyweight only, quiet if needed. Fixed intervals with a guided clock instead of rep counts — for the morning when someone is still asleep. Quiet mode drops everything that jumps and makes no sound, only vibration. |
-| **Jam** | Five formats, 31 movements, loads from your current state. Never two barbell parts. |
+| **Jam** | Five formats, 31 movements, loads from your current state. Never two barbell parts. Optionally **together**, taking turns (I go, you go) on one device, no check-in: the display says whose turn it is, “Switch” in the clock bar swaps you, and the log keeps the tally. |
 | **Scaling** | Every movement names alternatives. “Can't do this” removes it for good. |
 
 ### App
@@ -477,7 +477,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-2182 tests in 27 files. No build, no dependencies.
+2219 tests in 27 files. No build, no dependencies.
 
 ### Browser probes (optional)
 

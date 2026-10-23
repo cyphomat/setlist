@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="App öffnen" src="https://img.shields.io/badge/App-öffnen-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-2182%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-2219%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-keiner-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Abhängigkeiten" src="https://img.shields.io/badge/Abhängigkeiten-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="Lizenz: MIT" src="https://img.shields.io/badge/Lizenz-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -193,7 +193,7 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 | **Erholung (HRV/Ruhepuls/Befinden/Schlaf)** | Aus intervals.icu, meist via HealthFit aus Apple Health. HRV und Ruhepuls nur relativ zur eigenen Basis der letzten Tage bewertet, nicht absolut. Muskelkater und Müdigkeit, wie du sie in intervals.icu einträgst (1–4), dazu der Schlafwert. Fließt in die Ansage ein. |
 | **Wattziele** | Aus der eFTP statt Prozentangaben. |
 | **Unplugged** | Fünfzehn Minuten, nur Körpergewicht, im Zweifel leise. Feste Intervalle mit geführter Uhr statt Wiederholungszahlen — für den Morgen, an dem noch jemand schläft. Der Leise-Modus lässt alles Springende weg und gibt keinen Ton, nur Vibration. |
-| **Jam** | Fünf Formate, 31 Übungen, Lasten aus dem aktuellen Stand. Nie zwei Langhantelteile. |
+| **Jam** | Fünf Formate, 31 Übungen, Lasten aus dem aktuellen Stand. Nie zwei Langhantelteile. Auf Wunsch **zu zweit** im Wechsel (I go, you go) an einem Gerät, ohne Check-in: die Anzeige sagt, wer dran ist, mit „Wechsel“ in der Uhrleiste tauscht ihr, und am Ende steht die Bilanz im Log. |
 | **Skalierung** | Jede Übung nennt Alternativen. „Kann ich nicht" nimmt sie dauerhaft raus. |
 
 ### App
@@ -483,7 +483,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-2182 Tests in 27 Dateien. Kein Build, keine Abhängigkeiten.
+2219 Tests in 27 Dateien. Kein Build, keine Abhängigkeiten.
 
 ### Browserproben (optional)
 
