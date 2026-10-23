@@ -247,3 +247,49 @@ export function wodLabel(wod) {
   const kopf = wod.dauer ? `${wod.format} ${wod.dauer}` : wod.runden > 1 ? `${wod.runden} Runden` : wod.format;
   return `${kopf} · ${wod.teile.map(t => t.name).join(' / ')}`;
 }
+
+/* ---------------------------------------------------------------
+   I go, you go. Zwei Personen, ein Geraet in der Mitte: eine arbeitet,
+   die andere ruht, dann wird gewechselt. Ohne Namen und ohne Check-in —
+   es gibt "du" und "partner", und der Stand lebt nur, solange die
+   Ansicht offen ist. Ins Log kommt am Ende nur die Bilanz.
+
+   Format-neutral: ein Durchgang ist bei AMRAP und Chipper eine Runde,
+   bei EMOM und Tabata ein Intervall. Gezaehlt wird, wenn gewechselt
+   wird, nicht vorher.                                               */
+
+export const ZWEIER_MAX = 999;
+const WER = ['du', 'partner'];
+const ganz = n => (Number.isInteger(n) && n >= 0 ? Math.min(n, ZWEIER_MAX) : 0);
+
+/** Die andere Person. */
+export const zweierAndere = wer => (wer === 'du' ? 'partner' : 'du');
+
+/** Neuer Stand; `start` ist, wer anfaengt. */
+export function zweierNeu(start = 'du') {
+  const s = WER.includes(start) ? start : 'du';
+  return { start: s, dran: s, du: 0, partner: 0, wechsel: 0 };
+}
+
+/** Wer anfaengt, laesst sich nur vor dem ersten Wechsel aendern — danach waere die Zaehlung falsch. */
+export function zweierStart(z, wer) {
+  if (!z || z.wechsel > 0 || !WER.includes(wer)) return z;
+  return { ...z, start: wer, dran: wer };
+}
+
+/** Der Durchgang der Person, die dran war, zaehlt; dann ist die andere dran. */
+export function zweierWechsel(z) {
+  if (!z || !WER.includes(z.dran)) return z;
+  return {
+    ...z,
+    [z.dran]: Math.min(ganz(z[z.dran]) + 1, ZWEIER_MAX),
+    dran: zweierAndere(z.dran),
+    wechsel: Math.min(ganz(z.wechsel) + 1, ZWEIER_MAX)
+  };
+}
+
+/** Was ins Log kommt: ganze Zahlen, gedeckelt — oder null, wenn nie gewechselt wurde. */
+export function zweierLog(z) {
+  if (!z || !(z.wechsel > 0)) return null;
+  return { du: ganz(z.du), partner: ganz(z.partner), wechsel: ganz(z.wechsel) };
+}

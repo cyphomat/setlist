@@ -145,4 +145,58 @@ print('\n--- Der Standard gehoert zur Bewegung, nicht zur Position ---');
      falsch.length === 0, [...new Set(falsch)].join());
 }
 
+print('\n--- I go, you go ---');
+{
+  const z0 = W.zweierNeu();
+  eq('Standard: du faengt an', z0.dran, 'du');
+  eq('Zaehler stehen auf null', z0.du + z0.partner + z0.wechsel, 0);
+  eq('Partner kann anfangen', W.zweierNeu('partner').dran, 'partner');
+  eq('Unsinn: du faengt an', W.zweierNeu('boss').dran, 'du');
+  eq('null: du faengt an', W.zweierNeu(null).dran, 'du');
+
+  const z1 = W.zweierWechsel(z0);
+  eq('nach dem ersten Wechsel ist der Partner dran', z1.dran, 'partner');
+  eq('der Durchgang von du zaehlt', z1.du, 1);
+  eq('der des Partners noch nicht', z1.partner, 0);
+  eq('ein Wechsel gezaehlt', z1.wechsel, 1);
+  const z2 = W.zweierWechsel(z1);
+  eq('wieder du dran', z2.dran, 'du');
+  eq('jetzt zaehlt der Partner', z2.partner, 1);
+  eq('zwei Wechsel', z2.wechsel, 2);
+  let z = z0;
+  for (let i = 0; i < 7; i++) z = W.zweierWechsel(z);
+  eq('sieben Wechsel: du 4', z.du, 4);
+  eq('sieben Wechsel: Partner 3', z.partner, 3);
+  eq('sieben Wechsel: Partner dran', z.dran, 'partner');
+  ok('Eingabe bleibt unveraendert', z0.wechsel === 0 && z0.du === 0 && z0.dran === 'du');
+  eq('Wechsel ohne Stand: nichts', W.zweierWechsel(null), null);
+
+  const p = W.zweierStart(W.zweierNeu(), 'partner');
+  eq('Start vor dem ersten Wechsel aenderbar', p.dran, 'partner');
+  eq('und als Start gemerkt', p.start, 'partner');
+  const nachWechsel = W.zweierStart(z1, 'partner');
+  eq('nach dem ersten Wechsel gesperrt', nachWechsel.dran, z1.dran);
+  eq('Start mit Unsinn aendert nichts', W.zweierStart(z0, 'boss').dran, 'du');
+  eq('Start ohne Stand: nichts', W.zweierStart(null, 'du'), null);
+  eq('Partner faengt an: dann zaehlt zuerst der Partner', W.zweierWechsel(p).partner, 1);
+
+  eq('Log: ohne Wechsel null', W.zweierLog(z0), null);
+  eq('Log: ohne Stand null', W.zweierLog(null), null);
+  const l = W.zweierLog(z);
+  eq('Log: du', l.du, 4);
+  eq('Log: Partner', l.partner, 3);
+  eq('Log: Wechsel', l.wechsel, 7);
+  eq('Log: nur drei Felder', Object.keys(l).length, 3);
+  eq('Log: Unsinn wird zu null', W.zweierLog({ du: '<b>', partner: -5, wechsel: 3 }).du, 0);
+  eq('Log: negativ wird null', W.zweierLog({ du: '<b>', partner: -5, wechsel: 3 }).partner, 0);
+  eq('Log: gedeckelt', W.zweierLog({ du: 5000, partner: 1, wechsel: 99999 }).du, W.ZWEIER_MAX);
+  eq('Log: Wechsel gedeckelt', W.zweierLog({ du: 1, partner: 1, wechsel: 99999 }).wechsel, W.ZWEIER_MAX);
+  eq('Log: Kommazahl wird null', W.zweierLog({ du: 1.5, partner: 1, wechsel: 2 }).du, 0);
+  let voll = { start: 'du', dran: 'du', du: W.ZWEIER_MAX, partner: 0, wechsel: W.ZWEIER_MAX };
+  voll = W.zweierWechsel(voll);
+  eq('Obergrenze laeuft nicht ueber', voll.du, W.ZWEIER_MAX);
+  eq('Wechsel auch nicht', voll.wechsel, W.ZWEIER_MAX);
+  eq('die andere Person', W.zweierAndere('du'), 'partner');
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

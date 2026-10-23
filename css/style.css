@@ -1445,3 +1445,16 @@ button.tstop:hover .szene{border-color:var(--muted)}
 #session-zusammen .zu-knoepfe{display:flex;gap:10px}
 #session-zusammen .zu-knoepfe .btn{flex:1;width:auto}
 #session-zusammen input{width:100%}
+
+/* Jam zu zweit: wer dran ist, gross; die Zaehler klein darunter */
+#wod-zweier-box .chips{margin:0 0 12px}
+.wod-zweier{margin:0 0 14px;padding:14px 16px;background:var(--panel);border-left:3px solid var(--akzent)}
+.wod-zweier.partner{border-left-color:var(--stahl)}
+.wod-zweier .zw-dran{display:block;font-family:var(--display);font-size:1.75rem;font-weight:600;letter-spacing:.02em;color:var(--akzent)}
+.wod-zweier.partner .zw-dran{color:var(--stahl)}
+.wod-zweier .chips{margin:10px 0 0}
+.wod-zweier .zw-zahl{margin:10px 0 0;font-family:var(--mono);font-size:0.8125rem;color:var(--fg)}
+.wod-zweier .fine{margin:8px 0 0}
+#stopwatch #sw-wechsel:disabled{opacity:.35;cursor:default}
+/* Die Uhrleiste ist fest und rund 100 px hoch; ohne diesen Abstand liegt "Abschliessen" am Seitenende darunter. */
+#wod-finish-pad{padding-bottom:calc(128px + env(safe-area-inset-bottom))}

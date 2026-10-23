@@ -10,6 +10,24 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-23.3
+
+### Neu
+- **Jam zu zweit (I go, you go).** Im Jam schaltet ein Chip „Zu zweit“ das Wechseltraining
+  ein, an einem Gerät und ohne Check-in. Eine Person arbeitet, die andere ruht: groß steht,
+  wer dran ist, vor dem ersten Wechsel wählt man, wer anfängt, und mit „Wechsel“ in der
+  Uhrleiste tauscht man; die Uhr läuft durch. Gezählt wird beim Wechsel, getrennt für „du“
+  und „Partner“. Das passt zu jedem Format: ein Durchgang ist bei AMRAP und Chipper eine
+  Runde, bei EMOM und Tabata ein Intervall. Ins Log kommt am Ende nur die Bilanz
+  (`zuZweit`: Durchgänge je Person und Zahl der Wechsel, als gedeckelte ganze Zahlen); das
+  Abschlussbild zeigt sie in einer Zeile. Es entsteht keine Datei unter `zusammen/` und
+  kein Aufnäher.
+
+### Behoben
+- **„Abschließen“ lag im Jam unter der Uhrleiste.** Die feste Leiste ist rund 100 Pixel
+  hoch, unter dem Knopf blieben aber nur 28 Pixel Platz; am Seitenende war er vollständig
+  verdeckt. Jetzt ist genug Abstand da.
+
 ## 2026-10-23.2
 
 ### Neu
