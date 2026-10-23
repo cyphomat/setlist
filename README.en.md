@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-1962%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-1989%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -158,7 +158,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | **5×5 automation** | Progression, failure counter, deload to 90% after three failed attempts. |
 | **Deload after a break** | After 14 days without a strength session, starting suggests a step back: −10 %, from 21 days −20 %, from 42 days −30 %. One tap applies it, one keeps the old weights — nothing changes without you. After that every successful session climbs **twice as fast** until you are back at the pre-break weight; a failed attempt ends the shortcut. Rules of thumb, not measurements. |
 | **Plate calculator** | Plates per side. Weights that cannot be loaded exactly are named rather than rounded. Below it a second line with the same load **from 20/10/5/2.5/1.25 only** — the run of plates every gym has in full. Where there are no 25s and 15s, you load `2×20` instead of `25 + 15`. It only shows when it says something different. |
-| **Soundcheck** | Warm-up sets derived from the working weight: empty bar, then 55 / 70 / 85%. Every line tickable — tapped means struck through. |
+| **Soundcheck** | Warm-up sets derived from the working weight: empty bar, then 55 / 70 / 85%. Every line tickable — tapped means struck through. The cardio line at the top can be replaced with your own opener under Backstage → Personal, e.g. 15 min rowing. |
 | **Weight mid-set** | Adjustable during the session — the log reflects what actually happened. |
 | **Rest timer** | 90 s, 180 s after a failed attempt, adjustable by ±30 s while running. Ends with vibration and a tone, stops itself after the session's last set. |
 | **Aftershow** | Accessory work after the main lifts: pull-ups, chin-ups, dips, push-ups, face pulls, curls, hanging leg raises. Reps per set, next to what you managed last time. No progression, no effect on weights or tonnage. The tour shows your best set for each. |
@@ -475,7 +475,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-1962 tests in 26 files. No build, no dependencies.
+1989 tests in 26 files. No build, no dependencies.
 
 ### Browser probes (optional)
 

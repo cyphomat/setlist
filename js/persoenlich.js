@@ -217,3 +217,42 @@ export function setzeKadenzZiel(config, wert) {
   }
   return neu;
 }
+
+/* Warm-up: ein eigener Einstieg ersetzt die erste Zeile der allgemeinen
+   Liste (die Cardio-Zeile). Ohne Eintrag bleibt alles, wie es war. */
+const EINSTIEG_ART_MAX = 40, EINSTIEG_MIN_MAX = 60;
+
+/** Der Einstieg aus der Konfiguration — oder null, wenn keiner (gueltig) steht. */
+export function einstieg(config) {
+  const e = config && config.warmup && config.warmup.einstieg;
+  if (!e || typeof e.art !== 'string') return null;
+  const art = e.art.trim();
+  const minuten = Number(e.minuten);
+  if (!art || art.length > EINSTIEG_ART_MAX) return null;
+  if (!Number.isInteger(minuten) || minuten < 1 || minuten > EINSTIEG_MIN_MAX) return null;
+  return { art, minuten };
+}
+
+/** Einstieg setzen; leer oder Unsinn nimmt ihn heraus, dann gilt wieder die Vorgabe. */
+export function setzeEinstieg(config, art, minuten) {
+  const neu = JSON.parse(JSON.stringify(config || {}));
+  const m = String(minuten ?? '').trim() === '' ? NaN : Math.round(Number(minuten));
+  const gueltig = einstieg({ warmup: { einstieg: { art: String(art ?? ''), minuten: m } } });
+  if (gueltig) neu.warmup = { ...(neu.warmup || {}), einstieg: gueltig };
+  else if (neu.warmup) {
+    delete neu.warmup.einstieg;
+    if (!Object.keys(neu.warmup).length) delete neu.warmup;
+  }
+  return neu;
+}
+
+/**
+ * Die allgemeine Warm-up-Liste mit dem eigenen Einstieg an erster Stelle.
+ * `maskiere` kommt von aussen: die Liste setzt ihre Felder als HTML ein, und
+ * die Art steht von Hand in der Konfiguration.
+ */
+export function warmupZeilen(allgemein, config, detail, maskiere = s => s) {
+  const e = einstieg(config);
+  if (!e || !allgemein || !allgemein.length) return allgemein || [];
+  return [{ t: `${e.minuten} Min`, was: maskiere(e.art), detail }, ...allgemein.slice(1)];
+}

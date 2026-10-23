@@ -111,4 +111,36 @@ ok('Rest bleibt', PS.setzeKadenzZiel({ bar: 20 }, '90').bar === 20);
 ok('leeren nimmt rad heraus', !('rad' in PS.setzeKadenzZiel({ rad: { kadenzZiel: 90 } }, '')));
 eq('Unsinn wird nicht gespeichert', PS.kadenzZiel(PS.setzeKadenzZiel({}, '40')), 80);
 
+print('\n--- Warm-up-Einstieg ---');
+eq('ohne Eintrag null', PS.einstieg({}), null);
+eq('ohne Config null', PS.einstieg(null), null);
+gleich('gueltig', PS.einstieg({ warmup: { einstieg: { art: 'Rudern', minuten: 15 } } }), { art: 'Rudern', minuten: 15 });
+gleich('Leerraum faellt weg', PS.einstieg({ warmup: { einstieg: { art: '  Rudern ', minuten: 15 } } }), { art: 'Rudern', minuten: 15 });
+eq('Art kein Text', PS.einstieg({ warmup: { einstieg: { art: 5, minuten: 15 } } }), null);
+eq('Art leer', PS.einstieg({ warmup: { einstieg: { art: '  ', minuten: 15 } } }), null);
+eq('Art zu lang', PS.einstieg({ warmup: { einstieg: { art: 'x'.repeat(41), minuten: 15 } } }), null);
+ok('Art genau 40 geht', PS.einstieg({ warmup: { einstieg: { art: 'x'.repeat(40), minuten: 15 } } }) !== null);
+eq('Minuten 0', PS.einstieg({ warmup: { einstieg: { art: 'Rudern', minuten: 0 } } }), null);
+eq('Minuten 61', PS.einstieg({ warmup: { einstieg: { art: 'Rudern', minuten: 61 } } }), null);
+ok('Minuten 1 geht', PS.einstieg({ warmup: { einstieg: { art: 'Rudern', minuten: 1 } } }) !== null);
+ok('Minuten 60 geht', PS.einstieg({ warmup: { einstieg: { art: 'Rudern', minuten: 60 } } }) !== null);
+eq('Minuten Unsinn', PS.einstieg({ warmup: { einstieg: { art: 'Rudern', minuten: '<b>' } } }), null);
+eq('Minuten Kommazahl', PS.einstieg({ warmup: { einstieg: { art: 'Rudern', minuten: 7.5 } } }), null);
+gleich('setzen', PS.setzeEinstieg({ bar: 20 }, 'Rudern', '15').warmup, { einstieg: { art: 'Rudern', minuten: 15 } });
+ok('Rest bleibt', PS.setzeEinstieg({ bar: 20 }, 'Rudern', '15').bar === 20);
+ok('Eingabe bleibt unveraendert', (() => { const c = { bar: 20 }; PS.setzeEinstieg(c, 'Rudern', 15); return !('warmup' in c); })());
+ok('leere Art nimmt warmup heraus', !('warmup' in PS.setzeEinstieg({ warmup: { einstieg: { art: 'Rudern', minuten: 15 } } }, '', '15')));
+ok('leere Minuten nehmen warmup heraus', !('warmup' in PS.setzeEinstieg({ warmup: { einstieg: { art: 'Rudern', minuten: 15 } } }, 'Rudern', '')));
+ok('Unsinn wird nicht gespeichert', !('warmup' in PS.setzeEinstieg({}, 'Rudern', '999')));
+gleich('anderes in warmup bleibt', PS.setzeEinstieg({ warmup: { sonst: 1, einstieg: { art: 'a', minuten: 2 } } }, '', '').warmup, { sonst: 1 });
+
+const liste = [{ t: '3 Min', was: 'Rudergerät', detail: 'x' }, { t: '10x', was: 'Hüfte', detail: 'y' }];
+gleich('ohne Einstieg unveraendert', PS.warmupZeilen(liste, {}, 'd'), liste);
+gleich('ersetzt nur die erste Zeile', PS.warmupZeilen(liste, { warmup: { einstieg: { art: 'Rudern', minuten: 15 } } }, 'Dein Einstieg'),
+  [{ t: '15 Min', was: 'Rudern', detail: 'Dein Einstieg' }, liste[1]]);
+eq('Laenge bleibt gleich', PS.warmupZeilen(liste, { warmup: { einstieg: { art: 'Rudern', minuten: 15 } } }, 'd').length, 2);
+eq('Art wird maskiert', PS.warmupZeilen(liste, { warmup: { einstieg: { art: '<b>x</b>', minuten: 5 } } }, 'd', s => s.replace(/</g, '&lt;'))[0].was, '&lt;b>x&lt;/b>');
+gleich('leere Liste', PS.warmupZeilen([], { warmup: { einstieg: { art: 'Rudern', minuten: 15 } } }, 'd'), []);
+gleich('keine Liste', PS.warmupZeilen(undefined, {}, 'd'), []);
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

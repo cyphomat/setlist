@@ -10,6 +10,17 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-23.1
+
+### Neu
+- **Eigener Einstieg im Warm-up.** Unter Backstage → Persönlich steht jetzt ein Abschnitt
+  „Warm-up": Art und Minuten, zum Beispiel „Rudern, 15". Der Einstieg ersetzt die erste
+  Zeile des Soundchecks (die Cardio-Zeile „3 Min Rudergerät, Seil oder Fahrrad"); alles
+  andere im Soundcheck bleibt. Ohne Eintrag ändert sich nichts. Gespeichert wird er pro
+  Person in der `config.json` unter `warmup.einstieg`. Art höchstens 40 Zeichen, Minuten
+  von 1 bis 60; alles andere wird beim Speichern verworfen. Die Zeit zählt zur Dauer der
+  Einheit wie bisher (Start bis Ende).
+
 ## 2026-10-22.2
 
 ### Behoben — Sicherheit
