@@ -93,4 +93,15 @@ gleich('ohne Doppel, Gross/Klein egal', ZU.zuletztMit([e('2026-10-05', { mit: 'M
 gleich('leere Namen fehlen', ZU.zuletztMit([e('2026-10-05', { mit: '' })]), []);
 eq('hoechstens n', ZU.zuletztMit([e('2026-10-01', { mit: 'a' }), e('2026-10-02', { mit: 'b' }), e('2026-10-03', { mit: 'c' }), e('2026-10-04', { mit: 'd' })]).length, 3);
 
+print('\n--- Pause zu zweit ---');
+eq('Partner heute', ZU.partnerHeute([e('2026-10-05', { mit: 'Max' })], '2026-10-05'), 'Max');
+eq('anderer Tag: niemand', ZU.partnerHeute([e('2026-10-05', { mit: 'Max' })], '2026-10-06'), null);
+eq('ohne Namen uebersprungen', ZU.partnerHeute([e('2026-10-05', { mit: '' }), e('2026-10-05', { mit: 'Anna' })], '2026-10-05'), 'Anna');
+eq('leer: niemand', ZU.partnerHeute([], '2026-10-05'), null);
+eq('kurz: passt', ZU.kurz('Max'), 'Max');
+eq('kurz: genau zehn', ZU.kurz('abcdefghij'), 'abcdefghij');
+eq('kurz: elf wird gekuerzt', ZU.kurz('abcdefghijk'), 'abcdefghi…');
+eq('kurz: zerreisst keine Zeichen', ZU.kurz('😀'.repeat(12), 4), '😀😀😀…');
+eq('kurz: nichts', ZU.kurz(null), '');
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

@@ -114,3 +114,12 @@ export function zuletztMit(eintraege = [], n = 3) {
   }
   return out;
 }
+
+/** Der erste Name, der heute eingetragen ist — oder null. Fuer die Pause, die zum Satz der anderen Person wird. */
+export const partnerHeute = (eintraege = [], datum) => (amTag(eintraege, datum).find(e => e.mit) || {}).mit || null;
+
+/** Ein Name fuer enge Stellen (Pausenleiste): gekuerzt, mit Auslassungszeichen. */
+export const kurz = (name, max = 10) => {
+  const n = [...String(name == null ? '' : name)];
+  return n.length > max ? `${n.slice(0, max - 1).join('')}…` : n.join('');
+};

@@ -1108,15 +1108,34 @@ function toene(frequenzen, dauerMs = 160) {
   } catch { /* Web Audio nicht verfuegbar — Vibration bleibt */ }
 }
 
+/**
+ * Zu zweit ist die Pause der Satz der anderen Person: erst "Max ist dran",
+ * mit dem Knopf "Fertig" geht es weiter, und laeuft die Zeit ab, steht
+ * "Du bist dran". Nichts davon wird gespeichert — es ist nur Beschriftung.
+ */
+function restBeschriftung(bereit) {
+  const lbl = $('rest').querySelector('.lbl'), skip = $('rest-skip');
+  const partner = session ? ZU.partnerHeute(zusammen, session.date) : null;
+  if (!partner && !(session && ZU.amTag(zusammen, session.date).length)) {
+    lbl.textContent = t('ses.pause'); skip.textContent = t('ses.weiter');
+    return;
+  }
+  const name = ZU.kurz(partner || t('zu.partnerOhneName'), 8).toLocaleUpperCase(locale());
+  lbl.textContent = bereit ? t('zu.duDran') : t('zu.istDran', { name });
+  skip.textContent = bereit ? t('ses.weiter') : t('zu.fertig');
+}
+
 function startRest(seconds) {
   restLeft = seconds;
   $('rest').hidden = false;
   $('rest-time').textContent = restLeft;
+  restBeschriftung(false);
   clearInterval(restTimer);
   restTimer = setInterval(() => {
     restLeft--;
     $('rest-time').textContent = restLeft > 0 ? restLeft : t('ses.los');
     if (restLeft <= 0) {
+      restBeschriftung(true);
       clearInterval(restTimer);
       if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
       toene([880]);
@@ -1130,6 +1149,7 @@ const stopRest = () => { clearInterval(restTimer); $('rest').hidden = true; };
 function verstellePause(delta) {
   restLeft = Math.max(0, restLeft + delta);
   $('rest-time').textContent = restLeft > 0 ? restLeft : t('ses.los');
+  restBeschriftung(restLeft <= 0);
 }
 
 async function finishSession() {
