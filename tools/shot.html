@@ -155,7 +155,13 @@ localStorage.setItem('setlist.cache', JSON.stringify({
   config, state, fahrten, formVerlauf, wkg, gewichtsReihe,
   form: { form: 5, stufe: 'frisch', fitness: 52, ermuedung: 47,
           text: 'Ausgeruht. Wenn ein Tag für einen Versuch am oberen Ende taugt, dann dieser.' },
-  eftp: 243
+  eftp: 243,
+  // Nur in der Einheit: heute zu zweit, damit die Pause "Max ist dran" zeigt.
+  // Das Datum ist das lokale, wie in der App (tage() rechnet in UTC).
+  zusammen: (szene === 'session' || szene === 'session-hell') ? [{
+    id: 'abcdefgh23', mit: 'Max', rolle: 'einlader', bestaetigt: true,
+    datum: (d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`)(new Date())
+  }] : undefined
 }));
 localStorage.setItem('setlist.logs', JSON.stringify({ zeit: Date.now(), logs }));
 localStorage.setItem('setlist.icu.key', 'demo');
