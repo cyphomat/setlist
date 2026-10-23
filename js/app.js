@@ -828,7 +828,8 @@ function startSession() {
   $('warmup').innerHTML = `
     <details class="info" open><summary>${t('ses.soundcheck')}</summary>
       <div class="body">
-        ${WARMUP.allgemein.concat(WARMUP[plan.workout] || [], rumpf, verletzungsWarmup())
+        ${PS.warmupZeilen(WARMUP.allgemein, config, t('ses.einstiegDetail'), escHtml)
+          .concat(WARMUP[plan.workout] || [], rumpf, verletzungsWarmup())
           .map((w, i) =>
           `<label class="kv check"><input type="checkbox" data-w="${i}">
             <span class="k">${w.t}</span><span class="v"><b>${w.was}</b> — ${w.detail}</span></label>`).join('')}
@@ -3367,6 +3368,9 @@ function renderChecks() {
 
   $('pers-bw').value = PS.checkKoerpergewicht(config);
   $('pers-kadenz').value = config.rad && config.rad.kadenzZiel ? PS.kadenzZiel(config) : '';
+  const einstieg = PS.einstieg(config);
+  $('pers-einstieg-art').value = einstieg ? einstieg.art : '';
+  $('pers-einstieg-min').value = einstieg ? einstieg.minuten : '';
   // Mit angebundener Waage ist das Feld ueberfluessig — es waere ein
   // zweiter Ort fuer dieselbe Zahl, und zwei Orte laufen auseinander.
   const vonWaage = gewichtsPunkte.length > 0;
@@ -3403,8 +3407,9 @@ $('pers-speichern').onclick = async () => {
     // stellt, soll nicht zusaetzlich ein Datum eintippen muessen.
     const verletzungen = VL.stempleEnde(VL.baueVerletzungen(injEntwurf || VL.entwurf(config)),
       VL.alle(datei.data), P.ymd(new Date()));
-    const neu = PS.setzeKadenzZiel(VL.setzeInConfig(PS.setzeChecks(
-      PS.setzeInConfig(datei.data, { grund: $('pers-grund').value, rekorde }), checks), verletzungen), $('pers-kadenz').value);
+    const neu = PS.setzeEinstieg(PS.setzeKadenzZiel(VL.setzeInConfig(PS.setzeChecks(
+      PS.setzeInConfig(datei.data, { grund: $('pers-grund').value, rekorde }), checks), verletzungen), $('pers-kadenz').value),
+      $('pers-einstieg-art').value, $('pers-einstieg-min').value);
     await S.writeFile('config.json', neu, 'Persönliches aktualisiert', datei.sha);
     config = neu;
 
