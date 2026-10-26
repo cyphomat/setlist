@@ -90,10 +90,11 @@
 </tr>
 </table>
 
-**And a bit of stage** — rank, monthly tour with final boss, patches, records and tour shirts, all from your sessions:
+**And a bit of stage** — rank, monthly tour with final boss, patches, records, guitar rack and tour shirts, all from your sessions:
 
 <p align="center">
   <img src="assets/screens/merch-dunkel.png" alt="The merch stand: rank, monthly tour with final boss and battle vest with patches" width="330">
+  <img src="assets/screens/rack-dunkel.png" alt="The guitar rack in the merch stand: two guitars hang, the next waits as a dark silhouette for the Opening Act rank" width="330">
 </p>
 
 <sub>Real screens with sample data, captured via <code>tools/shot.html</code> and <code>tools/shots.mjs</code>. Not mockups.</sub>
@@ -362,7 +363,7 @@ Done. The first session creates `state.json` automatically; everything after tha
 ## Data
 
 **Without an account, everything stays on the device.** If you begin with *Start locally*,
-your programme, sessions, soundchecks and notes live in this browser (IndexedDB). There is
+your programme, sessions, soundchecks, dates and notes live in this browser (IndexedDB). There is
 no account and no server, and nothing leaves the device unless you connect intervals.icu. The
 app asks the browser to keep the storage persistent. On iPhone this only holds for the
 installed app, though: Safari clears the storage of ordinary websites after seven days
@@ -412,9 +413,11 @@ No analytics, no CDN, no fonts from third-party servers.
 **Not inside other pages.** If another site loads the app in a frame, it shows a notice and does not start — so nobody can slip clicks under you. GitHub Pages cannot do this with a header, so `js/boot.js` handles it before the first paint.
 
 **Foreign text is escaped.** Activity names from intervals.icu are not written by you but
-by Strava, Zwift or a group ride. That text — and just as much everything from your `config.json` — is escaped before display (`js/sicher.js`),
+by Strava, Zwift or a group ride. That text — just as much as names from invitation links and everything from your `config.json` — is escaped before display (`js/sicher.js`),
 and a strict Content Security Policy (`script-src 'self'`) catches anything that might
 slip through. Video links you enter yourself are restricted to `http`/`https`.
+
+**Invitations stay with you.** An invitation to train together is a link you send yourself. Behind the `#` there is only an id, a step and a name; that part never goes to a server, and the app accepts nothing unasked.
 
 **What deliberately goes out:** with the intervals.icu sync on, it receives the date,
 duration, estimated training load and one line per lift with weight and reps. Switch it
