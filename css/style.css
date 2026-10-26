@@ -1458,3 +1458,23 @@ button.tstop:hover .szene{border-color:var(--muted)}
 #stopwatch #sw-wechsel:disabled{opacity:.35;cursor:default}
 /* Die Uhrleiste ist fest und rund 100 px hoch; ohne diesen Abstand liegt "Abschliessen" am Seitenende darunter. */
 #wod-finish-pad{padding-bottom:calc(128px + env(safe-area-inset-bottom))}
+
+/* ── Gitarrenrack ── */
+/* Zehn Gitarren aus assets/pixel/gitarren.png (tools/pixel.mjs), je 24x56 am Boden ausgerichtet.
+   Jede steht auf einem Stueck Schiene; die naechste, die fehlt, haengt dunkel daneben. */
+.rack-zahl{margin:0 0 8px;font-family:var(--mono);font-size:0.75rem;letter-spacing:.06em;color:var(--muted)}
+.rack{display:flex;flex-wrap:wrap;gap:20px 8px;align-items:flex-start;padding:18px 10px 12px;
+  background:repeating-linear-gradient(90deg,var(--raster) 0 1px,transparent 1px 22px),var(--sunken);
+  border:1px solid var(--line);border-radius:2px}
+.gitarre{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;width:88px;min-width:0}
+.gtw{display:block;padding:0 6px;border-bottom:6px solid var(--corner)}
+.gt{display:block;width:60px;aspect-ratio:24/56;background:url('../assets/pixel/gitarren.png') no-repeat;
+  background-size:1000% 100%;background-position:calc(var(--i) * 100% / 9) 0;image-rendering:pixelated;
+  filter:drop-shadow(0 4px 4px rgba(0,0,0,.5))}
+.gitarre b{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.04em;
+  font-size:0.75rem;line-height:1.15;color:var(--fg)}
+.gitarre > span:not(.gtw){font-size:0.6875rem;color:var(--muted);line-height:1.3}
+.gitarre.offen .gt{filter:grayscale(1) brightness(.4);opacity:.8}
+.gitarre.offen b{color:var(--muted)}
+.rack-neu{margin-top:10px;background:none;border:0;padding:6px 0 0}
+.gitarre-neu .gitarre b{color:var(--akzent)}

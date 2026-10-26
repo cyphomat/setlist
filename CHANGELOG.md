@@ -10,6 +10,32 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-26.1
+
+### Neu
+- **Gitarrenrack im Merch-Stand.** Zehn Pixel-Gitarren — Proberaum-Brett, Kellerkind, Offset
+  Blues, Nachtfalke, Eiszacke, Stahlstern, Sieben Siegel, Hohlkörper, Kopflos und die Goldene
+  Axt — hängen auf einer Schiene, mit dem Tag, an dem sie dazukamen. Gekauft wird nichts:
+  sieben schalten sich mit den Rängen frei (erste Einheit, 4, 12, 26, 52, 104 und 208 Wochen),
+  drei mit den Schallplatten (Platin, Doppelplatin, Diamant). Es gibt keinen Kontostand und
+  keine neue Datei im Datenrepo; wie bei den Aufnähern wird alles aus den Einheiten
+  abgeleitet. Zu sehen sind nur die, die hängen, und die nächste fehlende als dunkle
+  Silhouette mit ihrer Bedingung.
+- **Neue Gitarre nach der Einheit.** Das Abschlussbild zeigt sie in einem eigenen Block, auch
+  wenn dabei kein Aufnäher dazukam; der Ansager ruft „NEUE GITARRE“ aus (nach Rang und
+  Endgegner, vor dem Aufnäher).
+- Die Gitarren sind eigene, generische Formen ohne Marken- oder Modellnamen. Gezeichnet
+  werden sie von `tools/pixel-gitarren.mjs` in den Bogen `assets/pixel/gitarren.png`
+  (24 × 56 Pixel je Gitarre, am Boden ausgerichtet).
+
+### Hinweise
+- Wer schon viele Wochen oder Tonnen hat, bekommt beim ersten Öffnen mehrere Gitarren auf
+  einmal im Rack; die Meldung nach der Einheit erscheint nur für die, die diese Einheit
+  neu brachte.
+- Zwei Prüfungen halten die Texte offen: Für jede Gitarre müssen Name, Typ und Bedingung in
+  beiden Sprachen da sein, und der Bogen wird beim Bau gegen die Liste in `js/gitarren.js`
+  geprüft.
+
 ## 2026-10-23.3
 
 ### Neu
