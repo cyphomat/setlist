@@ -24,6 +24,7 @@ Kommuniziere auf Deutsch, kurz und konkret.
 - Der Zustand wird aus den Logs abgeleitet (`deriveState`). Änderungen am Programm laufen als Log-Eintrag (`type: 'anpassung'`), nie durch Überschreiben von `state.json`.
 - Zahlen aus intervals.icu nie roh übernehmen: Einheit klären und in `js/intervals.js` normalisieren (Intensität über `alsAnteil`, sonst kam einmal „9118 %“ in die Oberfläche). Eine neue Metrik (W/kg, Effizienzfaktor, Trends) vor dem Ausliefern an 3–5 echten Aktivitäten ausgeben und auf einen plausiblen Bereich prüfen; ist die Einheit nicht belegt, im Code als „ungeprüft“ kennzeichnen und nicht raten.
 - Fahrten können doppelt ankommen (gleiche Fahrt aus zwei Quellen). Neue Auswertungen gehen über `ICU.entdoppeln(ICU.normalisiere(…))` bzw. die daraus gebildete Liste in `js/app.js`, nie über die Rohliste.
+- Echte Antworten als Testdaten: `ICU_KEY=… deno run -A tools/icu-fixtures.mjs` schreibt `tests/fixtures/icu-*.js` (Positivliste, Namen und Kennungen ersetzt, Werte leicht verfremdet; der Schlüssel kommt nur über die Umgebung, nie in eine Datei oder einen Chat). `tests/icu-echt.test.js` prüft daran Einheiten und Beziehungen, nie Einzelwerte. Das Skript fasst nur Felder an, die `alsFahrt`/`alsWellness` lesen: liest der Code ein neues Feld, kommt es auch in die Positivliste (und in deren Spiegel im Test).
 
 ## Oberfläche
 - Zweisprachig: jeder sichtbare Text über `js/i18n.js`, deutsch und englisch, mit gleichen Platzhaltern. `t()` maskiert nicht: Werte aus Daten mit `escHtml`, Links mit `sicherLink`.
