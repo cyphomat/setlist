@@ -7,7 +7,7 @@ import * as VL from './verletzung.js';
 import * as WOD from './wod.js';
 import * as ST from './stats.js';
 import * as B from './bibliothek.js';
-import { t, tn, locale, sprache, setSprache, uebersetzeStatisch } from './i18n.js';
+import { t, tn, locale, dez, sprache, setSprache, uebersetzeStatisch } from './i18n.js';
 import * as G from './geraete.js';
 import { escHtml, sicherLink } from './sicher.js';
 import * as A from './aktualisierung.js';
@@ -518,11 +518,11 @@ function abnehmZeile() {
   const { lage, rate } = abnehmen;
   const farbe = { fenster: 'var(--gruen)', haltend: 'var(--akzent)', traege: 'var(--muted)',
                   schnell: 'var(--rost)', teuer: 'var(--rot)', rauf: 'var(--rost)' }[lage.stufe];
-  const kg = `${rate.proWoche > 0 ? '+' : ''}${rate.proWoche.toFixed(2)}`;
+  const kg = dez(rate.proWoche, 2, true);
   return `<p class="formzeile" style="border-top-color:${farbe}">
     <span class="fw" style="color:${farbe}">${t('abn.stufe.' + lage.stufe)}</span>
     <span class="ft">${t('abn.text.' + lage.stufe)}</span>
-    <span class="fd">${t('abn.zeile', { kg, prozent: rate.prozentProWoche, jetzt: rate.aktuell.toFixed(1) })}</span>
+    <span class="fd">${t('abn.zeile', { kg, prozent: dez(rate.prozentProWoche, 1), jetzt: dez(rate.aktuell, 1) })}</span>
   </p>`;
 }
 
@@ -553,7 +553,7 @@ function renderAbnehmen() {
 
   const farbe = { fenster: 'var(--gruen)', haltend: 'var(--akzent)', traege: 'var(--muted)',
                   schnell: 'var(--rost)', teuer: 'var(--rot)', rauf: 'var(--rost)' }[lage.stufe];
-  const kg = `${rate.proWoche > 0 ? '+' : ''}${rate.proWoche.toFixed(2)}`;
+  const kg = dez(rate.proWoche, 2, true);
 
   box.innerHTML = `
     <div class="radbar">
@@ -564,7 +564,7 @@ function renderAbnehmen() {
         <path d="${pfad('schnitt')}" fill="none" stroke="${farbe}" stroke-width="2" stroke-linejoin="round"/>
       </svg>
       <div class="h" style="margin:7px 0 0">
-        <span class="t">${t('abn.jetzt', { kg: rate.aktuell.toFixed(1) })}</span>
+        <span class="t">${t('abn.jetzt', { kg: dez(rate.aktuell, 1) })}</span>
         <span class="t">${t('abn.duenn')}</span>
       </div>
       <p class="ks" style="margin:10px 0 0"><b>${t('abn.stufe.' + lage.stufe)}</b> ${t('abn.text.' + lage.stufe)}</p>
@@ -573,11 +573,11 @@ function renderAbnehmen() {
       ${kraft ? `<div class="kv"><span class="k">${t('abn.stange')}</span><span class="v">${
         t('abn.stangeWert', { rauf: kraft.gestiegen, gesamt: kraft.uebungen, n: kraft.einheiten })}</span></div>` : ''}
       ${erfolge ? `<div class="kv"><span class="k">${t('abn.seitStart')}</span><span class="v">${
-        t('abn.seitStartWert', { runter: erfolge.runter.toFixed(1), start: erfolge.start.toFixed(1),
-                                 tief: erfolge.tief.toFixed(1) })}</span></div>
+        t('abn.seitStartWert', { runter: dez(erfolge.runter, 1), start: dez(erfolge.start, 1),
+                                 tief: dez(erfolge.tief, 1) })}</span></div>
       <div class="kv"><span class="k">${t('abn.naechstes')}</span><span class="v">${
-        t('abn.naechstesWert', { kg: erfolge.naechstes, rest: (erfolge.tief - erfolge.naechstes).toFixed(1) })}${
-        erfolge.bisZiel != null ? ' · ' + t('abn.bisZiel', { kg: erfolge.bisZiel.toFixed(1) }) : ''}</span></div>` : ''}
+        t('abn.naechstesWert', { kg: erfolge.naechstes, rest: dez(erfolge.tief - erfolge.naechstes, 1) })}${
+        erfolge.bisZiel != null ? ' · ' + t('abn.bisZiel', { kg: dez(erfolge.bisZiel, 1) }) : ''}</span></div>` : ''}
       <p class="fine" style="margin:8px 0 0">${t('abn.faustregel')}</p>
     </div>`;
 }
@@ -2411,7 +2411,7 @@ async function speichereBibNotiz(id, notiz, video) {
 
 function renderStats(logs) {
   const s = ST.summary(logs);
-  const tonn = s.tonnage >= 1000 ? `${(s.tonnage / 1000).toFixed(1)} t` : `${s.tonnage} kg`;
+  const tonn = s.tonnage >= 1000 ? `${dez(s.tonnage / 1000, 1)} t` : `${s.tonnage} kg`;
   $('hist-summary').innerHTML = `
     <div class="stats">
       <div class="stat"><div class="n">${t('stat.einheiten')}</div><div class="v">${s.einheiten}</div>
@@ -2683,7 +2683,7 @@ function renderMaxoutErgebnis() {
           { kg: bisher.gewicht, wdh: bisher.wdh, datum: bisher.datum }))}</p>` : ''}
         ${betroffen.length ? `<ul>${betroffen.map(p => `<li>
           <span>${escHtml(seitenName(p.oben))} : ${escHtml(seitenName(p.unten))}</span>
-          <span style="color:${STUFE_FARBE[p.stufe]}">${p.ist.toFixed(2)} · ${vzPro(p.abweichung)}</span></li>`).join('')}</ul>`
+          <span style="color:${STUFE_FARBE[p.stufe]}">${dez(p.ist, 2)} · ${vzPro(p.abweichung)}</span></li>`).join('')}</ul>`
           : `<p class="fine">${escHtml(t('mo.pruefKeinPaar'))}</p>`}
       </div>`;
     $('mo-save').disabled = false;
@@ -2832,15 +2832,15 @@ function renderVerhaeltnisse(logs) {
         <span class="vd" style="color:${farbe}">${vzPro(p.abweichung)}</span>
       </div>
       <div class="vz">
-        <span>${p.ist.toFixed(2)}</span>
-        <span class="vs">${escHtml(t('verh.ziel'))} ${p.ziel.toFixed(2)}</span>
+        <span>${dez(p.ist, 2)}</span>
+        <span class="vs">${escHtml(t('verh.ziel'))} ${dez(p.ziel, 2)}</span>
         <span class="vq">${escHtml(t(p.herkunft === 'tabelle' ? 'verh.tabelle' : 'verh.faustregel'))}</span>
       </div>
       <div class="fine">${P.fmtWeight(p.gewichtOben)} / ${P.fmtWeight(p.gewichtUnten)}${
         p.persoenlich ? ` · ${escHtml(t('verh.vorDerPause', {
-          ziel: p.persoenlich.ziel.toFixed(2), abw: vzPro(p.persoenlich.abweichung) }))}` : ''}</div>
+          ziel: dez(p.persoenlich.ziel, 2), abw: vzPro(p.persoenlich.abweichung) }))}` : ''}</div>
       ${p.gemessen ? `<div class="fine">${escHtml(t('verh.gemessen', {
-        ist: p.gemessen.ist.toFixed(2), abw: vzPro(p.gemessen.abweichung),
+        ist: dez(p.gemessen.ist, 2), abw: vzPro(p.gemessen.abweichung),
         o: p.gemessen.oben, u: p.gemessen.unten }))}</div>` : ''}
     </div>`;
   };
@@ -2976,7 +2976,7 @@ function renderRelativKraft(logs) {
     return `<div class="relz">
       <div class="reihe">
         <span class="l">${escHtml(liftName(w.lift))}</span>
-        <span class="v">${w.wert.toFixed(2)}× <small>${P.fmtWeight(w.gewicht)}</small></span>
+        <span class="v">${dez(w.wert, 2)}× <small>${P.fmtWeight(w.gewicht)}</small></span>
       </div>${sparkSvg(punkte, 34)}
     </div>`;
   }).join('');
@@ -3174,7 +3174,7 @@ function erholungsZeile() {
   if (erholung.ruhepuls != null) teile.push(erholung.ruhepulsBasis != null
     ? t('erh.ruhepulsBasis', { v: erholung.ruhepuls, b: erholung.ruhepulsBasis })
     : t('erh.ruhepuls', { v: erholung.ruhepuls }));
-  if (erholung.schlafStunden != null) teile.push(t('erh.schlaf', { h: erholung.schlafStunden }));
+  if (erholung.schlafStunden != null) teile.push(t('erh.schlaf', { h: dez(erholung.schlafStunden, 1) }));
   if (erholung.schlafwert != null) teile.push(t('erh.schlafwert', { v: erholung.schlafwert }));
   const bf = erholung.befinden || {};
   if (bf.soreness >= 3) teile.push(t('erh.kater'));
@@ -4300,7 +4300,7 @@ function renderTonnage(logs) {
     const x = i * (bw + luecke);
     return h ? `<rect x="${x.toFixed(1)}" y="${(hoehe - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}"
       fill="${i === wochen.length - 1 ? 'var(--gruen)' : 'var(--akzent)'}" opacity=".85"
-      ><title>${w.woche} · ${(w.tonnage/1000).toFixed(1)} t · ${w.einheiten} Einheiten</title></rect>` : '';
+      ><title>${w.woche} · ${dez(w.tonnage / 1000, 1)} t · ${w.einheiten} Einheiten</title></rect>` : '';
   }).join('');
 
   const gesamt = wochen.reduce((s, w) => s + w.tonnage, 0);
@@ -4308,10 +4308,10 @@ function renderTonnage(logs) {
   box.innerHTML = `
     <div class="radbar">
       <div class="h"><span class="t">${t('ton.titel')}</span>
-        <span class="r" style="color:var(--akzent)">${t('ton.gesamt', { t: (gesamt/1000).toFixed(1) })}</span></div>
+        <span class="r" style="color:var(--akzent)">${t('ton.gesamt', { t: dez(gesamt / 1000, 1) })}</span></div>
       <svg viewBox="0 0 ${breite} ${hoehe}" preserveAspectRatio="none" aria-hidden="true">${balken}</svg>
       <div class="h" style="margin:7px 0 0">
-        <span class="t">${t('ton.beste', { t: (beste.tonnage/1000).toFixed(1) })}</span>
+        <span class="t">${t('ton.beste', { t: dez(beste.tonnage / 1000, 1) })}</span>
         <span class="t">${t('last.dieseWoche')}</span></div>
     </div>`;
 }
@@ -4350,24 +4350,24 @@ function renderWattProKg() {
   const anteile = ST.anteileAufSumme(tr.delta, tr.ausLeistung);
   const rauf = tr && tr.delta > 0;
   const farbe = rauf ? 'var(--gruen)' : tr && tr.delta < 0 ? 'var(--rost)' : 'var(--muted)';
-  const zahl = v => `${v > 0 ? '+' : ''}${v.toFixed(2)}`;
+  const zahl = v => dez(v, 2, true);
 
   box.innerHTML = `
     <div class="radbar">
       <div class="h"><span class="t">${t('wkg.titel')}</span>
-        <span class="r" style="color:${farbe}">${jetzt.wkg.toFixed(2)} W/kg</span></div>
+        <span class="r" style="color:${farbe}">${dez(jetzt.wkg, 2)} W/kg</span></div>
       <svg viewBox="0 0 ${breite} ${hoehe}" preserveAspectRatio="none" aria-hidden="true">
         <path d="${flaeche}" fill="${rauf ? 'var(--tint-gruen)' : 'var(--tint-rost)'}"/>
         <path d="${linie}" fill="none" stroke="${farbe}" stroke-width="2" stroke-linejoin="round"/>
       </svg>
       <div class="h" style="margin:7px 0 0">
-        <span class="t">${t('wkg.stand', { w: jetzt.eftp, kg: jetzt.weight.toFixed(1) })}</span>
+        <span class="t">${t('wkg.stand', { w: jetzt.eftp, kg: dez(jetzt.weight, 1) })}</span>
         <span class="t" style="color:${farbe}">${zahl(anteile.summe)} ${t('wkg.inTagen', { n: tr.tage })}</span>
       </div>
       <p class="fine" style="margin:6px 0 0">${t('wkg.zerlegung', {
         leistung: zahl(anteile.a), gewicht: zahl(anteile.b),
         watt: `${tr.wattDelta > 0 ? '+' : ''}${tr.wattDelta}`,
-        kg: `${tr.kgDelta > 0 ? '+' : ''}${tr.kgDelta.toFixed(1)}`
+        kg: dez(tr.kgDelta, 1, true)
       })}</p>
     </div>`;
 }
@@ -4410,7 +4410,7 @@ function renderAerob() {
   // Zweigen stand da sonst "braucht 20 Minuten, deine längste war 62".
   const entText =
     ent.tragfaehig
-      ? t('aerob.entkAn', { wert: ent.punkte[ent.punkte.length - 1].wert.toFixed(1), n: ent.punkte.length })
+      ? t('aerob.entkAn', { wert: dez(ent.punkte[ent.punkte.length - 1].wert, 1), n: ent.punkte.length })
       : ent.punkte.length
         ? t('aerob.entkFast', { n: ent.punkte.length, noetig: 3 })
         : ent.mitWert
@@ -4444,7 +4444,7 @@ function renderAerob() {
   box.innerHTML = `
     <div class="radbar">
       <div class="h"><span class="t">${t('aerob.titel')}</span>
-        <span class="r" style="color:${farbe}">${jetzt.ef.toFixed(2)}</span></div>
+        <span class="r" style="color:${farbe}">${dez(jetzt.ef, 2)}</span></div>
       <svg viewBox="0 0 ${breite} ${hoehe}" preserveAspectRatio="none" aria-hidden="true">
         <path d="${flaeche}" fill="${rauf ? 'var(--tint-gruen)' : 'var(--tint-rost)'}"/>
         <path d="${linie}" fill="none" stroke="${farbe}" stroke-width="2" stroke-linejoin="round"/>
@@ -4489,7 +4489,7 @@ function renderIntensitaet() {
     const hoehe = Math.max(3, pos(e.ist));
     const ziel = e.ziel
       ? `<span class="zielband" style="bottom:${pos(e.ziel[0]).toFixed(1)}%;height:${Math.max(2, pos(e.ziel[1]) - pos(e.ziel[0])).toFixed(1)}%"></span>` : '';
-    return `<span class="isbar ${e.stufe}" title="${escHtml(e.date)} · ${escHtml(t('int.' + e.stufe))} · IF ${e.ist.toFixed(2)}">
+    return `<span class="isbar ${e.stufe}" title="${escHtml(e.date)} · ${escHtml(t('int.' + e.stufe))} · IF ${dez(e.ist, 2)}">
         ${ziel}<span class="fill" style="height:${hoehe.toFixed(1)}%;background:${FARBE[e.stufe]}"></span>
       </span>`;
   }).join('');

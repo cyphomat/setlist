@@ -10,6 +10,14 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-26.3
+
+### Behoben
+- **Zahlen folgen jetzt überall der Sprache.** In der Detailzeile der Erholung stand „Schlaf 7.9 h“, im Chip darüber „7,9 h“; ähnlich in der W/kg-Kurve („−0.01“), beim Gewicht, bei der
+  Tonnage, beim Effizienzfaktor und in den Verhältnissen. Alle sichtbaren Zahlen laufen nun über
+  `dez()` in `js/i18n.js`: Komma auf Deutsch, Punkt auf Englisch, feste Nachkommastellen.
+  Koordinaten in den Grafiken bleiben bewusst bei `toFixed`.
+
 ## 2026-10-26.2
 
 ### Behoben
