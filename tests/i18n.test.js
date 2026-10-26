@@ -169,4 +169,27 @@ print('\n--- Jeder Aufnaeher hat Name und Bedingung, in beiden Sprachen ---');
   I.setSprache('de');
 }
 
+print('\n--- Jede Gitarre hat Name, Typ und Bedingung, in beiden Sprachen ---');
+{
+  const GT = await import('../js/gitarren.js');
+  for (const sp of ['de', 'en']) {
+    I.setSprache(sp);
+    const fehlt = [];
+    for (const g of GT.GITARREN) {
+      for (const k of [`merch.g.${g.id}`, `merch.gt.${g.id}`]) if (I.t(k) === k) fehlt.push(k);
+      const b = GT.bedingung(g);
+      const quelle = b.art === 'rang' ? `merch.r.${b.id}` : `merch.s.${b.id}`;
+      if (I.t(quelle) === quelle) fehlt.push(quelle);
+      const satz = b.art === 'rang'
+        ? (b.wochen <= 1 ? 'merch.g.ab.erste' : 'merch.g.ab.rang') : 'merch.g.ab.platte';
+      if (I.t(satz, { rang: 'x', n: 1, name: 'x', t: 1 }) === satz) fehlt.push(satz);
+    }
+    for (const k of ['merch.rack', 'merch.rack.zahl', 'merch.rack.fine', 'done.neueGitarre', 'done.neueGitarre.eins', 'ans.gitarre']) {
+      if (I.t(k) === k) fehlt.push(k);
+    }
+    eq(`${sp}: nichts fehlt`, fehlt.join(), '');
+  }
+  I.setSprache('de');
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);
