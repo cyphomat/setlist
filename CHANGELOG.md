@@ -10,6 +10,21 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-26.2
+
+### Behoben
+- **eFTP und HRV kamen bei Konten mit Apple-Health-Quelle nie an.** Die App las `eftp` und
+  `hrv` vom Wellness-Tag, die echte Antwort trägt die eFTP aber je Sportart in `sportInfo`
+  und die Apple-Health-HRV in `hrvSDNN`. Folge: keine W/kg-Kurve, keine Wattziele aus der
+  eFTP, kein HRV-Hinweis. Jetzt wird die eFTP aus `sportInfo` gelesen (Ride vor VirtualRide
+  und den anderen Rad-Arten, sonst das Feld am Tag) und die HRV aus der Reihe, die mehr
+  Werte hat.
+- **SDNN und RMSSD werden nicht mehr gemischt.** Beide Reihen haben eigene Basiswerte. Weil
+  SDNN stärker schwankt, warnt die App erst unter 75 % des eigenen Schnitts (RMSSD: wie
+  bisher unter 85 %). An einem Konto über 61 Tage gemessen hätte 85 % an jedem fünften Tag
+  Alarm gegeben, 75 % an etwa jedem zwanzigsten. Die Anzeige sagt „HRV (SDNN)“, wenn es
+  SDNN ist.
+
 ## 2026-10-26.1
 
 ### Neu

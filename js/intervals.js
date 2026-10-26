@@ -222,15 +222,29 @@ export async function rides(from, to) {
 export function alsWellness(w = {}) {
   const zahl = v => (typeof v === 'number' && Number.isFinite(v) ? v : null);
   const stufe = v => ganzZwischen(v, 1, 4);
+  // eFTP steht je Sportart in sportInfo (belegt an echten Antworten: dort
+  // {type:'Ride', eftp, …}); das Feld oben am Tag war bei diesem Konto leer.
+  const eftpAus = () => {
+    const info = Array.isArray(w.sportInfo) ? w.sportInfo : [];
+    for (const typ of RIDE_TYPES) {
+      const eintrag = info.find(s => s && s.type === typ && zahl(s.eftp) > 0);
+      if (eintrag) return eintrag.eftp;
+    }
+    return zahl(w.eftp) > 0 ? w.eftp : null;
+  };
   return {
     date: w.id,
     weight: w.weight || null,
-    eftp: w.eftp || null,
+    eftp: eftpAus(),
     ctl: w.ctl != null ? w.ctl : null,
     atl: w.atl != null ? w.atl : null,
     restingHR: zahl(w.restingHR) > 0 ? Math.round(w.restingHR) : null,
-    // hrv kommt bei Apple-Health-Quellen (z.B. via HealthFit) als SDNN in ms.
+    // Zwei getrennte Reihen: hrv (RMSSD laut intervals.icu-Doku, am eigenen
+    // Konto leer, also ungeprueft) und hrvSDNN (Apple-Health-Quellen, am
+    // eigenen Konto belegt). Die Werte sind nicht vergleichbar, SDNN
+    // schwankt staerker; deshalb nie in einem Feld mischen.
     hrv: w.hrv != null ? w.hrv : null,
+    hrvSDNN: zahl(w.hrvSDNN) > 0 ? w.hrvSDNN : null,
     sleepSecs: w.sleepSecs != null ? w.sleepSecs : null,
     // ACHTUNG, ungeprueft: Namen und Skalen aus Community-Quellen. Die
     // eigenen Einschaetzungen laufen in intervals.icu von 1 bis 4, und 4

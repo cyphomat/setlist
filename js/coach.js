@@ -271,7 +271,7 @@ export function formLage(wellness) {
  * Trainingslast) nicht erfasst — Krankheit, Stress, eine kurze Nacht.
  */
 export function erholung(wellness = []) {
-  const zaehlt = w => w.hrv != null || w.sleepSecs != null || w.restingHR != null || w.soreness != null || w.fatigue != null;
+  const zaehlt = w => w.hrv != null || w.hrvSDNN != null || w.sleepSecs != null || w.restingHR != null || w.soreness != null || w.fatigue != null;
   const clean = [...wellness].filter(zaehlt).sort((a, b) => a.date.localeCompare(b.date));
   if (!clean.length) return null;
   const heute = clean[clean.length - 1];
@@ -282,8 +282,17 @@ export function erholung(wellness = []) {
     return werte.length >= 3 ? Math.round(werte.reduce((s, v) => s + v, 0) / werte.length) : null;
   };
 
-  const basis = basisAus('hrv');
-  const hrv = heute.hrv != null ? Math.round(heute.hrv) : null;
+  // HRV: RMSSD (hrv) und SDNN (hrvSDNN) sind verschiedene Groessen und werden
+  // nie gemischt. Es zaehlt die Reihe mit mehr Werten; Basis und heutiger
+  // Wert kommen aus derselben Reihe.
+  const anzahl = feld => clean.filter(w => w[feld] != null).length;
+  const hrvFeld = anzahl('hrvSDNN') > anzahl('hrv') ? 'hrvSDNN' : 'hrv';
+  const hrvArt = anzahl(hrvFeld) === 0 ? null : hrvFeld === 'hrvSDNN' ? 'sdnn' : 'rmssd';
+  // SDNN schwankt staerker (an einem Konto, 61 Tage gemessen: Variationskoeff.
+  // 18 %). Bei 0,85 haetten dort 20 % der Tage Alarm gegeben, bei 0,75 etwa 5 %.
+  const hrvSchwelle = hrvArt === 'sdnn' ? 0.75 : 0.85;
+  const basis = hrvArt ? basisAus(hrvFeld) : null;
+  const hrv = hrvArt && heute[hrvFeld] != null ? Math.round(heute[hrvFeld]) : null;
   const schlafStunden = heute.sleepSecs != null ? Math.round(heute.sleepSecs / 360) / 10 : null;
   // Ein Ruhepuls sieben Schlaege ueber der eigenen Grundlinie ist ein
   // klassisches Zeichen fuer Infekt, Stress oder zu wenig Erholung.
@@ -295,12 +304,12 @@ export function erholung(wellness = []) {
   const kater = befinden.soreness || 0, muede = befinden.fatigue || 0;
 
   let stufe = 'ok', grund = null;
-  if (basis != null && hrv != null && hrv < basis * 0.85) { stufe = 'belastet'; grund = 'hrv'; }
+  if (basis != null && hrv != null && hrv < basis * hrvSchwelle) { stufe = 'belastet'; grund = 'hrv'; }
   else if (ruhepulsBasis != null && ruhepuls != null && ruhepuls >= ruhepulsBasis + 7) { stufe = 'belastet'; grund = 'puls'; }
   else if (kater >= 4 || muede >= 4 || (kater >= 3 && muede >= 3)) { stufe = 'muede'; grund = 'befinden'; }
   else if (schlafStunden != null && schlafStunden < 6) { stufe = 'kurz'; grund = 'schlaf'; }
 
-  return { stufe, grund, hrv, basis, schlafStunden, ruhepuls, ruhepulsBasis, befinden,
+  return { stufe, grund, hrv, hrvArt, basis, schlafStunden, ruhepuls, ruhepulsBasis, befinden,
     schlafwert: heute.sleepScore != null ? heute.sleepScore : null, datum: heute.date };
 }
 

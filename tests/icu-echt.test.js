@@ -5,6 +5,7 @@
 // so bleiben sie gruen, wenn die Fixtures neu erzeugt werden.
 import * as I from '../js/intervals.js';
 import * as ST from '../js/stats.js';
+import * as C from '../js/coach.js';
 import roh from './fixtures/icu-fahrten.js';
 import wroh from './fixtures/icu-wellness.js';
 
@@ -176,11 +177,25 @@ const well = wroh.map(I.alsWellness);
   const wkg = ST.wattProKg(well);
   ok('W/kg: nur Tage mit eFTP und Gewicht', wkg.length === well.filter(w => w.eftp > 0 && w.weight > 0).length);
   ok('W/kg: Werte 0,5..8', wkg.every(p => zwischen(p.wkg, 0.5, 8)));
-  // Hinweis, kein Test: was die App liest und was die Antwort tatsaechlich traegt.
-  const tage = n => `${n} von ${well.length} Tagen`;
-  const inSport = wroh.filter(w => (w.sportInfo || []).some(s => s.eftp > 0)).length;
-  print(`  info  eFTP: Feld "eftp" (das liest alsWellness) an ${tage(well.filter(w => w.eftp > 0).length)}, in sportInfo an ${tage(inSport)}; W/kg-Punkte: ${wkg.length}`);
-  print(`  info  HRV: Feld "hrv" (das liest alsWellness) an ${tage(well.filter(w => w.hrv != null).length)}, hrvSDNN an ${tage(wroh.filter(w => w.hrvSDNN != null).length)}`);
+  // Die App muss lesen, was die Antwort tatsaechlich traegt: eFTP aus
+  // sportInfo, HRV aus hrvSDNN. Frueher kam hier nichts an (0 von 85 Tagen).
+  const rad = new Set(['Ride', 'VirtualRide', 'GravelRide', 'MountainBikeRide', 'EBikeRide']);
+  const inSport = wroh.filter(w => (w.sportInfo || []).some(s => rad.has(s.type) && s.eftp > 0));
+  ok('eFTP: Fixtures tragen sie in sportInfo', inSport.length > 0);
+  eq('eFTP: an jedem Tag mit Rad-Eintrag liest alsWellness sie', well.filter(w => w.eftp > 0).length, inSport.length);
+  ok('eFTP: Werte 50..600 W', well.every(w => w.eftp == null || zwischen(w.eftp, 50, 600)));
+  ok('W/kg: es entstehen Punkte (eFTP und Gewicht am selben Tag)', wkg.length > 0);
+
+  const sdnnTage = wroh.filter(w => w.hrvSDNN != null).length;
+  ok('HRV: Fixtures tragen hrvSDNN', sdnnTage > 0);
+  eq('HRV: hrvSDNN kommt bei alsWellness an', well.filter(w => w.hrvSDNN != null).length, sdnnTage);
+  ok('HRV: SDNN 5..300 ms', well.every(w => w.hrvSDNN == null || zwischen(w.hrvSDNN, 5, 300)));
+  ok('HRV: hrv und hrvSDNN bleiben getrennt (SDNN landet nicht in hrv)',
+    well.every(w => w.hrv == null || wroh.find(r => r.id === w.date).hrv === w.hrv));
+
+  const erh = C.erholung(well);
+  eq('Erholung auf echten Daten: Reihe ist SDNN', erh.hrvArt, 'sdnn');
+  ok('Erholung auf echten Daten: Basis und Wert 5..300 ms', erh.hrv == null || (zwischen(erh.hrv, 5, 300) && zwischen(erh.basis, 5, 300)));
 }
 
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);
