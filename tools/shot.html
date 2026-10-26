@@ -206,6 +206,12 @@ rahmen.addEventListener('load', async () => {
     if ($('banner')) $('banner').hidden = true;
     d.querySelector('#session-body .lift').scrollIntoView();
     w.scrollBy(0, -20);
+  } else if (szene === 'rack') {
+    // Nur das Gitarrenrack des Merch-Stands, mit seiner Ueberschrift darueber.
+    $('go-merch').click();
+    await warte(900);
+    $('merch-rack').previousElementSibling.scrollIntoView();
+    w.scrollBy(0, -70);
   } else if (szene === 'warmup') {
     $('start').click();
     await warte(200);

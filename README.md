@@ -90,10 +90,11 @@
 </tr>
 </table>
 
-**Und ein bisschen Bühne** — Rang, Monats-Tour mit Endgegner, Aufnäher, Schallplatten und Tourshirts, alles aus deinen Einheiten:
+**Und ein bisschen Bühne** — Rang, Monats-Tour mit Endgegner, Aufnäher, Schallplatten, Gitarrenrack und Tourshirts, alles aus deinen Einheiten:
 
 <p align="center">
   <img src="assets/screens/merch-dunkel.png" alt="Der Merch-Stand: Rang, Monats-Tour mit Endgegner und Kutte mit Aufnähern" width="330">
+  <img src="assets/screens/rack-dunkel.png" alt="Das Gitarrenrack im Merch-Stand: zwei Gitarren hängen, die nächste wartet als dunkle Silhouette auf Rang Vorband" width="330">
 </p>
 
 <sub>Echte Bildschirme mit Beispieldaten, aufgenommen über <code>tools/shot.html</code> und <code>tools/shots.mjs</code>. Keine Mockups.</sub>
@@ -363,7 +364,7 @@ Fertig. Die erste Einheit legt `state.json` automatisch an; alles danach ist Abl
 ## Daten
 
 **Ohne Konto liegt alles auf dem Gerät.** Wer mit *Lokal starten* beginnt, hat Programm,
-Einheiten, Soundchecks und Notizen in diesem Browser (IndexedDB). Es gibt kein Konto und keinen
+Einheiten, Soundchecks, Verabredungen und Notizen in diesem Browser (IndexedDB). Es gibt kein Konto und keinen
 Server, und nichts verlässt das Gerät, außer du verbindest intervals.icu. Die App bittet
 den Browser, den Speicher dauerhaft zu halten. Auf dem iPhone gilt das aber nur für die
 installierte App: Safari räumt den Speicher normaler Webseiten nach sieben Tagen ohne Besuch
@@ -417,10 +418,12 @@ kein CDN, keine Schriften von fremden Servern.
 **Nicht in fremden Seiten.** Lädt eine andere Adresse die App in einem Rahmen, zeigt sie nur einen Hinweis und startet nicht — so lassen sich keine Klicks unterschieben. Auf GitHub Pages geht das nicht per Header, deshalb erledigt es `js/boot.js` vor dem ersten Bild.
 
 **Fremdtext wird maskiert.** Aktivitätsnamen aus intervals.icu setzt nicht du, sondern
-Strava, Zwift oder eine Gruppenfahrt. Solcher Text — und genauso alles aus deiner `config.json` — wird vor der Anzeige maskiert
+Strava, Zwift oder eine Gruppenfahrt. Solcher Text — genauso die Namen aus Einladungslinks und alles aus deiner `config.json` — wird vor der Anzeige maskiert
 (`js/sicher.js`), und eine strikte Content-Security-Policy (`script-src 'self'`) fängt ab,
 was durchrutschen sollte. Selbst eingetragene Videolinks werden auf `http`/`https`
 begrenzt.
+
+**Einladungen bleiben unter dir.** Eine Einladung zum gemeinsamen Training ist ein Link, den du selbst verschickst. Hinter dem `#` stehen nur Kennung, Schritt und Name; dieser Teil geht nie an einen Server, und die App nimmt nichts ungefragt an.
 
 **Was bewusst nach draußen geht:** Ist die Übertragung nach intervals.icu aktiv, landen
 dort Datum, Dauer, geschätzte Trainingslast und eine Zeile pro Übung mit Gewicht und
