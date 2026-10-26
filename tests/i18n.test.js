@@ -48,7 +48,16 @@ I.setSprache('de');
 eq('deutsches Zahlformat', I.locale(), 'de-DE');
 I.setSprache('en');
 eq('englisches Zahlformat', I.locale(), 'en-GB');
+eq('dez englisch: Punkt', I.dez(7.94, 1), '7.9');
 I.setSprache('de');
+eq('dez deutsch: Komma', I.dez(7.94, 1), '7,9');
+eq('dez deutsch: feste Nachkommastellen', I.dez(1.1, 2), '1,10');
+eq('dez: Vorzeichen bei positiv', I.dez(0.014, 2, true), '+0,01');
+eq('dez: negativ behaelt Minus, kein Plus', I.dez(-1.26, 1, true).replace('−', '-'), '-1,3');
+eq('dez: null bekommt kein Plus', I.dez(0, 1, true), '0,0');
+eq('dez: Tausender nach Sprache', I.dez(1234.5, 1), '1.234,5');
+eq('dez: kein Zahlenwert ergibt leeren Text', I.dez(undefined) + I.dez(NaN) + I.dez('x'), '');
+eq('dez: Zahl als Text wird gelesen', I.dez('2.5', 1), '2,5');
 
 print('\n--- Beide Sprachen decken sich ---');
 const de = Object.keys(I.TEXTE.de).sort();

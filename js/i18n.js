@@ -2471,6 +2471,18 @@ export function tn(key, n, vars) {
 export function locale() { return t('locale'); }
 
 /**
+ * Zahl mit genau `stellen` Nachkommastellen im Format der Sprache (1,5 gegen
+ * 1.5), optional mit "+" bei positiven Werten. Ersetzt toFixed in sichtbaren
+ * Texten; fuer SVG-Koordinaten bleibt toFixed richtig, dort zaehlt der Punkt.
+ */
+export function dez(v, stellen = 1, vorzeichen = false) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return '';
+  const s = n.toLocaleString(locale(), { minimumFractionDigits: stellen, maximumFractionDigits: stellen });
+  return vorzeichen && n > 0 ? `+${s}` : s;
+}
+
+/**
  * Feste Beschriftungen im HTML ersetzen. data-i18n setzt Text, data-i18n-html
  * erlaubt Auszeichnung im Text (Fettung, <code>), data-i18n-ph die Vorbelegung
  * von Eingabefeldern.
