@@ -527,4 +527,34 @@ print('\n--- Ruhepuls und Befinden ---');
   ok('muede: Technik mit eigenem Text', im.label === 'TECHNIK' && /Muskelkater/.test(im.text), im.text);
 }
 
+print('\n--- HRV: RMSSD und SDNN bleiben getrennt ---');
+{
+  const tage = (feld, werte) => werte.map((v, i) => ({ date: `2026-09-${String(i + 1).padStart(2, '0')}`, [feld]: v }));
+  const sdnn = w => C.erholung(tage('hrvSDNN', w));
+  const e = sdnn([60, 60, 60, 60, 60, 60, 60, 50]);
+  eq('SDNN: Reihe wird erkannt', e.hrvArt, 'sdnn');
+  eq('SDNN: Basis aus SDNN-Tagen davor', e.basis, 60);
+  eq('SDNN: heutiger Wert', e.hrv, 50);
+  eq('SDNN: 17 % unter Schnitt ist noch ok (Schwelle 0,75)', e.stufe, 'ok');
+  eq('SDNN: knapp ueber der Schwelle (45 = 0,75) ist ok', sdnn([60, 60, 60, 60, 60, 60, 60, 45]).stufe, 'ok');
+  const t = sdnn([60, 60, 60, 60, 60, 60, 60, 44]);
+  eq('SDNN: unter 0,75 des Schnitts ist belastet', t.stufe, 'belastet');
+  eq('SDNN: Grund hrv', t.grund, 'hrv');
+  const r = C.erholung(tage('hrv', [60, 60, 60, 60, 60, 60, 60, 50]));
+  eq('RMSSD: Reihe wird erkannt', r.hrvArt, 'rmssd');
+  eq('RMSSD: 17 % unter Schnitt ist belastet (Schwelle 0,85 unveraendert)', r.stufe, 'belastet');
+
+  // Gemischt: die Reihe mit mehr Werten gewinnt, die andere zaehlt nicht
+  const mix = [...tage('hrvSDNN', [60, 60, 60, 60, 60, 60, 60]), { date: '2026-09-08', hrv: 20, hrvSDNN: 58 }];
+  const m = C.erholung(mix);
+  eq('gemischt: Mehrheit SDNN', m.hrvArt, 'sdnn');
+  eq('gemischt: heutiger Wert aus SDNN, nicht aus hrv', m.hrv, 58);
+  eq('gemischt: kein falscher Alarm durch hrv = 20', m.stufe, 'ok');
+  const mix2 = [{ date: '2026-08-31', hrvSDNN: 30 }, ...tage('hrv', [50, 50, 50, 50, 50, 50, 50, 48])];
+  eq('gemischt: Mehrheit RMSSD, einzelner SDNN-Wert stoert nicht', C.erholung(mix2).hrvArt, 'rmssd');
+
+  eq('ohne HRV: Art null', C.erholung([{ date: '2026-09-01', sleepSecs: 7 * 3600 }]).hrvArt, null);
+  eq('nur SDNN reicht fuer eine Erholung', C.erholung([{ date: '2026-09-01', hrvSDNN: 55 }]).hrv, 55);
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

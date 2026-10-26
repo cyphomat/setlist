@@ -248,6 +248,26 @@ print('\n--- RPE, Gefuehl, Bestwerte, Wellness ---');
   eq('Schlafwert', w.sleepScore, 82);
   eq('Rampe', w.rampRate, 6.3);
   ok('fehlt alles: null', I.alsWellness({ id: 'x' }).restingHR === null && I.alsWellness({ id: 'x' }).rampRate === null);
+
+  // eFTP: je Sportart in sportInfo, Rad geht vor Laufen
+  const si = sportInfo => I.alsWellness({ id: 'x', sportInfo }).eftp;
+  eq('eFTP aus sportInfo (Ride)', si([{ type: 'Ride', eftp: 231.4 }]), 231.4);
+  eq('eFTP: Ride vor VirtualRide', si([{ type: 'VirtualRide', eftp: 200 }, { type: 'Ride', eftp: 230 }]), 230);
+  eq('eFTP: VirtualRide, wenn es kein Ride gibt', si([{ type: 'Run', eftp: 400 }, { type: 'VirtualRide', eftp: 210 }]), 210);
+  eq('eFTP: nur Run zaehlt nicht', si([{ type: 'Run', eftp: 400 }]), null);
+  eq('eFTP: Ride ohne Wert faellt auf VirtualRide', si([{ type: 'Ride', eftp: null }, { type: 'VirtualRide', eftp: 205 }]), 205);
+  eq('eFTP: kaputte Werte werden uebersprungen', si([{ type: 'Ride', eftp: 'viel' }, { type: 'VirtualRide', eftp: 0 }, null]), null);
+  eq('eFTP: sportInfo ist kein Array', si('x'), null);
+  eq('eFTP: Fallback auf das Feld am Tag', I.alsWellness({ id: 'x', eftp: 220 }).eftp, 220);
+  eq('eFTP: sportInfo geht vor dem Feld am Tag', I.alsWellness({ id: 'x', eftp: 220, sportInfo: [{ type: 'Ride', eftp: 240 }] }).eftp, 240);
+  eq('eFTP: Feld am Tag, kein Text', I.alsWellness({ id: 'x', eftp: '220' }).eftp, null);
+
+  // HRV: zwei getrennte Reihen
+  const h = I.alsWellness({ id: 'x', hrv: 48, hrvSDNN: 62.5 });
+  ok('hrv und hrvSDNN getrennt', h.hrv === 48 && h.hrvSDNN === 62.5);
+  const nurSdnn = I.alsWellness({ id: 'x', hrvSDNN: 62 });
+  ok('nur SDNN: landet nicht in hrv', nurSdnn.hrv === null && nurSdnn.hrvSDNN === 62);
+  ok('hrvSDNN: 0, Text und leer werden null', [0, '60', null, undefined, NaN].every(v => I.alsWellness({ id: 'x', hrvSDNN: v }).hrvSDNN === null));
 }
 
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

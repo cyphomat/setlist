@@ -3167,9 +3167,10 @@ function erholungsZeile() {
   const farbe = FARBE.erholung[erholung.stufe];
   const label = t(`erh.${erholung.stufe}`);
   const teile = [];
+  const sdnn = erholung.hrvArt === 'sdnn';
   if (erholung.hrv != null) teile.push(erholung.basis != null
-    ? t('erh.hrvBasis', { v: erholung.hrv, b: erholung.basis })
-    : t('erh.hrv', { v: erholung.hrv }));
+    ? t(sdnn ? 'erh.hrvSdnnBasis' : 'erh.hrvBasis', { v: erholung.hrv, b: erholung.basis })
+    : t(sdnn ? 'erh.hrvSdnn' : 'erh.hrv', { v: erholung.hrv }));
   if (erholung.ruhepuls != null) teile.push(erholung.ruhepulsBasis != null
     ? t('erh.ruhepulsBasis', { v: erholung.ruhepuls, b: erholung.ruhepulsBasis })
     : t('erh.ruhepuls', { v: erholung.ruhepuls }));
@@ -4164,7 +4165,7 @@ function renderInstrumente() {
     text: erholung.grund === 'puls' ? t('erh.ruhepuls', { v: erholung.ruhepuls })
       : erholung.grund === 'befinden' ? t((erholung.befinden || {}).soreness >= 3 ? 'erh.kater' : 'erh.muedigkeit')
       : erholung.schlafStunden != null ? t('erh.schlaf', { h: zahl(erholung.schlafStunden) })
-      : erholung.hrv != null ? t('erh.hrv', { v: erholung.hrv })
+      : erholung.hrv != null ? t(erholung.hrvArt === 'sdnn' ? 'erh.hrvSdnn' : 'erh.hrv', { v: erholung.hrv })
       : erholung.ruhepuls != null ? t('erh.ruhepuls', { v: erholung.ruhepuls }) : t('erh.zeile', { label: t(`erh.${erholung.stufe}`) }),
     detail: erholungsZeile });
   if (abnehmen && abnehmen.lage && abnehmen.rate) liste.push({ id: 'gewicht', farbe: FARBE.abnehmen[abnehmen.lage.stufe],
