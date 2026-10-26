@@ -26,6 +26,8 @@ import { inflateSync, deflateSync } from 'node:zlib';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BILDER, RAENGE, ADJ, NOMEN, PLATTEN } from '../js/merch.js';
+import { GITARREN as GITARREN_LISTE } from '../js/gitarren.js';
+import { GITARREN as GITARREN_SPEC, gitarrenBilder } from './pixel-gitarren.mjs';
 import { feld as feuerFeld, schritt as feuerSchritt, PALETTE as FEUER } from '../js/feuer.js';
 
 const WURZEL = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -1260,8 +1262,16 @@ function eindeutig(teile, namen) {
   return teile;
 }
 
+// Die Gitarren im Bogen muessen genau die der App sein, in derselben Reihenfolge —
+// sonst haengt im Rack das falsche Bild an der falschen Gitarre.
+const gitarrenIds = GITARREN_LISTE.map(g => g.id);
+if (GITARREN_SPEC.map(g => g.id).join() !== gitarrenIds.join()) {
+  throw new Error(`Gitarren in tools/pixel-gitarren.mjs (${GITARREN_SPEC.map(g => g.id)}) und js/gitarren.js (${gitarrenIds}) passen nicht zusammen`);
+}
+
 const ausgaben = {
   'assets/pixel/aufnaeher.png': bogen(eindeutig(BILDER.map(aufnaeher), BILDER), 24, 24),
+  'assets/pixel/gitarren.png': bogen(eindeutig(gitarrenBilder(), gitarrenIds), 24, 56),
   'assets/pixel/boss.png': endgegner(),
   'assets/pixel/logo.png': schriftzug(),
   'icons/icon-180.png': iconIn(180),
@@ -1302,6 +1312,7 @@ for (const [name, b] of Object.entries(ausgaben)) {
 console.log(`assets/pixel/aufnaeher.png  ${BILDER.length} × 24×24, alle verschieden`);
 console.log(`assets/pixel/raenge.png     ${RAENGE.length} × 96×48`);
 console.log('assets/pixel/boss.png       2 × 24×24');
+console.log(`assets/pixel/gitarren.png ${gitarrenIds.length} × 24×56, alle verschieden`);
 console.log(`assets/pixel/shirts.png     ${ADJ.length} × 2 × ${SHIRT_W}×${SHIRT_H}`);
 console.log(`assets/pixel/embleme.png    ${NOMEN.length} × 20×20, alle verschieden`);
 console.log(`assets/pixel/platten.png    ${PLATTEN.length} × ${AWARD_W}×${AWARD_H}`);

@@ -22,6 +22,7 @@ import * as F from './feuer.js';
 import * as ANS from './ansager.js';
 import * as SC from './soundcheck.js';
 import * as ZU from './zusammen.js';
+import * as GT from './gitarren.js';
 import * as SI from './sicherung.js';
 
 // Eingebettet in eine fremde Seite (siehe boot.js) startet die App gar nicht
@@ -4648,6 +4649,30 @@ function pixHtml(a) {
   return i < 0 ? '' : `<span class="pix" style="--i:${i};--n:${M.BILDER.length}" aria-hidden="true"></span>`;
 }
 
+/**
+ * Was zu einer Gitarre noch fehlt, als Satz: bei Raengen die Wochen, bei Platten die Tonnen.
+ * Garage ist die erste Einheit — "1 Woche" waere dort falsch.
+ */
+function gitarreBedingung(g) {
+  const b = GT.bedingung(g);
+  if (!b) return '';
+  if (b.art === 'rang') {
+    const rang = t(`merch.r.${b.id}`);
+    return b.wochen <= 1 ? t('merch.g.ab.erste', { rang }) : t('merch.g.ab.rang', { rang, n: b.wochen });
+  }
+  return t('merch.g.ab.platte', { name: t(`merch.s.${b.id}`), t: b.tonnen.toLocaleString(locale()) });
+}
+
+/** Eine Gitarre auf ihrer Rackschiene; `offen` ist die naechste, noch dunkle. Bild aus assets/pixel/gitarren.png (tools/pixel.mjs). */
+function gitarreHtml(g, { offen = false, zeile = null } = {}) {
+  const name = t(`merch.g.${g.id}`);
+  return `<div class="gitarre${offen ? ' offen' : ''}" title="${escHtml(t(`merch.gt.${g.id}`))}">
+    <span class="gtw"><span class="gt" style="--i:${GT.bildIndex(g.id)}" role="img" aria-label="${escHtml(name)}"></span></span>
+    <b>${escHtml(name)}</b>
+    <span>${escHtml(zeile !== null ? zeile : offen ? gitarreBedingung(g) : t('merch.verdient', { datum: datumLang(g.verdient) }))}</span>
+  </div>`;
+}
+
 function patchHtml(a) {
   return `<div class="patch k-${a.kategorie}${a.verdient ? '' : ' offen'}" title="${escHtml(patchBedingung(a))}">
     ${pixHtml(a)}
@@ -4725,11 +4750,17 @@ async function neueAufnaeherZeigen(log, historie) {
   const info = { neu, rang: rNach.stufe > rVor.stufe ? rNach.id : null,
     tour: tNach && tNach.komplett && !(tVor && tVor.komplett) ? bossName(monat) : null,
     elf: !!(vNach && vNach.stufe === 11 && !(vVor && vVor.stufe === 11)) };
-  if (!neu.length || !box.isConnected) return info;
-  box.innerHTML = `<div class="aufnaeher-neu">
+  // Neue Gitarren aus denselben Logs; sie koennen auch ohne neuen Aufnaeher kommen.
+  const gneu = GT.neueGitarren(vorher, nachher, radFuerMerch(vorher));
+  info.gitarre = gneu.map(g => g.id);
+  if ((!neu.length && !gneu.length) || !box.isConnected) return info;
+  box.innerHTML = `${gneu.length ? `<div class="aufnaeher-neu gitarre-neu">
+      <span class="kicker">${escHtml(tn('done.neueGitarre', gneu.length))}</span>
+      <div class="rack rack-neu">${gneu.map(g => gitarreHtml(g, { zeile: t(`merch.gt.${g.id}`) })).join('')}</div>
+    </div>` : ''}${neu.length ? `<div class="aufnaeher-neu">
     <span class="kicker">${escHtml(t('done.neuerAufnaeher'))}</span>
     <div class="patches">${neu.map(patchHtml).join('')}</div>
-  </div>`;
+  </div>` : ''}`;
   renderAmp();
   return info;
 }
@@ -4749,6 +4780,7 @@ function ansagen(log, info) {
   zeigeAnsage(ANS.ansage({
     rang: info && info.rang ? t(`merch.r.${info.rang}`) : null,
     tour: info && info.tour,
+    gitarre: info && info.gitarre && info.gitarre.length ? t(`merch.g.${info.gitarre[0]}`) : null,
     aufnaeher: info ? info.neu.map(patchName) : [],
     referenz: ref ? { name: liftName(ref.lift), kg: ref.kg } : null,
     rund: rund ? { name: liftName(rund.lift), kg: rund.kg } : null,
@@ -5479,6 +5511,13 @@ function renderMerch(logs) {
     <p class="fine">${escHtml(t('merch.s.stand', { t: t1(s.tonnen), stacks: Math.round(s.tonnen * 1000 / MARSHALL_KG).toLocaleString(locale()) }))}
       ${escHtml(s.naechste ? t('merch.s.naechste', { t: t1(s.naechste.fehlt), name: t(`merch.s.${s.naechste.id}`) }) : t('merch.s.alle'))}</p>
     ${s.naechste ? `<div class="bar"><i style="width:${Math.round(s.naechste.anteil * 100)}%"></i></div>` : ''}`;
+
+  // Gitarrenrack: was haengt, dazu nur die naechste, die fehlt
+  const rk = GT.rack(logs, fahrten);
+  $('merch-rack').innerHTML = `
+    <p class="rack-zahl">${escHtml(t('merch.rack.zahl', { n: rk.n, gesamt: rk.gesamt }))}</p>
+    <div class="rack">${rk.haengt.map(g => gitarreHtml(g)).join('')}${rk.naechste ? gitarreHtml(rk.naechste, { offen: true }) : ''}</div>
+    <p class="fine">${escHtml(t('merch.rack.fine'))}</p>`;
 
   // Tourshirts
   const touren = M.touren(logs, heute, liste, fahrten);

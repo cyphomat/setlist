@@ -64,4 +64,21 @@ A.setzeAn(true);
 ok('wieder an', A.istAn());
 eq('an heisst: kein Eintrag', localStorage.getItem(A.SCHLUESSEL), null);
 
+print('\n--- Neue Gitarre ---');
+{
+  const g = A.ansage({ gitarre: 'Nachtfalke' });
+  eq('Ruf', g.ruf, I.t('ans.gitarre'));
+  eq('darunter der Name', g.unter, 'Nachtfalke');
+  eq('gold', g.art, 'gold');
+  eq('ohne Gitarre keine Gitarrenansage', A.ansage({ gitarre: null }), null);
+  eq('ein Rang geht vor', A.ansage({ rang: 'Support', gitarre: 'Nachtfalke' }).ruf, I.t('ans.rang'));
+  eq('der Endgegner geht vor', A.ansage({ tour: 'Boss', gitarre: 'Nachtfalke' }).ruf, I.t('ans.tour'));
+  eq('die Gitarre geht vor dem Aufnaeher', A.ansage({ gitarre: 'Nachtfalke', aufnaeher: ['Debuet'] }).ruf, I.t('ans.gitarre'));
+  eq('ohne Gitarre bleibt der Aufnaeher', A.ansage({ gitarre: null, aufnaeher: ['Debuet'] }).ruf, I.t('ans.aufnaeher'));
+  ok('der Ruf ist in beiden Sprachen da', (() => {
+    const vorher = I.sprache(); I.setSprache('en'); const en = I.t('ans.gitarre'); I.setSprache(vorher);
+    return en !== 'ans.gitarre' && en !== I.t('ans.gitarre');
+  })());
+}
+
 print(`\nGesamt: ${pass} bestanden, ${fail} fehlgeschlagen`);
