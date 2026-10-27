@@ -238,6 +238,9 @@
       <p class="txt" id="ku-lead"></p>
     </div>
     <div id="ku-hinweise"></div>
+    <h2 data-i18n="ku.kugelnTitel">Welche Kugel?</h2>
+    <div id="ku-kugeln"></div>
+    <p class="fine" data-i18n="ku.kugelnHinweis">Die letzte Kugel ist vorbelegt. Was du einträgst, steht im Verlauf unter Tour › Kugel.</p>
     <div id="ku-uebersicht"></div>
     <h2 data-i18n="ku.ablauf">Der Ablauf</h2>
     <div id="ku-bloecke"></div>
@@ -252,6 +255,7 @@
       <div class="uhr num" id="ku-uhr">0</div>
       <div class="cue" id="ku-cue"></div>
       <div class="danach" id="ku-danach"></div>
+      <div class="danach" id="ku-gesamt"></div>
     </div>
     <button id="ku-fertig" class="btn" data-i18n="ku.fertig">FERTIG</button>
     <div class="up-steuer">
@@ -262,6 +266,13 @@
   </div>
 
   <div class="pad" id="ku-ende" hidden>
+    <div id="ku-geschafft" hidden>
+      <h2 data-i18n="ku.geschafft">Alles im Takt geschafft?</h2>
+      <div class="up-steuer">
+        <button class="btn" data-ges="1" data-i18n="ku.geschafftJa">Ja</button>
+        <button class="btn ghost" data-ges="0" data-i18n="ku.geschafftNein">Nicht ganz</button>
+      </div>
+    </div>
     <h2 data-i18n="ku.ende">Wie war die Kugel?</h2>
     <p class="fine" data-i18n="ku.endeHinweis">Zweimal „zu leicht“ in Folge: nächstes Mal die schwerere Kugel. Zweimal „zäh“: die leichtere.</p>
     <div class="up-steuer">
@@ -318,6 +329,7 @@
     <div class="reiter" role="tablist" id="tour-reiter">
       <button type="button" role="tab" id="tour-tab-ueberblick" aria-controls="tour-ueberblick" data-reiter="ueberblick" data-i18n="reiter.tour.ueberblick">Überblick</button>
       <button type="button" role="tab" id="tour-tab-kraft" aria-controls="tour-kraft" data-reiter="kraft" data-i18n="reiter.tour.kraft">Kraft</button>
+      <button type="button" role="tab" id="tour-tab-kugel" aria-controls="tour-kugel" data-reiter="kugel" data-i18n="reiter.tour.kugel">Kugel</button>
       <button type="button" role="tab" id="tour-tab-koerper" aria-controls="tour-koerper" data-reiter="koerper" data-i18n="reiter.tour.koerper">Körper</button>
       <button type="button" role="tab" id="tour-tab-rad" aria-controls="tour-rad" data-reiter="rad" data-i18n="reiter.tour.rad">Rad</button>
       <button type="button" role="tab" id="tour-tab-einheiten" aria-controls="tour-einheiten" data-reiter="einheiten" data-i18n="reiter.tour.einheiten">Einheiten</button>
@@ -353,6 +365,9 @@
     <div id="hist-charts"></div>
     <h2 data-i18n="tour.volumen">Volumen · 12 Wochen</h2>
     <div id="hist-tonnage"></div>
+  </div>
+  <div class="pad reiter-panel" id="tour-kugel" role="tabpanel" aria-labelledby="tour-tab-kugel" hidden>
+    <div id="hist-kugel"></div>
   </div>
   <div class="pad reiter-panel" id="tour-koerper" role="tabpanel" aria-labelledby="tour-tab-koerper" hidden>
     <h2 data-i18n="tour.fitness">Fitness und Ermüdung</h2>

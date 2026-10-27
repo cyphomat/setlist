@@ -26,6 +26,9 @@ export const WOCHEN = 12;
 export const PRO_WOCHE = 3;
 export const TAGE = ['A', 'B', 'C'];
 
+/** In diesen Wochen steht am Tag C ein Check. */
+export const TESTS = { 4: 'w4', 8: 'w8', 12: 'w12' };
+
 /* Drei Phasen zu je vier Wochen. Die vierte Woche jeder Phase ist
    Entlastung: weniger Umfang, gleiche Technik. In Woche 12 steht der Test. */
 export const PHASEN = [
@@ -37,47 +40,47 @@ export const PHASEN = [
 /* Uebungen. `seiten` heisst: Wiederholungen gelten je Arm bzw. je Seite.
    `leichter`/`schwerer` wie beim Unplugged, `standard` wie beim Jam.     */
 export const UEBUNGEN = {
-  hinge: { name: 'Hüftbeuge mit Kugel', cue: 'Hüfte nach hinten schieben, Rücken lang, Kugel zwischen den Füßen.',
+  hinge: { name: 'Hip Hinge', cue: 'Hips back, spine long, bell between the feet.',
     standard: 'Die Knie beugen nur leicht, der Rücken bleibt flach, oben stehen Hüfte und Knie ganz gestreckt. Die Bewegung kommt aus der Hüfte, nicht aus dem Rücken.',
     erklaerung: 'Die Grundlage für den Swing. Wer die Hüftbeuge nicht sauber kann, schwingt mit dem Rücken — und das merkt man erst, wenn es zieht.',
     leichter: ['Kugel auf einen Block stellen', 'Nur die Hüftbewegung ohne Kugel'], schwerer: ['Langsamer ablassen', 'Oben kurz halten'] },
-  swing2: { name: 'Swing beidarmig', cue: 'Hüfte schnappt nach vorn, Arme sind nur Seil.',
+  swing2: { name: 'Swing', cue: 'Snap the hips, arms are just ropes.',
     standard: 'Die Kugel steigt bis Brusthöhe, die Arme bleiben lang. Unten geht sie hinter die Oberschenkel, oben stehen Hüfte und Knie ganz gestreckt. Kein Heben mit den Schultern.',
     erklaerung: 'Explosive Hüftstreckung. Nach Lake & Lauder (2012, 21 junge Männer) steigerten Swings zweimal pro Woche Maximalkraft und Schnellkraft ähnlich wie Sprungkniebeugen. Kleine Studie, aber die Richtung passt. Atmen: aus am Hochpunkt, ein beim Zurückschwingen, nicht die Luft anhalten (Sanchez 2009 beschreibt das fürs Reißen, die Übertragung auf den Swing ist unsere).',
     leichter: ['Leichtere Kugel', 'Weniger Wiederholungen je Satz'], schwerer: ['Schwerere Kugel', 'Mehr Wiederholungen je Minute'] },
-  swing1: { name: 'Swing einarmig', cue: 'Schulter bleibt unten, Rumpf fest gegen die Drehung.',
+  swing1: { name: 'One-arm Swing', cue: 'Shoulder stays down, core resists the twist.',
     standard: 'Wie beidarmig, aber die freie Hand bleibt locker. Der Rumpf dreht sich nicht mit. Seitenwechsel nur am Hochpunkt oder in der Pause.',
     erklaerung: 'Dieselbe Hüftarbeit, dazu muss der Rumpf die Drehung verhindern. Erst einarmig, wenn beidarmig ruhig und gleichmäßig läuft.',
     leichter: ['Zurück zum beidarmigen Swing', 'Leichtere Kugel'], schwerer: ['Schwerere Kugel', 'Seitenwechsel im Flug'] },
-  goblet: { name: 'Goblet Squat', cue: 'Ellbogen zwischen die Knie, Brust hoch.',
+  goblet: { name: 'Goblet Squat', cue: 'Elbows between the knees, chest up.',
     standard: 'Hüftfalte unter dem Knie, die Kugel bleibt an der Brust, oben ganz strecken.',
     erklaerung: 'Kniebeuge mit der Last vorn. Das Gewicht zwingt zu einem aufrechten Oberkörper und zeigt sofort, wo Beweglichkeit fehlt.',
     leichter: ['Leichtere Kugel', 'Box als Tiefenbegrenzung'], schwerer: ['Drei Sekunden runter', 'Unten zwei Sekunden halten'] },
-  getup: { name: 'Turkish Get-up', cue: 'Augen auf die Kugel, Arm steil nach oben.',
+  getup: { name: 'Turkish Get-up', cue: 'Eyes on the bell, arm vertical.',
     standard: 'Der Arm mit der Kugel bleibt über der Schulter gestreckt, du kommst Schritt für Schritt bis zum Stand und genauso wieder zurück. Jede Position wird kurz gehalten.',
     erklaerung: 'Langsam und in Schritten vom Boden in den Stand. Trainiert Schulterstabilität, Rumpf und Koordination. Zuerst ohne Gewicht, dann mit einem Schuh auf der Faust, dann mit Kugel.',
     leichter: ['Ohne Kugel', 'Mit einem Schuh auf der Faust'], schwerer: ['Schwerere Kugel', 'Pause in jeder Position zwei Sekunden'] },
-  halo: { name: 'Halo', cue: 'Kugel eng um den Kopf, Rippen unten.',
+  halo: { name: 'Halo', cue: 'Bell close around the head, ribs down.',
     standard: 'Die Kugel kreist eng um den Kopf, der Rumpf bleibt ruhig, die Rippen gehen nicht nach vorn. Richtung nach der Hälfte der Wiederholungen wechseln.',
     erklaerung: 'Mobilisiert Schultern und oberen Rücken und wärmt für alles Weitere auf. Kein Kraftübung, sondern ein Check: Wo klemmt es?',
     leichter: ['Leichtere Kugel', 'Größerer Kreis'], schwerer: ['Kleinerer Kreis', 'Langsamer'] },
-  carry: { name: 'Koffertrage', cue: 'Aufrecht gehen, Schulter nicht nach unten ziehen lassen.',
+  carry: { name: 'Suitcase Carry', cue: 'Walk tall, do not lean toward the bell.',
     standard: 'Die Kugel hängt seitlich am Körper, du gehst aufrecht, der Rumpf kippt nicht zur Kugel. Seitenwechsel nach der Hälfte der Zeit.',
     erklaerung: 'Gehen mit einseitiger Last. Der Rumpf muss das Wegkippen verhindern, ohne dass irgendetwas laut wird.',
     leichter: ['Leichtere Kugel', 'Kürzere Zeit'], schwerer: ['Schwerere Kugel', 'Kugel in der Frontposition (Rack Carry)'] },
-  rackcarry: { name: 'Rack Carry', cue: 'Kugel an der Brust, Ellbogen am Körper, Rippen unten.',
+  rackcarry: { name: 'Rack Carry', cue: 'Bell at the chest, elbow on the body, ribs down.',
     standard: 'Die Kugel ruht in der Frontposition, der Ellbogen liegt am Körper, du gehst aufrecht ohne ins Hohlkreuz zu kippen.',
     erklaerung: 'Tragen in der Frontposition. Verlängert die Zeit unter Spannung für Rumpf und Schulter und bereitet das Drücken vor.',
     leichter: ['Leichtere Kugel', 'Koffertrage statt Rack Carry'], schwerer: ['Schwerere Kugel', 'Längere Strecke'] },
-  clean: { name: 'Clean einarmig', cue: 'Kugel eng am Körper führen, nicht nach außen schwingen.',
+  clean: { name: 'One-arm Clean', cue: 'Keep the bell close, do not swing it wide.',
     standard: 'Die Kugel landet in der Frontposition am Unterarm, ohne aufs Handgelenk zu schlagen. Oben stehen Hüfte und Knie gestreckt, unten hängt der Arm wieder lang. Der Ellbogen ruht tief am Beckenknochen, nicht hoch auf dem Bauch: so bleibt Platz zum Atmen.',
     erklaerung: 'Einarmiges Umsetzen in die Frontposition. Aus dem Swing entwickelt: dieselbe Hüfte, nur der Weg der Kugel ist kürzer.',
     leichter: ['Leichtere Kugel', 'Weniger Wiederholungen'], schwerer: ['Schwerere Kugel', 'Langsam ablassen'] },
-  press: { name: 'Drücken einarmig', cue: 'Faust zeigt zur Decke, Rumpf und Gesäß fest.',
+  press: { name: 'One-arm Press', cue: 'Fist to the ceiling, glutes and abs tight.',
     standard: 'Aus der Frontposition drückst du die Kugel senkrecht nach oben, bis Arm und Rumpf eine Linie bilden. Kein Hohlkreuz, Gesäß und Bauch bleiben fest.',
     erklaerung: 'Überkopfdrücken mit einer Hand. Der Rumpf arbeitet gegen die Schieflage mit — deshalb ist der Press mit Kugel mehr als Schulter.',
     leichter: ['Leichtere Kugel', 'Halbe Strecke'], schwerer: ['Schwerere Kugel', 'Langsam ablassen'] },
-  highpull: { name: 'High Pull', cue: 'Ellbogen führt, Kugel steigt zum Kinn.',
+  highpull: { name: 'High Pull', cue: 'Elbow leads, bell rises to the chin.',
     standard: 'Die Kugel kommt mit hohem Ellbogen bis zur Brust, die Hüfte macht die Arbeit. Oben stehen Hüfte und Knie ganz gestreckt.',
     erklaerung: 'Vorstufe zum Snatch: die Hüftstreckung des Swings, dazu ein Zug nach oben. Wer das sauber kann, versteht, wie der Snatch später funktioniert.',
     leichter: ['Leichtere Kugel', 'Weniger Wiederholungen'], schwerer: ['Schwerere Kugel', 'Dichter getaktet'] }
@@ -110,10 +113,16 @@ const PLAN = {
       satz('hinge', 1, 8, { last: 'leicht', pause: 30 }),
       takt('swing2', [8, 8, 8, 6][wi], [10, 10, 12, 10][wi], 30, { last: 'leicht' }),
       satz('getup', 2, 2, { seiten: true, last: 'leicht', ohneLast: true })],
-    C: wi => [warm(),
-      satz('getup', 3, [2, 2, 3, 2][wi], { seiten: true, last: 'leicht', ohneLast: wi === 0 }),
-      satz('goblet', 3, 8, { last: 'leicht' }),
-      satz('swing2', 3, [12, 15, 15, 10][wi], { last: 'leicht' })]
+    C: wi => wi < 3
+      ? [warm(),
+        satz('getup', 3, [2, 2, 3][wi], { seiten: true, last: 'leicht', ohneLast: wi === 0 }),
+        satz('goblet', 3, 8, { last: 'leicht' }),
+        satz('swing2', 3, [12, 15, 15][wi], { last: 'leicht' })]
+      // Woche 4: Check 1. 100 beidarmige Swings in fuenf Minuten, dazu
+      // zwei saubere Get-ups je Seite. Standortbestimmung, kein Rekord.
+      : [warm(),
+        takt('swing2', 10, 10, 30, { last: 'leicht', test: 'w4' }),
+        satz('getup', 1, 2, { seiten: true, last: 'leicht', test: 'w4' })]
   },
   grundlage: {
     A: wi => [warm(),
@@ -124,10 +133,15 @@ const PLAN = {
     B: wi => [warm(),
       takt('swing1', [8, 10, 12, 8][wi], 10, 30, { last: 'leicht', seitenwechsel: true }),
       satz('hinge', 2, 8, { last: 'schwer', pause: 45 })],
-    C: wi => [warm(),
-      satz('getup', 4, [2, 3, 3, 2][wi], { seiten: true, last: 'leicht' }),
-      satz('swing1', 3, [8, 10, 10, 6][wi], { seiten: true, last: 'leicht' }),
-      zeit('carry', 2, 30, { seiten: true, last: 'schwer' })]
+    C: wi => wi < 3
+      ? [warm(),
+        satz('getup', 4, [2, 3, 3][wi], { seiten: true, last: 'leicht' }),
+        satz('swing1', 3, [8, 10, 10][wi], { seiten: true, last: 'leicht' }),
+        zeit('carry', 2, 30, { seiten: true, last: 'schwer' })]
+      // Woche 8: Check 2. 100 einarmige Swings in fuenf Minuten, vier Get-ups je Seite.
+      : [warm(),
+        takt('swing1', 10, 10, 30, { last: 'schwer', seitenwechsel: true, test: 'w8' }),
+        satz('getup', 1, 4, { seiten: true, last: 'leicht', test: 'w8' })]
   },
   ausbau: {
     A: wi => [warm(),
@@ -144,8 +158,8 @@ const PLAN = {
       // Woche 12: der Test. 100 einarmige Swings in fuenf Minuten, dann
       // zehn Get-ups auf die Minute. Keine Rekordjagd: eine Standortbestimmung.
       : [warm(),
-        takt('swing1', 10, 10, 30, { last: 'schwer', seitenwechsel: true, test: true }),
-        takt('getup', 10, 1, 60, { seiten: true, last: 'leicht', seitenwechsel: true, test: true })]
+        takt('swing1', 10, 10, 30, { last: 'schwer', seitenwechsel: true, test: 'w12' }),
+        takt('getup', 10, 1, 60, { seiten: true, last: 'leicht', seitenwechsel: true, test: 'w12' })]
   }
 };
 
@@ -177,7 +191,8 @@ export function zustand(logs = []) {
     phase: p ? p.id : null,
     wocheInPhase: p ? woche - p.von + 1 : 0,
     entlastung: !!p && woche === p.bis,
-    test: woche === WOCHEN && tag === 'C'
+    test: tag === 'C' && !!TESTS[woche],
+    testId: tag === 'C' ? TESTS[woche] || null : null
   };
 }
 
@@ -187,8 +202,8 @@ export function einheit(woche, tag) {
   if (!p || !TAGE.includes(tag)) return null;
   const wi = woche - p.von;
   const bloecke = PLAN[p.id][tag](wi);
-  const test = bloecke.some(b => b.test);
-  return { kurs: KURS_ID, woche, tag, phase: p.id, entlastung: woche === p.bis && !test, test, bloecke };
+  const testId = (bloecke.find(b => b.test) || {}).test || null;
+  return { kurs: KURS_ID, woche, tag, phase: p.id, entlastung: woche === p.bis && !testId, test: !!testId, testId, bloecke };
 }
 
 /** Der Plan der naechsten Einheit — oder null, wenn der Kurs durch ist. */
@@ -220,6 +235,14 @@ export function ablauf(e) {
   e.bloecke.forEach((b, bi) => {
     const n = b.art === 'takt' ? b.runden : b.saetze;
     for (let i = 1; i <= n; i++) {
+      if (b.art === 'zeit') {
+        // Tragen: je Seite ein Schritt mit Countdown.
+        for (let seite = 1; seite <= (b.seiten ? 2 : 1); seite++) {
+          schritte.push({ art: 'zeit', block: bi, nr: i, von: n, sekunden: b.sek, seite: b.seiten ? seite : 0, b });
+        }
+        if (b.pause > 0 && i < n) schritte.push({ art: 'pause', sekunden: b.pause, block: bi, nr: i, von: n, b });
+        continue;
+      }
       const s = { art: b.art === 'takt' ? 'takt' : 'satz', block: bi, nr: i, von: n, b };
       if (b.art === 'takt') s.sekunden = b.takt;
       if (b.art === 'takt' && b.seitenwechsel) s.seite = i % 2 === 1 ? 1 : 2;
@@ -261,3 +284,79 @@ export function wocheFortschritt(logs = []) {
 }
 
 export { U as UEBUNGS_IDS };
+
+/* ---------------------------------------------------------------
+   Kugel in kg. Je Baustein ein Schluessel (bei Komplexen mit "+").
+   Gespeichert wird nur `kugeln` im Log der Einheit; die Vorbelegung
+   kommt aus der letzten Einheit mit demselben Schluessel.         */
+
+export const KUGEL_SCHRITT = 2;
+export const KUGEL_MAX = 80;
+
+export const kugelSchluessel = b => b.u.join('+');
+
+/** Bausteine, bei denen eine Kugel zaehlt: weder Aufwaermen noch "ohne Kugel". */
+export function kugelBausteine(e) {
+  const gesehen = new Map();
+  for (const b of e.bloecke) {
+    if (b.warm) continue;
+    const k = kugelSchluessel(b);
+    if (!gesehen.has(k)) gesehen.set(k, { schluessel: k, name: blockName(b), u: b.u, nurOhne: !!b.ohneLast });
+    else if (!b.ohneLast) gesehen.get(k).nurOhne = false;
+  }
+  return [...gesehen.values()].filter(x => !x.nurOhne);
+}
+
+/** Nur gueltige Schluessel dieser Einheit, nur sinnvolle Zahlen. */
+export function bereinigeKugeln(roh, e) {
+  const erlaubt = new Set(kugelBausteine(e).map(x => x.schluessel));
+  const aus = {};
+  for (const [k, v] of Object.entries(roh && typeof roh === 'object' ? roh : {})) {
+    const kg = Number(v);
+    if (erlaubt.has(k) && Number.isFinite(kg) && kg > 0 && kg <= KUGEL_MAX) aus[k] = Math.round(kg * 2) / 2;
+  }
+  return aus;
+}
+
+/** Die Kugel der letzten Einheit mit diesem Schluessel, oder null. */
+export function letzteKugel(logs = [], schluessel) {
+  const liste = kursLogs(logs);
+  for (let i = liste.length - 1; i >= 0; i--) {
+    const kg = Number((liste[i].kugeln || {})[schluessel]);
+    if (kg > 0) return kg;
+  }
+  return null;
+}
+
+/** Verlauf einer Kugel ueber die Einheiten: [{ date, kg }]. */
+export function kugelReihe(logs = [], schluessel) {
+  return kursLogs(logs)
+    .map(l => ({ date: l.date, kg: Number((l.kugeln || {})[schluessel]) }))
+    .filter(p => p.kg > 0);
+}
+
+/** Je Schluessel: aktuelle und hoechste Kugel, Zahl der Einheiten. */
+export function bestwerte(logs = []) {
+  const map = new Map();
+  for (const l of kursLogs(logs)) {
+    for (const [k, v] of Object.entries(l.kugeln || {})) {
+      const kg = Number(v);
+      if (!(kg > 0)) continue;
+      const x = map.get(k) || { schluessel: k, aktuell: 0, hoechste: 0, datum: null, n: 0 };
+      x.aktuell = kg; x.n++;
+      if (kg >= x.hoechste) { x.hoechste = kg; x.datum = l.date; }
+      map.set(k, x);
+    }
+  }
+  return [...map.values()];
+}
+
+/** Die drei Checks: wann gemacht, mit welchen Kugeln, geschafft oder nicht. */
+export function tests(logs = []) {
+  const liste = kursLogs(logs);
+  return Object.entries(TESTS).map(([woche, id]) => {
+    const l = [...liste].reverse().find(x => x.test === id);
+    return { id, woche: Number(woche), datum: l ? l.date : null,
+      geschafft: l && typeof l.geschafft === 'boolean' ? l.geschafft : null, kugeln: l ? (l.kugeln || {}) : {} };
+  });
+}

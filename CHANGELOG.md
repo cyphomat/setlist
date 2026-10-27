@@ -10,6 +10,22 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-27.2
+
+### Neu
+- **Kettlebell-Kurs mit Kugel in kg.** Vor jeder Einheit trägst du je Baustein ein, mit welcher
+  Kugel du arbeitest (Schritt 2 kg, Eingabe frei). Die letzte Kugel ist vorbelegt. Das Log
+  speichert sie (`kugeln`), der neue Reiter **Tour › Kugel** zeigt Verlauf, höchste Kugel und
+  Zahl der Einheiten je Übung.
+- **Uhren.** Die Führung zeigt oben die Gesamtzeit, bei Sätzen eine Stoppuhr, bei Takt, Pause
+  und Tragen einen Countdown. Tragen läuft je Seite mit Signal beim Wechsel.
+- **Zwischentests.** Woche 4 (Check 1: 100 beidarmige Swings in fünf Minuten, zwei Get-ups je Seite) und
+  Woche 8 (Check 2: 100 einarmige Swings, vier Get-ups je Seite) ersetzen den Tag C; Woche 12
+  bleibt der Abschlusstest. Am Ende fragt die App, ob alles im Takt geschafft wurde; die Checks
+  stehen mit Datum, Kugel und Ergebnis im Reiter Kugel.
+- Übungsnamen und Cues stehen jetzt auf Englisch (Hip Hinge, Swing, Goblet Squat …), Erklärung,
+  Standard und Varianten bleiben deutsch.
+
 ## 2026-10-27.1
 
 ### Neu

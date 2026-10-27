@@ -1360,6 +1360,7 @@ async function renderHistory() {
   $('hist-tonnage').innerHTML = '';
   $('hist-form').innerHTML = '';
   $('hist-charts').innerHTML = '';
+  $('hist-kugel').innerHTML = '';
   $('hist-rad').innerHTML = '';
   $('history-body').innerHTML = `<p class="lead">${t('tour.laedt')}</p>`;
   try {
@@ -1860,7 +1861,11 @@ $('up-abbruch').onclick = () => {
    ist wie beim Unplugged: Saetze wartest du selbst ab, Takt und Pause
    laufen nach der Uhr.                                                  */
 
-let kuEinheit = null, kuAblauf = [], kuIndex = 0, kuRest = 0, kuTimer = null, kuPausiert = false, kuStart = 0;
+let kuEinheit = null, kuAblauf = [], kuIndex = 0, kuRest = 0, kuTimer = null, kuPausiert = false;
+let kuGesamt = 0, kuSchritt = 0, kuKugeln = {}, kuGeschafft = true;
+
+const kuZeit = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+const kuKg = kg => `${dez(kg, Number.isInteger(kg) ? 0 : 1)} kg`;
 
 const kuStopp = () => { clearInterval(kuTimer); kuTimer = null; kuPausiert = false; };
 
@@ -1874,6 +1879,7 @@ function starteKurs() {
   const z = KU.zustand(alleLogs);
   if (z.fertig) { banner(t('ku.fertigKurs'), 'ok', 5000); return; }
   kuEinheit = KU.naechste(alleLogs);
+  kuVorbelegen();
   $('ku-plan').hidden = false;
   $('ku-lauf').hidden = true;
   $('ku-ende').hidden = true;
@@ -1884,8 +1890,57 @@ function starteKurs() {
     if (logs.length === alleLogs.length || !$('ku-lauf').hidden || !$('ku-ende').hidden) return;
     alleLogs = logs; S.cacheLogs(logs);
     kuEinheit = KU.naechste(alleLogs);
+    kuVorbelegen();
     if (kuEinheit) renderKurs();
   }).catch(() => {});
+}
+
+/** Die Kugel jedes Bausteins aus der letzten Einheit uebernehmen — Eingaben bleiben. */
+function kuVorbelegen() {
+  if (!kuEinheit) return;
+  const neu = {};
+  for (const b of KU.kugelBausteine(kuEinheit)) {
+    const kg = kuKugeln[b.schluessel] || KU.letzteKugel(alleLogs, b.schluessel);
+    if (kg) neu[b.schluessel] = kg;
+  }
+  kuKugeln = neu;
+}
+
+function kuLastText(b) {
+  const kg = kuKugeln[KU.kugelSchluessel(b)];
+  if (b.ohneLast) return t('ku.ohneKugel');
+  if (kg) return kuKg(kg);
+  return b.last ? t(`ku.last.${b.last}`) : '';
+}
+
+function renderKugeln() {
+  $('ku-kugeln').innerHTML = KU.kugelBausteine(kuEinheit).map(b => `
+    <div class="ku-kugel" data-k="${escHtml(b.schluessel)}">
+      <span class="name">${escHtml(b.name)}</span>
+      <button class="btn ghost" data-d="-1" aria-label="${escHtml(t('ku.leichter'))}">−</button>
+      <input type="number" inputmode="decimal" min="0" max="${KU.KUGEL_MAX}" step="${KU.KUGEL_SCHRITT}"
+        value="${kuKugeln[b.schluessel] || ''}" placeholder="kg" aria-label="${escHtml(b.name)} kg">
+      <button class="btn ghost" data-d="1" aria-label="${escHtml(t('ku.schwerer'))}">+</button>
+    </div>`).join('');
+  $('ku-kugeln').querySelectorAll('.ku-kugel').forEach(zeile => {
+    const k = zeile.dataset.k, feld = zeile.querySelector('input');
+    const setze = kg => {
+      kg = Math.max(0, Math.min(KU.KUGEL_MAX, Math.round(kg * 2) / 2));
+      if (kg > 0) kuKugeln[k] = kg; else delete kuKugeln[k];
+      feld.value = kg > 0 ? kg : '';
+      kuZieleAktualisieren();
+    };
+    feld.onchange = () => setze(Number(String(feld.value).replace(',', '.')) || 0);
+    zeile.querySelectorAll('button').forEach(b => {
+      b.onclick = () => setze((kuKugeln[k] || KU.letzteKugel(alleLogs, k) || 0) + Number(b.dataset.d) * KU.KUGEL_SCHRITT);
+    });
+  });
+}
+
+function kuZieleAktualisieren() {
+  document.querySelectorAll('#ku-bloecke [data-bz]').forEach(el => {
+    el.textContent = kuZiel(kuEinheit.bloecke[Number(el.dataset.bz)]);
+  });
 }
 
 /** Das Ziel eines Bausteins in einer Zeile, fuer die Uebersicht. */
@@ -1894,7 +1949,7 @@ function kuZiel(b) {
   if (b.art === 'takt') z = t('ku.zielTakt', { runden: b.runden, n: b.wdh, s: b.takt });
   else if (b.art === 'zeit') z = t(b.seiten ? 'ku.zielZeitSeite' : 'ku.zielZeit', { saetze: b.saetze, s: b.sek });
   else z = t(b.seiten ? 'ku.zielSaetzeSeite' : 'ku.zielSaetze', { saetze: b.saetze, n: b.wdh });
-  const last = b.ohneLast ? t('ku.ohneKugel') : b.last ? t(`ku.last.${b.last}`) : '';
+  const last = kuLastText(b);
   return last ? `${z} · ${last}` : z;
 }
 
@@ -1903,11 +1958,11 @@ function kuJetzt(a) {
   const b = a.b;
   let z;
   if (a.art === 'takt') z = t('ku.jetztWdh', { n: b.wdh });
-  else if (b.art === 'zeit') z = t(b.seiten ? 'ku.jetztZeitSeite' : 'ku.jetztZeit', { s: b.sek });
+  else if (a.art === 'zeit') z = t('ku.jetztZeit', { s: a.sekunden });
   else z = t(b.seiten ? 'ku.jetztWdhSeite' : 'ku.jetztWdh', { n: b.wdh });
   if (a.seite) z += ` · ${t('ku.seite', { n: a.seite })}`;
-  if (b.ohneLast) z += ` · ${t('ku.ohneKugel')}`;
-  else if (b.last) z += ` · ${t(`ku.last.${b.last}`)}`;
+  const last = kuLastText(b);
+  if (last) z += ` · ${last}`;
   return z;
 }
 
@@ -1919,7 +1974,7 @@ function renderKurs() {
   $('ku-lead').textContent = `${t(`ku.phase.${e.phase}`)} — ${t(`ku.phase.${e.phase}.text`)}`;
 
   const hinweise = [];
-  if (e.test) hinweise.push(t('ku.test'));
+  if (e.testId) hinweise.push(t(`ku.test.${e.testId}`));
   else if (e.entlastung) hinweise.push(t('ku.entlastung'));
   const v = KU.lastVorschlag(alleLogs);
   if (v) hinweise.push(t(`ku.vorschlag.${v}`));
@@ -1929,9 +1984,10 @@ function renderKurs() {
     min: KU.minuten(e), woche: z.woche, gesamt: KU.WOCHEN, fertig: KU.wocheFortschritt(alleLogs), pro: KU.PRO_WOCHE
   }))}</p>`;
 
+  renderKugeln();
   $('ku-bloecke').innerHTML = e.bloecke.map((b, i) => `
     <details class="info">
-      <summary>${i + 1} · ${escHtml(KU.blockName(b))} <span class="fine">${escHtml(kuZiel(b))}</span></summary>
+      <summary>${i + 1} · ${escHtml(KU.blockName(b))} <span class="fine" data-bz="${i}">${escHtml(kuZiel(b))}</span></summary>
       <div class="body">${b.u.map(id => {
         const u = KU.UEBUNGEN[id];
         return `<p class="tagline"><b>${escHtml(u.name)}: ${escHtml(u.cue)}</b></p>
@@ -1949,7 +2005,8 @@ function kuStartLauf() {
   kuAblauf = KU.ablauf(kuEinheit);
   kuIndex = 0;
   kuPausiert = false;
-  kuStart = Date.now();
+  kuGesamt = 0;
+  kuGeschafft = true;
   $('ku-plan').hidden = true;
   $('ku-lauf').hidden = false;
   $('ku-ende').hidden = true;
@@ -1959,31 +2016,39 @@ function kuStartLauf() {
 function kuZeigeSchritt() {
   const a = kuAblauf[kuIndex];
   if (!a) return kuEnde();
-  clearInterval(kuTimer); kuTimer = null;
-  const pause = a.art === 'pause', takt = a.art === 'takt';
+  const pause = a.art === 'pause', takt = a.art === 'takt', zeit = a.art === 'zeit';
   const gesamt = kuEinheit.bloecke.length;
+  kuSchritt = 0;
   $('ku-buehne').classList.toggle('pause', pause);
-  $('ku-fertig').hidden = takt || pause;
+  $('ku-fertig').hidden = takt || pause || zeit;
   $('ku-runde').textContent = `${t('ku.baustein', { n: a.block + 1, gesamt })} · ${t(takt ? 'ku.runde' : 'ku.satz', { n: a.nr, gesamt: a.von })}`;
   $('ku-was').textContent = pause ? t('ku.pauseJetzt') : KU.blockName(a.b);
   $('ku-cue').textContent = pause ? '' : `${kuJetzt(a)}. ${KU.UEBUNGEN[a.b.u[0]].cue}`;
   const naechster = kuAblauf.slice(kuIndex + 1).find(x => x.art !== 'pause');
   $('ku-danach').textContent = pause && naechster ? t('up.danach', { name: KU.blockName(naechster.b) }) : '';
-  if (takt || pause) {
+  if (takt || pause || zeit) {
     kuRest = a.sekunden;
     $('ku-uhr').textContent = kuRest;
-    kuTicke(pause);
   } else {
-    $('ku-uhr').textContent = `${a.nr}/${a.von}`;
+    $('ku-uhr').textContent = kuZeit(0);   // Stoppuhr, zaehlt hoch
   }
+  $('ku-gesamt').textContent = t('ku.gesamt', { zeit: kuZeit(kuGesamt) });
+  kuTicke();
 }
 
-function kuTicke(pause) {
+/** Eine Uhr fuer alles: Gesamtzeit, Stoppuhr bei Saetzen, Countdown bei Takt, Pause und Tragen. */
+function kuTicke() {
+  if (kuTimer) return;
   kuTimer = setInterval(() => {
     if (kuPausiert) return;
+    const a = kuAblauf[kuIndex];
+    if (!a) return;
+    kuGesamt++; kuSchritt++;
+    $('ku-gesamt').textContent = t('ku.gesamt', { zeit: kuZeit(kuGesamt) });
+    if (a.art === 'satz') { $('ku-uhr').textContent = kuZeit(kuSchritt); return; }
     kuRest--;
     $('ku-uhr').textContent = Math.max(0, kuRest);
-    if (kuRest === 3 && pause) upSignal(false);
+    if (kuRest === 3 && a.art === 'pause') upSignal(false);
     if (kuRest <= 0) { kuIndex++; upSignal(true); kuZeigeSchritt(); }
   }, 1000);
 }
@@ -1992,7 +2057,14 @@ function kuEnde() {
   kuStopp();
   $('ku-lauf').hidden = true;
   $('ku-ende').hidden = false;
+  $('ku-geschafft').hidden = !(kuEinheit && kuEinheit.testId);
+  kuGeschafftZeigen();
   window.scrollTo(0, 0);
+}
+
+function kuGeschafftZeigen() {
+  document.querySelectorAll('#ku-geschafft [data-ges]').forEach(b =>
+    b.classList.toggle('an', (b.dataset.ges === '1') === kuGeschafft));
 }
 
 async function kuSpeichern(bewertung) {
@@ -2008,11 +2080,13 @@ async function kuSpeichern(bewertung) {
     tag: e.tag,
     einheit: KU.zustand(alleLogs).einheit,
     label: KU.label(e),
-    dauerSekunden: Math.max(60, Math.round((Date.now() - kuStart) / 1000)),
+    dauerSekunden: Math.max(60, kuGesamt),
     bewertung,
     finished: new Date().toISOString()
   };
-  if (e.test) log.test = true;
+  const kugeln = KU.bereinigeKugeln(kuKugeln, e);
+  if (Object.keys(kugeln).length) log.kugeln = kugeln;
+  if (e.testId) { log.test = e.testId; log.geschafft = kuGeschafft; }
   const ort = ortName();
   if (ort) log.ort = ort;
   const vorherHist = state.history || [];
@@ -2071,6 +2145,9 @@ $('ku-abbruch').onclick = () => {
   $('ku-plan').hidden = false;
 };
 $('ku-ende').querySelectorAll('[data-bew]').forEach(b => { b.onclick = () => kuSpeichern(b.dataset.bew); });
+$('ku-geschafft').querySelectorAll('[data-ges]').forEach(b => {
+  b.onclick = () => { kuGeschafft = b.dataset.ges === '1'; kuGeschafftZeigen(); };
+});
 
 /* ====================== Programm einrichten ======================
    Wer neu anfaengt, hat noch keine config.json. Frueher stand hier eine
@@ -2672,6 +2749,49 @@ function renderAngeben(logs) {
         <div class="v">${serie}</div>
         <div class="s">${t(serie === 1 ? 'stat.wocheRekord' : 'stat.wochenRekord')}</div></div>
     </div>`;
+}
+
+/** Tour › Kugel: Kurs-Stand, Kugelverlauf je Uebung, die drei Checks. */
+function renderKugel(logs) {
+  const z = KU.zustand(logs);
+  const bw = KU.bestwerte(logs);
+  if (!z.absolviert) { $('hist-kugel').innerHTML = `<p class="fine">${escHtml(t('ku.stat.leer'))}</p>`; return; }
+  const namen = new Map();
+  for (let w = 1; w <= KU.WOCHEN; w++) for (const tag of KU.TAGE) {
+    for (const b of KU.kugelBausteine(KU.einheit(w, tag))) namen.set(b.schluessel, b.name);
+  }
+  const phasen = KU.PHASEN.map(p => {
+    const fertig = Math.max(0, Math.min(KU.WOCHEN, z.fertig ? KU.WOCHEN : z.woche - 1));
+    const an = fertig >= p.bis;
+    return `<span>${escHtml(t(`ku.phase.${p.id}`))}${an ? ' ✓' : ''}</span>`;
+  }).join(' · ');
+  const kopf = `<p class="lead">${escHtml(t('ku.stat.stand', { woche: z.woche, gesamt: KU.WOCHEN, n: z.absolviert, alle: KU.WOCHEN * KU.PRO_WOCHE }))}</p>
+    <p class="fine">${phasen}</p>`;
+  const verlaeufe = bw.map(x => {
+    const reihe = KU.kugelReihe(logs, x.schluessel);
+    const sp = reihe.length > 1 ? ST.sparkline(reihe.map(p => ({ date: p.date, weight: p.kg })), 300, 60) : null;
+    const delta = reihe.length > 1 ? reihe[reihe.length - 1].kg - reihe[0].kg : 0;
+    return `<div class="chart">
+      <div class="h"><span class="t">${escHtml(namen.get(x.schluessel) || x.schluessel)}</span>
+        <span class="r">${escHtml(kuKg(x.aktuell))}${delta > 0 ? ` ▲ +${delta}` : delta < 0 ? ` ▼ ${delta}` : ''}</span></div>
+      ${sp ? `<svg viewBox="0 0 300 60" preserveAspectRatio="none" aria-hidden="true">
+        <path d="${sp.flaeche}" fill="var(--tint-akzent)"/>
+        <path d="${sp.linie}" fill="none" stroke="var(--akzent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+        ${sp.koord.map(k => `<circle cx="${k.x.toFixed(1)}" cy="${k.y.toFixed(1)}" r="2.5" fill="var(--akzent)"/>`).join('')}
+      </svg>` : ''}
+      <div class="h" style="margin:6px 0 0"><span class="t">${escHtml(t('ku.stat.hoechste', { kg: kuKg(x.hoechste) }))}</span>
+        <span class="t">${escHtml(t('ku.stat.einheiten', { n: x.n }))}</span></div>
+    </div>`;
+  }).join('');
+  const checks = KU.tests(logs).map(c => {
+    const stand = c.datum
+      ? `${escHtml(c.datum)} · ${escHtml(Object.entries(c.kugeln).map(([k, kg]) => kuKg(kg)).join(' / ') || '—')} · ${c.geschafft === false ? t('ku.stat.nichtGanz') : t('ku.stat.geschafft')}`
+      : escHtml(t('ku.stat.offen', { woche: c.woche }));
+    return `<div class="ku-test"><span>${escHtml(t(`ku.check.${c.id}`))}</span><span class="fine">${stand}</span></div>`;
+  }).join('');
+  $('hist-kugel').innerHTML = `${kopf}
+    <h2>${escHtml(t('ku.stat.verlauf'))}</h2>${verlaeufe || `<p class="fine">${escHtml(t('ku.stat.keineKugeln'))}</p>`}
+    <h2>${escHtml(t('ku.stat.checks'))}</h2>${checks}`;
 }
 
 function renderCharts(logs) {
@@ -3284,6 +3404,7 @@ function renderTour(logs) {
   renderKoerper(logs);
   renderAnsageAbgleich(logs);
   renderCharts(logs);
+  renderKugel(logs);
   renderIntensitaet();
   renderAerob();
   renderRad();
