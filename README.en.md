@@ -35,7 +35,7 @@
   <sub>Your training data stays in this browser (<a href="#data">more</a>). Prefer your own private GitHub repo, several devices, or the code in your own hands? <a href="#-setting-it-up-yourself">Set it up yourself</a>.</sub>
 </p>
 
-> **Note on language.** The app comes in German and English — switch it under **Tour → ⚙ Backstage → App**. Bilingual are the whole interface, the daily call including its one word, milestones, small wins, patches and error messages. Only the *exercise content* stays German — explanations, cues, common mistakes, movement standards — along with the built-in sayings, the jam movements and the bike rationales. That is technical text that needs a proper translation rather than a word-for-word one. In your data the day's word is always stored in German, so “call vs. feel” counts the same in both languages.
+> **Note on language.** The app comes in German and English — switch it under **Tour → ⚙ Backstage → App**. Bilingual are the whole interface, the daily call including its one word, milestones, small wins, patches and error messages. Only the *exercise content* stays German — explanations, cues, common mistakes, movement standards (in the kettlebell course, names and cues are English and the explanations German) — along with the built-in sayings, the jam movements and the bike rationales. That is technical text that needs a proper translation rather than a word-for-word one. In your data the day's word is always stored in German, so “call vs. feel” counts the same in both languages.
 
 ---
 
@@ -96,6 +96,21 @@
   <img src="assets/screens/merch-dunkel.png" alt="The merch stand: rank, monthly tour with final boss and battle vest with patches" width="330">
   <img src="assets/screens/rack-dunkel.png" alt="The guitar rack in the merch stand: two guitars hang, the next waits as a dark silhouette for the Opening Act rank" width="330">
 </p>
+
+**And the bell** — kettlebell course and Mosh Pit, with the bell in kg, checks and a boss of its own:
+
+<table>
+<tr>
+<td width="33%"><img src="assets/screens/kurs-dunkel.png" alt="Kettlebell course: week 5, session A, with the bell for each exercise"></td>
+<td width="33%"><img src="assets/screens/kugel-dunkel.png" alt="Tour, Bell tab: bell progress per exercise"></td>
+<td width="33%"><img src="assets/screens/kugel-boss-dunkel.png" alt="The Bell Titan, boss of the course, with health bar and bell rank"></td>
+</tr>
+<tr>
+<td align="center"><b>The course</b><br><sub>Which bell, then guided by the clock</sub></td>
+<td align="center"><b>Your progress</b><br><sub>Bell per exercise, checks</sub></td>
+<td align="center"><b>The boss</b><br><sub>Every check takes a third</sub></td>
+</tr>
+</table>
 
 <sub>Real screens with sample data, captured via <code>tools/shot.html</code> and <code>tools/shots.mjs</code>. Not mockups.</sub>
 

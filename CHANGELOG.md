@@ -10,6 +10,12 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-27.7
+
+### Behoben
+- **Übungsnamen in der Kugel-Auswahl sind kleiner.** Sie liefen in der großen Überschriftenschrift und
+  brachen auf dem Handy in zwei Zeilen; jetzt passt jeder Name in eine.
+
 ## 2026-10-27.6
 
 ### Behoben

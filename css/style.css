@@ -1025,7 +1025,7 @@ input[type=checkbox]{accent-color:var(--akzent);width:16px;height:16px}
 #ku-ende .up-steuer .btn{padding-left:6px;padding-right:6px}
 #ku-geschafft .btn.an{border-color:var(--akzent);color:var(--akzent)}
 .ku-kugel{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
-.ku-kugel .name{flex:1;min-width:0;overflow-wrap:anywhere}
+.ku-kugel .name{flex:1;min-width:0;overflow-wrap:anywhere;font-size:1.125rem;line-height:1.2}
 .ku-kugel button{width:40px;height:40px;padding:0}
 .ku-kugel input{width:64px;height:40px;text-align:center;font-family:var(--mono);background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:2px}
 .ku-kugel .kg{color:var(--muted);font-size:0.8125rem}
