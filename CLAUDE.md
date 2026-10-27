@@ -43,3 +43,20 @@ Kommuniziere auf Deutsch, kurz und konkret.
 - `version.json` und `CACHE` in `sw.js` immer gemeinsam setzen (entspricht dem obersten CHANGELOG-Eintrag); nur wenn sich ausgelieferter Code ändert. Neue Module in die `SHELL`-Liste von `sw.js`.
 - Vor jedem Push: `node tools/tests.mjs` (muss grün sein) und `node tools/proben.mjs` (Browserproben, braucht Playwright).
 - Testzahl im Abzeichen und im Abschnitt „Tests“ beider READMEs aktuell halten.
+
+## Git und GitHub
+- Repo mit `add_repo` (access: push) anhängen. Der Klon ist shallow und verfolgt nur main.
+- In der Cloud laufen `node tools/tests.mjs` und `node tools/pixel.mjs --pruefe` ohne Umweg. Dieselben zwei Schritte laufen als CI bei jedem Push und PR.
+- Browserproben (`node tools/proben.mjs`) sind in der Cloud nicht eingerichtet: Playwright liegt nur global, ein Chromium unter `/opt/pw-browsers`. Ungetestet, aber der Ansatz wäre `CHROMIUM=/pfad/zu/chrome`. Wo die Änderung sichtbar ist, das sagen, statt die Proben zu überspringen.
+- `gh pr create` geht nicht (GraphQL gesperrt). PR per `gh api repos/cyphomat/setlist/pulls --input datei.json` anlegen.
+- Der Stop-Hook meldet fälschlich einen unpushed Branch. `git ls-remote` zeigt den echten Stand.
+- Branches löscht GitHub nach dem Merge selbst (Einstellung ist aktiv). Nichts manuell löschen.
+
+## Ablauf pro Etappe
+Pages liefert `main` aus: Ein Merge ist die Veröffentlichung.
+
+1. Bauen, Tests und Pixelprüfung grün. Bei neuem ausgeliefertem Code `version.json` und `CACHE` in `sw.js` zusammen setzen, dazu der CHANGELOG-Eintrag.
+2. Größere Änderung: PR. Kleinkram (Texte, Tippfehler) bei grünen Tests direkt auf main.
+3. Ich prüfe das Ergebnis und schreibe „ja“.
+4. Mit diesem einen „ja“: PR mergen (`gh api -X PUT repos/cyphomat/setlist/pulls/N/merge`). Das veröffentlicht. Geht das Mergen mit dem Zugang nicht, kurz sagen, dann merge ich selbst.
+5. Ohne dieses „ja“ wird nicht gemergt und nicht direkt auf main gepusht.
