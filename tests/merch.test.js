@@ -474,10 +474,42 @@ print('\n--- Zusammen trainiert ---');
   ok('das Duett ist nach der Einheit neu', neu.some(a => a.id === 'duett'));
 }
 
+print('\n--- Kettlebell: Kurs und Mosh Pit ---');
+{
+  const kl = (n, extra = i => ({})) => Array.from({ length: n }, (_, i) => ({ date: new Date(Date.UTC(2026, 7, 1 + i)).toISOString().slice(0, 10),
+    type: 'kurs', kurs: 'kettlebell', woche: Math.floor(i / 3) + 1, tag: 'ABC'[i % 3], finished: new Date(Date.UTC(2026, 7, 1 + i, 10)).toISOString(), ...extra(i) }));
+  const KG = ['kurs-start', 'kurs-fundament', 'kurs-grundlage', 'kurs-ausbau', 'check-1', 'check-2', 'check-3', 'kugel-1', 'kugel-5', 'pit-start', 'pit-sprung', 'pit-serie-3', 'pit-serie-6'];
+  const gibt = a => a.filter(x => KG.includes(x.id)).length;
+  eq('ohne Kurs und Pit: keiner dieser Aufnaeher', gibt(M.aufnaeher([], config, [], HEUTE)), 0);
+  eq('mit Kurs: neun, ohne Pit', gibt(M.aufnaeher(kl(1), config, [], HEUTE)), 9);
+  eq('Katalog mit beiden: dreizehn', gibt(M.katalog(config, { mitKurs: true, mitPit: true })), 13);
+  eq('Kurs-Debuet am ersten Tag', hat(M.aufnaeher(kl(1), config, [], HEUTE), 'kurs-start'), '2026-08-01');
+  eq('Fundament nach zwoelf', hat(M.aufnaeher(kl(12), config, [], HEUTE), 'kurs-fundament'), '2026-08-12');
+  eq('elf reichen nicht', hat(M.aufnaeher(kl(11), config, [], HEUTE), 'kurs-fundament'), null);
+  eq('Ausbau nach 36', hat(M.aufnaeher(kl(36), config, [], HEUTE), 'kurs-ausbau'), '2026-09-05');
+  eq('Check nur mit geschafft', hat(M.aufnaeher(kl(12, i => i === 11 ? { test: 'w4', geschafft: false } : {}), config, [], HEUTE), 'check-1'), null);
+  eq('Check geschafft', hat(M.aufnaeher(kl(12, i => i === 11 ? { test: 'w4', geschafft: true } : {}), config, [], HEUTE), 'check-1'), '2026-08-12');
+  eq('Check 3 gehoert zu Woche 12', hat(M.aufnaeher(kl(36, i => i === 35 ? { test: 'w12', geschafft: true } : {}), config, [], HEUTE), 'check-3'), '2026-09-05');
+  const ks = [{ hinge: 12 }, { hinge: 12 }, { hinge: 14 }, { hinge: 10 }, { hinge: 14 }, { hinge: 16 }];
+  const a = M.aufnaeher(kl(6, i => ({ kugeln: ks[i] })), config, [], HEUTE);
+  eq('erste Erhoehung am dritten Tag', hat(a, 'kugel-1'), '2026-08-03');
+  eq('zurueck und wieder hoch zaehlt nicht doppelt', hat(a, 'kugel-5'), null);
+  const mo = (i, geschafft = true, kg = 12) => ({ date: `2026-09-${String(i + 1).padStart(2, '0')}`, type: 'moshpit', finished: `2026-09-${String(i + 1).padStart(2, '0')}T10:00:00Z`,
+    uebungen: [{ lift: 'swing2', kg, reps: 15, sets: 3, erledigt: geschafft ? 3 : 2, geschafft }] });
+  eq('Mosh-Pit-Debuet', hat(M.aufnaeher([mo(0)], config, [], HEUTE), 'pit-start'), '2026-09-01');
+  eq('Mosh Pit ohne Kurs: kein Kurs-Debuet', hat(M.aufnaeher([mo(0)], config, [], HEUTE), 'kurs-start'), null);
+  eq('Kugelsprung', hat(M.aufnaeher([mo(0), mo(1, true, 16)], config, [], HEUTE), 'pit-sprung'), '2026-09-02');
+  eq('gleiche Kugel: kein Sprung', hat(M.aufnaeher([mo(0), mo(1)], config, [], HEUTE), 'pit-sprung'), null);
+  eq('Serie 3', hat(M.aufnaeher([mo(0), mo(1), mo(2)], config, [], HEUTE), 'pit-serie-3'), '2026-09-03');
+  eq('Fehlversuch unterbricht die Serie', hat(M.aufnaeher([mo(0), mo(1, false), mo(2), mo(3)], config, [], HEUTE), 'pit-serie-3'), null);
+  const neu = M.neueAufnaeher([], kl(1), config, [], HEUTE);
+  ok('Kurs-Debuet ist nach der ersten Einheit neu', neu.some(x => x.id === 'kurs-start'));
+}
+
 print('\n--- Pixelbilder ---');
 {
   const voll = M.katalog({ ...config, lifts: { ...config.lifts, squat: { ...config.lifts.squat, reference: 100 } } },
-    { mitGewicht: true, mitRad: true, mitHoehe: true, mitPlan: true, mitZusammen: true });
+    { mitGewicht: true, mitRad: true, mitHoehe: true, mitPlan: true, mitZusammen: true, mitKurs: true, mitPit: true });
   const ohne = voll.filter(a => M.bildIndex(a) < 0).map(a => a.id);
   eq('jeder Aufnaeher hat ein Bild', ohne.join(), '');
   const indizes = voll.map(a => M.bildIndex(a));

@@ -360,3 +360,23 @@ export function tests(logs = []) {
       geschafft: l && typeof l.geschafft === 'boolean' ? l.geschafft : null, kugeln: l ? (l.kugeln || {}) : {} };
   });
 }
+
+/**
+ * Bewegtes Gewicht einer Kurs-Einheit in kg: Plan der Einheit mal die
+ * eingetragene Kugel. Aufwaermen und Tragen zaehlen nicht (keine Wiederholungen),
+ * ohne eingetragene Kugel zaehlt der Baustein nicht.
+ */
+export function tonnage(log) {
+  if (!log || log.type !== 'kurs' || !log.kugeln) return 0;
+  const e = einheit(Number(log.woche), String(log.tag));
+  if (!e) return 0;
+  let kg = 0;
+  for (const b of e.bloecke) {
+    if (b.warm) continue;
+    const last = Number(log.kugeln[kugelSchluessel(b)]);
+    if (!(last > 0)) continue;
+    if (b.art === 'takt') kg += b.runden * b.wdh * last;
+    else if (b.art === 'saetze') kg += b.saetze * b.wdh * (b.seiten ? 2 : 1) * last;
+  }
+  return Math.round(kg * 10) / 10;
+}

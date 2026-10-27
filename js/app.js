@@ -2004,6 +2004,7 @@ function renderKurs() {
 /* ---------- Die laufende Einheit ---------- */
 
 function kuStartLauf() {
+  if (!kuEinheit) return;
   kuAblauf = KU.ablauf(kuEinheit);
   kuIndex = 0;
   kuPausiert = false;

@@ -10,6 +10,18 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-27.4
+
+### Neu
+- **Belohnungen für Kettlebell-Kurs und Mosh Pit.** Dreizehn neue Aufnäher mit eigenem Pixelbild:
+  Kurs-Debüt, Fundament, Grundlage und Ausbau (12, 24, 36 Einheiten), Check 1 bis 3 (nur mit
+  „geschafft"), Schwerere Kugel (erste und fünfte Erhöhung im selben Baustein), Mosh-Pit-Debüt,
+  Kugelsprung und Pit-Serie (3 und 6 Einheiten in Folge, alle Lifts geschafft). Sie erscheinen erst,
+  wenn es einen Kurs- oder Mosh-Pit-Log gibt.
+- **Bewegtes Gewicht zählt auch bei der Kugel.** Kurs (aus Plan und eingetragener Kugel) und Mosh Pit
+  (Kugel × Wiederholungen × erledigte Sätze, einarmig doppelt) fließen in die Tonnen. Damit laufen
+  Gold, Platin, Doppelplatin und Diamant sowie Hohlkörper, Kopflos und Goldene Axt auch über die Kettlebell.
+
 ## 2026-10-27.3
 
 ### Neu

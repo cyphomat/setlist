@@ -173,6 +173,136 @@ const RAHMEN = {
 
 /* Eigene Zeichnungen, je hoechstens 13 breit. H = Hauptfarbe, A = Akzent. */
 const EIGENE = {
+  kettlebell: [           // Kurs-Debuet: eine Kugel mit Henkel
+    '...HHHHH...',
+    '..H.....H..',
+    '..HHHHHHH..',
+    '.HHHHHHHHH.',
+    'HHAAHHHHHHH',
+    'HHAHHHHHHHH',
+    'HHHHHHHHHHH',
+    '.HHHHHHHHH.',
+    '..HHHHHHH..'
+  ],
+  fundament: [            // Fundament: Mauerwerk auf einer Bodenplatte
+    'HHHHHHHHHHHH',
+    'H....H.....H',
+    'HHHHHHHHHHHH',
+    'H.....H....H',
+    'HHHHHHHHHHHH',
+    'AAAAAAAAAAAA'
+  ],
+  grundlage: [            // Grundlage: Kugel auf dem Sockel
+    '..HHHHH..',
+    '.H.....H.',
+    '.HHHHHHH.',
+    'HHHAAAHHH',
+    'HHHAAAHHH',
+    '.HHHHHHH.',
+    'AAAAAAAAA'
+  ],
+  ausbau: [               // Ausbau: Pokal
+    'HHHHHHHHHHH',
+    'H.HHHHHHH.H',
+    'H.HHHAHHH.H',
+    '.H.HHHHH.H.',
+    '...HHHHH...',
+    '....HHH....',
+    '....HHH....',
+    '...AAAAA...'
+  ],
+  check1: [               // Check 1: Haken, ein Punkt
+    '.........HH',
+    '........HH.',
+    'H......HH..',
+    'HH....HH...',
+    '.HH..HH....',
+    '..HHHH.....',
+    '...HH......',
+    '...........',
+    '.....A.....'
+  ],
+  check2: [               // Check 2: Haken, zwei Punkte
+    '.........HH',
+    '........HH.',
+    'H......HH..',
+    'HH....HH...',
+    '.HH..HH....',
+    '..HHHH.....',
+    '...HH......',
+    '...........',
+    '...A...A...'
+  ],
+  check3: [               // Check 3: Haken, drei Punkte
+    '.........HH',
+    '........HH.',
+    'H......HH..',
+    'HH....HH...',
+    '.HH..HH....',
+    '..HHHH.....',
+    '...HH......',
+    '...........',
+    '.A...A...A.'
+  ],
+  kugel1: [               // Schwerere Kugel: Pfeil nach oben ueber der Kugel
+    '.....A.....',
+    '....AAA....',
+    '...AAAAA...',
+    '.....A.....',
+    '...HHHHH...',
+    '.HHHHHHHHH.',
+    'HHHHHHHHHHH',
+    'HHHHHHHHHHH',
+    '.HHHHHHHHH.',
+    '..HHHHHHH..'
+  ],
+  kugel5: [               // Kugel x5: schwere Kugel mit Pluszeichen
+    '...HHHHH...',
+    '..H.....H..',
+    '..HHHHHHH..',
+    '.HHHHAHHHH.',
+    'HHHHAAAHHHH',
+    'HHHHHAHHHHH',
+    'HHHHHHHHHHH',
+    '.HHHHHHHHH.',
+    '..HHHHHHH..'
+  ],
+  pitstart: [             // Mosh Pit: die Hoerner
+    'H.......H',
+    'HH.....HH',
+    'HH.....HH',
+    'HHH...HHH',
+    '.HHHHHHH.',
+    '..HHHHH..',
+    '..HAAAH..',
+    '..HAAAH..',
+    '...HHH...'
+  ],
+  pitsprung: [            // Kugelsprung: Kugel ueber der Sprungfeder
+    '...HHH...',
+    '..HHHHH..',
+    '.HHHHHHH.',
+    '..AAAAA..',
+    '.A.....A.',
+    '..AAAAA..',
+    '.A.....A.',
+    '..AAAAA..'
+  ],
+  pitserie3: [            // Pit-Serie 3: drei Flammen
+    '.A...A...A.',
+    'AHA.AHA.AHA',
+    'HHH.HHH.HHH',
+    'HHH.HHH.HHH',
+    '.H...H...H.'
+  ],
+  pitserie6: [            // Pit-Serie 6: sechs Flammen in zwei Reihen
+    '.A...A...A.',
+    'AHA.AHA.AHA',
+    'HHH.HHH.HHH',
+    '.A...A...A.',
+    'AHA.AHA.AHA',
+    'HHH.HHH.HHH'
+  ],
   hangar: [               // Klimmzug: Stange, Haende, Koerper
     'AAAAAAAAAAA',
     '.A.......A.',
@@ -567,7 +697,11 @@ const MOTIV = {
   'soundcheck-4': 'soundcheck4', 'soundcheck-12': '#mischpult',
   duett: '#duett', faustgruss: '#faustgruss',
   'partner-5': '#tickets', 'partner-15': '#backstage', 'partner-30': '#allaccess',
-  'verabredung-2': '#verabredung2', 'verabredung-4': '#verabredung4', 'verabredung-8': '#verabredung8'
+  'verabredung-2': '#verabredung2', 'verabredung-4': '#verabredung4', 'verabredung-8': '#verabredung8',
+  'kurs-start': '#kettlebell', 'kurs-fundament': '#fundament', 'kurs-grundlage': '#grundlage', 'kurs-ausbau': '#ausbau',
+  'check-1': '#check1', 'check-2': '#check2', 'check-3': '#check3',
+  'kugel-1': '#kugel1', 'kugel-5': '#kugel5',
+  'pit-start': '#pitstart', 'pit-sprung': '#pitsprung', 'pit-serie-3': '#pitserie3', 'pit-serie-6': '#pitserie6'
 };
 /* Symbole, deren Farbe die Aussage ist: Blut bleibt rot. */
 const EIGENE_FARBE = new Set(['debuet']);
@@ -578,7 +712,8 @@ const KATEGORIE = {
   km: 'rad', hoehe: 'rad', century: 'rad', doom: 'rad', openair: 'rad', crossover: 'rad',
   comeback: 'comeback', rueckweg: 'comeback', reunion: 'comeback', serie: 'serie',
   tour: 'tour', soundcheck: 'tour',
-  duett: 'buehne', faustgruss: 'buehne', partner: 'buehne', verabredung: 'buehne'
+  duett: 'buehne', faustgruss: 'buehne', partner: 'buehne', verabredung: 'buehne',
+  kurs: 'buehne', check: 'buehne', kugel: 'buehne', pit: 'buehne'
 };
 
 const raster = zeilen => {

@@ -136,3 +136,16 @@ export function serie(logs = []) {
   }
   return n;
 }
+
+/** Bewegtes Gewicht einer Mosh-Pit-Einheit in kg: Kugel x Wiederholungen x erledigte Saetze (je Arm doppelt). */
+export function tonnage(log) {
+  if (!log || log.type !== 'moshpit' || !Array.isArray(log.uebungen)) return 0;
+  let kg = 0;
+  for (const e of log.uebungen) {
+    const l = LIFTS.find(x => x.id === (e && e.lift));
+    if (!l) continue;
+    const k = Number(e.kg), r = Number(e.reps), n = Number(e.erledigt);
+    if (k > 0 && r > 0 && n > 0) kg += k * r * n * (l.seiten ? 2 : 1);
+  }
+  return Math.round(kg * 10) / 10;
+}

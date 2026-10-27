@@ -19,6 +19,8 @@ import { pausenFenster } from './verletzung.js';
 import { HILFS, bereinige } from './hilfs.js';
 import { serienMarken } from './soundcheck.js';
 import * as ZU from './zusammen.js';
+import { kursLogs, TESTS } from './kurs.js';
+import { moshLogs } from './moshpit.js';
 
 /** Was als Gig zaehlt: alles, wofuer man ins Studio gegangen ist — und jede Fahrt. */
 export const GIG_TYPEN = ['strength', 'wod', 'unplugged', 'kurs', 'moshpit', 'maxout'];
@@ -101,13 +103,19 @@ const DOOM_N = 10, OPENAIR_N = 10;
 export const ROADCREW_N = 10, HANGAR_WDH = 10;
 const ZUG = new Set(HILFS.filter(h => h.zug).map(h => h.id));
 const CROSSOVER_STUFEN = [1, 10, 26];
+/* Kettlebell: Phasen des Kurses (Einheiten), die drei Checks (in der Reihenfolge von TESTS),
+   Erhoehungen der Kugel und Serien im Mosh Pit. */
+export const KURS_PHASEN = [{ id: 'fundament', n: 12 }, { id: 'grundlage', n: 24 }, { id: 'ausbau', n: 36 }];
+export const KUGEL_STUFEN = [1, 5];
+export const PIT_SERIE_STUFEN = [3, 6];
+const CHECKS = Object.entries(TESTS).map(([woche, id]) => ({ woche: Number(woche), id }));
 
 /**
  * Welche Aufnaeher es fuer diese Konfiguration ueberhaupt gibt.
  * `gruppe` ist die Leiter: an der Wand steht je Gruppe nur der naechste
  * fehlende, damit keine Weste voller leerer Kreise entsteht.
  */
-export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHoehe = false, mitPlan = false, mitZusammen = false } = {}) {
+export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHoehe = false, mitPlan = false, mitZusammen = false, mitKurs = false, mitPit = false } = {}) {
   const lifts = config.lifts || {};
   const bar = config.bar || 20;
   const out = [];
@@ -163,7 +171,60 @@ export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHo
     for (const n of PARTNER_STUFEN) p(`partner-${n}`, 'buehne', 'partner', 'merch.p.partner', { n });
     for (const n of VERABREDUNG_STUFEN) p(`verabredung-${n}`, 'buehne', 'verabredung', 'merch.p.verabredung', { n });
   }
+  // Wer nie einen Kurs oder Mosh Pit gemacht hat, bekommt keine leeren Kreise dafuer.
+  if (mitKurs) {
+    p('kurs-start', 'buehne', 'kurs-start', 'merch.p.kurs-start');
+    for (const k of KURS_PHASEN) p(`kurs-${k.id}`, 'buehne', 'kurs', `merch.p.kurs-${k.id}`);
+    CHECKS.forEach((c, i) => p(`check-${i + 1}`, 'buehne', 'check', 'merch.p.check', { n: i + 1, woche: c.woche }));
+    for (const n of KUGEL_STUFEN) p(`kugel-${n}`, 'buehne', 'kugel', 'merch.p.kugel', { n });
+  }
+  if (mitPit) {
+    p('pit-start', 'buehne', 'pit-start', 'merch.p.pit-start');
+    p('pit-sprung', 'buehne', 'pit-sprung', 'merch.p.pit-sprung');
+    for (const n of PIT_SERIE_STUFEN) p(`pit-serie-${n}`, 'buehne', 'pit-serie', 'merch.p.pit-serie', { n });
+  }
   return out;
+}
+
+/**
+ * Kurs und Mosh Pit. Alles aus den Logs: Einheiten zaehlen, Checks mit "geschafft",
+ * Kugel nur dann "schwerer", wenn sie die hoechste bisherige im selben Baustein
+ * uebertrifft (wer zurueckgeht und wieder hochkommt, bekommt nichts doppelt).
+ */
+function kettlebellAufnaeher(kl, ml, setze) {
+  if (kl.length) setze('kurs-start', kl[0].date);
+  for (const k of KURS_PHASEN) if (kl.length >= k.n) setze(`kurs-${k.id}`, kl[k.n - 1].date);
+  CHECKS.forEach((c, i) => {
+    const l = kl.find(x => x.test === c.id && x.geschafft === true);
+    if (l) setze(`check-${i + 1}`, l.date);
+  });
+  const hoechste = {};
+  let erhoeht = 0;
+  for (const l of kl) {
+    for (const [k, v] of Object.entries(l.kugeln || {})) {
+      const kg = Number(v);
+      if (!(kg > 0)) continue;
+      if (hoechste[k] && kg > hoechste[k]) {
+        erhoeht++;
+        for (const n of KUGEL_STUFEN) if (erhoeht >= n) setze(`kugel-${n}`, l.date);
+      }
+      hoechste[k] = Math.max(hoechste[k] || 0, kg);
+    }
+  }
+  if (ml.length) setze('pit-start', ml[0].date);
+  const schwerste = {};
+  let serie = 0;
+  for (const l of ml) {
+    const u = Array.isArray(l.uebungen) ? l.uebungen : [];
+    for (const e of u) {
+      const kg = Number(e && e.kg);
+      if (!(kg > 0)) continue;
+      if (schwerste[e.lift] && kg > schwerste[e.lift]) setze('pit-sprung', l.date);
+      schwerste[e.lift] = Math.max(schwerste[e.lift] || 0, kg);
+    }
+    serie = u.length && u.every(x => x && x.geschafft === true) ? serie + 1 : 0;
+    for (const n of PIT_SERIE_STUFEN) if (serie >= n) setze(`pit-serie-${n}`, l.date);
+  }
 }
 
 /** Koerpergewicht an einem Tag: der juengste Wochenschnitt davor, nicht aelter als zwei Wochen. */
@@ -185,12 +246,15 @@ function waageFuer(reihe, datum) {
 export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Date(), { fahrten = [], planFuer = null, soundchecks = [], zusammen = [] } = {}) {
   const reihe = gewichtsReihe(wellness);
   const rad = mitDatum(fahrten);
+  const kl = kursLogs(logs), ml = moshLogs(logs);
   const kat = katalog(config, {
     mitGewicht: reihe.length > 0,
     mitRad: rad.length > 0,
     mitHoehe: rad.some(f => f.hm != null),
     mitPlan: !!planFuer && radGeplant(config),
-    mitZusammen: zusammen.length > 0
+    mitZusammen: zusammen.length > 0,
+    mitKurs: kl.length > 0,
+    mitPit: ml.length > 0
   });
   const gibt = new Set(kat.map(k => k.id));
   const verdient = {};
@@ -285,6 +349,8 @@ export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Dat
   for (const n of PARTNER_STUFEN) if (partner[n]) setze(`partner-${n}`, partner[n]);
   const woche = serienMarken(ZU.wochen(gemTage), VERABREDUNG_STUFEN);
   for (const n of VERABREDUNG_STUFEN) if (woche[n]) setze(`verabredung-${n}`, woche[n]);
+
+  kettlebellAufnaeher(kl, ml, setze);
 
   const gelenkig = gelenkigeWochen(logs);
   for (const n of GELENKIG_STUFEN) if (gelenkig.length >= n) setze(`gelenkig-${n}`, gelenkig[n - 1]);
@@ -448,6 +514,8 @@ export const BILDER = [
   'comeback', 'rueckweg', 'reunion', ...SERIE_STUFEN.map(n => `serie-${n}`), ...TOUR_STUFEN.map(n => `tour-${n}`),
   ...SOUNDCHECK_STUFEN.map(n => `soundcheck-${n}`),
   'duett', 'faustgruss', ...PARTNER_STUFEN.map(n => `partner-${n}`), ...VERABREDUNG_STUFEN.map(n => `verabredung-${n}`),
+  'kurs-start', ...KURS_PHASEN.map(k => `kurs-${k.id}`), ...CHECKS.map((c, i) => `check-${i + 1}`), ...KUGEL_STUFEN.map(n => `kugel-${n}`),
+  'pit-start', 'pit-sprung', ...PIT_SERIE_STUFEN.map(n => `pit-serie-${n}`),
   ...PLATTEN_STUFEN.map(n => `platten-figur-${n}`), 'koerper-figur'
 ];
 

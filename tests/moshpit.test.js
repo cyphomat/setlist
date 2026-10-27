@@ -71,4 +71,13 @@ print('\n--- Statistik ---');
   ok('ohne Logs: n=0', MP.bestwerte([]).every(x => x.n === 0 && x.best === null));
 }
 
+print('\n--- Bewegtes Gewicht ---');
+{
+  const l = einheit([e('swing2', 12, 15), e('press', 8, 10)]);   // Swing 3x15x12, Press 3x10x8 je Arm
+  eq('Swing plus Press (zwei Arme)', MP.tonnage(l), 3 * 15 * 12 + 3 * 10 * 8 * 2);
+  eq('nur erledigte Saetze', MP.tonnage(einheit([e('swing2', 12, 15, false)])), 2 * 15 * 12);
+  eq('fremder Typ nichts', MP.tonnage({ type: 'kurs', uebungen: [] }), 0);
+  eq('ohne Uebungen nichts', MP.tonnage({ type: 'moshpit' }), 0);
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

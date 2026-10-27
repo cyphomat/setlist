@@ -91,4 +91,16 @@ ok('jede Uebung hat Name, Cue und deutsche Erklaerung', Object.values(K.UEBUNGEN
   u.name && u.cue && /^[A-Z]/.test(u.name) && u.erklaerung.length > 40 && u.standard.length > 20));
 ok('Namen enthalten keine deutschen Reste', Object.values(K.UEBUNGEN).every(u => !/(einarmig|beidarmig|Hüfte|Tragen|Kugel)/.test(u.name + ' ' + u.cue)));
 
+print('\n--- Bewegtes Gewicht ---');
+{
+  // Woche 1 Tag A: Hip Hinge 3x8, Goblet 3x6, Carry zaehlt nicht
+  const l = log(1, { woche: 1, tag: 'A', kugeln: { hinge: 16, goblet: 12, carry: 20 } });
+  eq('Hinge 3x8x16 + Goblet 3x6x12', K.tonnage(l), 3 * 8 * 16 + 3 * 6 * 12);
+  eq('ohne Kugeln nichts', K.tonnage(log(1, { woche: 1, tag: 'A' })), 0);
+  eq('fremder Typ nichts', K.tonnage({ type: 'wod', kugeln: { hinge: 16 } }), 0);
+  eq('Takt: Runden x Wdh. x kg (Woche 1 B: 8 x 10 mit 12)', K.tonnage(log(1, { woche: 1, tag: 'B', kugeln: { swing2: 12 } })), 8 * 10 * 12);
+  ok('einarmig zaehlt beide Seiten (Woche 5 A: Clean 3x5 je Seite mit 12)', K.tonnage(log(1, { woche: 5, tag: 'A', kugeln: { clean: 12 } })) === 3 * 5 * 2 * 12);
+  eq('unbekannte Woche nichts', K.tonnage(log(1, { woche: 99, tag: 'A', kugeln: { hinge: 16 } })), 0);
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

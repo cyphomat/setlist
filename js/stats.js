@@ -3,10 +3,15 @@
 
 import { wocheInPause } from './verletzung.js';
 
+import { tonnage as kursTonnage } from './kurs.js';
+import { tonnage as moshTonnage } from './moshpit.js';
+
 const istKraft = l => (l.type || 'strength') === 'strength' && Array.isArray(l.lifts);
 
 /** Bewegtes Gesamtgewicht einer Einheit: Last x tatsaechliche Wiederholungen. */
 export function tonnage(log) {
+  if (log && log.type === 'kurs') return kursTonnage(log);
+  if (log && log.type === 'moshpit') return moshTonnage(log);
   if (!istKraft(log)) return 0;
   return log.lifts.reduce((s, e) =>
     s + (e.weight || 0) * (e.reps || []).reduce((a, r) => a + r, 0), 0);
