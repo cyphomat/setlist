@@ -5278,7 +5278,10 @@ async function neueAufnaeherZeigen(log, historie) {
   const monat = log.date.slice(0, 7);
   const tVor = M.monatsTour(vorher, config, monat, { fahrten: radFuerMerch(vorher) });
   const tNach = M.monatsTour(nachher, config, monat, { fahrten: radFuerMerch(nachher) });
+  // Endgegner des Kurses: vorher stand er noch, jetzt liegt er am Boden
+  const kbVor = M.kursBoss(vorher), kbNach = M.kursBoss(nachher);
   const info = { neu, rang: rNach.stufe > rVor.stufe ? rNach.id : null,
+    kursBoss: kbNach && kbNach.komplett && !(kbVor && kbVor.komplett) ? t('kb.name') : null,
     tour: tNach && tNach.komplett && !(tVor && tVor.komplett) ? bossName(monat) : null,
     elf: !!(vNach && vNach.stufe === 11 && !(vVor && vVor.stufe === 11)) };
   // Neue Gitarren aus denselben Logs; sie koennen auch ohne neuen Aufnaeher kommen.
@@ -5311,6 +5314,7 @@ function ansagen(log, info) {
   zeigeAnsage(ANS.ansage({
     rang: info && info.rang ? t(`merch.r.${info.rang}`) : null,
     tour: info && info.tour,
+    kursBoss: info && info.kursBoss,
     gitarre: info && info.gitarre && info.gitarre.length ? t(`merch.g.${info.gitarre[0]}`) : null,
     aufnaeher: info ? info.neu.map(patchName) : [],
     referenz: ref ? { name: liftName(ref.lift), kg: ref.kg } : null,
@@ -5932,6 +5936,41 @@ function monatsTourHtml(touren) {
     </div>`;
 }
 
+/** Der Kurs-Endgegner: drei Checks, jeder nimmt ein Drittel der Lebensleiste. */
+function kursBossHtml(b) {
+  if (!b) return '';
+  const offen = b.ziele.filter(z => !z.ok).length;
+  const boss = t('kb.name');
+  return `<h2>${escHtml(t('kb.kopf'))}</h2>
+    <div class="card monatstour${b.komplett ? ' besiegt' : ''}">
+      <div class="mt-kopf">
+        <span class="boss kurs${b.komplett ? ' tot' : ''}" role="img" aria-label="${escHtml(boss)}"></span>
+        <div class="mt-wer">
+          <div class="kicker">${escHtml(t('kb.titel'))}</div>
+          <div class="name">${escHtml(t('mt.gegner', { boss }))}</div>
+          <div class="lp" role="img" aria-label="${escHtml(t('mt.lp', { n: offen, gesamt: b.ziele.length }))}">${
+            b.ziele.map(z => `<i class="${z.ok ? 'weg' : ''}"></i>`).join('')}</div>
+        </div>
+      </div>
+      <div class="mt-ziele">${b.ziele.map(z => `
+        <div class="mt-ziel${z.ok ? ' ok' : ''}">
+          <div class="h"><span>${escHtml(t(`ku.check.${z.id}`))}</span><b>${z.ok ? '✓ ' : ''}${escHtml(z.ok ? datumKurz(z.am) : t('kb.offen'))}</b></div>
+          <div class="bar"><i style="width:${z.ok ? 100 : 0}%"></i></div>
+        </div>`).join('')}</div>
+      <p class="mt-stand">${escHtml(b.komplett ? t('mt.besiegt', { boss, datum: datumKurz(b.besiegtAm) })
+        : t('mt.stand', { n: b.ziele.length - offen, gesamt: b.ziele.length }))}</p>
+      <p class="fine">${escHtml(t('kb.fine'))}</p>
+    </div>`;
+}
+
+/** Die Kugel-Leiter als eine Zeile unter dem Endgegner. */
+function kugelRangHtml(r) {
+  if (!r) return '';
+  const name = t(`merch.kr.${r.id}`);
+  const weiter = r.naechste ? tn('merch.kr.naechste', r.naechste.fehlt, { n: r.naechste.fehlt, name: t(`merch.kr.${r.naechste.id}`) }) : t('merch.kr.oben');
+  return `<p class="kugelrang"><b>${escHtml(t('merch.kr.titel', { name }))}</b> · ${escHtml(weiter)}</p>`;
+}
+
 let rangGewaehlt = null;   // im Merch angesehener Rang; beim Oeffnen wieder der aktuelle
 
 async function zeigeMerch(von = 'home') {
@@ -6012,7 +6051,8 @@ function renderMerch(logs) {
   zeigeRang(rangGewaehlt);
 
   // Monats-Tour
-  $('merch-monat').innerHTML = monatsTourHtml(M.monatsTouren(logs, config, { fahrten, heute }));
+  $('merch-monat').innerHTML = monatsTourHtml(M.monatsTouren(logs, config, { fahrten, heute }))
+    + kursBossHtml(M.kursBoss(logs)) + kugelRangHtml(M.kugelRang(logs));
 
   // Kutte
   const w = M.kutte(liste);
@@ -6031,17 +6071,24 @@ function renderMerch(logs) {
   // Schallplatten
   const s = M.schallplatten(logs);
   const t1 = n => n.toLocaleString(locale(), { maximumFractionDigits: 1 });
-  $('merch-platten').innerHTML = `
-    <div class="platten-wand">${s.stufen.map((p, i) => `
+  const nBilder = M.PLATTEN.length + M.KUGEL_PLATTEN.length;
+  const wand = (stufen, ab) => `<div class="platten-wand">${stufen.map((p, i) => `
       <div class="scheibe s-${p.id}${p.verdient ? '' : ' offen'}">
-        <span class="award" style="--i:${i}" role="img" aria-label="${escHtml(t('merch.s.bild', { name: t(`merch.s.${p.id}`) }))}"></span>
+        <span class="award" style="--i:${i + ab};--n:${nBilder}" role="img" aria-label="${escHtml(t('merch.s.bild', { name: t(`merch.s.${p.id}`) }))}"></span>
         <b>${escHtml(t(`merch.s.${p.id}`))}</b>
         <span>${p.verdient ? escHtml(t('merch.verdient', { datum: datumLang(p.verdient) })) : escHtml(t('merch.s.ab', { t: t1(p.tonnen) }))}</span>
       </div>`).join('')}
-    </div>
+    </div>`;
+  const kp = M.kugelRang(logs) ? M.kugelPlatten(logs) : null;
+  $('merch-platten').innerHTML = `
+    ${wand(s.stufen, 0)}
     <p class="fine">${escHtml(t('merch.s.stand', { t: t1(s.tonnen), stacks: Math.round(s.tonnen * 1000 / MARSHALL_KG).toLocaleString(locale()) }))}
       ${escHtml(s.naechste ? t('merch.s.naechste', { t: t1(s.naechste.fehlt), name: t(`merch.s.${s.naechste.id}`) }) : t('merch.s.alle'))}</p>
-    ${s.naechste ? `<div class="bar"><i style="width:${Math.round(s.naechste.anteil * 100)}%"></i></div>` : ''}`;
+    ${s.naechste ? `<div class="bar"><i style="width:${Math.round(s.naechste.anteil * 100)}%"></i></div>` : ''}
+    ${kp ? `<h2>${escHtml(t('merch.kp.titel'))}</h2>${wand(kp.stufen, M.PLATTEN.length)}
+      <p class="fine">${escHtml(t('merch.kp.stand', { t: t1(kp.tonnen) }))}
+        ${escHtml(kp.naechste ? t('merch.s.naechste', { t: t1(kp.naechste.fehlt), name: t(`merch.s.${kp.naechste.id}`) }) : t('merch.s.alle'))}</p>
+      ${kp.naechste ? `<div class="bar"><i style="width:${Math.round(kp.naechste.anteil * 100)}%"></i></div>` : ''}` : ''}`;
 
   // Gitarrenrack: was haengt, dazu nur die naechste, die fehlt
   const rk = GT.rack(logs, fahrten);

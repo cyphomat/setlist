@@ -10,6 +10,19 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-27.5
+
+### Neu
+- **Kugel-Platten.** Eine zweite Reihe an der Studiowand, nur aus dem Gewicht von Kurs und Mosh Pit:
+  Eisen (10 t), Stahl (25 t), Titan (50 t) und Meteorit (100 t). Die Reihe erscheint erst nach der ersten
+  Kurs- oder Mosh-Pit-Einheit. Über Diamant gibt es jetzt eine Top-Stufe: **Adamant** bei 1000 t.
+- **Kugel-Rang.** Vier Stufen nach Wochen mit Kurs oder Mosh Pit (1, 4, 12, 26): Eisenkind, Lehrling,
+  Schmied, Eisenmeister, mit je einem Aufnäher. Der normale Rang bleibt, wie er ist.
+- **Kurs-Endgegner: der Kugel-Titan.** Jeder geschaffte Check (Woche 4, 8, 12) nimmt ein Drittel der
+  Lebensleiste; sind alle drei geschafft, ist er besiegt. Eigenes Pixelbild, Karte im Merch-Stand, Ansage
+  „ENDGEGNER BESIEGT" und ein Aufnäher.
+- **Zu zweit mit der Kugel.** Drei Aufnäher für Kurs, Check und Mosh Pit an einem Tag mit Verabredung.
+
 ## 2026-10-27.4
 
 ### Neu

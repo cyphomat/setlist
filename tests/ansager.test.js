@@ -20,6 +20,12 @@ print('\n--- Nichts los ---');
 eq('ohne Ereignis keine Ansage', A.ansage(), null);
 eq('leere Angaben auch nicht', A.ansage({ aufnaeher: [], elf: false, sauber: false }), null);
 
+print('\n--- Kurs-Endgegner ---');
+eq('Endgegner wird angesagt', A.ansage({ kursBoss: 'Der Kugel-Titan' }).ruf, I.t('ans.kursBoss'));
+ok('Name steht darunter', A.ansage({ kursBoss: 'Der Kugel-Titan' }).unter.includes('Der Kugel-Titan'));
+eq('Monats-Tour hat Vorrang vor dem Kurs-Endgegner', A.ansage({ tour: 'Krampus', kursBoss: 'Der Kugel-Titan' }).ruf, I.t('ans.tour'));
+eq('Kurs-Endgegner vor Gitarre und Aufnaeher', A.ansage({ kursBoss: 'X', gitarre: 'Brett', aufnaeher: ['A'] }).ruf, I.t('ans.kursBoss'));
+
 print('\n--- Vorrang ---');
 const alles = { rang: 'Support', aufnaeher: ['Tight'], referenz: { name: 'Back Squat', kg: 100 },
   rund: { name: 'Deadlift', kg: 150 }, elf: true, sauber: true };
