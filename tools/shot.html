@@ -99,6 +99,36 @@ const wkg = Array.from({ length: 26 }, (_, i) => {
   return { date: tage(25 - i), eftp, weight, wkg: Math.round((eftp / weight) * 1000) / 1000 };
 });
 
+// Kettlebell: nur fuer die Szenen kurs und kugel-*, sonst aendern diese Einheiten
+// Zaehler und Kurven der uebrigen Bilder. Zwoelf Kurs-Einheiten (Fundament
+// geschafft, Check 1 im Takt), dazu fuenf Mosh-Pit-Einheiten mit einem Kugelsprung.
+if (szene === 'kurs' || szene.startsWith('kugel')) {
+  const kugeln = (tag, i) => {
+    const s = 12 + Math.floor(i / 4) * 2;            // die Kugel waechst alle vier Einheiten
+    return tag === 'A' ? { hinge: s, goblet: s - 4, carry: s }
+         : tag === 'B' ? { hinge: s, swing2: s }
+         : { getup: 4, goblet: s - 4, swing2: s };
+  };
+  for (let i = 0; i < 12; i++) {
+    const tag = 'ABC'[i % 3], d = tage(33 - i * 2);
+    logs.push({ date: d, type: 'kurs', kurs: 'kettlebell', woche: Math.floor(i / 3) + 1, tag, einheit: i + 1,
+      label: 'Kettlebell-Kurs', dauerSekunden: 1500, bewertung: 'passend', kugeln: kugeln(tag, i),
+      ...(i === 11 ? { test: 'w4', geschafft: true } : {}),
+      started: d + 'T17:00:00.000Z', finished: d + 'T17:25:00.000Z' });
+  }
+  const pit = [[12, 15], [12, 17], [12, 20], [16, 10], [16, 12]];
+  pit.forEach(([kg, reps], i) => {
+    const d = tage(9 - i * 2);
+    logs.push({ date: d, type: 'moshpit', label: 'Mosh Pit', dauerSekunden: 1200, finished: d + 'T18:00:00.000Z',
+      uebungen: [
+        { lift: 'swing2', kg, reps, sets: 3, erledigt: 3, geschafft: true },
+        { lift: 'goblet', kg, reps, sets: 3, erledigt: 3, geschafft: true },
+        { lift: 'press', kg: 8, reps: 10 + i, sets: 3, erledigt: 3, geschafft: true }
+      ] });
+  });
+  logs.sort((a, b) => a.date.localeCompare(b.date));
+}
+
 const state = {
   version: 1, derivedFrom: logs.length, updated: new Date().toISOString(), next: 'A',
   lifts: {
@@ -212,6 +242,29 @@ rahmen.addEventListener('load', async () => {
     await warte(900);
     $('merch-rack').previousElementSibling.scrollIntoView();
     w.scrollBy(0, -70);
+  } else if (szene === 'kurs') {
+    // Die Einheiten werden beim ersten Oeffnen der Tour geladen; ohne diesen
+    // Umweg stuende der Kurs noch in Woche 1 und die Kugel waere leer.
+    $('go-history').click();
+    await warte(1200);
+    $('hist-back').click();
+    await warte(300);
+    $('go-kurs').click();
+    await warte(400);
+    w.scrollTo(0, 0);
+  } else if (szene === 'kugel-boss') {
+    // Kurs-Endgegner mit Lebensleiste, darunter die Kugel-Leiter.
+    $('go-merch').click();
+    await warte(1200);
+    [...d.querySelectorAll('#merch-monat h2')].find(h => h.textContent.includes('Kurs'))?.scrollIntoView();
+    w.scrollBy(0, -64);
+  } else if (szene === 'kugel-stat') {
+    $('go-history').click();
+    await warte(1200);
+    $('tour-tab-kugel').click();
+    await warte(300);
+    if ($('banner')) $('banner').hidden = true;
+    w.scrollTo(0, 0);
   } else if (szene === 'warmup') {
     $('start').click();
     await warte(200);

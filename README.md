@@ -35,7 +35,7 @@
   <sub>Deine Trainingsdaten bleiben in diesem Browser (<a href="#daten">mehr dazu</a>). Lieber in einem eigenen privaten GitHub-Repo, auf mehreren Geräten, oder den Code selbst in der Hand? <a href="#-selbst-einrichten">Selbst einrichten</a>.</sub>
 </p>
 
-> **Zur Sprache.** Die App gibt es auf Deutsch und Englisch — umschaltbar unter **Tour → ⚙ Backstage → App**. Zweisprachig sind die ganze Oberfläche, die Ansage samt Tageswort, Meilensteine, Minierfolge, Aufnäher und Fehlermeldungen. Deutsch bleiben nur die *Übungsinhalte* — Erklärungen, Cues, typische Fehler, Bewegungsstandards — sowie die mitgelieferten Sprüche, die Jam-Bewegungen und die Rad-Begründungen. Das ist Fachtext, der inhaltlich übersetzt werden muss statt Wort für Wort. In deinen Daten steht das Tageswort immer deutsch, damit „Ansage gegen Gefühl“ in beiden Sprachen gleich zählt.
+> **Zur Sprache.** Die App gibt es auf Deutsch und Englisch — umschaltbar unter **Tour → ⚙ Backstage → App**. Zweisprachig sind die ganze Oberfläche, die Ansage samt Tageswort, Meilensteine, Minierfolge, Aufnäher und Fehlermeldungen. Deutsch bleiben nur die *Übungsinhalte* — Erklärungen, Cues, typische Fehler, Bewegungsstandards (im Kettlebell-Kurs stehen Übungsnamen und Cues englisch, die Erklärungen deutsch) — sowie die mitgelieferten Sprüche, die Jam-Bewegungen und die Rad-Begründungen. Das ist Fachtext, der inhaltlich übersetzt werden muss statt Wort für Wort. In deinen Daten steht das Tageswort immer deutsch, damit „Ansage gegen Gefühl“ in beiden Sprachen gleich zählt.
 
 ---
 
@@ -96,6 +96,21 @@
   <img src="assets/screens/merch-dunkel.png" alt="Der Merch-Stand: Rang, Monats-Tour mit Endgegner und Kutte mit Aufnähern" width="330">
   <img src="assets/screens/rack-dunkel.png" alt="Das Gitarrenrack im Merch-Stand: zwei Gitarren hängen, die nächste wartet als dunkle Silhouette auf Rang Vorband" width="330">
 </p>
+
+**Und die Kugel** — Kettlebell-Kurs und Mosh Pit, mit der Kugel in kg, Checks und einem eigenen Endgegner:
+
+<table>
+<tr>
+<td width="33%"><img src="assets/screens/kurs-dunkel.png" alt="Kettlebell-Kurs: Woche 5, Einheit A, mit der Kugel je Übung"></td>
+<td width="33%"><img src="assets/screens/kugel-dunkel.png" alt="Tour, Reiter Kugel: Kugelverlauf je Übung"></td>
+<td width="33%"><img src="assets/screens/kugel-boss-dunkel.png" alt="Der Kugel-Titan, Endgegner des Kurses, mit Lebensleiste und Kugel-Rang"></td>
+</tr>
+<tr>
+<td align="center"><b>Der Kurs</b><br><sub>Welche Kugel, dann geführt nach der Uhr</sub></td>
+<td align="center"><b>Dein Verlauf</b><br><sub>Kugel je Übung, Checks</sub></td>
+<td align="center"><b>Der Endgegner</b><br><sub>Jeder Check nimmt ein Drittel</sub></td>
+</tr>
+</table>
 
 <sub>Echte Bildschirme mit Beispieldaten, aufgenommen über <code>tools/shot.html</code> und <code>tools/shots.mjs</code>. Keine Mockups.</sub>
 

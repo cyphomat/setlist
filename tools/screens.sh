@@ -55,4 +55,7 @@ schuss maxout-dunkel  maxout  dunkel
 schuss home-hell      home    hell
 schuss session-hell   session hell
 schuss_ausschnitt rack-dunkel rack dunkel 445
+schuss kurs-dunkel kurs dunkel
+schuss_ausschnitt kugel-boss-dunkel kugel-boss dunkel 560
+schuss kugel-dunkel kugel-stat dunkel
 schuss_desktop tour-desktop verlauf dunkel
