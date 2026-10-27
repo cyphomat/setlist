@@ -474,10 +474,94 @@ print('\n--- Zusammen trainiert ---');
   ok('das Duett ist nach der Einheit neu', neu.some(a => a.id === 'duett'));
 }
 
+print('\n--- Kettlebell: Kurs und Mosh Pit ---');
+{
+  const kl = (n, extra = i => ({})) => Array.from({ length: n }, (_, i) => ({ date: new Date(Date.UTC(2026, 7, 1 + i)).toISOString().slice(0, 10),
+    type: 'kurs', kurs: 'kettlebell', woche: Math.floor(i / 3) + 1, tag: 'ABC'[i % 3], finished: new Date(Date.UTC(2026, 7, 1 + i, 10)).toISOString(), ...extra(i) }));
+  const KG = ['kurs-start', 'kurs-fundament', 'kurs-grundlage', 'kurs-ausbau', 'check-1', 'check-2', 'check-3', 'kugel-1', 'kugel-5', 'pit-start', 'pit-sprung', 'pit-serie-3', 'pit-serie-6'];
+  const gibt = a => a.filter(x => KG.includes(x.id)).length;
+  eq('ohne Kurs und Pit: keiner dieser Aufnaeher', gibt(M.aufnaeher([], config, [], HEUTE)), 0);
+  eq('mit Kurs: neun, ohne Pit', gibt(M.aufnaeher(kl(1), config, [], HEUTE)), 9);
+  eq('Katalog mit beiden: dreizehn', gibt(M.katalog(config, { mitKurs: true, mitPit: true, mitKursZusammen: true, mitPitZusammen: true })), 13);
+  eq('Kurs-Debuet am ersten Tag', hat(M.aufnaeher(kl(1), config, [], HEUTE), 'kurs-start'), '2026-08-01');
+  eq('Fundament nach zwoelf', hat(M.aufnaeher(kl(12), config, [], HEUTE), 'kurs-fundament'), '2026-08-12');
+  eq('elf reichen nicht', hat(M.aufnaeher(kl(11), config, [], HEUTE), 'kurs-fundament'), null);
+  eq('Ausbau nach 36', hat(M.aufnaeher(kl(36), config, [], HEUTE), 'kurs-ausbau'), '2026-09-05');
+  eq('Check nur mit geschafft', hat(M.aufnaeher(kl(12, i => i === 11 ? { test: 'w4', geschafft: false } : {}), config, [], HEUTE), 'check-1'), null);
+  eq('Check geschafft', hat(M.aufnaeher(kl(12, i => i === 11 ? { test: 'w4', geschafft: true } : {}), config, [], HEUTE), 'check-1'), '2026-08-12');
+  eq('Check 3 gehoert zu Woche 12', hat(M.aufnaeher(kl(36, i => i === 35 ? { test: 'w12', geschafft: true } : {}), config, [], HEUTE), 'check-3'), '2026-09-05');
+  const ks = [{ hinge: 12 }, { hinge: 12 }, { hinge: 14 }, { hinge: 10 }, { hinge: 14 }, { hinge: 16 }];
+  const a = M.aufnaeher(kl(6, i => ({ kugeln: ks[i] })), config, [], HEUTE);
+  eq('erste Erhoehung am dritten Tag', hat(a, 'kugel-1'), '2026-08-03');
+  eq('zurueck und wieder hoch zaehlt nicht doppelt', hat(a, 'kugel-5'), null);
+  const mo = (i, geschafft = true, kg = 12) => ({ date: `2026-09-${String(i + 1).padStart(2, '0')}`, type: 'moshpit', finished: `2026-09-${String(i + 1).padStart(2, '0')}T10:00:00Z`,
+    uebungen: [{ lift: 'swing2', kg, reps: 15, sets: 3, erledigt: geschafft ? 3 : 2, geschafft }] });
+  eq('Mosh-Pit-Debuet', hat(M.aufnaeher([mo(0)], config, [], HEUTE), 'pit-start'), '2026-09-01');
+  eq('Mosh Pit ohne Kurs: kein Kurs-Debuet', hat(M.aufnaeher([mo(0)], config, [], HEUTE), 'kurs-start'), null);
+  eq('Kugelsprung', hat(M.aufnaeher([mo(0), mo(1, true, 16)], config, [], HEUTE), 'pit-sprung'), '2026-09-02');
+  eq('gleiche Kugel: kein Sprung', hat(M.aufnaeher([mo(0), mo(1)], config, [], HEUTE), 'pit-sprung'), null);
+  eq('Serie 3', hat(M.aufnaeher([mo(0), mo(1), mo(2)], config, [], HEUTE), 'pit-serie-3'), '2026-09-03');
+  eq('Fehlversuch unterbricht die Serie', hat(M.aufnaeher([mo(0), mo(1, false), mo(2), mo(3)], config, [], HEUTE), 'pit-serie-3'), null);
+  const neu = M.neueAufnaeher([], kl(1), config, [], HEUTE);
+  ok('Kurs-Debuet ist nach der ersten Einheit neu', neu.some(x => x.id === 'kurs-start'));
+}
+
+print('\n--- Kugel-Platten, Kugel-Rang, Endgegner, Coop ---');
+{
+  const kurs = (date, extra = {}) => ({ date, type: 'kurs', kurs: 'kettlebell', woche: 1, tag: 'A', finished: `${date}T10:00:00Z`, kugeln: { hinge: 100, goblet: 100 }, ...extra });
+  const pit = (date, kg = 100) => ({ date, type: 'moshpit', finished: `${date}T10:00:00Z`, uebungen: [{ lift: 'swing2', kg, reps: 15, sets: 3, erledigt: 3, geschafft: true }] });
+  eq('adamant als oberste Platte', M.PLATTEN[M.PLATTEN.length - 1].id, 'adamant');
+  eq('adamant bei 1000 t', M.PLATTEN[M.PLATTEN.length - 1].tonnen, 1000);
+  eq('vier Kugel-Platten', M.KUGEL_PLATTEN.length, 4);
+  // Hinge 3x8x100 + Goblet 3x6x100 = 2400 + 1800 = 4200 kg je Kurs-Einheit
+  const viele = Array.from({ length: 3 }, (_, i) => kurs(`2026-08-0${i + 1}`));   // 12,6 t
+  const kp = M.kugelPlatten(viele);
+  eq('Kugel-Platte zaehlt Kettlebell-Tonnen', kp.tonnen, 12.6);
+  eq('Eisen bei 10 t am dritten Tag', kp.stufen[0].verdient, '2026-08-03');
+  eq('Stahl noch offen', kp.stufen[1].verdient, null);
+  eq('naechste ist Stahl', kp.naechste.id, 'stahl');
+  const kraft = { date: '2026-08-04', type: 'strength', workout: 'A', lifts: [{ lift: 'squat', weight: 100, sets: 5, target: 5, reps: [5, 5, 5, 5, 5], success: true }] };
+  eq('Kraft zaehlt nicht fuer die Kugel-Platte', M.kugelPlatten(viele.concat([kraft])).tonnen, 12.6);
+  ok('Kraft zaehlt aber fuer die normalen Platten', M.schallplatten(viele.concat([kraft])).tonnen > M.schallplatten(viele).tonnen);
+  eq('ohne Logs keine Kugel-Platte', M.kugelPlatten([]).tonnen, 0);
+
+  eq('ohne Einheit kein Kugel-Rang', M.kugelRang([]), null);
+  eq('erste Einheit: Eisenkind', M.kugelRang([kurs('2026-08-03')]).id, 'eisenkind');
+  const wochen = n => Array.from({ length: n }, (_, i) => kurs(new Date(Date.UTC(2026, 0, 5 + i * 7)).toISOString().slice(0, 10)));
+  eq('vier Wochen: Lehrling', M.kugelRang(wochen(4)).id, 'lehrling');
+  eq('zwoelf Wochen: Schmied', M.kugelRang(wochen(12)).id, 'schmied');
+  eq('26 Wochen: Eisenmeister', M.kugelRang(wochen(26)).id, 'eisenmeister');
+  eq('Eisenmeister ist oben', M.kugelRang(wochen(26)).naechste, null);
+  eq('zwei Einheiten in einer Woche zaehlen einmal', M.kugelRang([kurs('2026-08-03'), kurs('2026-08-04')]).wochen, 1);
+  eq('Mosh Pit zaehlt wie der Kurs', M.kugelRang([pit('2026-08-03')]).id, 'eisenkind');
+  eq('Lehrling am vierten Tag', M.kugelRang(wochen(4)).freigespielt[1], wochen(4)[3].date);
+  eq('Aufnaeher Lehrling', hat(M.aufnaeher(wochen(4), config, [], HEUTE), 'kugelrang-2'), wochen(4)[3].date);
+
+  eq('ohne Kurs kein Endgegner', M.kursBoss([pit('2026-08-03')]), null);
+  const check = (id, date, geschafft = true) => kurs(date, { test: id, geschafft });
+  let b = M.kursBoss([kurs('2026-08-01'), check('w4', '2026-08-10')]);
+  eq('ein Check: ein Drittel', b.ziele.filter(z => z.ok).length, 1);
+  ok('noch nicht besiegt', !b.komplett && b.besiegtAm === null);
+  b = M.kursBoss([check('w4', '2026-08-10', false)]);
+  eq('nicht geschafft nimmt nichts', b.ziele.filter(z => z.ok).length, 0);
+  b = M.kursBoss([check('w4', '2026-08-10'), check('w8', '2026-09-10'), check('w12', '2026-10-10')]);
+  ok('alle drei: besiegt am letzten Tag', b.komplett && b.besiegtAm === '2026-10-10');
+  eq('Aufnaeher Kugel-Titan besiegt', hat(M.aufnaeher([check('w4', '2026-08-10'), check('w8', '2026-09-10'), check('w12', '2026-10-10')], config, [], HEUTE), 'kursboss'), '2026-10-10');
+
+  const v = (datum, extra = {}) => ({ id: 'abcdefgh23', datum, mit: 'Max', rolle: 'einlader', bestaetigt: false, ...extra });
+  eq('Kurs zu zweit am gemeinsamen Tag', hat(M.aufnaeher([kurs('2026-08-03')], config, [], HEUTE, { zusammen: [v('2026-08-03')] }), 'kurs-duett'), '2026-08-03');
+  eq('anderer Tag: kein Coop', hat(M.aufnaeher([kurs('2026-08-04')], config, [], HEUTE, { zusammen: [v('2026-08-03')] }), 'kurs-duett'), null);
+  eq('ohne Verabredung gibt es ihn nicht', M.aufnaeher([kurs('2026-08-03')], config, [], HEUTE).some(a => a.id === 'kurs-duett'), false);
+  eq('Check zu zweit nur mit geschafft', hat(M.aufnaeher([check('w4', '2026-08-03', false)], config, [], HEUTE, { zusammen: [v('2026-08-03')] }), 'check-duett'), null);
+  eq('Check zu zweit', hat(M.aufnaeher([check('w4', '2026-08-03')], config, [], HEUTE, { zusammen: [v('2026-08-03')] }), 'check-duett'), '2026-08-03');
+  eq('Mosh Pit zu zweit', hat(M.aufnaeher([pit('2026-08-03')], config, [], HEUTE, { zusammen: [v('2026-08-03')] }), 'pit-duett'), '2026-08-03');
+  eq('Pit-Coop braucht Mosh Pit', M.aufnaeher([kurs('2026-08-03')], config, [], HEUTE, { zusammen: [v('2026-08-03')] }).some(a => a.id === 'pit-duett'), false);
+}
+
 print('\n--- Pixelbilder ---');
 {
   const voll = M.katalog({ ...config, lifts: { ...config.lifts, squat: { ...config.lifts.squat, reference: 100 } } },
-    { mitGewicht: true, mitRad: true, mitHoehe: true, mitPlan: true, mitZusammen: true });
+    { mitGewicht: true, mitRad: true, mitHoehe: true, mitPlan: true, mitZusammen: true, mitKurs: true, mitPit: true, mitKursZusammen: true, mitPitZusammen: true });
   const ohne = voll.filter(a => M.bildIndex(a) < 0).map(a => a.id);
   eq('jeder Aufnaeher hat ein Bild', ohne.join(), '');
   const indizes = voll.map(a => M.bildIndex(a));

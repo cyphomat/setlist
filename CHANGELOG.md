@@ -10,6 +10,72 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-27.5
+
+### Neu
+- **Kugel-Platten.** Eine zweite Reihe an der Studiowand, nur aus dem Gewicht von Kurs und Mosh Pit:
+  Eisen (10 t), Stahl (25 t), Titan (50 t) und Meteorit (100 t). Die Reihe erscheint erst nach der ersten
+  Kurs- oder Mosh-Pit-Einheit. Über Diamant gibt es jetzt eine Top-Stufe: **Adamant** bei 1000 t.
+- **Kugel-Rang.** Vier Stufen nach Wochen mit Kurs oder Mosh Pit (1, 4, 12, 26): Eisenkind, Lehrling,
+  Schmied, Eisenmeister, mit je einem Aufnäher. Der normale Rang bleibt, wie er ist.
+- **Kurs-Endgegner: der Kugel-Titan.** Jeder geschaffte Check (Woche 4, 8, 12) nimmt ein Drittel der
+  Lebensleiste; sind alle drei geschafft, ist er besiegt. Eigenes Pixelbild, Karte im Merch-Stand, Ansage
+  „ENDGEGNER BESIEGT" und ein Aufnäher.
+- **Zu zweit mit der Kugel.** Drei Aufnäher für Kurs, Check und Mosh Pit an einem Tag mit Verabredung.
+
+## 2026-10-27.4
+
+### Neu
+- **Belohnungen für Kettlebell-Kurs und Mosh Pit.** Dreizehn neue Aufnäher mit eigenem Pixelbild:
+  Kurs-Debüt, Fundament, Grundlage und Ausbau (12, 24, 36 Einheiten), Check 1 bis 3 (nur mit
+  „geschafft"), Schwerere Kugel (erste und fünfte Erhöhung im selben Baustein), Mosh-Pit-Debüt,
+  Kugelsprung und Pit-Serie (3 und 6 Einheiten in Folge, alle Lifts geschafft). Sie erscheinen erst,
+  wenn es einen Kurs- oder Mosh-Pit-Log gibt.
+- **Bewegtes Gewicht zählt auch bei der Kugel.** Kurs (aus Plan und eingetragener Kugel) und Mosh Pit
+  (Kugel × Wiederholungen × erledigte Sätze, einarmig doppelt) fließen in die Tonnen. Damit laufen
+  Gold, Platin, Doppelplatin und Diamant sowie Hohlkörper, Kopflos und Goldene Axt auch über die Kettlebell.
+
+## 2026-10-27.3
+
+### Neu
+- **Kettlebell Mosh Pit.** Das Folgeprogramm nach dem Kurs: drei feste Lifts (Swing, Goblet Squat,
+  einarmiges Drücken), je drei Sätze, doppelte Progression wie beim 5x5. Die Leiter läuft 10 → 12 → 15 → 17 → 20
+  Wiederholungen; wer alle Sätze schafft, steigt eine Sprosse, nach 20 folgt eine um 4 kg schwerere Kugel
+  und es geht bei 10 weiter. Zweimal nicht geschafft: eine Stufe zurück. Das nächste Ziel folgt aus den
+  Logs (`type: 'moshpit'`), gespeichert wird nur die Einheit. Der Knopf erscheint, sobald der Kurs fertig ist.
+  Pausenuhr zwischen den Sätzen; Verlauf, Bestwert, Erfolge und Serie stehen in Tour › Kugel.
+  Leiter und Schrittweite sind Planung, nicht aus einer Studie.
+
+## 2026-10-27.2
+
+### Neu
+- **Kettlebell-Kurs mit Kugel in kg.** Vor jeder Einheit trägst du je Baustein ein, mit welcher
+  Kugel du arbeitest (Schritt 2 kg, Eingabe frei). Die letzte Kugel ist vorbelegt. Das Log
+  speichert sie (`kugeln`), der neue Reiter **Tour › Kugel** zeigt Verlauf, höchste Kugel und
+  Zahl der Einheiten je Übung.
+- **Uhren.** Die Führung zeigt oben die Gesamtzeit, bei Sätzen eine Stoppuhr, bei Takt, Pause
+  und Tragen einen Countdown. Tragen läuft je Seite mit Signal beim Wechsel.
+- **Zwischentests.** Woche 4 (Check 1: 100 beidarmige Swings in fünf Minuten, zwei Get-ups je Seite) und
+  Woche 8 (Check 2: 100 einarmige Swings, vier Get-ups je Seite) ersetzen den Tag C; Woche 12
+  bleibt der Abschlusstest. Am Ende fragt die App, ob alles im Takt geschafft wurde; die Checks
+  stehen mit Datum, Kugel und Ergebnis im Reiter Kugel.
+- Übungsnamen und Cues stehen jetzt auf Englisch (Hip Hinge, Swing, Goblet Squat …), Erklärung,
+  Standard und Varianten bleiben deutsch.
+
+## 2026-10-27.1
+
+### Neu
+- **Kettlebell-Kurs.** Zwölf Wochen, drei Einheiten pro Woche, in drei Phasen: Fundament (Hüfte,
+  Swing, Goblet, Get-up), Grundlage (einarmig, Clean, Drücken) und Ausbau (Dichte, Komplexe,
+  Test in Woche 12). Die vierte Woche jeder Phase ist Entlastung. Die Einheit führt durch: Sätze
+  hakst du selbst ab, Takt und Pausen laufen nach der Uhr. Am Ende sagst du, wie die Kugel war;
+  zweimal „zu leicht“ in Folge schlägt die schwerere Kugel vor, zweimal „zäh“ die leichtere.
+  Woche und Tag folgen aus den Logs (`type: 'kurs'`), gespeichert wird nur die Einheit. Der Plan
+  ist eigene Planung nach gängigen Prinzipien, keine einzelne Studie; belegt ist nur, dass Swings
+  Maximal- und Schnellkraft steigern (Lake & Lauder 2012, kleine Studie). Die Einheit zählt als
+  Gig für Rang, Abzeichen und Gitarren und geht wie der Jam an intervals.icu.
+- Die Einheit steht im Export (`art: kurs`), in der Historie und in der Tour.
+
 ## 2026-10-26.3
 
 ### Behoben

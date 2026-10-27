@@ -1030,4 +1030,11 @@ print('\n--- Rampe, RPE, Rad-Bestwerte ---');
     { date: '2026-10-02', bestwerte: Array.from({ length: 10 }, () => ({ text: 'y' })) }]).length, 12);
 }
 
+print('\n--- Tonnage: Kettlebell ---');
+{
+  eq('Mosh Pit zaehlt', S.tonnage({ type: 'moshpit', uebungen: [{ lift: 'goblet', kg: 12, reps: 15, sets: 3, erledigt: 3, geschafft: true }] }), 12 * 15 * 3);
+  eq('Kurs zaehlt mit Kugel', S.tonnage({ type: 'kurs', woche: 1, tag: 'A', kugeln: { hinge: 10 } }), 3 * 8 * 10);
+  eq('Jam und Unplugged bleiben bei null', S.tonnage({ type: 'wod' }) + S.tonnage({ type: 'unplugged' }), 0);
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

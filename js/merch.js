@@ -19,9 +19,11 @@ import { pausenFenster } from './verletzung.js';
 import { HILFS, bereinige } from './hilfs.js';
 import { serienMarken } from './soundcheck.js';
 import * as ZU from './zusammen.js';
+import { kursLogs, TESTS, tests as kursTests } from './kurs.js';
+import { moshLogs } from './moshpit.js';
 
 /** Was als Gig zaehlt: alles, wofuer man ins Studio gegangen ist — und jede Fahrt. */
-export const GIG_TYPEN = ['strength', 'wod', 'unplugged', 'maxout'];
+export const GIG_TYPEN = ['strength', 'wod', 'unplugged', 'kurs', 'moshpit', 'maxout'];
 const typ = l => l.type || 'strength';
 const istGig = l => l && l.date && GIG_TYPEN.includes(typ(l));
 const istKraft = l => typ(l) === 'strength' && Array.isArray(l.lifts);
@@ -101,13 +103,26 @@ const DOOM_N = 10, OPENAIR_N = 10;
 export const ROADCREW_N = 10, HANGAR_WDH = 10;
 const ZUG = new Set(HILFS.filter(h => h.zug).map(h => h.id));
 const CROSSOVER_STUFEN = [1, 10, 26];
+/* Kettlebell: Phasen des Kurses (Einheiten), die drei Checks (in der Reihenfolge von TESTS),
+   Erhoehungen der Kugel und Serien im Mosh Pit. */
+export const KURS_PHASEN = [{ id: 'fundament', n: 12 }, { id: 'grundlage', n: 24 }, { id: 'ausbau', n: 36 }];
+export const KUGEL_STUFEN = [1, 5];
+/** Die Kugel-Leiter nach Wochen mit Kurs oder Mosh Pit (kugelRang). */
+export const KUGEL_RAENGE = [
+  { id: 'eisenkind', wochen: 1 },
+  { id: 'lehrling', wochen: 4 },
+  { id: 'schmied', wochen: 12 },
+  { id: 'eisenmeister', wochen: 26 }
+];
+export const PIT_SERIE_STUFEN = [3, 6];
+const CHECKS = Object.entries(TESTS).map(([woche, id]) => ({ woche: Number(woche), id }));
 
 /**
  * Welche Aufnaeher es fuer diese Konfiguration ueberhaupt gibt.
  * `gruppe` ist die Leiter: an der Wand steht je Gruppe nur der naechste
  * fehlende, damit keine Weste voller leerer Kreise entsteht.
  */
-export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHoehe = false, mitPlan = false, mitZusammen = false } = {}) {
+export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHoehe = false, mitPlan = false, mitZusammen = false, mitKurs = false, mitPit = false, mitKursZusammen = false, mitPitZusammen = false } = {}) {
   const lifts = config.lifts || {};
   const bar = config.bar || 20;
   const out = [];
@@ -163,7 +178,77 @@ export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHo
     for (const n of PARTNER_STUFEN) p(`partner-${n}`, 'buehne', 'partner', 'merch.p.partner', { n });
     for (const n of VERABREDUNG_STUFEN) p(`verabredung-${n}`, 'buehne', 'verabredung', 'merch.p.verabredung', { n });
   }
+  // Wer nie einen Kurs oder Mosh Pit gemacht hat, bekommt keine leeren Kreise dafuer.
+  if (mitKurs) {
+    p('kurs-start', 'buehne', 'kurs-start', 'merch.p.kurs-start');
+    for (const k of KURS_PHASEN) p(`kurs-${k.id}`, 'buehne', 'kurs', `merch.p.kurs-${k.id}`);
+    CHECKS.forEach((c, i) => p(`check-${i + 1}`, 'buehne', 'check', 'merch.p.check', { n: i + 1, woche: c.woche }));
+    for (const n of KUGEL_STUFEN) p(`kugel-${n}`, 'buehne', 'kugel', 'merch.p.kugel', { n });
+    KUGEL_RAENGE.forEach((r, k) => p(`kugelrang-${k + 1}`, 'buehne', 'kugelrang', `merch.p.kugelrang-${k + 1}`));
+    p('kursboss', 'buehne', 'kursboss', 'merch.p.kursboss');
+  }
+  if (mitKursZusammen) {
+    p('kurs-duett', 'buehne', 'kurs-duett', 'merch.p.kurs-duett');
+    p('check-duett', 'buehne', 'check-duett', 'merch.p.check-duett');
+  }
+  if (mitPitZusammen) p('pit-duett', 'buehne', 'pit-duett', 'merch.p.pit-duett');
+  if (mitPit) {
+    p('pit-start', 'buehne', 'pit-start', 'merch.p.pit-start');
+    p('pit-sprung', 'buehne', 'pit-sprung', 'merch.p.pit-sprung');
+    for (const n of PIT_SERIE_STUFEN) p(`pit-serie-${n}`, 'buehne', 'pit-serie', 'merch.p.pit-serie', { n });
+  }
   return out;
+}
+
+/**
+ * Kurs und Mosh Pit. Alles aus den Logs: Einheiten zaehlen, Checks mit "geschafft",
+ * Kugel nur dann "schwerer", wenn sie die hoechste bisherige im selben Baustein
+ * uebertrifft (wer zurueckgeht und wieder hochkommt, bekommt nichts doppelt).
+ */
+function kettlebellAufnaeher(kl, ml, setze, gemDaten = new Set(), logs = []) {
+  if (kl.length) setze('kurs-start', kl[0].date);
+  for (const k of KURS_PHASEN) if (kl.length >= k.n) setze(`kurs-${k.id}`, kl[k.n - 1].date);
+  CHECKS.forEach((c, i) => {
+    const l = kl.find(x => x.test === c.id && x.geschafft === true);
+    if (l) setze(`check-${i + 1}`, l.date);
+  });
+  const hoechste = {};
+  let erhoeht = 0;
+  for (const l of kl) {
+    for (const [k, v] of Object.entries(l.kugeln || {})) {
+      const kg = Number(v);
+      if (!(kg > 0)) continue;
+      if (hoechste[k] && kg > hoechste[k]) {
+        erhoeht++;
+        for (const n of KUGEL_STUFEN) if (erhoeht >= n) setze(`kugel-${n}`, l.date);
+      }
+      hoechste[k] = Math.max(hoechste[k] || 0, kg);
+    }
+  }
+  const kr = kugelRang(logs);
+  if (kr) kr.freigespielt.forEach((d, k) => { if (d) setze(`kugelrang-${k + 1}`, d); });
+  const boss = kursBoss(logs);
+  if (boss && boss.komplett) setze('kursboss', boss.besiegtAm);
+  const duett = kl.find(l => gemDaten.has(l.date));
+  if (duett) setze('kurs-duett', duett.date);
+  const checkDuett = kl.find(l => l.test && l.geschafft === true && gemDaten.has(l.date));
+  if (checkDuett) setze('check-duett', checkDuett.date);
+  const pitDuett = ml.find(l => gemDaten.has(l.date));
+  if (pitDuett) setze('pit-duett', pitDuett.date);
+  if (ml.length) setze('pit-start', ml[0].date);
+  const schwerste = {};
+  let serie = 0;
+  for (const l of ml) {
+    const u = Array.isArray(l.uebungen) ? l.uebungen : [];
+    for (const e of u) {
+      const kg = Number(e && e.kg);
+      if (!(kg > 0)) continue;
+      if (schwerste[e.lift] && kg > schwerste[e.lift]) setze('pit-sprung', l.date);
+      schwerste[e.lift] = Math.max(schwerste[e.lift] || 0, kg);
+    }
+    serie = u.length && u.every(x => x && x.geschafft === true) ? serie + 1 : 0;
+    for (const n of PIT_SERIE_STUFEN) if (serie >= n) setze(`pit-serie-${n}`, l.date);
+  }
 }
 
 /** Koerpergewicht an einem Tag: der juengste Wochenschnitt davor, nicht aelter als zwei Wochen. */
@@ -185,12 +270,17 @@ function waageFuer(reihe, datum) {
 export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Date(), { fahrten = [], planFuer = null, soundchecks = [], zusammen = [] } = {}) {
   const reihe = gewichtsReihe(wellness);
   const rad = mitDatum(fahrten);
+  const kl = kursLogs(logs), ml = moshLogs(logs);
   const kat = katalog(config, {
     mitGewicht: reihe.length > 0,
     mitRad: rad.length > 0,
     mitHoehe: rad.some(f => f.hm != null),
     mitPlan: !!planFuer && radGeplant(config),
-    mitZusammen: zusammen.length > 0
+    mitZusammen: zusammen.length > 0,
+    mitKurs: kl.length > 0,
+    mitPit: ml.length > 0,
+    mitKursZusammen: kl.length > 0 && zusammen.length > 0,
+    mitPitZusammen: ml.length > 0 && zusammen.length > 0
   });
   const gibt = new Set(kat.map(k => k.id));
   const verdient = {};
@@ -285,6 +375,8 @@ export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Dat
   for (const n of PARTNER_STUFEN) if (partner[n]) setze(`partner-${n}`, partner[n]);
   const woche = serienMarken(ZU.wochen(gemTage), VERABREDUNG_STUFEN);
   for (const n of VERABREDUNG_STUFEN) if (woche[n]) setze(`verabredung-${n}`, woche[n]);
+
+  kettlebellAufnaeher(kl, ml, setze, new Set(gemTage.map(x => x.datum)), logs);
 
   const gelenkig = gelenkigeWochen(logs);
   for (const n of GELENKIG_STUFEN) if (gelenkig.length >= n) setze(`gelenkig-${n}`, gelenkig[n - 1]);
@@ -399,20 +491,35 @@ export const PLATTEN = [
   { id: 'gold', tonnen: 50 },
   { id: 'platin', tonnen: 100 },
   { id: 'doppelplatin', tonnen: 250 },
-  { id: 'diamant', tonnen: 500 }
+  { id: 'diamant', tonnen: 500 },
+  { id: 'adamant', tonnen: 1000 }
 ];
 
-export function schallplatten(logs = []) {
+/** Nur aus Kurs und Mosh Pit: die Kugel-Platten haengen an der Kettlebell, nicht am Gesamtgewicht. */
+export const KUGEL_PLATTEN = [
+  { id: 'eisen', tonnen: 10 },
+  { id: 'stahl', tonnen: 25 },
+  { id: 'titan', tonnen: 50 },
+  { id: 'meteorit', tonnen: 100 }
+];
+const kugelTonnage = l => (l.type === 'kurs' || l.type === 'moshpit') ? tonnage(l) : 0;
+
+export const schallplatten = (logs = []) => plattenLauf(PLATTEN, logs, tonnage);
+
+/** Die Kugel-Platten: gleiche Rechnung, nur mit dem Gewicht aus Kurs und Mosh Pit. */
+export const kugelPlatten = (logs = []) => plattenLauf(KUGEL_PLATTEN, logs, kugelTonnage);
+
+function plattenLauf(liste, logs, gewicht) {
   let kg = 0;
   const verdient = {};
   for (const l of sortiert(logs)) {
-    kg += tonnage(l);
-    for (const p of PLATTEN) if (!verdient[p.id] && kg >= p.tonnen * 1000) verdient[p.id] = l.date;
+    kg += gewicht(l);
+    for (const p of liste) if (!verdient[p.id] && kg >= p.tonnen * 1000) verdient[p.id] = l.date;
   }
   const tonnen = Math.round(kg / 100) / 10;
-  const stufen = PLATTEN.map(p => ({ ...p, verdient: verdient[p.id] || null }));
-  const offen = PLATTEN.find(p => !verdient[p.id]);
-  const vorige = [...PLATTEN].reverse().find(p => verdient[p.id]);
+  const stufen = liste.map(p => ({ ...p, verdient: verdient[p.id] || null }));
+  const offen = liste.find(p => !verdient[p.id]);
+  const vorige = [...liste].reverse().find(p => verdient[p.id]);
   const basis = vorige ? vorige.tonnen : 0;
   return {
     tonnen,
@@ -448,6 +555,9 @@ export const BILDER = [
   'comeback', 'rueckweg', 'reunion', ...SERIE_STUFEN.map(n => `serie-${n}`), ...TOUR_STUFEN.map(n => `tour-${n}`),
   ...SOUNDCHECK_STUFEN.map(n => `soundcheck-${n}`),
   'duett', 'faustgruss', ...PARTNER_STUFEN.map(n => `partner-${n}`), ...VERABREDUNG_STUFEN.map(n => `verabredung-${n}`),
+  'kurs-start', ...KURS_PHASEN.map(k => `kurs-${k.id}`), ...CHECKS.map((c, i) => `check-${i + 1}`), ...KUGEL_STUFEN.map(n => `kugel-${n}`),
+  'pit-start', 'pit-sprung', ...PIT_SERIE_STUFEN.map(n => `pit-serie-${n}`),
+  ...KUGEL_RAENGE.map((r, k) => `kugelrang-${k + 1}`), 'kursboss', 'kurs-duett', 'check-duett', 'pit-duett',
   ...PLATTEN_STUFEN.map(n => `platten-figur-${n}`), 'koerper-figur'
 ];
 
@@ -502,6 +612,41 @@ export function rang(logs = [], fahrten = []) {
   };
 }
 
+/* ============================ Kugel-Rang und Endgegner ============================ */
+
+/**
+ * Die Kugel-Leiter: Wochen mit mindestens einer Kurs- oder Mosh-Pit-Einheit,
+ * wie beim Rang. Faellt nie; ohne Einheit gibt es sie nicht.
+ */
+export function kugelRang(logs = []) {
+  const tage = [...new Set(kursLogs(logs).concat(moshLogs(logs)).map(l => l.date))].sort();
+  if (!tage.length) return null;
+  const gezaehlt = new Set();
+  const freigespielt = KUGEL_RAENGE.map(() => null);
+  for (const d of tage) {
+    gezaehlt.add(montagKey(d));
+    KUGEL_RAENGE.forEach((x, k) => { if (!freigespielt[k] && gezaehlt.size >= x.wochen) freigespielt[k] = d; });
+  }
+  const wochen = gezaehlt.size;
+  let i = 0;
+  while (i + 1 < KUGEL_RAENGE.length && wochen >= KUGEL_RAENGE[i + 1].wochen) i++;
+  const n = KUGEL_RAENGE[i + 1] || null;
+  return { id: KUGEL_RAENGE[i].id, stufe: i, wochen, freigespielt,
+    naechste: n ? { id: n.id, wochen: n.wochen, fehlt: n.wochen - wochen } : null };
+}
+
+/**
+ * Der Endgegner des Kurses: drei Ziele, die drei Checks (Woche 4, 8, 12).
+ * Jeder geschaffte nimmt ein Drittel der Leiste; sind alle drei geschafft,
+ * ist er besiegt. Ohne Kurs-Einheit gibt es ihn nicht.
+ */
+export function kursBoss(logs = []) {
+  if (!kursLogs(logs).length) return null;
+  const ziele = kursTests(logs).map(c => ({ id: c.id, woche: c.woche, ok: c.geschafft === true, am: c.geschafft === true ? c.datum : null }));
+  const komplett = ziele.every(z => z.ok);
+  return { ziele, komplett, besiegtAm: komplett ? ziele.map(z => z.am).sort().pop() : null };
+}
+
 /* ============================== Tourshirts ============================== */
 
 /* Der Name macht das Shirt: das erste Wort die Stofffarbe, das zweite das
@@ -530,7 +675,7 @@ export function tourName(jahr, quartal) {
 }
 
 const quartalVon = datum => Math.floor((Number(datum.slice(5, 7)) - 1) / 3) + 1;
-const ART = { strength: 'kraft', wod: 'jam', unplugged: 'unplugged', maxout: 'maxout', rad: 'rad' };
+const ART = { strength: 'kraft', wod: 'jam', unplugged: 'unplugged', kurs: 'kurs', moshpit: 'moshpit', maxout: 'maxout', rad: 'rad' };
 
 /**
  * Jedes Quartal mit mindestens einem Gig ist eine Tour, die neueste zuerst.
@@ -653,7 +798,7 @@ export function verstaerker(logs = [], config = {}, heute = new Date(), history 
 
 /** Ersatzziel ohne geplante Fahrten: so viele Tage Jam, Unplugged oder Mobility. */
 export const TOUR_ERSATZ = 4;
-const NEBEN_TYPEN = ['wod', 'unplugged'];
+const NEBEN_TYPEN = ['wod', 'unplugged', 'kurs', 'moshpit'];
 const wochentag = datum => (new Date(datum + 'T12:00:00').getDay() + 6) % 7 + 1;   // 1 = Mo … 7 = So
 const slotTage = (config, art) => new Set(((config.week && Array.isArray(config.week.slots)) ? config.week.slots : [])
   .filter(s => s && s.type === art).map(s => s.day));

@@ -1,0 +1,106 @@
+// Ausfuehren: jsc --module-file=tests/kurs.test.js
+import * as K from '../js/kurs.js';
+
+let pass = 0, fail = 0;
+const ok = (n, c, x = '') => c ? (pass++, print(`  ok   ${n}`)) : (fail++, print(`  FAIL ${n} ${x}`));
+const eq = (n, a, b) => ok(n, a === b, `(${a} != ${b})`);
+const gleichJson = (n, a, b) => ok(n, JSON.stringify(a) === JSON.stringify(b), `(${JSON.stringify(a)} != ${JSON.stringify(b)})`);
+
+const log = (i, extra = {}) => ({ date: '2026-11-01', type: 'kurs', kurs: 'kettlebell',
+  finished: `2026-11-01T10:${String(i).padStart(2, '0')}:00.000Z`, ...extra });
+const logs = n => Array.from({ length: n }, (_, i) => log(i));
+
+print('\n--- Zustand ---');
+eq('ohne Einheit: Woche 1, Tag A', `${K.zustand([]).woche}${K.zustand([]).tag}`, '1A');
+eq('nach drei: Woche 2, Tag A', `${K.zustand(logs(3)).woche}${K.zustand(logs(3)).tag}`, '2A');
+eq('nach vier: Tag B', K.zustand(logs(4)).tag, 'B');
+eq('nach 35: Woche 12, Tag C', `${K.zustand(logs(35)).woche}${K.zustand(logs(35)).tag}`, '12C');
+ok('Woche 12 Tag C ist der Test', K.zustand(logs(35)).test);
+ok('nach 36: fertig', K.zustand(logs(36)).fertig && K.naechste(logs(36)) === null);
+ok('fremde Logs zaehlen nicht', K.zustand([{ date: '2026-11-01', type: 'wod' }]).absolviert === 0);
+eq('Phase 2 ab Woche 5', K.zustand(logs(12)).phase, 'grundlage');
+ok('Woche 4 ist Entlastung', K.zustand(logs(9)).entlastung);
+
+print('\n--- Plan ---');
+for (let w = 1; w <= K.WOCHEN; w++) for (const t of K.TAGE) {
+  const e = K.einheit(w, t);
+  ok(`Woche ${w}${t} hat Bausteine mit bekannten Uebungen`,
+    e && e.bloecke.length > 0 && e.bloecke.every(b => b.u.every(id => K.UEBUNGEN[id])));
+}
+ok('Woche 12 C ist Test', K.einheit(12, 'C').test && !K.einheit(12, 'B').test);
+ok('unbekannter Tag', K.einheit(1, 'X') === null && K.einheit(13, 'A') === null);
+ok('Dauer plausibel (5 bis 45 Min)', [1, 5, 9, 12].every(w => K.TAGE.every(t => { const m = K.minuten(K.einheit(w, t)); return m >= 5 && m <= 45; })));
+{
+  const a = K.ablauf(K.einheit(1, 'B'));
+  ok('Ablauf nicht leer, erste Station kein Pause-Schritt', a.length > 0 && a[0].art !== 'pause');
+  ok('nie Pause am Ende', a[a.length - 1].art !== 'pause');
+}
+
+print('\n--- Kugelwechsel ---');
+eq('zwei leicht: hoch', K.lastVorschlag([log(1, { bewertung: 'leicht' }), log(2, { bewertung: 'leicht' })]), 'hoch');
+eq('zwei zaeh: runter', K.lastVorschlag([log(1, { bewertung: 'zaeh' }), log(2, { bewertung: 'zaeh' })]), 'runter');
+eq('gemischt: nichts', K.lastVorschlag([log(1, { bewertung: 'leicht' }), log(2, { bewertung: 'passend' })]), null);
+eq('eine Einheit: nichts', K.lastVorschlag([log(1, { bewertung: 'leicht' })]), null);
+
+print('\n--- Zwischentests ---');
+eq('Woche 4 Tag C: Check 1', K.einheit(4, 'C').testId, 'w4');
+eq('Woche 8 Tag C: Check 2', K.einheit(8, 'C').testId, 'w8');
+eq('Woche 12 Tag C: Abschluss', K.einheit(12, 'C').testId, 'w12');
+ok('andere Tage ohne Test', K.einheit(4, 'B').testId === null && K.einheit(7, 'C').testId === null);
+ok('Zustand erkennt den Check', K.zustand(logs(11)).testId === 'w4' && K.zustand(logs(23)).testId === 'w8' && K.zustand(logs(35)).testId === 'w12');
+ok('Testeinheit zaehlt nicht als Entlastung', !K.einheit(4, 'C').entlastung && K.einheit(4, 'A').entlastung);
+{
+  const t = K.tests([log(1, { test: 'w4', geschafft: false, kugeln: { swing2: 12 } })]);
+  eq('drei Checks', t.length, 3);
+  ok('Check 1 gemacht, nicht ganz', t[0].datum === '2026-11-01' && t[0].geschafft === false && t[0].kugeln.swing2 === 12);
+  ok('Check 2 offen', t[1].datum === null && t[1].geschafft === null);
+}
+
+print('\n--- Tragen: Schritte je Seite ---');
+{
+  const a = K.ablauf(K.einheit(1, 'A')).filter(x => x.art === 'zeit');
+  eq('zwei Saetze mal zwei Seiten', a.length, 4);
+  ok('Seiten 1,2,1,2', a.map(x => x.seite).join('') === '1212');
+  ok('Sekunden aus dem Baustein', a.every(x => x.sekunden === 20));
+}
+
+print('\n--- Kugel in kg ---');
+{
+  const e = K.einheit(1, 'A');
+  const ks = K.kugelBausteine(e).map(x => x.schluessel);
+  ok('Aufwaermen zaehlt nicht', !ks.includes('halo'));
+  ok('Hinge, Goblet, Carry', ks.join() === 'hinge,goblet,carry');
+  ok('Get-up ohne Kugel (Woche 1 C) hat keinen Zaehler', !K.kugelBausteine(K.einheit(1, 'C')).some(x => x.schluessel === 'getup'));
+  ok('Komplex hat einen Schluessel', K.kugelBausteine(K.einheit(9, 'A')).some(x => x.schluessel === 'clean+press'));
+  gleichJson('bereinigt: nur gueltige Schluessel und Zahlen', K.bereinigeKugeln({ hinge: '16', goblet: 0, carry: -4, fremd: 8, x: 'a' }, e), { hinge: 16 });
+  gleichJson('bereinigt: Halbkilo', K.bereinigeKugeln({ hinge: 12.5 }, e), { hinge: 12.5 });
+  eq('zu schwer faellt heraus', Object.keys(K.bereinigeKugeln({ hinge: 500 }, e)).length, 0);
+  const ls = [log(1, { kugeln: { hinge: 12 } }), log(2, { kugeln: { goblet: 8 } }), log(3, { kugeln: { hinge: 14 } })];
+  eq('letzte Kugel', K.letzteKugel(ls, 'hinge'), 14);
+  eq('Kugel aus aelterer Einheit', K.letzteKugel(ls, 'goblet'), 8);
+  eq('unbekannt', K.letzteKugel(ls, 'press'), null);
+  gleichJson('Verlauf', K.kugelReihe(ls, 'hinge').map(p => p.kg), [12, 14]);
+  const bw = K.bestwerte(ls).find(x => x.schluessel === 'hinge');
+  ok('Bestwert: aktuell 14, hoechste 14, zweimal', bw.aktuell === 14 && bw.hoechste === 14 && bw.n === 2);
+  const zurueck = K.bestwerte([log(1, { kugeln: { hinge: 16 } }), log(2, { kugeln: { hinge: 12 } })]).find(x => x.schluessel === 'hinge');
+  ok('zurueckgegangen: hoechste bleibt', zurueck.aktuell === 12 && zurueck.hoechste === 16);
+}
+
+print('\n--- Englische Namen, deutsche Erklaerung ---');
+ok('jede Uebung hat Name, Cue und deutsche Erklaerung', Object.values(K.UEBUNGEN).every(u =>
+  u.name && u.cue && /^[A-Z]/.test(u.name) && u.erklaerung.length > 40 && u.standard.length > 20));
+ok('Namen enthalten keine deutschen Reste', Object.values(K.UEBUNGEN).every(u => !/(einarmig|beidarmig|Hüfte|Tragen|Kugel)/.test(u.name + ' ' + u.cue)));
+
+print('\n--- Bewegtes Gewicht ---');
+{
+  // Woche 1 Tag A: Hip Hinge 3x8, Goblet 3x6, Carry zaehlt nicht
+  const l = log(1, { woche: 1, tag: 'A', kugeln: { hinge: 16, goblet: 12, carry: 20 } });
+  eq('Hinge 3x8x16 + Goblet 3x6x12', K.tonnage(l), 3 * 8 * 16 + 3 * 6 * 12);
+  eq('ohne Kugeln nichts', K.tonnage(log(1, { woche: 1, tag: 'A' })), 0);
+  eq('fremder Typ nichts', K.tonnage({ type: 'wod', kugeln: { hinge: 16 } }), 0);
+  eq('Takt: Runden x Wdh. x kg (Woche 1 B: 8 x 10 mit 12)', K.tonnage(log(1, { woche: 1, tag: 'B', kugeln: { swing2: 12 } })), 8 * 10 * 12);
+  ok('einarmig zaehlt beide Seiten (Woche 5 A: Clean 3x5 je Seite mit 12)', K.tonnage(log(1, { woche: 5, tag: 'A', kugeln: { clean: 12 } })) === 3 * 5 * 2 * 12);
+  eq('unbekannte Woche nichts', K.tonnage(log(1, { woche: 99, tag: 'A', kugeln: { hinge: 16 } })), 0);
+}
+
+print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

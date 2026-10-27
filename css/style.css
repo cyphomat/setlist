@@ -1007,6 +1007,29 @@ input[type=checkbox]{accent-color:var(--akzent);width:16px;height:16px}
 #up-abbruch{margin-top:10px}
 #up-teile{margin-top:14px}
 #up-start{margin-top:16px}
+#ku-start,#ku-fertig{margin-top:16px}
+#mp-body{padding-bottom:calc(128px + env(safe-area-inset-bottom))}
+.mp-lift{border:1px solid var(--line);background:var(--panel);border-radius:2px;padding:12px;margin-top:12px}
+.mp-lift .h{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.mp-lift .name{font-family:var(--display);text-transform:uppercase;font-size:1.25rem;color:var(--akzent)}
+.mp-lift .zeile{display:flex;align-items:center;gap:8px;margin-top:10px}
+.mp-lift .zeile .lbl{flex:1;color:var(--muted);font-size:0.8125rem}
+.mp-lift .zeile button{width:40px;height:40px;padding:0}
+.mp-lift .zeile input{width:64px;height:40px;text-align:center;font-family:var(--mono);background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:2px}
+.mp-saetze{display:flex;gap:8px;margin-top:12px}
+.mp-saetze button{flex:1;margin:0;padding:12px 0}
+.mp-saetze button.an{border-color:var(--akzent);color:var(--akzent);background:var(--tint-akzent)}
+#mp-fertig{margin-top:16px}
+#ku-abbruch{margin-top:10px}
+#ku-bloecke{margin-top:14px}
+#ku-ende .up-steuer .btn{padding-left:6px;padding-right:6px}
+#ku-geschafft .btn.an{border-color:var(--akzent);color:var(--akzent)}
+.ku-kugel{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.ku-kugel .name{flex:1;min-width:0;overflow-wrap:anywhere}
+.ku-kugel button{width:40px;height:40px;padding:0}
+.ku-kugel input{width:64px;height:40px;text-align:center;font-family:var(--mono);background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:2px}
+.ku-kugel .kg{color:var(--muted);font-size:0.8125rem}
+.ku-test{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
 
 /* ═══════════════════════════════════════════════════════════
    Merch-Stand und Buehnenmomente. Spiel, aber im selben Road-Case:
@@ -1048,9 +1071,12 @@ button.tstop:hover .szene{border-color:var(--muted)}
 
 /* ── Monats-Tour: der Endgegner aus assets/pixel/boss.png (lebendig | besiegt) ── */
 .mt-kopf{display:flex;gap:14px;align-items:center}
-.boss{flex:none;width:72px;height:72px;background:url('../assets/pixel/boss.png') no-repeat 0 0/200% 100%;
+.boss{flex:none;width:72px;height:72px;background:url('../assets/pixel/boss.png') no-repeat 0 0/400% 100%;
   image-rendering:pixelated;filter:drop-shadow(0 3px 3px rgba(0,0,0,.5))}
-.boss.tot{background-position:100% 0;filter:grayscale(.6) drop-shadow(0 3px 3px rgba(0,0,0,.5))}
+.boss.kurs{background-position:66.667% 0}
+.boss.tot{background-position:33.333% 0;filter:grayscale(.6) drop-shadow(0 3px 3px rgba(0,0,0,.5))}
+.boss.kurs.tot{background-position:100% 0}
+.kugelrang{margin:10px 0 0;font-size:0.9375rem}
 .boss.schlaeft{filter:grayscale(1) brightness(.6);opacity:.6}
 .mt-wer{min-width:0;flex:1}
 .monatstour .name{font-family:var(--display);text-transform:uppercase;letter-spacing:.04em;font-size:1.125rem;
@@ -1118,8 +1144,8 @@ button.tstop:hover .szene{border-color:var(--muted)}
 @media (min-width: 560px){ .platten-wand{grid-template-columns:repeat(4,minmax(0,1fr))} }
 .scheibe{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;min-width:0}
 .award{display:block;width:min(120px,100%);aspect-ratio:48/60;margin-bottom:6px;
-  background:url('../assets/pixel/platten.png') no-repeat;background-size:400% 100%;
-  background-position:calc(var(--i) * 100% / 3) 0;image-rendering:pixelated;
+  background:url('../assets/pixel/platten.png') no-repeat;background-size:calc(var(--n, 9) * 100%) 100%;
+  background-position:calc(var(--i) * 100% / (var(--n, 9) - 1)) 0;image-rendering:pixelated;
   filter:drop-shadow(0 5px 5px rgba(0,0,0,.55))}
 .scheibe b{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.04em;
   font-size:0.8125rem;line-height:1.2;color:var(--fg);overflow-wrap:break-word;hyphens:auto;max-width:100%}

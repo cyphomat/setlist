@@ -3,10 +3,15 @@
 
 import { wocheInPause } from './verletzung.js';
 
+import { tonnage as kursTonnage } from './kurs.js';
+import { tonnage as moshTonnage } from './moshpit.js';
+
 const istKraft = l => (l.type || 'strength') === 'strength' && Array.isArray(l.lifts);
 
 /** Bewegtes Gesamtgewicht einer Einheit: Last x tatsaechliche Wiederholungen. */
 export function tonnage(log) {
+  if (log && log.type === 'kurs') return kursTonnage(log);
+  if (log && log.type === 'moshpit') return moshTonnage(log);
   if (!istKraft(log)) return 0;
   return log.lifts.reduce((s, e) =>
     s + (e.weight || 0) * (e.reps || []).reduce((a, r) => a + r, 0), 0);
@@ -721,7 +726,7 @@ export function kalender(logs = [], fahrten = [], wochen = 26, heute = new Date(
     // Unplugged faellt in dieselbe Spalte wie der Jam: beides ist
     // Beiwerk neben dem Programm, und zwei zusaetzliche Farben im Raster
     // wuerden mehr verwirren als erklaeren.
-    if (l.type === 'wod' || l.type === 'unplugged') wod.add(l.date);
+    if (l.type === 'wod' || l.type === 'unplugged' || l.type === 'kurs' || l.type === 'moshpit') wod.add(l.date);
     else if (!l.type || l.type === 'strength') kraft.add(l.date);
   }
   for (const f of fahrten) if (f.date) rad.add(f.date);
@@ -769,7 +774,7 @@ export function wochenLast(logs = [], fahrten = [], wochen = 12, heute = new Dat
     const sek = l.dauerSekunden ||
       (l.started && l.finished ? Math.round((new Date(l.finished) - new Date(l.started)) / 1000) : 0);
     if (!sek) continue;
-    const beiwerk = l.type === 'wod' || l.type === 'unplugged';
+    const beiwerk = l.type === 'wod' || l.type === 'unplugged' || l.type === 'kurs' || l.type === 'moshpit';
     eimer[i].kraft += Math.round((sek / 60) * (beiwerk ? faktor.wod : faktor.strength));
   }
   for (const f of fahrten) {
@@ -1439,7 +1444,7 @@ export function wochenRueckschau(logs = [], fahrten = [], montag) {
   return {
     montag, bis,
     einheiten: kraft.length,
-    jams: woche.filter(l => l.type === 'wod' || l.type === 'unplugged').length,
+    jams: woche.filter(l => l.type === 'wod' || l.type === 'unplugged' || l.type === 'kurs' || l.type === 'moshpit').length,
     mobility: mobility.size,
     fahrten: rad.length,
     km: Math.round(rad.reduce((s, f) => s + (f.km || 0), 0)),

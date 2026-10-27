@@ -21,6 +21,7 @@ export function setzeAn(an) {
  * Was angesagt wird — oder null. Vorrang von oben nach unten:
  *   rang        neuer Rang (Name)                        gold
  *   tour        Endgegner des Monats besiegt (Name)      gold
+ *   kursBoss    Endgegner des Kurses besiegt (Name)      gold
  *   gitarre     neue Gitarre im Rack (Name)              gold
  *   aufnaeher   neue Aufnaeher (Namen, erster genannt)   gold
  *   referenz    zurueck auf dem Stand vor der Pause      gold
@@ -29,9 +30,10 @@ export function setzeAn(an) {
  *   sauber      alle Saetze der Einheit sauber           rot
  * Die Namen kommen fertig uebersetzt herein.
  */
-export function ansage({ rang = null, tour = null, gitarre = null, aufnaeher = [], referenz = null, rund = null, elf = false, sauber = false } = {}) {
+export function ansage({ rang = null, tour = null, kursBoss = null, gitarre = null, aufnaeher = [], referenz = null, rund = null, elf = false, sauber = false } = {}) {
   if (rang) return { ruf: t('ans.rang'), unter: rang, art: 'gold' };
   if (tour) return { ruf: t('ans.tour'), unter: t('ans.tourUnter', { boss: tour }), art: 'gold' };
+  if (kursBoss) return { ruf: t('ans.kursBoss'), unter: t('ans.tourUnter', { boss: kursBoss }), art: 'gold' };
   if (gitarre) return { ruf: t('ans.gitarre'), unter: gitarre, art: 'gold' };
   if (aufnaeher.length) {
     return { ruf: t('ans.aufnaeher'),

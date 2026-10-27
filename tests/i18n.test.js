@@ -166,7 +166,7 @@ print('\n--- Jeder Aufnaeher hat Name und Bedingung, in beiden Sprachen ---');
   const lifts = { squat: { name: 'Squat', reference: 100 }, bench: { name: 'Bench' }, row: { name: 'Row' },
     ohp: { name: 'OHP' }, deadlift: { name: 'Deadlift' } };
   const kat = M.katalog({ bar: 20, lifts, week: { slots: [{ day: 1, type: 'strength' }, { day: 3, type: 'ride' }] } },
-    { mitGewicht: true, mitRad: true, mitHoehe: true, mitPlan: true, mitZusammen: true });
+    { mitGewicht: true, mitRad: true, mitHoehe: true, mitPlan: true, mitZusammen: true, mitKurs: true, mitPit: true, mitKursZusammen: true, mitPitZusammen: true });
   ok('der Katalog ist nicht leer', kat.length > 50, `(${kat.length})`);
   for (const sp of ['de', 'en']) {
     I.setSprache(sp);

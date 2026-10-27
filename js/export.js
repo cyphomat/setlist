@@ -66,8 +66,8 @@ export function zeilen(logs, config = {}, { name = (art, id) => id } = {}) {
       if (l.mobility) out.push({ ...basis, art: 'mobility', workout: l.workout || '', uebung: name('mobility', l.mobility) });
     } else if (typ === 'mobility') {
       out.push({ ...basis, art: 'mobility', uebung: name('mobility', l.uebung) });
-    } else if (typ === 'wod' || typ === 'unplugged') {
-      out.push({ ...basis, art: typ === 'wod' ? 'jam' : 'unplugged', notiz: l.label || '',
+    } else if (typ === 'wod' || typ === 'unplugged' || typ === 'kurs' || typ === 'moshpit') {
+      out.push({ ...basis, art: typ === 'wod' ? 'jam' : typ, notiz: l.label || '',
         dauer: minuten(l.dauerSekunden) });
     } else if (typ === 'maxout') {
       out.push({ ...basis, art: 'maxout', uebung: l.check ? name('check', l.check) : liftName(l.lift),

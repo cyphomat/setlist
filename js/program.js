@@ -138,7 +138,7 @@ export function applyLog(state, config, log) {
   if (log.type && log.type !== 'strength') {
     next.updated = new Date().toISOString();
     const eintrag = log.type === 'mobility' ? { date: log.date, type: 'mobility', uebung: log.uebung || '' }
-      : { date: log.date, type: log.type, label: log.label || 'WOD' };
+      : { date: log.date, type: log.type, label: log.label || 'WOD', ...(log.type === 'kurs' ? { kurs: log.kurs || 'kettlebell', woche: log.woche, tag: log.tag, bewertung: log.bewertung } : {}) };
     next.history = [...(next.history || []), eintrag].slice(-100);
     return next;
   }

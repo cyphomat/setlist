@@ -310,12 +310,18 @@ export function alsAktivitaet(log, config = {}) {
 
   const istWod = log.type === 'wod';
   const istUnplugged = log.type === 'unplugged';
+  const istKurs = log.type === 'kurs';
+  const istPit = log.type === 'moshpit';
   const minuten = dauerSek / 60;
-  const last = Math.max(1, Math.round(minuten * (istWod || istUnplugged ? faktor.wod : faktor.strength)));
+  const last = Math.max(1, Math.round(minuten * (istWod || istUnplugged || istKurs || istPit ? faktor.wod : faktor.strength)));
   const start = log.started ? new Date(log.started) : new Date(`${log.date}T18:00:00`);
 
   const beschreibung = istUnplugged
     ? (log.label || 'Unplugged')
+    : istKurs
+    ? (log.label || 'Kettlebell-Kurs')
+    : istPit
+    ? (log.label || 'Mosh Pit')
     : istWod
     ? (log.label || 'WOD')
     : (log.lifts || []).map(e => {
@@ -326,8 +332,10 @@ export function alsAktivitaet(log, config = {}) {
   return {
     external_id: `setlist-${log.date}-${log.type || 'strength'}${log.workout ? '-' + log.workout : ''}`,
     start_date_local: lokalIso(start),
-    type: istWod || istUnplugged ? 'Crossfit' : 'WeightTraining',
+    type: istWod || istUnplugged || istKurs || istPit ? 'Crossfit' : 'WeightTraining',
     name: istUnplugged ? 'Unplugged — Körpergewicht'
+        : istKurs ? `Kettlebell-Kurs — ${log.label || ''}`.trim()
+        : istPit ? `Mosh Pit — ${log.label || ''}`.trim()
         : istWod ? `WOD — ${log.label || ''}`.trim()
         : `Kraft — Workout ${log.workout || ''}`.trim(),
     moving_time: dauerSek,

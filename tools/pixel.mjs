@@ -25,7 +25,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { inflateSync, deflateSync } from 'node:zlib';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BILDER, RAENGE, ADJ, NOMEN, PLATTEN } from '../js/merch.js';
+import { BILDER, RAENGE, ADJ, NOMEN, PLATTEN, KUGEL_PLATTEN } from '../js/merch.js';
 import { GITARREN as GITARREN_LISTE } from '../js/gitarren.js';
 import { GITARREN as GITARREN_SPEC, gitarrenBilder } from './pixel-gitarren.mjs';
 import { feld as feuerFeld, schritt as feuerSchritt, PALETTE as FEUER } from '../js/feuer.js';
@@ -173,6 +173,210 @@ const RAHMEN = {
 
 /* Eigene Zeichnungen, je hoechstens 13 breit. H = Hauptfarbe, A = Akzent. */
 const EIGENE = {
+  kr1: [                  // Kugel-Rang 1 Eisenkind: der erste Funke
+    '.....A.....',
+    '.....A.....',
+    '..A..H..A..',
+    '...AHHHA...',
+    'AAAHHHHHAAA',
+    '...AHHHA...',
+    '..A..H..A..',
+    '.....A.....',
+    '.....A.....'
+  ],
+  kr2: [                  // Kugel-Rang 2 Lehrling: der Hammer
+    '.HHHHHHHHH.',
+    'HHHHHHHHHHH',
+    'HHHHHHHHHHH',
+    '.....A.....',
+    '.....A.....',
+    '.....A.....',
+    '.....A.....',
+    '.....A.....'
+  ],
+  kr3: [                  // Kugel-Rang 3 Schmied: der Amboss
+    'HHHHHHHHHHHH.',
+    '.HHHHHHHHH...',
+    '..HHHHHH.....',
+    '...HHHH......',
+    '...HHHH......',
+    '..AAAAAA.....',
+    '.AAAAAAAA....'
+  ],
+  kr4: [                  // Kugel-Rang 4 Eisenmeister: Krone auf der Kugel
+    'A...A...A',
+    'AA.AAA.AA',
+    'AAAAAAAAA',
+    '.HHHHHHH.',
+    'HHHHHHHHH',
+    'HHHHHHHHH',
+    '.HHHHHHH.'
+  ],
+  kursboss: [             // Kugel-Titan: gehoernte Kugel mit Augen
+    'H.......H',
+    'HH.....HH',
+    '.HHHHHHH.',
+    'HHHAHAHHH',
+    'HHHAHAHHH',
+    'HHHHHHHHH',
+    '.HAAAAAH.',
+    '..HHHHH..'
+  ],
+  kursduett: [            // Kurs zu zweit: zwei Kugeln nebeneinander
+    '.HHH...HHH.',
+    'H...H.H...H',
+    '.HHH...HHH.',
+    'HHHHH.HHHHH',
+    'HHHHH.HHHHH',
+    '.HHH...HHH.'
+  ],
+  checkduett: [           // Check zu zweit: zwei Haken
+    '....H.....H',
+    '...HH....HH',
+    'H.HH..H.HH.',
+    'HHH...HHH..',
+    '.H.....H...',
+    '...........',
+    'A.........A'
+  ],
+  pitduett: [             // Mosh Pit zu zweit: zwei Hoerner-Haende
+    'H.H...H.H',
+    'HHH...HHH',
+    '.H.....H.',
+    'HHH...HHH',
+    'HHH.A.HHH',
+    '.H.....H.'
+  ],
+  kettlebell: [           // Kurs-Debuet: eine Kugel mit Henkel
+    '...HHHHH...',
+    '..H.....H..',
+    '..HHHHHHH..',
+    '.HHHHHHHHH.',
+    'HHAAHHHHHHH',
+    'HHAHHHHHHHH',
+    'HHHHHHHHHHH',
+    '.HHHHHHHHH.',
+    '..HHHHHHH..'
+  ],
+  fundament: [            // Fundament: Mauerwerk auf einer Bodenplatte
+    'HHHHHHHHHHHH',
+    'H....H.....H',
+    'HHHHHHHHHHHH',
+    'H.....H....H',
+    'HHHHHHHHHHHH',
+    'AAAAAAAAAAAA'
+  ],
+  grundlage: [            // Grundlage: Kugel auf dem Sockel
+    '..HHHHH..',
+    '.H.....H.',
+    '.HHHHHHH.',
+    'HHHAAAHHH',
+    'HHHAAAHHH',
+    '.HHHHHHH.',
+    'AAAAAAAAA'
+  ],
+  ausbau: [               // Ausbau: Pokal
+    'HHHHHHHHHHH',
+    'H.HHHHHHH.H',
+    'H.HHHAHHH.H',
+    '.H.HHHHH.H.',
+    '...HHHHH...',
+    '....HHH....',
+    '....HHH....',
+    '...AAAAA...'
+  ],
+  check1: [               // Check 1: Haken, ein Punkt
+    '.........HH',
+    '........HH.',
+    'H......HH..',
+    'HH....HH...',
+    '.HH..HH....',
+    '..HHHH.....',
+    '...HH......',
+    '...........',
+    '.....A.....'
+  ],
+  check2: [               // Check 2: Haken, zwei Punkte
+    '.........HH',
+    '........HH.',
+    'H......HH..',
+    'HH....HH...',
+    '.HH..HH....',
+    '..HHHH.....',
+    '...HH......',
+    '...........',
+    '...A...A...'
+  ],
+  check3: [               // Check 3: Haken, drei Punkte
+    '.........HH',
+    '........HH.',
+    'H......HH..',
+    'HH....HH...',
+    '.HH..HH....',
+    '..HHHH.....',
+    '...HH......',
+    '...........',
+    '.A...A...A.'
+  ],
+  kugel1: [               // Schwerere Kugel: Pfeil nach oben ueber der Kugel
+    '.....A.....',
+    '....AAA....',
+    '...AAAAA...',
+    '.....A.....',
+    '...HHHHH...',
+    '.HHHHHHHHH.',
+    'HHHHHHHHHHH',
+    'HHHHHHHHHHH',
+    '.HHHHHHHHH.',
+    '..HHHHHHH..'
+  ],
+  kugel5: [               // Kugel x5: schwere Kugel mit Pluszeichen
+    '...HHHHH...',
+    '..H.....H..',
+    '..HHHHHHH..',
+    '.HHHHAHHHH.',
+    'HHHHAAAHHHH',
+    'HHHHHAHHHHH',
+    'HHHHHHHHHHH',
+    '.HHHHHHHHH.',
+    '..HHHHHHH..'
+  ],
+  pitstart: [             // Mosh Pit: die Hoerner
+    'H.......H',
+    'HH.....HH',
+    'HH.....HH',
+    'HHH...HHH',
+    '.HHHHHHH.',
+    '..HHHHH..',
+    '..HAAAH..',
+    '..HAAAH..',
+    '...HHH...'
+  ],
+  pitsprung: [            // Kugelsprung: Kugel ueber der Sprungfeder
+    '...HHH...',
+    '..HHHHH..',
+    '.HHHHHHH.',
+    '..AAAAA..',
+    '.A.....A.',
+    '..AAAAA..',
+    '.A.....A.',
+    '..AAAAA..'
+  ],
+  pitserie3: [            // Pit-Serie 3: drei Flammen
+    '.A...A...A.',
+    'AHA.AHA.AHA',
+    'HHH.HHH.HHH',
+    'HHH.HHH.HHH',
+    '.H...H...H.'
+  ],
+  pitserie6: [            // Pit-Serie 6: sechs Flammen in zwei Reihen
+    '.A...A...A.',
+    'AHA.AHA.AHA',
+    'HHH.HHH.HHH',
+    '.A...A...A.',
+    'AHA.AHA.AHA',
+    'HHH.HHH.HHH'
+  ],
   hangar: [               // Klimmzug: Stange, Haende, Koerper
     'AAAAAAAAAAA',
     '.A.......A.',
@@ -567,7 +771,13 @@ const MOTIV = {
   'soundcheck-4': 'soundcheck4', 'soundcheck-12': '#mischpult',
   duett: '#duett', faustgruss: '#faustgruss',
   'partner-5': '#tickets', 'partner-15': '#backstage', 'partner-30': '#allaccess',
-  'verabredung-2': '#verabredung2', 'verabredung-4': '#verabredung4', 'verabredung-8': '#verabredung8'
+  'verabredung-2': '#verabredung2', 'verabredung-4': '#verabredung4', 'verabredung-8': '#verabredung8',
+  'kurs-start': '#kettlebell', 'kurs-fundament': '#fundament', 'kurs-grundlage': '#grundlage', 'kurs-ausbau': '#ausbau',
+  'check-1': '#check1', 'check-2': '#check2', 'check-3': '#check3',
+  'kugel-1': '#kugel1', 'kugel-5': '#kugel5',
+  'pit-start': '#pitstart', 'pit-sprung': '#pitsprung', 'pit-serie-3': '#pitserie3', 'pit-serie-6': '#pitserie6',
+  'kugelrang-1': '#kr1', 'kugelrang-2': '#kr2', 'kugelrang-3': '#kr3', 'kugelrang-4': '#kr4',
+  kursboss: '#kursboss', 'kurs-duett': '#kursduett', 'check-duett': '#checkduett', 'pit-duett': '#pitduett'
 };
 /* Symbole, deren Farbe die Aussage ist: Blut bleibt rot. */
 const EIGENE_FARBE = new Set(['debuet']);
@@ -578,7 +788,8 @@ const KATEGORIE = {
   km: 'rad', hoehe: 'rad', century: 'rad', doom: 'rad', openair: 'rad', crossover: 'rad',
   comeback: 'comeback', rueckweg: 'comeback', reunion: 'comeback', serie: 'serie',
   tour: 'tour', soundcheck: 'tour',
-  duett: 'buehne', faustgruss: 'buehne', partner: 'buehne', verabredung: 'buehne'
+  duett: 'buehne', faustgruss: 'buehne', partner: 'buehne', verabredung: 'buehne',
+  kurs: 'buehne', check: 'buehne', kugel: 'buehne', pit: 'buehne', kugelrang: 'buehne', kursboss: 'buehne'
 };
 
 const raster = zeilen => {
@@ -716,17 +927,40 @@ const BOSS = [
 const BOSS_FARBE = { K: '0a0a0a', H: '8a6a48', B: 'e8dcc0', S: 'b0a284', R: 'ff3b1f', D: '3a2e28' };
 const BOSS_RISS = [[12, 5], [11, 6], [11, 7], [12, 8], [13, 9]];
 
+/*
+ * Der Kugel-Titan, Endgegner des Kurses: eine Kugel aus Eisen mit Henkel,
+ * Augen und Zaehnen. Die linke Haelfte wird gespiegelt, so bleibt er
+ * symmetrisch. K Kontur, E Eisen, S Schatten, G Glanz, R Auge, D Dunkel.
+ */
+const BOSS_KURS_HALB = [
+  '........KKKK', '.......KGGGG', '......KGKKKK', '......KGK...', '......KGK...', '.....KGGKK..',
+  '....KKEEEKKK', '...KEEEEEEEE', '..KEEEEEEEEE', '..KEEKKKKEEE', '.KEEEKRRKEEE', '.KEEEKRRKEEE',
+  '.KEEEEKKEEEE', '.KEEEEEEEEEE', '.KEEEEEKKKKK', '.KEEEEEKGKGK', '..KSEEEEKKKK', '..KSSEEEEEEE',
+  '...KSSSEEEEE', '....KKSSSSSS', '......KKKKKK'
+];
+const BOSS_KURS = BOSS_KURS_HALB.map(z => z + [...z].reverse().join(''));
+const BOSS_KURS_FARBE = { K: '0a0a0a', E: '5b6573', S: '38404a', G: 'a9b3c2', R: 'ff3b1f', D: '2a2f36' };
+const BOSS_KURS_RISS = [[12, 7], [11, 8], [11, 9], [12, 10], [13, 11]];
+
+/** Vier Kacheln: Monats-Schaedel lebend und besiegt, dann der Kugel-Titan lebend und besiegt. */
 function endgegner() {
-  const b = leer(48, 24);
-  const oben = 24 - BOSS.length;
-  for (const [ox, besiegt] of [[0, false], [24, true]]) {
-    BOSS.forEach((zeile, y) => [...zeile].forEach((z, x) => {
-      if (z === '.') return;
-      const rolle = besiegt && z === 'R' ? 'D' : z;
-      setze(b, ox + x, oben + y, rgba(BOSS_FARBE[rolle]));
-    }));
-    if (besiegt) for (const [x, y] of BOSS_RISS) setze(b, ox + x, oben + y, rgba(BOSS_FARBE.K));
-  }
+  const b = leer(96, 24);
+  const figuren = [
+    { raster: BOSS, farbe: BOSS_FARBE, riss: BOSS_RISS },
+    { raster: BOSS_KURS, farbe: BOSS_KURS_FARBE, riss: BOSS_KURS_RISS }
+  ];
+  figuren.forEach((f, i) => {
+    const oben = 24 - f.raster.length;
+    [false, true].forEach((besiegt, j) => {
+      const ox = (i * 2 + j) * 24;
+      f.raster.forEach((zeile, y) => [...zeile].forEach((z, x) => {
+        if (z === '.') return;
+        const rolle = besiegt && z === 'R' ? 'D' : z;
+        setze(b, ox + x, oben + y, rgba(f.farbe[rolle]));
+      }));
+      if (besiegt) for (const [x, y] of f.riss) setze(b, ox + x, oben + y, rgba(f.farbe.K));
+    });
+  });
   return b;
 }
 
@@ -973,7 +1207,12 @@ const METALL = {
   gold: { basis: 'd4af37', dunkel: '9a7a1c', hell: 'f6e08a', label: 'b8261b', leiste: 'c9a43a' },
   platin: { basis: 'c9ccd1', dunkel: '8d929a', hell: 'f4f6f9', label: '27468a', leiste: 'b9bdc4' },
   doppelplatin: { basis: 'b3bcc7', dunkel: '6f7884', hell: 'e8eef4', label: '5b2a7a', leiste: 'b9bdc4' },
-  diamant: { basis: 'bfe3ef', dunkel: '6aa6bd', hell: 'f6feff', label: '0f5d6e', leiste: 'a8dbe8' }
+  diamant: { basis: 'bfe3ef', dunkel: '6aa6bd', hell: 'f6feff', label: '0f5d6e', leiste: 'a8dbe8' },
+  adamant: { basis: 'c9a8e8', dunkel: '7a5aa8', hell: 'f3eaff', label: '3b1f6e', leiste: 'b49ad6' },
+  eisen: { basis: 'a8745a', dunkel: '6e4a38', hell: 'e0b49a', label: '2c2c30', leiste: '9a6a52' },
+  stahl: { basis: '9db0c4', dunkel: '5f7186', hell: 'e4edf6', label: '1b3a5c', leiste: '8fa3b8' },
+  titan: { basis: '8f9bb0', dunkel: '4f5a70', hell: 'dfe6f3', label: '5a1f6e', leiste: '7f8ba2' },
+  meteorit: { basis: 'd9803f', dunkel: '8a4416', hell: 'ffd9a0', label: '1a1a1c', leiste: 'c9732f' }
 };
 
 function scheibe(b, cx, cy, r, m) {
@@ -1009,7 +1248,7 @@ function award(id) {
   }
   if (id === 'doppelplatin') { scheibe(b, 18, 21, 11, m); scheibe(b, 30, 25, 11, m); }
   else scheibe(b, 24, 22, 14.5, m);
-  if (id === 'diamant') {                                       // Stein mit Funkeln
+  if (id === 'diamant' || id === 'adamant') {                   // Stein mit Funkeln
     const stein = ['..W..', '.WCW.', 'WCCCW', '.WCW.', '..W..'];
     stein.forEach((z, y) => [...z].forEach((r, x) => { if (r !== '.') setze(b, 33 + x, 8 + y, rgba(r === 'W' ? 'ffffff' : '7fd6ee')); }));
     for (const [x, y] of [[31, 7], [39, 9], [36, 14]]) setze(b, x, y, rgba('ffffff'));
@@ -1284,7 +1523,7 @@ const ausgaben = {
   ...Object.fromEntries(Object.entries(README_ICONS).map(([k, n]) => [`assets/readme/i-${k}.png`, readmeIcon(n)])),
   'assets/pixel/shirts.png': bogen(ADJ.flatMap(a => { if (!STOFF[a]) throw new Error(`Kein Stoff fuer ${a}`); return [shirt(STOFF[a], false), shirt(STOFF[a], true)]; }), SHIRT_W, SHIRT_H),
   'assets/pixel/embleme.png': bogen(eindeutig(NOMEN.map(emblem), NOMEN), 20, 20),
-  'assets/pixel/platten.png': bogen(PLATTEN.map(p => award(p.id)), AWARD_W, AWARD_H),
+  'assets/pixel/platten.png': bogen([...PLATTEN, ...KUGEL_PLATTEN].map(p => award(p.id)), AWARD_W, AWARD_H),
   'assets/pixel/raenge.png': bogen(RAENGE.map(r => { const f = SZENE[r.id]; if (!f) throw new Error(`Keine Szene fuer ${r.id}`); return f(); }), 96, 48)
 };
 
@@ -1311,9 +1550,9 @@ for (const [name, b] of Object.entries(ausgaben)) {
 }
 console.log(`assets/pixel/aufnaeher.png  ${BILDER.length} × 24×24, alle verschieden`);
 console.log(`assets/pixel/raenge.png     ${RAENGE.length} × 96×48`);
-console.log('assets/pixel/boss.png       2 × 24×24');
+console.log('assets/pixel/boss.png       4 × 24×24');
 console.log(`assets/pixel/gitarren.png ${gitarrenIds.length} × 24×56, alle verschieden`);
 console.log(`assets/pixel/shirts.png     ${ADJ.length} × 2 × ${SHIRT_W}×${SHIRT_H}`);
 console.log(`assets/pixel/embleme.png    ${NOMEN.length} × 20×20, alle verschieden`);
-console.log(`assets/pixel/platten.png    ${PLATTEN.length} × ${AWARD_W}×${AWARD_H}`);
+console.log(`assets/pixel/platten.png    ${PLATTEN.length + KUGEL_PLATTEN.length} × ${AWARD_W}×${AWARD_H}`);
 console.log('assets/pixel/logo.png, icons/icon-*.png, assets/readme/*.png');
