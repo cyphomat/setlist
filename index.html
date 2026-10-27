@@ -117,6 +117,7 @@
         <button id="swap-workout" class="btn ghost small">Workout wechseln</button>
         <button id="go-wod" class="btn small" data-i18n="home.jam">Jam</button>
         <button id="go-unplugged" class="btn ghost small" data-i18n="home.unplugged">Unplugged</button>
+        <button id="go-kurs" class="btn ghost small">Kurs</button>
         <button id="go-mobility" class="btn ghost small" data-i18n="home.mobility">Mobility</button>
         <button id="go-maxout" class="btn ghost small" data-i18n="home.maxout">Max-Out</button>
       </div>
@@ -221,6 +222,53 @@
       <button id="up-weiter" class="btn ghost" data-i18n="up.ueberspringen">Weiter</button>
     </div>
     <button id="up-abbruch" class="btn ghost small danger" data-i18n="up.abbrechen">Abbrechen</button>
+  </div>
+</section>
+
+<!-- ============ KETTLEBELL-KURS ============ -->
+<section id="view-kurs" class="view" hidden>
+  <header class="head">
+    <button id="ku-back" class="icon-btn" data-i18n-aria="aria.zurueck" aria-label="Zurück">‹</button>
+    <h1 data-i18n="ku.titel">Kettlebell-Kurs</h1>
+  </header>
+
+  <div class="pad" id="ku-plan">
+    <div class="directive">
+      <span class="tone technik" id="ku-tag"></span>
+      <p class="txt" id="ku-lead"></p>
+    </div>
+    <div id="ku-hinweise"></div>
+    <div id="ku-uebersicht"></div>
+    <h2 data-i18n="ku.ablauf">Der Ablauf</h2>
+    <div id="ku-bloecke"></div>
+    <p class="fine" data-i18n="ku.quelle">Eigener Plan nach gängigen Prinzipien, keine einzelne Studie dahinter.</p>
+    <button id="ku-start" class="btn" data-i18n="ku.start">Los</button>
+  </div>
+
+  <div class="pad" id="ku-lauf" hidden>
+    <div id="ku-buehne" class="buehne">
+      <div class="runde" id="ku-runde"></div>
+      <div class="was" id="ku-was"></div>
+      <div class="uhr num" id="ku-uhr">0</div>
+      <div class="cue" id="ku-cue"></div>
+      <div class="danach" id="ku-danach"></div>
+    </div>
+    <button id="ku-fertig" class="btn" data-i18n="ku.fertig">FERTIG</button>
+    <div class="up-steuer">
+      <button id="ku-pause" class="btn ghost" data-i18n="up.pausieren">Pause</button>
+      <button id="ku-weiter" class="btn ghost" data-i18n="up.ueberspringen">Weiter</button>
+    </div>
+    <button id="ku-abbruch" class="btn ghost small danger" data-i18n="up.abbrechen">Abbrechen</button>
+  </div>
+
+  <div class="pad" id="ku-ende" hidden>
+    <h2 data-i18n="ku.ende">Wie war die Kugel?</h2>
+    <p class="fine" data-i18n="ku.endeHinweis">Zweimal „zu leicht“ in Folge: nächstes Mal die schwerere Kugel. Zweimal „zäh“: die leichtere.</p>
+    <div class="up-steuer">
+      <button class="btn ghost" data-bew="leicht" data-i18n="ku.b.leicht">Zu leicht</button>
+      <button class="btn" data-bew="passend" data-i18n="ku.b.passend">Passend</button>
+      <button class="btn ghost" data-bew="zaeh" data-i18n="ku.b.zaeh">Zäh</button>
+    </div>
   </div>
 </section>
 

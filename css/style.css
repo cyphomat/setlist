@@ -1007,6 +1007,10 @@ input[type=checkbox]{accent-color:var(--akzent);width:16px;height:16px}
 #up-abbruch{margin-top:10px}
 #up-teile{margin-top:14px}
 #up-start{margin-top:16px}
+#ku-start,#ku-fertig{margin-top:16px}
+#ku-abbruch{margin-top:10px}
+#ku-bloecke{margin-top:14px}
+#ku-ende .up-steuer .btn{padding-left:6px;padding-right:6px}
 
 /* ═══════════════════════════════════════════════════════════
    Merch-Stand und Buehnenmomente. Spiel, aber im selben Road-Case:

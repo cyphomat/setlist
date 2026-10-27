@@ -13,7 +13,7 @@
 //     kein Fehler der Einheit; dann geht das Display eben wie bisher aus.
 
 /** In diesen Ansichten laeuft eine Uhr oder ein Satz wartet aufs Abhaken. */
-export const WACH_ANSICHTEN = ['session', 'wod', 'unplugged', 'maxout'];
+export const WACH_ANSICHTEN = ['session', 'wod', 'unplugged', 'kurs', 'maxout'];
 
 /**
  * Ein Halter fuer die Sperre. `nav` und `doc` sind austauschbar, damit sich

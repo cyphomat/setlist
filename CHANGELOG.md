@@ -10,6 +10,20 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-27.1
+
+### Neu
+- **Kettlebell-Kurs.** Zwölf Wochen, drei Einheiten pro Woche, in drei Phasen: Fundament (Hüfte,
+  Swing, Goblet, Get-up), Grundlage (einarmig, Clean, Drücken) und Ausbau (Dichte, Komplexe,
+  Test in Woche 12). Die vierte Woche jeder Phase ist Entlastung. Die Einheit führt durch: Sätze
+  hakst du selbst ab, Takt und Pausen laufen nach der Uhr. Am Ende sagst du, wie die Kugel war;
+  zweimal „zu leicht“ in Folge schlägt die schwerere Kugel vor, zweimal „zäh“ die leichtere.
+  Woche und Tag folgen aus den Logs (`type: 'kurs'`), gespeichert wird nur die Einheit. Der Plan
+  ist eigene Planung nach gängigen Prinzipien, keine einzelne Studie; belegt ist nur, dass Swings
+  Maximal- und Schnellkraft steigern (Lake & Lauder 2012, kleine Studie). Die Einheit zählt als
+  Gig für Rang, Abzeichen und Gitarren und geht wie der Jam an intervals.icu.
+- Die Einheit steht im Export (`art: kurs`), in der Historie und in der Tour.
+
 ## 2026-10-26.3
 
 ### Behoben

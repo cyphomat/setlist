@@ -21,7 +21,7 @@ import { serienMarken } from './soundcheck.js';
 import * as ZU from './zusammen.js';
 
 /** Was als Gig zaehlt: alles, wofuer man ins Studio gegangen ist — und jede Fahrt. */
-export const GIG_TYPEN = ['strength', 'wod', 'unplugged', 'maxout'];
+export const GIG_TYPEN = ['strength', 'wod', 'unplugged', 'kurs', 'maxout'];
 const typ = l => l.type || 'strength';
 const istGig = l => l && l.date && GIG_TYPEN.includes(typ(l));
 const istKraft = l => typ(l) === 'strength' && Array.isArray(l.lifts);
@@ -530,7 +530,7 @@ export function tourName(jahr, quartal) {
 }
 
 const quartalVon = datum => Math.floor((Number(datum.slice(5, 7)) - 1) / 3) + 1;
-const ART = { strength: 'kraft', wod: 'jam', unplugged: 'unplugged', maxout: 'maxout', rad: 'rad' };
+const ART = { strength: 'kraft', wod: 'jam', unplugged: 'unplugged', kurs: 'kurs', maxout: 'maxout', rad: 'rad' };
 
 /**
  * Jedes Quartal mit mindestens einem Gig ist eine Tour, die neueste zuerst.
@@ -653,7 +653,7 @@ export function verstaerker(logs = [], config = {}, heute = new Date(), history 
 
 /** Ersatzziel ohne geplante Fahrten: so viele Tage Jam, Unplugged oder Mobility. */
 export const TOUR_ERSATZ = 4;
-const NEBEN_TYPEN = ['wod', 'unplugged'];
+const NEBEN_TYPEN = ['wod', 'unplugged', 'kurs'];
 const wochentag = datum => (new Date(datum + 'T12:00:00').getDay() + 6) % 7 + 1;   // 1 = Mo … 7 = So
 const slotTage = (config, art) => new Set(((config.week && Array.isArray(config.week.slots)) ? config.week.slots : [])
   .filter(s => s && s.type === art).map(s => s.day));

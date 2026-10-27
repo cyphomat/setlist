@@ -14,6 +14,7 @@ import * as A from './aktualisierung.js';
 import * as E from './einrichten.js';
 import * as PS from './persoenlich.js';
 import * as UP from './unplugged.js';
+import * as KU from './kurs.js';
 import * as M from './merch.js';
 import * as W from './wach.js';
 import * as HL from './hilfs.js';
@@ -73,7 +74,7 @@ const $ = id => document.getElementById(id);
 uebersetzeStatisch();
 const VERSION_KEY = 'setlist.version';
 let laufendeVersion = localStorage.getItem(VERSION_KEY) || '—';
-const VIEWS = ['setup', 'einrichten', 'home', 'session', 'wod', 'unplugged', 'maxout', 'done', 'history', 'bibliothek', 'merch', 'backstage', 'soundcheck'];
+const VIEWS = ['setup', 'einrichten', 'home', 'session', 'wod', 'unplugged', 'kurs', 'maxout', 'done', 'history', 'bibliothek', 'merch', 'backstage', 'soundcheck'];
 // Waehrend Einheit, Jam, Unplugged und Max-Out bleibt der Bildschirm an —
 // am Ansichtswechsel festgemacht, damit kein Ausgang (Fertig, Abbrechen,
 // Zurueck) das Freigeben vergessen kann.
@@ -381,6 +382,7 @@ function tourZeile(logs) {
 }
 
 function renderAmp() {
+  renderKursKnopf();
   const box = $('amp');
   if (!box || !config || !state) return;
   const logs = alleLogs.length ? alleLogs : ((S.cachedLogs() || {}).logs || []);
@@ -1852,6 +1854,224 @@ $('up-abbruch').onclick = () => {
   $('up-plan').hidden = false;
 };
 
+/* ========================= Kettlebell-Kurs =========================
+   Zwoelf Wochen, drei Einheiten pro Woche. Wo du stehst, folgt aus den
+   Logs (js/kurs.js), nicht aus einem gespeicherten Zaehler. Die Fuehrung
+   ist wie beim Unplugged: Saetze wartest du selbst ab, Takt und Pause
+   laufen nach der Uhr.                                                  */
+
+let kuEinheit = null, kuAblauf = [], kuIndex = 0, kuRest = 0, kuTimer = null, kuPausiert = false, kuStart = 0;
+
+const kuStopp = () => { clearInterval(kuTimer); kuTimer = null; kuPausiert = false; };
+
+function renderKursKnopf() {
+  const z = KU.zustand(alleLogs);
+  $('go-kurs').textContent = z.fertig ? t('home.kursFertig') : t('home.kurs', { woche: z.woche });
+}
+
+function starteKurs() {
+  kuStopp();
+  const z = KU.zustand(alleLogs);
+  if (z.fertig) { banner(t('ku.fertigKurs'), 'ok', 5000); return; }
+  kuEinheit = KU.naechste(alleLogs);
+  $('ku-plan').hidden = false;
+  $('ku-lauf').hidden = true;
+  $('ku-ende').hidden = true;
+  renderKurs();
+  show('kurs');
+  // Im Hintergrund auffrischen: ein anderes Geraet kann schon weiter sein.
+  S.readAllLogs().then(logs => {
+    if (logs.length === alleLogs.length || !$('ku-lauf').hidden || !$('ku-ende').hidden) return;
+    alleLogs = logs; S.cacheLogs(logs);
+    kuEinheit = KU.naechste(alleLogs);
+    if (kuEinheit) renderKurs();
+  }).catch(() => {});
+}
+
+/** Das Ziel eines Bausteins in einer Zeile, fuer die Uebersicht. */
+function kuZiel(b) {
+  let z;
+  if (b.art === 'takt') z = t('ku.zielTakt', { runden: b.runden, n: b.wdh, s: b.takt });
+  else if (b.art === 'zeit') z = t(b.seiten ? 'ku.zielZeitSeite' : 'ku.zielZeit', { saetze: b.saetze, s: b.sek });
+  else z = t(b.seiten ? 'ku.zielSaetzeSeite' : 'ku.zielSaetze', { saetze: b.saetze, n: b.wdh });
+  const last = b.ohneLast ? t('ku.ohneKugel') : b.last ? t(`ku.last.${b.last}`) : '';
+  return last ? `${z} · ${last}` : z;
+}
+
+/** Was jetzt zu tun ist, fuer genau einen Schritt. */
+function kuJetzt(a) {
+  const b = a.b;
+  let z;
+  if (a.art === 'takt') z = t('ku.jetztWdh', { n: b.wdh });
+  else if (b.art === 'zeit') z = t(b.seiten ? 'ku.jetztZeitSeite' : 'ku.jetztZeit', { s: b.sek });
+  else z = t(b.seiten ? 'ku.jetztWdhSeite' : 'ku.jetztWdh', { n: b.wdh });
+  if (a.seite) z += ` · ${t('ku.seite', { n: a.seite })}`;
+  if (b.ohneLast) z += ` · ${t('ku.ohneKugel')}`;
+  else if (b.last) z += ` · ${t(`ku.last.${b.last}`)}`;
+  return z;
+}
+
+function renderKurs() {
+  const e = kuEinheit;
+  if (!e) return;
+  const z = KU.zustand(alleLogs);
+  $('ku-tag').textContent = t('ku.tag', { woche: e.woche, tag: e.tag });
+  $('ku-lead').textContent = `${t(`ku.phase.${e.phase}`)} — ${t(`ku.phase.${e.phase}.text`)}`;
+
+  const hinweise = [];
+  if (e.test) hinweise.push(t('ku.test'));
+  else if (e.entlastung) hinweise.push(t('ku.entlastung'));
+  const v = KU.lastVorschlag(alleLogs);
+  if (v) hinweise.push(t(`ku.vorschlag.${v}`));
+  $('ku-hinweise').innerHTML = hinweise.map(x => `<p class="lead">${escHtml(x)}</p>`).join('');
+
+  $('ku-uebersicht').innerHTML = `<p class="lead">${escHtml(t('ku.uebersicht', {
+    min: KU.minuten(e), woche: z.woche, gesamt: KU.WOCHEN, fertig: KU.wocheFortschritt(alleLogs), pro: KU.PRO_WOCHE
+  }))}</p>`;
+
+  $('ku-bloecke').innerHTML = e.bloecke.map((b, i) => `
+    <details class="info">
+      <summary>${i + 1} · ${escHtml(KU.blockName(b))} <span class="fine">${escHtml(kuZiel(b))}</span></summary>
+      <div class="body">${b.u.map(id => {
+        const u = KU.UEBUNGEN[id];
+        return `<p class="tagline"><b>${escHtml(u.name)}: ${escHtml(u.cue)}</b></p>
+          <p>${escHtml(u.erklaerung)}</p>
+          <div class="kv"><span class="k">${t('bib.standard')}</span><span class="v">${escHtml(u.standard)}</span></div>
+          <div class="kv"><span class="k">${t('up.leichter')}</span><span class="v">${escHtml(u.leichter.join(' · '))}</span></div>
+          <div class="kv"><span class="k">${t('up.schwerer')}</span><span class="v">${escHtml(u.schwerer.join(' · '))}</span></div>`;
+      }).join('')}</div>
+    </details>`).join('');
+}
+
+/* ---------- Die laufende Einheit ---------- */
+
+function kuStartLauf() {
+  kuAblauf = KU.ablauf(kuEinheit);
+  kuIndex = 0;
+  kuPausiert = false;
+  kuStart = Date.now();
+  $('ku-plan').hidden = true;
+  $('ku-lauf').hidden = false;
+  $('ku-ende').hidden = true;
+  kuZeigeSchritt();
+}
+
+function kuZeigeSchritt() {
+  const a = kuAblauf[kuIndex];
+  if (!a) return kuEnde();
+  clearInterval(kuTimer); kuTimer = null;
+  const pause = a.art === 'pause', takt = a.art === 'takt';
+  const gesamt = kuEinheit.bloecke.length;
+  $('ku-buehne').classList.toggle('pause', pause);
+  $('ku-fertig').hidden = takt || pause;
+  $('ku-runde').textContent = `${t('ku.baustein', { n: a.block + 1, gesamt })} · ${t(takt ? 'ku.runde' : 'ku.satz', { n: a.nr, gesamt: a.von })}`;
+  $('ku-was').textContent = pause ? t('ku.pauseJetzt') : KU.blockName(a.b);
+  $('ku-cue').textContent = pause ? '' : `${kuJetzt(a)}. ${KU.UEBUNGEN[a.b.u[0]].cue}`;
+  const naechster = kuAblauf.slice(kuIndex + 1).find(x => x.art !== 'pause');
+  $('ku-danach').textContent = pause && naechster ? t('up.danach', { name: KU.blockName(naechster.b) }) : '';
+  if (takt || pause) {
+    kuRest = a.sekunden;
+    $('ku-uhr').textContent = kuRest;
+    kuTicke(pause);
+  } else {
+    $('ku-uhr').textContent = `${a.nr}/${a.von}`;
+  }
+}
+
+function kuTicke(pause) {
+  kuTimer = setInterval(() => {
+    if (kuPausiert) return;
+    kuRest--;
+    $('ku-uhr').textContent = Math.max(0, kuRest);
+    if (kuRest === 3 && pause) upSignal(false);
+    if (kuRest <= 0) { kuIndex++; upSignal(true); kuZeigeSchritt(); }
+  }, 1000);
+}
+
+function kuEnde() {
+  kuStopp();
+  $('ku-lauf').hidden = true;
+  $('ku-ende').hidden = false;
+  window.scrollTo(0, 0);
+}
+
+async function kuSpeichern(bewertung) {
+  const e = kuEinheit;
+  if (!e || !KU.bewertungOk(bewertung)) return;
+  $('ku-ende').hidden = true;
+  $('ku-plan').hidden = false;
+  const log = {
+    date: P.ymd(new Date()),
+    type: 'kurs',
+    kurs: KU.KURS_ID,
+    woche: e.woche,
+    tag: e.tag,
+    einheit: KU.zustand(alleLogs).einheit,
+    label: KU.label(e),
+    dauerSekunden: Math.max(60, Math.round((Date.now() - kuStart) / 1000)),
+    bewertung,
+    finished: new Date().toISOString()
+  };
+  if (e.test) log.test = true;
+  const ort = ortName();
+  if (ort) log.ort = ort;
+  const vorherHist = state.history || [];
+  // Wie beim Jam: steht in der Historie, ruehrt aber weder Arbeitsgewichte
+  // noch den A/B-Wechsel an.
+  state = P.applyLog(state, config, log);
+  S.cache({ state });
+  alleLogs = alleLogs.concat([log]);
+  S.cacheLogs(alleLogs);
+
+  const z = KU.zustand(alleLogs);
+  $('done-body').innerHTML = `
+    <div class="card">
+      <div class="kicker">${escHtml(log.date)} · ${t('hist.kurs')}</div>
+      <div class="name">${escHtml(t('ku.tag', { woche: e.woche, tag: e.tag }))}</div>
+      <ul>${e.bloecke.filter(b => !b.warm).map(b =>
+        `<li><span>${escHtml(KU.blockName(b))}</span><span>${escHtml(kuZiel(b))}</span></li>`).join('')}</ul>
+    </div>
+    <p class="spruch">${escHtml(z.fertig ? t('ku.fertigKurs') : t('ku.naechste', { woche: z.woche, tag: z.tag }))}</p>
+    <div id="done-aufnaeher"></div>`;
+  show('done');
+  if (!upLeise()) toene([660, 880]);
+  if (navigator.vibrate) navigator.vibrate([180, 90, 180]);
+
+  try {
+    await commitKurs(log);
+    banner(t('ku.abgeschlossen'), 'ok');
+    if (ICU.pushAktiv() && ICU.isConfigured()) ICU.queuePush(log);
+  } catch { S.queue(log); banner(t('msg.keinNetz'), '', 6000); }
+  kuEinheit = null;
+  zeigeNeueAufnaeher(log, vorherHist);
+}
+
+async function commitKurs(log) {
+  let path = `${S.LOG_DIR}/${log.date}-kurs.json`;
+  let n = 2;
+  while (await S.readFile(path)) path = `${S.LOG_DIR}/${log.date}-kurs-${n++}.json`;
+  await S.writeFile(path, log, `Kettlebell-Kurs ${log.woche}${log.tag} am ${log.date}`);
+  const cur = await S.readFile('state.json');
+  await S.writeFile('state.json', state, `Zustand nach Kurs ${log.date}`, cur ? cur.sha : stateSha);
+}
+
+$('go-kurs').onclick = starteKurs;
+$('ku-back').onclick = () => { kuStopp(); renderKursKnopf(); show('home'); };
+$('ku-start').onclick = kuStartLauf;
+$('ku-fertig').onclick = () => { kuIndex++; kuZeigeSchritt(); };
+$('ku-weiter').onclick = () => { kuIndex++; kuZeigeSchritt(); };
+$('ku-pause').onclick = () => {
+  kuPausiert = !kuPausiert;
+  $('ku-pause').textContent = kuPausiert ? t('up.fortsetzen') : t('up.pausieren');
+};
+$('ku-abbruch').onclick = () => {
+  if (!confirm(t('ku.abbrechenFrage'))) return;
+  kuStopp();
+  $('ku-lauf').hidden = true;
+  $('ku-plan').hidden = false;
+};
+$('ku-ende').querySelectorAll('[data-bew]').forEach(b => { b.onclick = () => kuSpeichern(b.dataset.bew); });
+
 /* ====================== Programm einrichten ======================
    Wer neu anfaengt, hat noch keine config.json. Frueher stand hier eine
    Fehlermeldung und der Hinweis, die Datei von Hand zu schreiben — samt
@@ -2528,7 +2748,7 @@ function renderListe(logs) {
       const m = l.dauerSekunden ? `${Math.floor(l.dauerSekunden / 60)}:${String(l.dauerSekunden % 60).padStart(2, '0')}` : '—';
       // Bis hierher landete jeder fremde Typ unter "WOD". Unplugged ist
       // aber kein Jam, und in der Historie soll stehen, was man gemacht hat.
-      const art = l.type === 'unplugged' ? t('hist.unplugged') : 'WOD';
+      const art = l.type === 'unplugged' ? t('hist.unplugged') : l.type === 'kurs' ? t('hist.kurs') : 'WOD';
       const leise = l.type === 'unplugged' && l.leise ? ` · ${t('up.leise')}` : '';
       return `<div class="hist wod"><div class="d">${escHtml(l.date)} · ${art} · ${m}${leise}</div>
         <div class="l">${escHtml(l.label || '')}</div></div>`;
