@@ -1008,6 +1008,18 @@ input[type=checkbox]{accent-color:var(--akzent);width:16px;height:16px}
 #up-teile{margin-top:14px}
 #up-start{margin-top:16px}
 #ku-start,#ku-fertig{margin-top:16px}
+#mp-body{padding-bottom:calc(128px + env(safe-area-inset-bottom))}
+.mp-lift{border:1px solid var(--line);background:var(--panel);border-radius:2px;padding:12px;margin-top:12px}
+.mp-lift .h{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.mp-lift .name{font-family:var(--display);text-transform:uppercase;font-size:1.25rem;color:var(--akzent)}
+.mp-lift .zeile{display:flex;align-items:center;gap:8px;margin-top:10px}
+.mp-lift .zeile .lbl{flex:1;color:var(--muted);font-size:0.8125rem}
+.mp-lift .zeile button{width:40px;height:40px;padding:0}
+.mp-lift .zeile input{width:64px;height:40px;text-align:center;font-family:var(--mono);background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:2px}
+.mp-saetze{display:flex;gap:8px;margin-top:12px}
+.mp-saetze button{flex:1;margin:0;padding:12px 0}
+.mp-saetze button.an{border-color:var(--akzent);color:var(--akzent);background:var(--tint-akzent)}
+#mp-fertig{margin-top:16px}
 #ku-abbruch{margin-top:10px}
 #ku-bloecke{margin-top:14px}
 #ku-ende .up-steuer .btn{padding-left:6px;padding-right:6px}

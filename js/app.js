@@ -15,6 +15,7 @@ import * as E from './einrichten.js';
 import * as PS from './persoenlich.js';
 import * as UP from './unplugged.js';
 import * as KU from './kurs.js';
+import * as MP from './moshpit.js';
 import * as M from './merch.js';
 import * as W from './wach.js';
 import * as HL from './hilfs.js';
@@ -74,7 +75,7 @@ const $ = id => document.getElementById(id);
 uebersetzeStatisch();
 const VERSION_KEY = 'setlist.version';
 let laufendeVersion = localStorage.getItem(VERSION_KEY) || '—';
-const VIEWS = ['setup', 'einrichten', 'home', 'session', 'wod', 'unplugged', 'kurs', 'maxout', 'done', 'history', 'bibliothek', 'merch', 'backstage', 'soundcheck'];
+const VIEWS = ['setup', 'einrichten', 'home', 'session', 'wod', 'unplugged', 'kurs', 'mosh', 'maxout', 'done', 'history', 'bibliothek', 'merch', 'backstage', 'soundcheck'];
 // Waehrend Einheit, Jam, Unplugged und Max-Out bleibt der Bildschirm an —
 // am Ansichtswechsel festgemacht, damit kein Ausgang (Fertig, Abbrechen,
 // Zurueck) das Freigeben vergessen kann.
@@ -1872,6 +1873,7 @@ const kuStopp = () => { clearInterval(kuTimer); kuTimer = null; kuPausiert = fal
 function renderKursKnopf() {
   const z = KU.zustand(alleLogs);
   $('go-kurs').textContent = z.fertig ? t('home.kursFertig') : t('home.kurs', { woche: z.woche });
+  renderMoshKnopf();
 }
 
 function starteKurs() {
@@ -2148,6 +2150,167 @@ $('ku-ende').querySelectorAll('[data-bew]').forEach(b => { b.onclick = () => kuS
 $('ku-geschafft').querySelectorAll('[data-ges]').forEach(b => {
   b.onclick = () => { kuGeschafft = b.dataset.ges === '1'; kuGeschafftZeigen(); };
 });
+
+/* ========================= Kettlebell Mosh Pit =========================
+   Das Folgeprogramm nach dem Kurs: drei feste Lifts, doppelte Progression
+   (js/moshpit.js). Das Ziel folgt aus den Logs; hier wird nur eingetragen,
+   mit welcher Kugel du gearbeitet hast, und abgehakt.                      */
+
+let mpEinheit = null, mpWerte = {}, mpGesamt = 0, mpTimer = null, mpRest = 0, mpPause = false;
+
+const mpStopp = () => { clearInterval(mpTimer); mpTimer = null; mpPause = false; $('mp-leiste').hidden = true; };
+
+function renderMoshKnopf() {
+  const sichtbar = KU.zustand(alleLogs).fertig || MP.moshLogs(alleLogs).length > 0;
+  $('go-mosh').hidden = !sichtbar;
+}
+
+function starteMosh() {
+  mpStopp();
+  mpEinheit = MP.naechste(alleLogs);
+  mpGesamt = 0;
+  mpWerte = {};
+  for (const l of mpEinheit.lifts) mpWerte[l.id] = { kg: l.kg || 0, reps: l.reps, erledigt: Array(mpEinheit.saetze).fill(false) };
+  renderMosh();
+  show('mosh');
+}
+
+const mpZiel = (l, w) => t(l.seiten ? 'mp.zielSeite' : 'mp.ziel', { saetze: mpEinheit.saetze, reps: w.reps }) + (w.kg ? ` · ${kuKg(w.kg)}` : '');
+
+function renderMosh() {
+  const neu = mpEinheit.lifts.some(l => l.neu && !l.kg);
+  $('mp-hinweis').innerHTML = neu ? `<p class="lead">${escHtml(t('mp.neu'))}</p>` : '';
+  $('mp-leiter').textContent = t('mp.leiter', { leiter: MP.LEITER.join(' · '), kg: MP.SCHRITT_KG });
+  $('mp-lifts').innerHTML = mpEinheit.lifts.map(l => {
+    const w = mpWerte[l.id];
+    const u = KU.UEBUNGEN[l.id];
+    return `<div class="mp-lift" data-l="${l.id}">
+      <div class="h"><span class="name">${escHtml(u.name)}</span><span class="fine" data-ziel>${escHtml(mpZiel(l, w))}</span></div>
+      <p class="fine">${escHtml(u.cue)}</p>
+      <div class="zeile"><span class="lbl">${escHtml(t('mp.kugel'))}</span>
+        <button class="btn ghost" data-f="kg" data-d="-1" aria-label="${escHtml(t('ku.leichter'))}">−</button>
+        <input type="number" inputmode="decimal" min="0" max="${KU.KUGEL_MAX}" step="${KU.KUGEL_SCHRITT}" data-i="kg" value="${w.kg || ''}" placeholder="kg" aria-label="${escHtml(u.name)} kg">
+        <button class="btn ghost" data-f="kg" data-d="1" aria-label="${escHtml(t('ku.schwerer'))}">+</button></div>
+      <div class="zeile"><span class="lbl">${escHtml(t('mp.wdh'))}</span>
+        <button class="btn ghost" data-f="reps" data-d="-1" aria-label="${escHtml(t('mp.weniger'))}">−</button>
+        <input type="number" inputmode="numeric" min="1" max="200" step="1" data-i="reps" value="${w.reps}" aria-label="${escHtml(u.name)} ${escHtml(t('mp.wdh'))}">
+        <button class="btn ghost" data-f="reps" data-d="1" aria-label="${escHtml(t('mp.mehr'))}">+</button></div>
+      <div class="mp-saetze">${w.erledigt.map((x, i) => `<button class="btn ghost ${x ? 'an' : ''}" data-s="${i}" aria-pressed="${x}">${escHtml(t('mp.satz', { n: i + 1 }))}</button>`).join('')}</div>
+    </div>`;
+  }).join('');
+
+  $('mp-lifts').querySelectorAll('.mp-lift').forEach(karte => {
+    const id = karte.dataset.l, l = mpEinheit.lifts.find(x => x.id === id), w = mpWerte[id];
+    const zeige = () => { karte.querySelector('[data-ziel]').textContent = mpZiel(l, w); };
+    const setze = (feld, wert) => {
+      if (feld === 'kg') { w.kg = Math.max(0, Math.min(KU.KUGEL_MAX, Math.round(wert * 2) / 2)); karte.querySelector('[data-i="kg"]').value = w.kg || ''; }
+      else { w.reps = Math.max(1, Math.min(200, Math.round(wert) || 1)); karte.querySelector('[data-i="reps"]').value = w.reps; }
+      zeige();
+    };
+    karte.querySelectorAll('[data-i]').forEach(f => { f.onchange = () => setze(f.dataset.i, Number(String(f.value).replace(',', '.')) || 0); });
+    karte.querySelectorAll('[data-f]').forEach(b => {
+      b.onclick = () => setze(b.dataset.f, (w[b.dataset.f] || 0) + Number(b.dataset.d) * (b.dataset.f === 'kg' ? KU.KUGEL_SCHRITT : 1));
+    });
+    karte.querySelectorAll('[data-s]').forEach(b => {
+      b.onclick = () => {
+        const i = Number(b.dataset.s);
+        w.erledigt[i] = !w.erledigt[i];
+        b.classList.toggle('an', w.erledigt[i]);
+        b.setAttribute('aria-pressed', String(w.erledigt[i]));
+        if (w.erledigt[i] && w.erledigt.some(x => !x)) mpPauseStart();
+        mpUhr();
+      };
+    });
+  });
+}
+
+/** Eine Uhr: zaehlt die Gesamtzeit ab dem ersten Satz und laesst die Pause herunter. */
+function mpUhr() {
+  if (mpTimer) return;
+  mpTimer = setInterval(() => {
+    mpGesamt++;
+    if (mpPause) {
+      mpRest--;
+      $('mp-pause-zeit').textContent = Math.max(0, mpRest);
+      if (mpRest === 3) upSignal(false);
+      if (mpRest <= 0) { mpPause = false; $('mp-leiste').hidden = true; upSignal(true); }
+    }
+  }, 1000);
+}
+
+function mpPauseStart() {
+  mpPause = true;
+  mpRest = mpEinheit.pause;
+  $('mp-pause-zeit').textContent = mpRest;
+  $('mp-leiste').hidden = false;
+}
+
+async function mpSpeichern() {
+  if (!mpEinheit) return;
+  const roh = mpEinheit.lifts.map(l => {
+    const w = mpWerte[l.id];
+    return { lift: l.id, kg: w.kg, reps: w.reps, sets: mpEinheit.saetze, erledigt: w.erledigt.filter(Boolean).length };
+  });
+  const uebungen = MP.bereinigeLifts(roh);
+  if (!uebungen.length) { banner(t('mp.keineKugel'), '', 4000); return; }
+  mpStopp();
+  const log = {
+    date: P.ymd(new Date()),
+    type: 'moshpit',
+    label: MP.label({ saetze: mpEinheit.saetze, lifts: uebungen }),
+    dauerSekunden: Math.max(60, mpGesamt),
+    uebungen,
+    finished: new Date().toISOString()
+  };
+  const ort = ortName();
+  if (ort) log.ort = ort;
+  const vorherHist = state.history || [];
+  state = P.applyLog(state, config, log);
+  S.cache({ state });
+  alleLogs = alleLogs.concat([log]);
+  S.cacheLogs(alleLogs);
+
+  const naechste = MP.naechste(alleLogs).lifts
+    .map(l => `${KU.UEBUNGEN[l.id].name} ${l.reps}${l.kg ? ` @ ${kuKg(l.kg)}` : ''}`).join(' · ');
+  $('done-body').innerHTML = `
+    <div class="card">
+      <div class="kicker">${escHtml(log.date)} · ${t('hist.moshpit')}</div>
+      <div class="name">${escHtml(t('mp.titel'))}</div>
+      <ul>${uebungen.map(u => `<li><span>${escHtml(MP.liftName(u.lift))}</span><span>${u.sets} × ${u.reps} · ${escHtml(kuKg(u.kg))} · ${escHtml(u.geschafft ? t('mp.ok') : t('mp.nicht'))}</span></li>`).join('')}</ul>
+    </div>
+    <p class="spruch">${escHtml(t('mp.naechste', { liste: naechste }))}</p>
+    <div id="done-aufnaeher"></div>`;
+  show('done');
+  if (!upLeise()) toene([660, 880]);
+  if (navigator.vibrate) navigator.vibrate([180, 90, 180]);
+
+  try {
+    await commitMosh(log);
+    banner(t('mp.abgeschlossen'), 'ok');
+    if (ICU.pushAktiv() && ICU.isConfigured()) ICU.queuePush(log);
+  } catch { S.queue(log); banner(t('msg.keinNetz'), '', 6000); }
+  mpEinheit = null;
+  renderMoshKnopf();
+  zeigeNeueAufnaeher(log, vorherHist);
+}
+
+async function commitMosh(log) {
+  let path = `${S.LOG_DIR}/${log.date}-moshpit.json`;
+  let n = 2;
+  while (await S.readFile(path)) path = `${S.LOG_DIR}/${log.date}-moshpit-${n++}.json`;
+  await S.writeFile(path, log, `Mosh Pit am ${log.date}`);
+  const cur = await S.readFile('state.json');
+  await S.writeFile('state.json', state, `Zustand nach Mosh Pit ${log.date}`, cur ? cur.sha : stateSha);
+}
+
+$('go-mosh').onclick = starteMosh;
+$('mp-back').onclick = () => {
+  const angefangen = mpEinheit && Object.values(mpWerte).some(w => w.erledigt.some(Boolean));
+  if (angefangen && !confirm(t('mp.abbrechenFrage'))) return;
+  mpStopp(); mpEinheit = null; renderKursKnopf(); show('home');
+};
+$('mp-fertig').onclick = mpSpeichern;
+$('mp-weiter').onclick = () => { mpPause = false; $('mp-leiste').hidden = true; };
 
 /* ====================== Programm einrichten ======================
    Wer neu anfaengt, hat noch keine config.json. Frueher stand hier eine
@@ -2755,7 +2918,8 @@ function renderAngeben(logs) {
 function renderKugel(logs) {
   const z = KU.zustand(logs);
   const bw = KU.bestwerte(logs);
-  if (!z.absolviert) { $('hist-kugel').innerHTML = `<p class="fine">${escHtml(t('ku.stat.leer'))}</p>`; return; }
+  const pit = renderMoshStat(logs);
+  if (!z.absolviert) { $('hist-kugel').innerHTML = pit || `<p class="fine">${escHtml(t('ku.stat.leer'))}</p>`; return; }
   const namen = new Map();
   for (let w = 1; w <= KU.WOCHEN; w++) for (const tag of KU.TAGE) {
     for (const b of KU.kugelBausteine(KU.einheit(w, tag))) namen.set(b.schluessel, b.name);
@@ -2791,7 +2955,31 @@ function renderKugel(logs) {
   }).join('');
   $('hist-kugel').innerHTML = `${kopf}
     <h2>${escHtml(t('ku.stat.verlauf'))}</h2>${verlaeufe || `<p class="fine">${escHtml(t('ku.stat.keineKugeln'))}</p>`}
-    <h2>${escHtml(t('ku.stat.checks'))}</h2>${checks}`;
+    <h2>${escHtml(t('ku.stat.checks'))}</h2>${checks}${pit}`;
+}
+
+/** Mosh Pit in Tour › Kugel: Verlauf, Bestwert und Erfolge je Lift, aus den Logs. */
+function renderMoshStat(logs) {
+  if (!MP.moshLogs(logs).length) return '';
+  const serie = MP.serie(logs);
+  const teile = MP.bestwerte(logs).filter(b => b.n).map(b => {
+    const r = MP.reihe(logs, b.lift);
+    const sp = r.length > 1 ? ST.sparkline(r.map(p => ({ date: p.date, weight: p.kg })), 300, 60) : null;
+    return `<div class="chart">
+      <div class="h"><span class="t">${escHtml(MP.liftName(b.lift))}</span>
+        <span class="r">${escHtml(t('mp.stat.zuletzt', { kg: kuKg(b.aktuell.kg), reps: b.aktuell.reps }))}</span></div>
+      ${sp ? `<svg viewBox="0 0 300 60" preserveAspectRatio="none" aria-hidden="true">
+        <path d="${sp.flaeche}" fill="var(--tint-akzent)"/>
+        <path d="${sp.linie}" fill="none" stroke="var(--akzent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+        ${sp.koord.map((k, i) => `<circle cx="${k.x.toFixed(1)}" cy="${k.y.toFixed(1)}" r="2.5" fill="${r[i].geschafft ? 'var(--akzent)' : 'var(--rost)'}"/>`).join('')}
+      </svg>` : ''}
+      <div class="h" style="margin:6px 0 0">
+        <span class="t">${escHtml(b.best ? t('mp.stat.best', { kg: kuKg(b.best.kg), reps: b.best.reps }) : '—')}</span>
+        <span class="t">${escHtml(t('mp.stat.zeile', { n: b.n, erfolge: b.erfolge }))}</span></div>
+    </div>`;
+  }).join('');
+  return `<h2>${escHtml(t('mp.stat.titel'))}</h2>
+    <p class="fine">${escHtml(t('mp.stat.serie', { n: serie }))}</p>${teile}`;
 }
 
 function renderCharts(logs) {
@@ -2868,7 +3056,7 @@ function renderListe(logs) {
       const m = l.dauerSekunden ? `${Math.floor(l.dauerSekunden / 60)}:${String(l.dauerSekunden % 60).padStart(2, '0')}` : '—';
       // Bis hierher landete jeder fremde Typ unter "WOD". Unplugged ist
       // aber kein Jam, und in der Historie soll stehen, was man gemacht hat.
-      const art = l.type === 'unplugged' ? t('hist.unplugged') : l.type === 'kurs' ? t('hist.kurs') : 'WOD';
+      const art = l.type === 'unplugged' ? t('hist.unplugged') : l.type === 'kurs' ? t('hist.kurs') : l.type === 'moshpit' ? t('hist.moshpit') : 'WOD';
       const leise = l.type === 'unplugged' && l.leise ? ` · ${t('up.leise')}` : '';
       return `<div class="hist wod"><div class="d">${escHtml(l.date)} · ${art} · ${m}${leise}</div>
         <div class="l">${escHtml(l.label || '')}</div></div>`;

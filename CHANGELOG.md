@@ -10,6 +10,17 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-27.3
+
+### Neu
+- **Kettlebell Mosh Pit.** Das Folgeprogramm nach dem Kurs: drei feste Lifts (Swing, Goblet Squat,
+  einarmiges Drücken), je drei Sätze, doppelte Progression wie beim 5x5. Die Leiter läuft 10 → 12 → 15 → 17 → 20
+  Wiederholungen; wer alle Sätze schafft, steigt eine Sprosse, nach 20 folgt eine um 4 kg schwerere Kugel
+  und es geht bei 10 weiter. Zweimal nicht geschafft: eine Stufe zurück. Das nächste Ziel folgt aus den
+  Logs (`type: 'moshpit'`), gespeichert wird nur die Einheit. Der Knopf erscheint, sobald der Kurs fertig ist.
+  Pausenuhr zwischen den Sätzen; Verlauf, Bestwert, Erfolge und Serie stehen in Tour › Kugel.
+  Leiter und Schrittweite sind Planung, nicht aus einer Studie.
+
 ## 2026-10-27.2
 
 ### Neu

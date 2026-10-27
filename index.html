@@ -118,6 +118,7 @@
         <button id="go-wod" class="btn small" data-i18n="home.jam">Jam</button>
         <button id="go-unplugged" class="btn ghost small" data-i18n="home.unplugged">Unplugged</button>
         <button id="go-kurs" class="btn ghost small">Kurs</button>
+        <button id="go-mosh" class="btn ghost small" data-i18n="home.mosh" hidden>Mosh Pit</button>
         <button id="go-mobility" class="btn ghost small" data-i18n="home.mobility">Mobility</button>
         <button id="go-maxout" class="btn ghost small" data-i18n="home.maxout">Max-Out</button>
       </div>
@@ -280,6 +281,28 @@
       <button class="btn" data-bew="passend" data-i18n="ku.b.passend">Passend</button>
       <button class="btn ghost" data-bew="zaeh" data-i18n="ku.b.zaeh">Zäh</button>
     </div>
+  </div>
+</section>
+
+<!-- ============ MOSH PIT ============ -->
+<section id="view-mosh" class="view" hidden>
+  <header class="head">
+    <button id="mp-back" class="icon-btn" data-i18n-aria="aria.zurueck" aria-label="Zurück">‹</button>
+    <h1 data-i18n="mp.titel">Kettlebell Mosh Pit</h1>
+  </header>
+  <div class="pad" id="mp-body">
+    <div class="directive">
+      <span class="tone technik" data-i18n="mp.tag">DREI LIFTS · FESTE LEITER</span>
+      <p class="txt" data-i18n="mp.lead">Erst mehr Wiederholungen, dann eine schwerere Kugel und wieder von unten.</p>
+    </div>
+    <div id="mp-hinweis"></div>
+    <div id="mp-lifts"></div>
+    <p class="fine" id="mp-leiter"></p>
+    <button id="mp-fertig" class="btn" data-i18n="mp.fertig">Abschließen</button>
+  </div>
+  <div id="mp-leiste" class="rest" hidden>
+    <span><span class="lbl" data-i18n="mp.pause">PAUSE</span><span id="mp-pause-zeit" class="t">90</span></span>
+    <button id="mp-weiter" data-i18n="ses.weiter">WEITER</button>
   </div>
 </section>
 
