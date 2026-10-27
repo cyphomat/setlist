@@ -10,6 +10,12 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-27.6
+
+### Behoben
+- **Das Kugel-Feld zeigt kein Auf/Ab-Rädchen mehr.** Der Browser legte es über das „kg" und doppelte − und +.
+  Gilt für den Kurs und für Mosh Pit.
+
 ## 2026-10-27.5
 
 ### Neu

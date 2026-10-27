@@ -1029,6 +1029,10 @@ input[type=checkbox]{accent-color:var(--akzent);width:16px;height:16px}
 .ku-kugel button{width:40px;height:40px;padding:0}
 .ku-kugel input{width:64px;height:40px;text-align:center;font-family:var(--mono);background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:2px}
 .ku-kugel .kg{color:var(--muted);font-size:0.8125rem}
+/* Das Auf/Ab-Raedchen des Browsers frisst das "kg" und doppelt − und +. */
+.ku-kugel input,.mp-lift .zeile input{-moz-appearance:textfield;appearance:textfield}
+.ku-kugel input::-webkit-outer-spin-button,.ku-kugel input::-webkit-inner-spin-button,
+.mp-lift .zeile input::-webkit-outer-spin-button,.mp-lift .zeile input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .ku-test{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
 
 /* ═══════════════════════════════════════════════════════════
