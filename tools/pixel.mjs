@@ -380,6 +380,54 @@ const EIGENE = {
     'AHA.AHA.AHA',
     'HHH.HHH.HHH'
   ],
+  weihnachtsgig: [        // Tannenbaum mit Stern und Kugeln
+    '.....A.....',
+    '.....H.....',
+    '....HHH....',
+    '...HHHAH...',
+    '....HHH....',
+    '...HHHHH...',
+    '..HAHHHHH..',
+    '.HHHHHAHHH.',
+    '.....H.....',
+    '.....H.....'
+  ],
+  eiersuche: [            // Ei mit Zickzackband
+    '....HHH....',
+    '...HHHHH...',
+    '..HHHHHHH..',
+    '..HHHHHHH..',
+    '.HAHAHAHAH.',
+    '.AHAHAHAHA.',
+    '.HHHHHHHHH.',
+    '.HHHHHHHHH.',
+    '..HHHHHHH..',
+    '...HHHHH...'
+  ],
+  geisterstunde: [        // Kuerbis mit ausgeschnittenem Gesicht
+    '.....A.....',
+    '....AA.....',
+    '..HHHHHHH..',
+    '.HHHHHHHHH.',
+    'HHH.HHH.HHH',
+    'HHH.HHH.HHH',
+    'HHHHHHHHHHH',
+    'HH.H.H.H.HH',
+    '.HHHHHHHHH.',
+    '..HHHHHHH..'
+  ],
+  kerze: [                // Eine Kerze, nur Hauptfarbe: kein Gold
+    '.....H.....',
+    '....HHH....',
+    '....HHH....',
+    '.....H.....',
+    '...HHHHH...',
+    '...HHHHH...',
+    '...HH.HH...',
+    '...HHHHH...',
+    '..HHHHHHH..',
+    '..HHHHHHH..'
+  ],
   hangar: [               // Klimmzug: Stange, Haende, Koerper
     'AAAAAAAAAAA',
     '.A.......A.',
@@ -780,7 +828,8 @@ const MOTIV = {
   'kugel-1': '#kugel1', 'kugel-5': '#kugel5',
   'pit-start': '#pitstart', 'pit-sprung': '#pitsprung', 'pit-serie-3': '#pitserie3', 'pit-serie-6': '#pitserie6',
   'kugelrang-1': '#kr1', 'kugelrang-2': '#kr2', 'kugelrang-3': '#kr3', 'kugelrang-4': '#kr4',
-  kursboss: '#kursboss', 'kurs-duett': '#kursduett', 'check-duett': '#checkduett', 'pit-duett': '#pitduett'
+  kursboss: '#kursboss', 'kurs-duett': '#kursduett', 'check-duett': '#checkduett', 'pit-duett': '#pitduett',
+  weihnachtsgig: '#weihnachtsgig', eiersuche: '#eiersuche', geisterstunde: '#geisterstunde', kerze: '#kerze'
 };
 /* Symbole, deren Farbe die Aussage ist: Blut bleibt rot. */
 const EIGENE_FARBE = new Set(['debuet']);
@@ -792,7 +841,8 @@ const KATEGORIE = {
   comeback: 'comeback', rueckweg: 'comeback', reunion: 'comeback', serie: 'serie',
   tour: 'tour', soundcheck: 'tour',
   duett: 'buehne', faustgruss: 'buehne', partner: 'buehne', verabredung: 'buehne',
-  kurs: 'buehne', check: 'buehne', kugel: 'buehne', pit: 'buehne', kugelrang: 'buehne', kursboss: 'buehne'
+  kurs: 'buehne', check: 'buehne', kugel: 'buehne', pit: 'buehne', kugelrang: 'buehne', kursboss: 'buehne',
+  weihnachtsgig: 'buehne', eiersuche: 'buehne', geisterstunde: 'buehne', kerze: 'buehne'
 };
 
 const raster = zeilen => {

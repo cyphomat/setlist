@@ -21,6 +21,7 @@ import { serienMarken } from './soundcheck.js';
 import * as ZU from './zusammen.js';
 import { kursLogs, TESTS, tests as kursTests } from './kurs.js';
 import { moshLogs } from './moshpit.js';
+import * as AN from './anlaesse.js';
 
 /** Was als Gig zaehlt: alles, wofuer man ins Studio gegangen ist — und jede Fahrt. */
 export const GIG_TYPEN = ['strength', 'wod', 'unplugged', 'kurs', 'moshpit', 'maxout'];
@@ -103,6 +104,26 @@ const DOOM_N = 10, OPENAIR_N = 10;
 export const ROADCREW_N = 10, HANGAR_WDH = 10;
 const ZUG = new Set(HILFS.filter(h => h.zug).map(h => h.id));
 const CROSSOVER_STUFEN = [1, 10, 26];
+/**
+ * Aufnaeher zu den Anlaessen (js/anlaesse.js): eine Einheit im Zeitfenster
+ * genuegt, keine Serie und keine Zahl. Das Fenster ist das des Banners.
+ * Im Katalog stehen sie erst, wenn sie verdient sind: ein Kreis, der
+ * monatelang nicht zu erreichen ist, waere nur Leere an der Wand.
+ */
+export const ANLASS_AUFNAEHER = {
+  weihnachtsgig: ['weihnachten'], eiersuche: ['ostern'], geisterstunde: ['halloween'], kerze: ['lemmy', 'ozzy']
+};
+/** Je Anlass-Aufnaeher der erste Tag aus `tage` im Fenster. */
+export function anlassAufnaeher(tage = []) {
+  const sortiert = [...new Set(tage)].sort();
+  const out = {};
+  for (const [id, anlaesse] of Object.entries(ANLASS_AUFNAEHER)) {
+    const gesucht = anlaesse.map(a => AN.finde(a)).filter(Boolean);
+    const tag = sortiert.find(d => gesucht.some(a => AN.trifft(a, d)));
+    if (tag) out[id] = tag;
+  }
+  return out;
+}
 /* Kettlebell: Phasen des Kurses (Einheiten), die drei Checks (in der Reihenfolge von TESTS),
    Erhoehungen der Kugel und Serien im Mosh Pit. */
 export const KURS_PHASEN = [{ id: 'fundament', n: 12 }, { id: 'grundlage', n: 24 }, { id: 'ausbau', n: 36 }];
@@ -122,7 +143,7 @@ const CHECKS = Object.entries(TESTS).map(([woche, id]) => ({ woche: Number(woche
  * `gruppe` ist die Leiter: an der Wand steht je Gruppe nur der naechste
  * fehlende, damit keine Weste voller leerer Kreise entsteht.
  */
-export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHoehe = false, mitPlan = false, mitZusammen = false, mitKurs = false, mitPit = false, mitKursZusammen = false, mitPitZusammen = false } = {}) {
+export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHoehe = false, mitPlan = false, mitZusammen = false, mitKurs = false, mitPit = false, mitKursZusammen = false, mitPitZusammen = false, anlaesse = [] } = {}) {
   const lifts = config.lifts || {};
   const bar = config.bar || 20;
   const out = [];
@@ -197,6 +218,7 @@ export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHo
     p('pit-sprung', 'buehne', 'pit-sprung', 'merch.p.pit-sprung');
     for (const n of PIT_SERIE_STUFEN) p(`pit-serie-${n}`, 'buehne', 'pit-serie', 'merch.p.pit-serie', { n });
   }
+  for (const id of Object.keys(ANLASS_AUFNAEHER)) if (anlaesse.includes(id)) p(id, 'buehne', id, `merch.p.${id}`);
   return out;
 }
 
@@ -271,7 +293,10 @@ export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Dat
   const reihe = gewichtsReihe(wellness);
   const rad = mitDatum(fahrten);
   const kl = kursLogs(logs), ml = moshLogs(logs);
+  // Gig-Tage vorab: ob ein Anlass-Aufnaeher im Katalog steht, haengt daran.
+  const anlassTage = anlassAufnaeher([...logs.filter(istGig).map(l => l.date), ...rad.map(f => f.date)]);
   const kat = katalog(config, {
+    anlaesse: Object.keys(anlassTage),
     mitGewicht: reihe.length > 0,
     mitRad: rad.length > 0,
     mitHoehe: rad.some(f => f.hm != null),
@@ -375,6 +400,8 @@ export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Dat
   for (const n of PARTNER_STUFEN) if (partner[n]) setze(`partner-${n}`, partner[n]);
   const woche = serienMarken(ZU.wochen(gemTage), VERABREDUNG_STUFEN);
   for (const n of VERABREDUNG_STUFEN) if (woche[n]) setze(`verabredung-${n}`, woche[n]);
+
+  for (const [id, tag] of Object.entries(anlassTage)) setze(id, tag);
 
   kettlebellAufnaeher(kl, ml, setze, new Set(gemTage.map(x => x.datum)), logs);
 
@@ -558,6 +585,7 @@ export const BILDER = [
   'kurs-start', ...KURS_PHASEN.map(k => `kurs-${k.id}`), ...CHECKS.map((c, i) => `check-${i + 1}`), ...KUGEL_STUFEN.map(n => `kugel-${n}`),
   'pit-start', 'pit-sprung', ...PIT_SERIE_STUFEN.map(n => `pit-serie-${n}`),
   ...KUGEL_RAENGE.map((r, k) => `kugelrang-${k + 1}`), 'kursboss', 'kurs-duett', 'check-duett', 'pit-duett',
+  ...Object.keys(ANLASS_AUFNAEHER),
   ...PLATTEN_STUFEN.map(n => `platten-figur-${n}`), 'koerper-figur'
 ];
 

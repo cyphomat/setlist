@@ -10,6 +10,15 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-28.5
+
+### Neu
+- **Aufnäher zu den Anlässen.** Eine Einheit (oder Fahrt) im Zeitfenster eines Anlasses bringt einen
+  Aufnäher: *Weihnachts-Gig* (1.–26.12.), *Eiersuche* (Gründonnerstag bis Ostermontag), *Geisterstunde*
+  (24.–31.10.) und *Eine Kerze* (an einem Gedenktag, ohne Gold im Motiv). Keine Serie, keine Zahl, jeder nur
+  einmal. Sie stehen erst an der Wand, wenn sie verdient sind, damit keine monatelang unerreichbaren Kreise
+  dort hängen. Abgeleitet aus den Einheiten wie alles im Merch-Stand; das Fenster ist das des Banners.
+
 ## 2026-10-28.4
 
 ### Neu
