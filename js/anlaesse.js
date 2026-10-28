@@ -14,7 +14,7 @@
 //   bild   Motive aus MOTIVE, nebeneinander im Banner
 
 /** Die Motive in der Reihenfolge des Bogens assets/pixel/anlaesse.png. */
-export const MOTIVE = ['tannenbaum', 'geschenk'];
+export const MOTIVE = ['tannenbaum', 'geschenk', 'ei', 'hase', 'kuerbis', 'geist', 'grabstein', 'kerze'];
 /** Kantenlaenge eines Bildes; jedes Motiv hat zwei Bilder nebeneinander. */
 export const MOTIV_KANTE = 15;
 
@@ -23,8 +23,16 @@ export const TYPEN = ['phase', 'tag', 'gedenk'];
 export const RANG = { gedenk: 0, tag: 1, phase: 2 };
 
 export const STANDARD = [
+  { id: 'halloween', typ: 'phase', von: { fix: [10, 24] }, bis: { fix: [10, 31] },
+    bild: ['kuerbis', 'geist', 'grabstein'], saetze: 4 },
   { id: 'weihnachten', typ: 'phase', von: { fix: [12, 1] }, bis: { fix: [12, 26] },
-    bild: ['tannenbaum', 'geschenk', 'tannenbaum'], saetze: 3 }
+    bild: ['tannenbaum', 'geschenk', 'tannenbaum'], saetze: 3 },
+  // Gruendonnerstag bis Ostermontag
+  { id: 'ostern', typ: 'phase', von: { ostern: -3 }, bis: { ostern: 1 },
+    bild: ['ei', 'hase', 'ei'], saetze: 3 },
+  // Gedenktage: Kerze, ein Satz, keine Bewegung
+  { id: 'lemmy', typ: 'gedenk', regel: { fix: [12, 28] }, bild: ['kerze'] },
+  { id: 'ozzy', typ: 'gedenk', regel: { fix: [7, 22] }, bild: ['kerze'] }
 ];
 
 const zwei = n => String(n).padStart(2, '0');
