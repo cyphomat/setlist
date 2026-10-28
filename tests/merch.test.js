@@ -558,10 +558,56 @@ print('\n--- Kugel-Platten, Kugel-Rang, Endgegner, Coop ---');
   eq('Pit-Coop braucht Mosh Pit', M.aufnaeher([kurs('2026-08-03')], config, [], HEUTE, { zusammen: [v('2026-08-03')] }).some(a => a.id === 'pit-duett'), false);
 }
 
+print('\n--- Aufnaeher zu den Anlaessen ---');
+{
+  const tag = d => [kraft(d, [satz('squat', 95)])];
+  const anl = (d, id) => hat(M.aufnaeher(tag(d), config, [], HEUTE), id);
+  const imKatalog = (logs, id) => M.aufnaeher(logs, config, [], HEUTE).some(a => a.id === id);
+  eq('vier Anlass-Aufnaeher', Object.keys(M.ANLASS_AUFNAEHER).length, 4);
+  eq('Weihnachts-Gig am 24.12.', anl('2026-12-24', 'weihnachtsgig'), '2026-12-24');
+  eq('Weihnachts-Gig am 1.12.', anl('2026-12-01', 'weihnachtsgig'), '2026-12-01');
+  eq('Weihnachts-Gig am 26.12.', anl('2026-12-26', 'weihnachtsgig'), '2026-12-26');
+  eq('kein Weihnachts-Gig am 30.11.', anl('2026-11-30', 'weihnachtsgig'), null);
+  eq('kein Weihnachts-Gig am 27.12.', anl('2026-12-27', 'weihnachtsgig'), null);
+  eq('Eiersuche am Gruendonnerstag 2026', anl('2026-04-02', 'eiersuche'), '2026-04-02');
+  eq('Eiersuche am Ostermontag 2026', anl('2026-04-06', 'eiersuche'), '2026-04-06');
+  eq('keine Eiersuche am 1.4.2026', anl('2026-04-01', 'eiersuche'), null);
+  eq('keine Eiersuche am 7.4.2026', anl('2026-04-07', 'eiersuche'), null);
+  eq('Eiersuche 2027 schon im Maerz', anl('2027-03-25', 'eiersuche'), '2027-03-25');
+  eq('Geisterstunde am 24.10.', anl('2026-10-24', 'geisterstunde'), '2026-10-24');
+  eq('Geisterstunde am 31.10.', anl('2026-10-31', 'geisterstunde'), '2026-10-31');
+  eq('keine Geisterstunde am 23.10.', anl('2026-10-23', 'geisterstunde'), null);
+  eq('keine Geisterstunde am 1.11.', anl('2026-11-01', 'geisterstunde'), null);
+  eq('Kerze am 28.12. (Lemmy)', anl('2026-12-28', 'kerze'), '2026-12-28');
+  eq('Kerze am 22.7. (Ozzy)', anl('2026-07-22', 'kerze'), '2026-07-22');
+  eq('keine Kerze am 27.12.', anl('2026-12-27', 'kerze'), null);
+  eq('keine Kerze am 21.7.', anl('2026-07-21', 'kerze'), null);
+  eq('Kerze nicht am 28.12. durch Weihnachts-Gig', anl('2026-12-28', 'weihnachtsgig'), null);
+
+  const ohne = M.aufnaeher(tag('2026-09-01'), config, [], HEUTE);
+  ok('ohne Einheit im Fenster kein Kreis an der Wand', Object.keys(M.ANLASS_AUFNAEHER).every(id => !ohne.some(a => a.id === id)));
+  ok('verdient steht er an der Wand', imKatalog(tag('2026-12-24'), 'weihnachtsgig'));
+  eq('Katalog ohne Option: keine Anlass-Aufnaeher', M.katalog(config).filter(a => a.id in M.ANLASS_AUFNAEHER).length, 0);
+
+  const mehrere = [kraft('2026-12-20', [satz('squat', 95)]), kraft('2026-12-24', [satz('squat', 97.5)]), kraft('2027-12-10', [satz('squat', 100)])];
+  eq('der erste Tag zaehlt', hat(M.aufnaeher(mehrere, config, [], HEUTE), 'weihnachtsgig'), '2026-12-20');
+  eq('nur einmal im Katalog', M.aufnaeher(mehrere, config, [], HEUTE).filter(a => a.id === 'weihnachtsgig').length, 1);
+  eq('Jam zaehlt auch als Gig', hat(M.aufnaeher([{ date: '2026-10-25', type: 'wod', format: 'amrap' }], config, [], HEUTE), 'geisterstunde'), '2026-10-25');
+  eq('Fahrt zaehlt wie ein Gig', hat(M.aufnaeher([], config, [], HEUTE, { fahrten: [{ date: '2026-12-25', km: 30 }] }), 'weihnachtsgig'), '2026-12-25');
+  eq('ein Log ohne Datum zaehlt nicht', hat(M.aufnaeher([{ type: 'wod' }], config, [], HEUTE), 'weihnachtsgig'), null);
+  eq('Anpassung ist kein Gig', hat(M.aufnaeher([{ date: '2026-12-24', type: 'anpassung', grund: 'pause' }], config, [], HEUTE), 'weihnachtsgig'), null);
+  const alle = M.anlassAufnaeher(['2026-12-28', '2026-07-22', '2026-10-24']);
+  eq('anlassAufnaeher: genau Geisterstunde und Kerze', Object.keys(alle).sort().join(), 'geisterstunde,kerze');
+  eq('anlassAufnaeher: kein Weihnachts-Gig am 28.12.', alle.weihnachtsgig, undefined);
+  eq('anlassAufnaeher: Kerze am ersten Gedenktag', alle.kerze, '2026-07-22');
+  eq('anlassAufnaeher ohne Tage', Object.keys(M.anlassAufnaeher([])).length, 0);
+}
+
 print('\n--- Pixelbilder ---');
 {
   const voll = M.katalog({ ...config, lifts: { ...config.lifts, squat: { ...config.lifts.squat, reference: 100 } } },
-    { mitGewicht: true, mitRad: true, mitHoehe: true, mitPlan: true, mitZusammen: true, mitKurs: true, mitPit: true, mitKursZusammen: true, mitPitZusammen: true });
+    { mitGewicht: true, mitRad: true, mitHoehe: true, mitPlan: true, mitZusammen: true, mitKurs: true, mitPit: true, mitKursZusammen: true, mitPitZusammen: true,
+      anlaesse: Object.keys(M.ANLASS_AUFNAEHER) });
   const ohne = voll.filter(a => M.bildIndex(a) < 0).map(a => a.id);
   eq('jeder Aufnaeher hat ein Bild', ohne.join(), '');
   const indizes = voll.map(a => M.bildIndex(a));

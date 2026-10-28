@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-2669%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-2702%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -223,7 +223,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | **CSV export** | *Backstage → App*: every session as a table for Excel, Numbers or Sheets. Built in the browser, sent to no service; text from your data never arrives as a formula. |
 | **Self-updating** | Checks the version at start and reloads itself exactly once. |
 | **Sound and vibration** | Tone at the end of a rest and on finishing a session, on top of the vibration — the tone respects the mute switch, the vibration does not. |
-| **Seasonal** | At Christmas (1–26 Dec), Easter (Maundy Thursday to Easter Monday) and Halloween (24–31 Oct) a small banner with an animated pixel motif and one line hangs under the word of the day; for Lemmy (28 Dec) and Ozzy (22 Jul) there is a still candle instead. Switch it off under *Backstage → App*, hide it for the day with ✕; stored on the device only. |
+| **Seasonal** | At Christmas (1–26 Dec), Easter (Maundy Thursday to Easter Monday) and Halloween (24–31 Oct) a small banner with an animated pixel motif and one line hangs under the word of the day; for Lemmy (28 Dec) and Ozzy (22 Jul) there is a still candle instead. Switch it off under *Backstage → App*, hide it for the day with ✕; stored on the device only. One session in the window also earns a patch (Christmas gig, Egg hunt, Witching hour, One candle) that only appears on the wall once earned. |
 | **Light and dark** | Switch between system / light / dark. Two real designs, not an inversion. |
 | **Text size** | Normal / Large / Extra large under *Backstage → App*. Scales the whole interface evenly, on this device only. |
 | **Home as a poster** | One word for the day at the top (TECHNIK, SOLIDE, HART, SCHWER), and below it only what changes today — a break, an injury, low form, a ride too close. Form, sleep, weight and bike sit underneath as small instruments that open on tap. On the right, a week card with the dial and your streak, and a weights list headed by the reunion tour until you have made it. |
@@ -504,7 +504,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-2669 tests in 32 files. No build, no dependencies.
+2702 tests in 32 files. No build, no dependencies.
 
 ### Browser probes (optional)
 
