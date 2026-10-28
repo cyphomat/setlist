@@ -131,7 +131,7 @@ export const LIFT_INFO = {
 
 export const WARMUP = {
   allgemein: [
-    { t: '3 Min', was: 'Rudergerät, Seil oder Fahrrad', detail: 'Bis du leicht warm bist. Nicht mehr.' },
+    { t: '3 Min', sek: 180, was: 'Rudergerät, Seil oder Fahrrad', detail: 'Bis du leicht warm bist. Nicht mehr.' },
     { t: '10x',   was: 'Hüftkreisen je Seite',          detail: 'Groß und langsam.' },
     { t: '10x',   was: 'Katzenbuckel / Kuhrücken',      detail: 'Wirbel für Wirbel.' },
     { t: '10x',   was: 'Bandzüge nach außen',           detail: 'Schulter aufwecken, besonders vor Drücken.' }

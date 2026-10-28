@@ -137,7 +137,9 @@ gleich('anderes in warmup bleibt', PS.setzeEinstieg({ warmup: { sonst: 1, einsti
 const liste = [{ t: '3 Min', was: 'Rudergerät', detail: 'x' }, { t: '10x', was: 'Hüfte', detail: 'y' }];
 gleich('ohne Einstieg unveraendert', PS.warmupZeilen(liste, {}, 'd'), liste);
 gleich('ersetzt nur die erste Zeile', PS.warmupZeilen(liste, { warmup: { einstieg: { art: 'Rudern', minuten: 15 } } }, 'Dein Einstieg'),
-  [{ t: '15 Min', was: 'Rudern', detail: 'Dein Einstieg' }, liste[1]]);
+  [{ t: '15 Min', sek: 900, was: 'Rudern', detail: 'Dein Einstieg' }, liste[1]]);
+eq('Eigener Einstieg bringt die Dauer in Sekunden mit', PS.warmupZeilen(liste, { warmup: { einstieg: { art: 'Rudern', minuten: 7 } } }, 'd')[0].sek, 420);
+eq('Vorgabe ohne Einstieg behaelt ihre Dauer', PS.warmupZeilen([{ t: '3 Min', sek: 180, was: 'x', detail: 'y' }], {}, 'd')[0].sek, 180);
 eq('Laenge bleibt gleich', PS.warmupZeilen(liste, { warmup: { einstieg: { art: 'Rudern', minuten: 15 } } }, 'd').length, 2);
 eq('Art wird maskiert', PS.warmupZeilen(liste, { warmup: { einstieg: { art: '<b>x</b>', minuten: 5 } } }, 'd', s => s.replace(/</g, '&lt;'))[0].was, '&lt;b>x&lt;/b>');
 gleich('leere Liste', PS.warmupZeilen([], { warmup: { einstieg: { art: 'Rudern', minuten: 15 } } }, 'd'), []);

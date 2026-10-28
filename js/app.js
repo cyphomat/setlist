@@ -836,12 +836,19 @@ function startSession() {
   // Waere er an 'B' festgemacht, wuerde er falsch stehen, sobald jemand die
   // Workouts anders zusammenstellt — und die Einheiten sind konfigurierbar.
   const rumpf = plan.lifts.some(l => l.lift === 'deadlift') ? (WARMUP.rumpf || []) : [];
+  const wuZeilen = PS.warmupZeilen(WARMUP.allgemein, config, t('ses.einstiegDetail'), escHtml)
+    .concat(WARMUP[plan.workout] || [], rumpf, verletzungsWarmup());
+  wuStopp();
+  const wuSek = wuZeilen[0] && wuZeilen[0].sek;
   $('warmup').innerHTML = `
     <details class="info" open><summary>${t('ses.soundcheck')}</summary>
       <div class="body">
-        ${PS.warmupZeilen(WARMUP.allgemein, config, t('ses.einstiegDetail'), escHtml)
-          .concat(WARMUP[plan.workout] || [], rumpf, verletzungsWarmup())
-          .map((w, i) =>
+        ${wuSek ? `<div class="wu-timer" role="group" aria-label="${t('ses.wuTimer')}">
+          <span class="t" id="wu-zeit" role="timer">${wuAnzeige(wuSek)}</span>
+          <button type="button" id="wu-start">${t('ses.wuStart')}</button>
+          <button type="button" id="wu-neu" hidden>${t('ses.wuNeu')}</button>
+        </div>` : ''}
+        ${wuZeilen.map((w, i) =>
           `<label class="kv check"><input type="checkbox" data-w="${i}">
             <span class="k">${w.t}</span><span class="v"><b>${w.was}</b> — ${w.detail}</span></label>`).join('')}
       </div>
@@ -880,6 +887,7 @@ function startSession() {
   $('warmup').querySelectorAll('.kv.check input').forEach(cb => {
     cb.onchange = () => cb.closest('.kv').classList.toggle('erledigt', cb.checked);
   });
+  if (wuSek) wuBinde(wuSek);
 
   const fin = C.tagesAuswahl(VL.ohneGesperrte(FINISHER, config), new Date(), 'fin');
   session.fin = { id: fin.id, name: fin.name };
@@ -1151,6 +1159,55 @@ function startRest(seconds) {
 }
 const stopRest = () => { clearInterval(restTimer); $('rest').hidden = true; };
 
+/**
+ * Warm-up-Timer: zaehlt die Dauer der ersten Warm-up-Zeile (Cardio) herunter.
+ * Er rechnet gegen ein Endzeit-Datum statt Sekunden zu zaehlen — geht der
+ * Bildschirm aus oder laeuft der Tab im Hintergrund, bleibt die Zeit stimmig.
+ * Nichts davon wird gespeichert.
+ */
+let wuTimer = null, wuEnde = 0, wuRest = 0;
+const wuAnzeige = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+const wuStopp = () => { clearInterval(wuTimer); wuTimer = null; wuEnde = 0; wuRest = 0; };
+
+function wuBinde(dauer) {
+  const zeit = $('wu-zeit'), start = $('wu-start'), neu = $('wu-neu');
+  const zeige = s => { zeit.textContent = wuAnzeige(s); };
+  const anhalten = () => { clearInterval(wuTimer); wuTimer = null; };
+  const tick = () => {
+    const s = Math.max(0, Math.ceil((wuEnde - Date.now()) / 1000));
+    zeige(s);
+    if (s > 0) return;
+    anhalten();
+    wuRest = 0;
+    start.hidden = true; neu.hidden = false;
+    zeit.textContent = t('ses.wuFertig');
+    const cb = $('warmup').querySelector('.kv.check input[data-w="0"]');
+    if (cb && !cb.checked) { cb.checked = true; cb.onchange(); }
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    toene([880]);
+  };
+  start.onclick = () => {
+    if (wuTimer) {                       // laeuft -> Pause
+      wuRest = Math.max(0, wuEnde - Date.now());
+      anhalten();
+      start.textContent = t('ses.wuWeiter');
+      neu.hidden = false;
+      return;
+    }
+    wuEnde = Date.now() + (wuRest || dauer * 1000);
+    start.textContent = t('ses.wuPause');
+    neu.hidden = true;
+    wuTimer = setInterval(tick, 250);
+    tick();
+  };
+  neu.onclick = () => {
+    wuStopp();
+    zeige(dauer);
+    start.hidden = false; start.textContent = t('ses.wuStart');
+    neu.hidden = true;
+  };
+}
+
 /** Pause im Lauf verstellen — 90 Sekunden passen nicht zu jedem Satz. */
 function verstellePause(delta) {
   restLeft = Math.max(0, restLeft + delta);
@@ -1181,6 +1238,7 @@ async function finishSession() {
   letzterLogPfad = null;
   S.cache({ state });
   stopRest();
+  wuStopp();
   renderDone(before, log);
   show('done');
   toene([660, 880]);
@@ -1528,7 +1586,7 @@ $('logout').onclick = async () => {
 $('finish').onclick = finishSession;
 // Neu zeichnen: Vor der Einheit kann eine Anpassung (Pause, Satzschema)
 // den Zustand geaendert haben — sonst stuende auf Home der alte Stand.
-$('abort').onclick = () => { if (confirm(t('ses.verwerfen'))) { stopRest(); session = null; renderHome(); show('home'); } };
+$('abort').onclick = () => { if (confirm(t('ses.verwerfen'))) { stopRest(); wuStopp(); session = null; renderHome(); show('home'); } };
 $('done-ok').onclick = () => { renderHome(); show('home'); };
 $('rest-skip').onclick = stopRest;
 /**
