@@ -10,6 +10,14 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-28.4
+
+### Neu
+- **Ostern, Halloween und Gedenktage im Banner.** Ostern (Gründonnerstag bis Ostermontag) mit Ei und Hase,
+  Halloween (24.–31.10.) mit Kürbis, Geist und Grabstein, jeweils mit eigenen Sätzen. Am 28.12. (Lemmy) und
+  22.7. (Ozzy) steht stattdessen eine stille Kerze mit einem Satz, ohne Bewegung; ein Gedenktag geht vor jeder
+  Phase. Schalter und ✕ gelten wie bisher für alle.
+
 ## 2026-10-28.3
 
 ### Neu

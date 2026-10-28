@@ -75,10 +75,38 @@ eq('ein anderer Tag: wieder die Phase', AN.fuer('2026-12-29', [phase, tag, geden
 eq('nichts los', AN.fuer('2026-10-28', [phase, tag, gedenk]), null);
 eq('unbekannter Typ wird uebergangen', AN.fuer('2026-12-28', [{ id: 'z', typ: 'quatsch', regel: { fix: [12, 28] } }]), null);
 eq('leere Liste', AN.fuer('2026-12-28', []), null);
-eq('heutiger Stand: 28.10.2026 ohne Banner', AN.fuer('2026-10-28'), null);
+eq('Mitte November: kein Banner', AN.fuer('2026-11-15'), null);
+eq('Anfang Februar: kein Banner', AN.fuer('2027-02-02'), null);
 eq('heutiger Stand: 1.12.2026 Weihnachten', AN.fuer('2026-12-01').id, 'weihnachten');
 
+print('\n--- Halloween, Ostern, Gedenktage (die echten Daten) ---');
+eq('Halloween: 23.10. noch nicht', AN.fuer('2026-10-23'), null);
+eq('Halloween: 24.10. beginnt', AN.fuer('2026-10-24').id, 'halloween');
+eq('Halloween: 28.10.2026 (heute) mittendrin', AN.fuer('2026-10-28').id, 'halloween');
+eq('Halloween: 31.10. letzter Tag', AN.fuer('2026-10-31').id, 'halloween');
+eq('Halloween: 1.11. vorbei', AN.fuer('2026-11-01'), null);
+eq('Ostern 2026: 1.4. nichts', AN.fuer('2026-04-01'), null);
+eq('Ostern 2026: Gruendonnerstag 2.4.', AN.fuer('2026-04-02').id, 'ostern');
+eq('Ostern 2026: Ostersonntag 5.4.', AN.fuer('2026-04-05').id, 'ostern');
+eq('Ostern 2026: Ostermontag 6.4.', AN.fuer('2026-04-06').id, 'ostern');
+eq('Ostern 2026: Dienstag 7.4. vorbei', AN.fuer('2026-04-07'), null);
+eq('Ostern 2027: Gruendonnerstag liegt im Maerz', AN.fuer('2027-03-25').id, 'ostern');
+eq('Ostern 2028: Ostermontag 17.4.', AN.fuer('2028-04-17').id, 'ostern');
+eq('Lemmy am 28.12.', AN.fuer('2026-12-28').id, 'lemmy');
+eq('Ozzy am 22.7.', AN.fuer('2026-07-22').id, 'ozzy');
+eq('Lemmy ist ein Gedenktag', AN.finde('lemmy').typ, 'gedenk');
+eq('Ozzy ist ein Gedenktag', AN.finde('ozzy').typ, 'gedenk');
+eq('Gedenktag hat genau ein Motiv: die Kerze', AN.finde('lemmy').bild.join(), 'kerze');
+eq('Tag nach Lemmy: nichts', AN.fuer('2026-12-29'), null);
+ok('kein Gedenktag liegt in einer Phase (sonst haette der Rang etwas zu tun)',
+  AN.STANDARD.filter(a => a.typ === 'gedenk').every(g => { const iso = AN.datum(g.regel, 2026); return AN.STANDARD.filter(a => a.typ === 'phase' && AN.trifft(a, iso)).length === 0; }));
+ok('Gedenktag wuerde auch mitten in einer Phase gewinnen',
+  AN.fuer('2026-12-28', [...AN.STANDARD, { id: 'x', typ: 'phase', von: { fix: [12, 1] }, bis: { fix: [12, 31] }, bild: ['ei'], saetze: 1 }]).id === 'lemmy');
+ok('jedes Motiv wird von einem Anlass benutzt', AN.MOTIVE.every(m => AN.STANDARD.some(a => a.bild.includes(m))));
+
 print('\n--- Texte ---');
+eq('Halloween hat vier Saetze', AN.finde('halloween').saetze, 4);
+eq('Gedenktag: ein Satz, kein Wechsel', AN.schluessel(AN.finde('ozzy'), '2026-07-22').satz, 'anl.ozzy.satz');
 eq('Satz nach Tag des Monats (1.)', AN.schluessel(weih, '2026-12-01').satz, 'anl.weihnachten.s2');
 eq('Satz nach Tag des Monats (3.)', AN.schluessel(weih, '2026-12-03').satz, 'anl.weihnachten.s1');
 eq('Satz nach Tag des Monats (5.)', AN.schluessel(weih, '2026-12-05').satz, 'anl.weihnachten.s3');
@@ -115,7 +143,7 @@ eq('ausgeblendet: heute weg', AN.heute('2026-12-01'), null);
 eq('ausgeblendet gilt nur fuer den Tag', AN.heute('2026-12-02').id, 'weihnachten');
 AN.setzeAn(false); AN.setzeAn(true);
 eq('wieder einschalten holt den ausgeblendeten Banner zurueck', AN.heute('2026-12-01').id, 'weihnachten');
-eq('heute ohne Anlass bleibt null', AN.heute('2026-10-28'), null);
+eq('heute ohne Anlass bleibt null', AN.heute('2026-11-15'), null);
 eq('isoLokal nimmt den lokalen Tag', AN.isoLokal(new Date(2026, 11, 1, 0, 30)), '2026-12-01');
 eq('isoLokal: spaet am Abend', AN.isoLokal(new Date(2026, 11, 31, 23, 59)), '2026-12-31');
 

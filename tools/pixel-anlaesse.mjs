@@ -10,7 +10,9 @@ export const KANTE = 15;
 /** Zeichen im Raster → Farbe. '.' ist durchsichtig. */
 export const PALETTE = {
   G: '2f8a43', g: '1d5c2e', h: '5fbf6a', T: '7a4a22', t: '4f2f14',
-  Y: 'f2c14e', W: 'f6f2e8', R: 'd2423a', r: 'e8645a', o: '8e2a25', B: '4aa3df'
+  Y: 'f2c14e', W: 'f6f2e8', R: 'd2423a', r: 'e8645a', o: '8e2a25', B: '4aa3df',
+  O: 'e8782a', q: 'b4541a', x: '3a3340', n: '1f3b57', k: 'f2a7b8',
+  S: 'a8a4ae', s: '6e6a76', u: '8a5fd0', C: 'f1e4c4', c: 'a8946a'
 };
 
 const leerZeile = () => '.'.repeat(KANTE);
@@ -65,7 +67,105 @@ function geschenk(bild) {
   return zeilen(r);
 }
 
-const BAUER = { tannenbaum, geschenk };
+/* Flaeche mit Kontur: Die Maske ist eine Menge von "y,x"; Zellen am Rand bekommen die Kontur,
+   alle anderen die Fuellung. So bleibt jede Form lesbar, auf dunklem wie auf hellem Grund. */
+const zelle = (y, x) => `${y},${x}`;
+function flaeche(r, maske, fuell, kontur) {
+  for (const k of maske) {
+    const [y, x] = k.split(',').map(Number);
+    const rand = [[y - 1, x], [y + 1, x], [y, x - 1], [y, x + 1]].some(([a, b]) => !maske.has(zelle(a, b)));
+    setze(r, y, x, rand ? kontur : fuell);
+  }
+}
+/** Reihen als [y, von, bis] (beide inklusive). */
+function reihen(liste) {
+  const m = new Set();
+  for (const [y, von, bis] of liste) for (let x = von; x <= bis; x++) m.add(zelle(y, x));
+  return m;
+}
+/** Breiten je Reihe, mittig auf Spalte 7, ab Reihe y0. */
+const mittig = (y0, breiten) => reihen(breiten.map((b, i) => [y0 + i, 7 - (b - 1) / 2, 7 + (b - 1) / 2]));
+
+/* Ei: Zickzackband, das von Bild zu Bild die Seite wechselt (das Ei wackelt). */
+function ei(bild) {
+  const r = raster();
+  const m = mittig(2, [3, 5, 7, 9, 9, 11, 11, 11, 11, 9, 9, 7]);
+  flaeche(r, m, 'B', 'n');
+  for (const [y, versatz] of [[7, 0], [8, 1]]) {
+    for (let x = 1; x <= 13; x++) if (m.has(zelle(y, x)) && r[y][x] === 'B' && (x + versatz + bild) % 2 === 0) setze(r, y, x, 'Y');
+  }
+  for (let x = 1; x <= 13; x++) if (m.has(zelle(10, x)) && r[10][x] === 'B' && (x + bild) % 3 === 0) setze(r, 10, x, 'R');
+  setze(r, bild ? 5 : 4, bild ? 5 : 6, 'W');
+  return zeilen(r);
+}
+
+/* Hase: lange Ohren, das rechte knickt von Bild zu Bild, im zweiten Bild blinzelt er. */
+function hase(bild) {
+  const r = raster();
+  const kopf = reihen([[6, 3, 11], [7, 2, 12], [8, 2, 12], [9, 2, 12], [10, 2, 12], [11, 2, 12], [12, 3, 11], [13, 4, 10], [14, 4, 10]]);
+  const links = reihen([0, 1, 2, 3, 4, 5].map(y => [y, 3, 5]));
+  const rechts = reihen([0, 1, 2, 3, 4, 5].map(y => [y, y < 3 && bild ? 10 : 9, y < 3 && bild ? 12 : 11]));
+  for (const m of [links, rechts, kopf]) flaeche(r, m, 'W', 'x');
+  for (let y = 1; y <= 4; y++) { setze(r, y, 4, 'k'); setze(r, y, y < 3 && bild ? 11 : 10, 'k'); }
+  if (!bild) { setze(r, 8, 5, 'x'); setze(r, 8, 9, 'x'); setze(r, 9, 5, 'x'); setze(r, 9, 9, 'x'); }
+  else { setze(r, 9, 5, 'x'); setze(r, 9, 6, 'x'); setze(r, 9, 8, 'x'); setze(r, 9, 9, 'x'); }
+  setze(r, 10, 7, 'k'); setze(r, 11, 6, 'x'); setze(r, 11, 8, 'x');
+  return zeilen(r);
+}
+
+/* Kuerbis: Gesicht leuchtet, im zweiten Bild blinzelt er und lacht kleiner. */
+function kuerbis(bild) {
+  const r = raster();
+  const m = mittig(3, [7, 11, 13, 13, 13, 13, 13, 13, 13, 11, 7]);
+  flaeche(r, m, 'O', 'q');
+  for (let y = 5; y <= 11; y++) { setze(r, y, 3, 'q'); setze(r, y, 11, 'q'); }
+  for (const x of [7, 8]) setze(r, 1, x, 'G');
+  for (const x of [6, 7]) setze(r, 2, x, 'g');
+  for (const x of [4, 5, 9, 10]) { setze(r, 7, x, 'Y'); if (!bild) setze(r, 6, x, 'Y'); }
+  for (let x = 4; x <= 10; x++) setze(r, 10, x, 'Y');
+  if (!bild) for (let x = 5; x <= 9; x++) setze(r, 11, x, 'Y');
+  return zeilen(r);
+}
+
+/* Geist: wabert, die Augen rutschen eine Reihe, der Saum wechselt die Zacken. */
+function geist(bild) {
+  const r = raster();
+  const saum = bild ? [3, 5, 6, 8, 9, 11] : [3, 4, 6, 7, 9, 10];
+  const m = reihen([[1, 5, 9], [2, 4, 10], ...[3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(y => [y, 3, 11])]);
+  for (const x of saum) m.add(zelle(13, x));
+  flaeche(r, m, 'W', 'x');
+  const y0 = bild ? 6 : 5;
+  for (const x of [5, 9]) { setze(r, y0, x, 'x'); setze(r, y0 + 1, x, 'x'); }
+  if (bild) setze(r, 9, 7, 'x'); else for (const x of [6, 7, 8]) setze(r, 9, x, 'x');
+  return zeilen(r);
+}
+
+/* Grabstein: Kreuz im Stein, auf dem Grab steigt ein Irrlicht. */
+function grabstein(bild) {
+  const r = raster();
+  flaeche(r, reihen([[3, 5, 9], [4, 4, 10], ...[5, 6, 7, 8, 9, 10, 11, 12].map(y => [y, 3, 11])]), 'S', 's');
+  for (let y = 5; y <= 10; y++) setze(r, y, 7, 's');
+  for (let x = 5; x <= 9; x++) setze(r, 7, x, 's');
+  for (let x = 0; x < KANTE; x++) setze(r, 13, x, 'g');
+  for (let x = 0; x < KANTE; x++) setze(r, 14, x, 'g');
+  for (const x of [1, 2, 12, 13]) setze(r, 13, x, 'G');
+  setze(r, bild ? 1 : 2, 12, 'u'); setze(r, bild ? 0 : 1, 13, 'u');
+  return zeilen(r);
+}
+
+/* Kerze: das Flackern ist das zweite Bild; im Banner steht sie still. */
+function kerze(bild) {
+  const r = raster();
+  flaeche(r, reihen([...[7, 8, 9, 10, 11, 12].map(y => [y, 6, 8])]), 'C', 'c');
+  setze(r, 9, 7, 'C'); setze(r, 10, 7, 'C');
+  flaeche(r, reihen([[13, 4, 10], [14, 4, 10]]), 'S', 's');
+  setze(r, 6, 7, 'x');
+  if (!bild) { setze(r, 3, 7, 'Y'); setze(r, 4, 7, 'Y'); for (const x of [6, 7, 8]) setze(r, 5, x, 'Y'); setze(r, 5, 7, 'O'); }
+  else { setze(r, 3, 8, 'Y'); setze(r, 4, 7, 'Y'); setze(r, 4, 8, 'Y'); for (const x of [6, 7, 8]) setze(r, 5, x, 'Y'); setze(r, 5, 7, 'O'); }
+  return zeilen(r);
+}
+
+const BAUER = { tannenbaum, geschenk, ei, hase, kuerbis, geist, grabstein, kerze };
 
 /** Je Motiv zwei Raster (Bild 1, Bild 2), in der Reihenfolge von MOTIVE. */
 export function motivRaster(ids) {
