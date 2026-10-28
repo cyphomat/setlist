@@ -22,6 +22,7 @@ import * as HL from './hilfs.js';
 import * as X from './export.js';
 import * as F from './feuer.js';
 import * as ANS from './ansager.js';
+import * as ANL from './anlaesse.js';
 import * as SC from './soundcheck.js';
 import * as ZU from './zusammen.js';
 import * as GT from './gitarren.js';
@@ -342,6 +343,7 @@ function renderHome() {
   $('today').className = `plakat ton-${d.intensitaet.stufe}`;
   $('today').innerHTML = plakatHtml(d, plan);
   plakatGlut();
+  renderAnlass();
   $('start').onclick = startMitPausenCheck;
   renderInstrumente();
   $('zitat').innerHTML = `${meilensteinKarte()}${zitatHtml(d)}`;
@@ -4452,6 +4454,65 @@ document.querySelectorAll('.ansager-wahl button').forEach(b => {
 });
 renderAnsagerSchalter();
 
+/* ============================ Anlaesse ============================
+   Saisonale Banner unter dem Tageswort (anlaesse.js entscheidet, welcher
+   gilt). Abschaltbar im Backstage, "fuer heute ausblenden" per ✕; beides
+   bleibt auf dem Geraet. Mit ?anlass=<id> in der Adresse zeigt die
+   Startseite einen Anlass nur zur Ansicht — nichts wird gespeichert.      */
+
+const anlassVorschau = (() => {
+  try { return ANL.finde(new URLSearchParams(location.search).get('anlass')); } catch { return null; }
+})();
+
+function renderAnlass() {
+  const box = $('anlass');
+  if (!box) return;
+  const a = anlassVorschau || ANL.heute();
+  box.textContent = '';
+  if (!a) { box.hidden = true; return; }
+  const k = ANL.schluessel(a, ANL.isoLokal());
+  const bauen = (tag, klasse, text) => {
+    const e = document.createElement(tag);
+    e.className = klasse;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  };
+  const szene = bauen('div', 'anlass-szene');
+  szene.setAttribute('aria-hidden', 'true');
+  a.bild.forEach((id, n) => {
+    const bild = bauen('span', `apx${a.typ === 'gedenk' ? '' : ' anim'}${n % 2 ? ' spaet' : ''}`);
+    bild.style.setProperty('--i', ANL.MOTIVE.indexOf(id));
+    szene.append(bild);
+  });
+  const text = bauen('div', 'anlass-text');
+  text.append(bauen('b', 'anlass-name', t(k.name)), bauen('span', 'anlass-satz', t(k.satz)));
+  const x = bauen('button', 'anlass-x', '✕');
+  x.type = 'button';
+  x.title = t('anl.ausblenden');
+  x.setAttribute('aria-label', t('anl.ausblenden'));
+  x.onclick = () => {
+    if (!anlassVorschau) ANL.verstecke(ANL.isoLokal());
+    box.hidden = true;
+    box.textContent = '';
+  };
+  box.dataset.typ = a.typ;
+  box.append(szene, text, x);
+  box.hidden = false;
+}
+
+function renderSaisonSchalter() {
+  const an = ANL.istAn();
+  document.querySelectorAll('.saison-wahl button').forEach(b => b.classList.toggle('an', (b.dataset.saison === 'an') === an));
+}
+document.querySelectorAll('.saison-wahl button').forEach(b => {
+  b.onclick = () => {
+    ANL.setzeAn(b.dataset.saison === 'an');
+    renderSaisonSchalter();
+    renderAnlass();
+  };
+});
+renderSaisonSchalter();
+
 /* ---------- Schriftgroesse ----------
    Sitzt am <html> und wirkt ueber die rem-Angaben auf jeden Text zugleich.
    Bewusst nur drei Stufen: eine stufenlose Regelung waere ein Schieberegler,
@@ -4718,6 +4779,7 @@ function plakatHtml(d, plan) {
     <div class="kicker">${escHtml(heute)}${d.situation === 'streak' ? '' : ` · ${escHtml(d.kopf)}`}</div>
     <div class="tageswort"><span class="tw">${d.intensitaet.label === 'SCHWER' ? '<canvas class="glut" aria-hidden="true"></canvas>' : ''}<span>${escHtml(tonWort(d.intensitaet.label))}</span></span></div>
     <p class="tagessatz">${escHtml(d.intensitaet.text)}</p>
+    <div id="anlass" class="anlass" hidden></div>
     ${hinweise ? `<div class="hinweise">${hinweise}</div>` : ''}
     <div class="programm">
       <div class="kicker">${t(workoutOverride ? 'home.selbstGewaehlt' : 'home.alsNaechstes')}</div>

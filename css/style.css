@@ -1517,3 +1517,33 @@ button.tstop:hover .szene{border-color:var(--muted)}
 .gitarre.offen b{color:var(--muted)}
 .rack-neu{margin-top:10px;background:none;border:0;padding:6px 0 0}
 .gitarre-neu .gitarre b{color:var(--akzent)}
+
+/* ============ Anlaesse: Banner unter dem Tageswort ============
+   Das Motiv liegt als Bogen (assets/pixel/anlaesse.png): je Motiv zwei Bilder
+   nebeneinander, --i waehlt das Motiv, steps(2) schaltet zwischen den Bildern.
+   Gedenktage bleiben schlicht: kein Rahmen, keine Bewegung.                    */
+.anlass{--s:3px;position:relative;display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;
+  margin-top:14px;padding:8px 40px 8px 12px;background:var(--bg2);border:1px solid var(--line);border-radius:2px;overflow:hidden}
+.anlass[hidden]{display:none}
+.anlass-szene{display:flex;align-items:flex-end;gap:2px;flex:none}
+.apx{--i:0;display:inline-block;flex:none;width:calc(var(--s)*15);height:calc(var(--s)*15);
+  background:url('../assets/pixel/anlaesse.png') no-repeat;background-size:auto 100%;
+  background-position:calc(var(--i)*-30*var(--s)) 0;image-rendering:pixelated}
+.apx.anim{animation:apx-flip .9s steps(2) infinite}
+.apx.spaet{animation-delay:-.45s}
+@keyframes apx-flip{
+  from{background-position:calc(var(--i)*-30*var(--s)) 0}
+  to{background-position:calc((var(--i)*-30 - 30)*var(--s)) 0}}
+.anlass-text{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0;flex:1 1 180px}
+.anlass-name{font-family:'Permanent Marker',var(--display);font-weight:400;font-size:0.9375rem;line-height:1.25;
+  letter-spacing:.03em;text-transform:uppercase;color:var(--bg);background:var(--tape);padding:3px 12px 2px;
+  transform:rotate(-1.2deg);overflow-wrap:anywhere}
+:root[data-theme="light"] .anlass-name{color:var(--fg)}
+.anlass-satz{font-size:0.9375rem;line-height:1.4;color:var(--fg);overflow-wrap:anywhere}
+.anlass-x{position:absolute;top:4px;right:4px;width:32px;height:32px;border:0;border-radius:2px;
+  background:transparent;color:var(--muted);font-size:0.875rem;cursor:pointer}
+.anlass-x:hover,.anlass-x:focus-visible{color:var(--fg);background:var(--panel2)}
+.anlass[data-typ="gedenk"]{background:transparent;border-color:transparent}
+.anlass[data-typ="gedenk"] .anlass-name{background:transparent;color:var(--muted);padding-left:0;transform:none}
+@media (min-width:600px){.anlass{--s:4px}}
+@media (prefers-reduced-motion:reduce){.apx.anim{animation:none}}

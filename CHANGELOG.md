@@ -10,6 +10,15 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-28.3
+
+### Neu
+- **Saisonaler Banner zu Weihnachten.** Vom 1. bis 26. Dezember steht unter dem Tageswort ein kleiner
+  Banner mit Pixelbaum, Geschenk und einem Satz; die Lichter blinken (bei reduzierter Bewegung stehen sie still).
+  Unter *Backstage → App → Saisonales* abschaltbar, per ✕ für heute ausgeblendet. Beides gilt nur auf dem Gerät.
+  Die Datumsregeln (fester Tag, Ostern, n-ter Wochentag, Phasen über den Jahreswechsel) liegen in
+  `js/anlaesse.js`; Ostern, Halloween und Gedenktage folgen.
+
 ## 2026-10-28.2
 
 ### Neu

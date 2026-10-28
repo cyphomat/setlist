@@ -9,6 +9,7 @@
 //   assets/pixel/aufnaeher.png  je 24×24, Reihenfolge wie M.BILDER
 //   assets/pixel/raenge.png     je 96×48, Reihenfolge wie M.RAENGE
 //   assets/pixel/boss.png, shirts.png, embleme.png, platten.png
+//   assets/pixel/anlaesse.png   je Motiv zwei Bilder 15×15, Reihenfolge wie MOTIVE in js/anlaesse.js
 //   assets/pixel/logo.png       der Schriftzug fuer die Kopfzeile
 //   icons/icon-*.png            das App-Icon, ganzzahlig vergroessert
 //   assets/readme/*.png         Banner, Streifen und Icons fuers README
@@ -28,6 +29,8 @@ import { fileURLToPath } from 'node:url';
 import { BILDER, RAENGE, ADJ, NOMEN, PLATTEN, KUGEL_PLATTEN } from '../js/merch.js';
 import { GITARREN as GITARREN_LISTE } from '../js/gitarren.js';
 import { GITARREN as GITARREN_SPEC, gitarrenBilder } from './pixel-gitarren.mjs';
+import { MOTIVE as ANLASS_MOTIVE, MOTIV_KANTE } from '../js/anlaesse.js';
+import { KANTE as ANLASS_KANTE, PALETTE as ANLASS_FARBEN, motivRaster } from './pixel-anlaesse.mjs';
 import { feld as feuerFeld, schritt as feuerSchritt, PALETTE as FEUER } from '../js/feuer.js';
 
 const WURZEL = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -1508,6 +1511,21 @@ if (GITARREN_SPEC.map(g => g.id).join() !== gitarrenIds.join()) {
   throw new Error(`Gitarren in tools/pixel-gitarren.mjs (${GITARREN_SPEC.map(g => g.id)}) und js/gitarren.js (${gitarrenIds}) passen nicht zusammen`);
 }
 
+/** Die Banner-Motive der Anlaesse: je Motiv zwei Bilder nebeneinander, hintereinander im Bogen. */
+if (ANLASS_KANTE !== MOTIV_KANTE) throw new Error('Kantenlaenge der Anlass-Motive in js/anlaesse.js und tools/pixel-anlaesse.mjs verschieden');
+function anlassBogen() {
+  const bilder = motivRaster(ANLASS_MOTIVE).flat();   // Motiv fuer Motiv, je zwei Bilder
+  const b = leer(bilder.length * ANLASS_KANTE, ANLASS_KANTE);
+  bilder.forEach((raster, i) => raster.forEach((zeile, y) => [...zeile].forEach((c, x) => {
+    if (c === '.') return;
+    if (!ANLASS_FARBEN[c]) throw new Error(`Anlass-Motiv: Farbe ${c} fehlt in der Palette`);
+    setze(b, i * ANLASS_KANTE + x, y, rgba(ANLASS_FARBEN[c]));
+  })));
+  eindeutig(bilder.map((_, i) => { const t = leer(ANLASS_KANTE, ANLASS_KANTE); klebe(t, b, 0, 0, { x: i * ANLASS_KANTE, y: 0, w: ANLASS_KANTE, h: ANLASS_KANTE }); return t; }),
+    ANLASS_MOTIVE.flatMap(m => [`${m} 1`, `${m} 2`]));
+  return b;
+}
+
 const ausgaben = {
   'assets/pixel/aufnaeher.png': bogen(eindeutig(BILDER.map(aufnaeher), BILDER), 24, 24),
   'assets/pixel/gitarren.png': bogen(eindeutig(gitarrenBilder(), gitarrenIds), 24, 56),
@@ -1522,6 +1540,7 @@ const ausgaben = {
   'assets/readme/merch.png': merchStreifen(),
   ...Object.fromEntries(Object.entries(README_ICONS).map(([k, n]) => [`assets/readme/i-${k}.png`, readmeIcon(n)])),
   'assets/pixel/shirts.png': bogen(ADJ.flatMap(a => { if (!STOFF[a]) throw new Error(`Kein Stoff fuer ${a}`); return [shirt(STOFF[a], false), shirt(STOFF[a], true)]; }), SHIRT_W, SHIRT_H),
+  'assets/pixel/anlaesse.png': anlassBogen(),
   'assets/pixel/embleme.png': bogen(eindeutig(NOMEN.map(emblem), NOMEN), 20, 20),
   'assets/pixel/platten.png': bogen([...PLATTEN, ...KUGEL_PLATTEN].map(p => award(p.id)), AWARD_W, AWARD_H),
   'assets/pixel/raenge.png': bogen(RAENGE.map(r => { const f = SZENE[r.id]; if (!f) throw new Error(`Keine Szene fuer ${r.id}`); return f(); }), 96, 48)
@@ -1554,5 +1573,6 @@ console.log('assets/pixel/boss.png       4 × 24×24');
 console.log(`assets/pixel/gitarren.png ${gitarrenIds.length} × 24×56, alle verschieden`);
 console.log(`assets/pixel/shirts.png     ${ADJ.length} × 2 × ${SHIRT_W}×${SHIRT_H}`);
 console.log(`assets/pixel/embleme.png    ${NOMEN.length} × 20×20, alle verschieden`);
+console.log(`assets/pixel/anlaesse.png  ${ANLASS_MOTIVE.length} × 2 × ${ANLASS_KANTE}×${ANLASS_KANTE}`);
 console.log(`assets/pixel/platten.png    ${PLATTEN.length + KUGEL_PLATTEN.length} × ${AWARD_W}×${AWARD_H}`);
 console.log('assets/pixel/logo.png, icons/icon-*.png, assets/readme/*.png');
