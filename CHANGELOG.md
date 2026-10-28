@@ -10,6 +10,14 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-28.1
+
+### Neu
+- **Timer für das Warm-up.** Im Soundcheck läuft über der Liste ein Countdown für die Cardio-Zeile (3 Min
+  oder dein eigener Einstieg aus Backstage → Persönlich). Start, Pause, Weiter, Neu; am Ende vibriert und
+  piept es und die Zeile ist abgehakt. Die Zeit rechnet gegen die Uhr, geht also auch bei ausgeschaltetem
+  Bildschirm nicht nach. Gespeichert wird nichts.
+
 ## 2026-10-27.7
 
 ### Behoben

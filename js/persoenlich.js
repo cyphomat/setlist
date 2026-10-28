@@ -256,7 +256,7 @@ export function setzeEinstieg(config, art, minuten) {
 export function warmupZeilen(allgemein, config, detail, maskiere = s => s) {
   const e = einstieg(config);
   if (!e || !allgemein || !allgemein.length) return allgemein || [];
-  return [{ t: `${e.minuten} Min`, was: maskiere(e.art), detail }, ...allgemein.slice(1)];
+  return [{ t: `${e.minuten} Min`, sek: e.minuten * 60, was: maskiere(e.art), detail }, ...allgemein.slice(1)];
 }
 
 /* Zusammen trainieren: der eigene Name, so wie ihn die andere Person sieht. */
