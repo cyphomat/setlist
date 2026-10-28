@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-2579%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-2645%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -223,6 +223,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | **CSV export** | *Backstage → App*: every session as a table for Excel, Numbers or Sheets. Built in the browser, sent to no service; text from your data never arrives as a formula. |
 | **Self-updating** | Checks the version at start and reloads itself exactly once. |
 | **Sound and vibration** | Tone at the end of a rest and on finishing a session, on top of the vibration — the tone respects the mute switch, the vibration does not. |
+| **Seasonal** | At Christmas (1–26 Dec) a small banner with a pixel tree and one line hangs under the word of the day. Switch it off under *Backstage → App*, hide it for the day with ✕; stored on the device only. |
 | **Light and dark** | Switch between system / light / dark. Two real designs, not an inversion. |
 | **Text size** | Normal / Large / Extra large under *Backstage → App*. Scales the whole interface evenly, on this device only. |
 | **Home as a poster** | One word for the day at the top (TECHNIK, SOLIDE, HART, SCHWER), and below it only what changes today — a break, an injury, low form, a ride too close. Form, sleep, weight and bike sit underneath as small instruments that open on tap. On the right, a week card with the dial and your streak, and a weights list headed by the reunion tour until you have made it. |
@@ -469,6 +470,7 @@ off under *Backstage → Connections*.
 | `js/export.js` | Sessions as CSV, safe against formulas. |
 | `js/feuer.js` | Pixel fire (the Doom algorithm, own implementation). |
 | `js/ansager.js` | Decides what gets called out after a session. |
+| `js/anlaesse.js` | Which seasonal banner applies on which day (date rules, Easter, rank), plus the on-device switch. |
 | `js/soundcheck.js` | Weekly soundcheck: calendar weeks, when it is due, streak, fader level, cleaning up the input. |
 | `js/zusammen.js` | Training together: dates, reading and building invitation links, the handshake, joint days for the patches. |
 | `js/boot.js` | Theme, storage migration and the frame block before first paint. |
@@ -481,6 +483,7 @@ off under *Backstage → Connections*.
 | `tools/tests.mjs` | Runs every test with Node; the GitHub Action does the same on every push. |
 | `tools/proben.mjs` | Browser probes: the real app in Chromium against a mocked GitHub API (optional, Playwright). |
 | `tools/pixel.mjs` | Builds every pixel graphic: the sheets in `assets/pixel/` (from the sources in `tools/pixel/`), the wordmark and app icons (`icons/`) and the README images (`assets/readme/`); `--pruefe` runs in the Action. |
+| `tools/pixel-anlaesse.mjs` | Draws the banner motifs (two frames each, flipped by CSS); `pixel.mjs` assembles them into the sheet. |
 | `tools/pixel-gitarren.mjs` | Draws the ten guitars for the rack (body masks, headstocks, colours); `pixel.mjs` assembles them into the sheet. |
 
 ---
@@ -501,7 +504,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-2579 tests in 31 files. No build, no dependencies.
+2645 tests in 32 files. No build, no dependencies.
 
 ### Browser probes (optional)
 
