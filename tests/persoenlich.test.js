@@ -1,5 +1,6 @@
 // Ausfuehren: jsc --module-file=tests/persoenlich.test.js
 import * as PS from '../js/persoenlich.js';
+import { WARMUP } from '../js/content.js';
 
 let pass = 0, fail = 0;
 const ok = (n, c, x = '') => c ? (pass++, print(`  ok   ${n}`)) : (fail++, print(`  FAIL ${n} ${x}`));
@@ -157,5 +158,16 @@ ok('Rest bleibt', PS.setzeName({ bar: 20 }, 'Daniel').bar === 20);
 ok('Eingabe bleibt unveraendert', (() => { const c = { bar: 20 }; PS.setzeName(c, 'D'); return !('name' in c); })());
 ok('leer nimmt ihn heraus', !('name' in PS.setzeName({ name: 'Daniel' }, '  ')));
 eq('Steuerzeichen raus', PS.setzeName({}, 'Da\u202eniel').name, 'Da niel');
+
+print('\n--- Warm-up: Dauer je Zeile ---');
+const alleZeilen = [...WARMUP.allgemein, ...WARMUP.A, ...WARMUP.B, ...WARMUP.rumpf];
+ok('jede Dauer ist eine positive ganze Zahl', alleZeilen.every(z => z.sek === undefined || (Number.isInteger(z.sek) && z.sek > 0)));
+ok('die Dauer passt zur Zeit im Text', alleZeilen.filter(z => z.sek).every(z => {
+  const m = /(\d+) (Min|Sek)/.exec(z.t);
+  return m && Number(m[1]) * (m[2] === 'Min' ? 60 : 1) === z.sek;
+}));
+eq('Cardio-Zeile hat 180 Sekunden', WARMUP.allgemein[0].sek, 180);
+eq('Seitstuetz haelt 20 Sekunden', WARMUP.rumpf[1].sek, 20);
+eq('Curl-up haelt 8 Sekunden', WARMUP.rumpf[2].sek, 8);
 
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

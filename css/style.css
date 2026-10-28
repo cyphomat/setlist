@@ -317,6 +317,10 @@ details.info[open]>summary::after{content:' ▾'}
 /* Warm-up-Timer: sitzt im Soundcheck ueber der Checkliste */
 .wu-timer{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin:0 0 12px}
 .wu-timer .t{flex:1;min-width:5ch;font-size:1.75rem;font-weight:600;font-family:var(--display);color:var(--akzent);font-variant-numeric:tabular-nums}
+.kv.check.halt{flex-wrap:wrap}
+.kv.check.halt .v{flex:1 1 0;min-width:0}
+.kv.check.halt::after{content:"";flex-basis:100%;height:0;order:1}
+.wu-halt{order:2;margin:2px 0 4px 26px;background:transparent;border:1px solid var(--akzent);color:var(--akzent);font-family:var(--mono);font-size:0.75rem;letter-spacing:.12em;padding:8px 14px;cursor:pointer;white-space:nowrap}
 .wu-timer button{background:transparent;border:1px solid var(--akzent);color:var(--akzent);font-family:var(--mono);font-size:0.8125rem;letter-spacing:.14em;padding:11px 18px;cursor:pointer;white-space:nowrap}
 
 /* ── Knoepfe ──────────────────────────────────────────────── */

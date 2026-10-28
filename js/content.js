@@ -151,8 +151,8 @@ export const WARMUP = {
   // ueberspringt — dieselbe Ueberlegung wie bei der Mobility.
   rumpf: [
     { t: '8x je Seite', was: 'Bird-Dog', detail: 'Arm und gegenüberliegendes Bein lang. Becken bleibt waagerecht — eine Wasserflasche auf dem Rücken dürfte nicht kippen.' },
-    { t: '3x 20 Sek je Seite', was: 'Seitstütz (Side Plank)', detail: 'Auf dem Unterarm, Hüfte hoch. Kurz und oft schlägt lang und wackelig.' },
-    { t: '3x 8 Sek', was: 'Curl-up nach McGill', detail: 'Hände unter dem unteren Rücken, ein Bein angestellt. Nur Kopf und Schultern lösen, der Rücken bleibt, wo er ist.' }
+    { t: '3x 20 Sek je Seite', sek: 20, was: 'Seitstütz (Side Plank)', detail: 'Auf dem Unterarm, Hüfte hoch. Kurz und oft schlägt lang und wackelig.' },
+    { t: '3x 8 Sek', sek: 8, was: 'Curl-up nach McGill', detail: 'Hände unter dem unteren Rücken, ein Bein angestellt. Nur Kopf und Schultern lösen, der Rücken bleibt, wo er ist.' }
   ]
 };
 

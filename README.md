@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="App öffnen" src="https://img.shields.io/badge/App-öffnen-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-2574%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-2579%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-keiner-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Abhängigkeiten" src="https://img.shields.io/badge/Abhängigkeiten-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="Lizenz: MIT" src="https://img.shields.io/badge/Lizenz-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -174,7 +174,7 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 | **5×5-Automat** | Steigerung, Fehlerzähler, Deload auf 90 % nach drei Fehlversuchen. |
 | **Deload nach einer Pause** | Ab 14 Tagen ohne Krafteinheit schlägt die App beim Start einen Rückschritt vor: −10 %, ab 21 Tagen −20 %, ab 42 Tagen −30 %. Ein Tipp übernimmt, einer behält die alten Gewichte — nichts ändert sich ohne dich. Danach steigt jede erfolgreiche Einheit **doppelt**, bis das Gewicht vor der Pause wieder erreicht ist; ein Fehlversuch beendet die Abkürzung. Faustregeln, keine Messwerte. |
 | **Plattenrechner** | Scheiben pro Seite. Nicht exakt ladbare Gewichte werden benannt statt gerundet. Darunter eine zweite Zeile mit derselben Last **nur aus 20/10/5/2,5/1,25** — die Reihe, die in jedem Studio komplett liegt. Wo keine 25er und 15er sind, lädt man eben `2×20` statt `25 + 15`. Sie erscheint nur, wenn sie etwas anderes sagt. |
-| **Soundcheck** | Aufwärmsätze aus dem Arbeitsgewicht: leere Stange, dann 55 / 70 / 85 %. Jede Zeile abhakbar — angetippt durchgestrichen. Die Cardio-Zeile am Anfang lässt sich unter Backstage → Persönlich durch einen eigenen Einstieg ersetzen, etwa 15 Min Rudern. Über der Liste läuft ein Timer für diese Zeile, mit Pause; am Ende hakt er sie ab. |
+| **Soundcheck** | Aufwärmsätze aus dem Arbeitsgewicht: leere Stange, dann 55 / 70 / 85 %. Jede Zeile abhakbar — angetippt durchgestrichen. Die Cardio-Zeile am Anfang lässt sich unter Backstage → Persönlich durch einen eigenen Einstieg ersetzen, etwa 15 Min Rudern. Über der Liste läuft ein Timer für diese Zeile, mit Pause; am Ende hakt er sie ab. Seitstütz und Curl-up bekommen einen „Halten“-Knopf mit Countdown. |
 | **Gewicht im Satz** | Anpassbar während der Einheit — das Log bildet ab, was wirklich passiert ist. |
 | **Pausenuhr** | 90 s, nach Fehlversuch 180 s, im Lauf um ±30 s verstellbar. Endet mit Vibration und Ton, stoppt sich nach dem letzten Satz der Einheit selbst. |
 | **Aftershow** | Hilfsübungen nach dem Hauptprogramm: Klimmzüge, Chin-ups, Dips, Liegestütze, Face Pulls, Curls, hängendes Beinheben. Je Satz die Wiederholungen, daneben, was beim letzten Mal ging. Ohne Steigerung, ohne Einfluss auf Gewichte und Tonnage. In der Tour steht je Übung der beste Satz. |
@@ -507,7 +507,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-2574 Tests in 31 Dateien. Kein Build, keine Abhängigkeiten.
+2579 Tests in 31 Dateien. Kein Build, keine Abhängigkeiten.
 
 ### Browserproben (optional)
 
