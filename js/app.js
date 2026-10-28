@@ -849,8 +849,9 @@ function startSession() {
           <button type="button" id="wu-neu" hidden>${t('ses.wuNeu')}</button>
         </div>` : ''}
         ${wuZeilen.map((w, i) =>
-          `<label class="kv check"><input type="checkbox" data-w="${i}">
-            <span class="k">${w.t}</span><span class="v"><b>${w.was}</b> — ${w.detail}</span></label>`).join('')}
+          `<label class="kv check${w.sek && i > 0 ? ' halt' : ''}"><input type="checkbox" data-w="${i}">
+            <span class="k">${w.t}</span><span class="v"><b>${w.was}</b> — ${w.detail}</span>${w.sek && i > 0
+              ? `<button type="button" class="wu-halt" data-sek="${w.sek}">${t('ses.wuHalt', { n: w.sek })}</button>` : ''}</label>`).join('')}
       </div>
     </details>
     <details class="info"><summary>${t('ses.waermsaetze')}</summary>
@@ -888,6 +889,7 @@ function startSession() {
     cb.onchange = () => cb.closest('.kv').classList.toggle('erledigt', cb.checked);
   });
   if (wuSek) wuBinde(wuSek);
+  wuHaltBinde();
 
   const fin = C.tagesAuswahl(VL.ohneGesperrte(FINISHER, config), new Date(), 'fin');
   session.fin = { id: fin.id, name: fin.name };
@@ -1167,7 +1169,40 @@ const stopRest = () => { clearInterval(restTimer); $('rest').hidden = true; };
  */
 let wuTimer = null, wuEnde = 0, wuRest = 0;
 const wuAnzeige = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-const wuStopp = () => { clearInterval(wuTimer); wuTimer = null; wuEnde = 0; wuRest = 0; };
+const wuStopp = () => { clearInterval(wuTimer); wuTimer = null; wuEnde = 0; wuRest = 0; wuHaltStopp(); };
+
+/**
+ * Haltezeiten in einzelnen Zeilen (Seitstuetz, Curl-up): ein Tipp startet den
+ * Countdown, ein zweiter bricht ab, am Ende Vibration und Ton. Es laeuft
+ * immer nur einer. Kein automatischer Haken — es sind mehrere Saetze.
+ */
+let wuHaltTimer = null, wuHaltBtn = null;
+function wuHaltStopp() {
+  clearInterval(wuHaltTimer); wuHaltTimer = null;
+  if (wuHaltBtn) { wuHaltBtn.textContent = wuHaltBtn.dataset.label; wuHaltBtn = null; }
+}
+function wuHaltBinde() {
+  $('warmup').querySelectorAll('.wu-halt').forEach(btn => {
+    btn.dataset.label = btn.textContent;
+    btn.onclick = e => {
+      e.preventDefault(); e.stopPropagation();   // liegt im Label: kein Haken
+      const lief = wuHaltBtn === btn;
+      wuHaltStopp();
+      if (lief) return;
+      const ende = Date.now() + Number(btn.dataset.sek) * 1000;
+      wuHaltBtn = btn;
+      const tick = () => {
+        const s = Math.max(0, Math.ceil((ende - Date.now()) / 1000));
+        if (s > 0) { btn.textContent = `${s} s`; return; }
+        wuHaltStopp();
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        toene([880]);
+      };
+      wuHaltTimer = setInterval(tick, 250);
+      tick();
+    };
+  });
+}
 
 function wuBinde(dauer) {
   const zeit = $('wu-zeit'), start = $('wu-start'), neu = $('wu-neu');

@@ -10,6 +10,13 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-28.2
+
+### Neu
+- **Halten-Knopf im Warm-up.** Seitstütz (20 Sek) und Curl-up (8 Sek) haben unter der Zeile einen
+  „Halten“-Knopf: Tippen startet den Countdown, ein zweiter Tipp bricht ab, am Ende vibriert und piept es.
+  Es läuft immer nur einer. Einen Haken setzt er nicht, es sind ja mehrere Sätze.
+
 ## 2026-10-28.1
 
 ### Neu
