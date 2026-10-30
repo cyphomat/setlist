@@ -201,4 +201,26 @@ print('\n--- Jede Gitarre hat Name, Typ und Bedingung, in beiden Sprachen ---');
   I.setSprache('de');
 }
 
+print('\n--- Doppelte Schluessel ---');
+// Ein Schluessel, der im Quelltext zweimal steht, gewinnt beim zweiten Mal
+// still — so stand einmal "{woche}" im Klartext auf Heute. Ohne Dateizugriff
+// (jsc) wird der Test uebersprungen.
+try {
+  const fs = await import('node:fs');
+  const quelle = fs.readFileSync(new URL('../js/i18n.js', import.meta.url), 'utf8').split('\n');
+  const starts = quelle.map((z, i) => (/^\s*(de|en)\s*:\s*\{/.test(z) ? i : -1)).filter(i => i >= 0);
+  ok('beide Sprachbloecke gefunden', starts.length === 2, `(${starts.length})`);
+  starts.forEach((a, n) => {
+    const zaehler = new Map();
+    for (const z of quelle.slice(a, starts[n + 1] ?? quelle.length)) {
+      const m = z.match(/^\s*'([^']+)'\s*:/);
+      if (m) zaehler.set(m[1], (zaehler.get(m[1]) || 0) + 1);
+    }
+    const doppelt = [...zaehler].filter(([, c]) => c > 1).map(([k]) => k);
+    eq(`${n ? 'en' : 'de'}: kein Schluessel doppelt`, doppelt.join(), '');
+  });
+} catch (e) {
+  print('  uebersprungen (kein Dateizugriff)');
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);
