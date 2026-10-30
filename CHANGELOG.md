@@ -10,6 +10,21 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-30.1
+
+### Behoben
+- **„KURS · WOCHE {WOCHE}“ auf Heute.** Der Schlüssel `home.kurs` stand in `i18n.js` zweimal; der spätere
+  überschrieb „Reunion-Tour“, und die Karte über den Arbeitsgewichten zeigte den Platzhalter im Klartext.
+  Der Kurs-Knopf heißt jetzt `home.kursTag`. Ein Test findet doppelte Schlüssel in beiden Sprachen.
+
+### Geändert
+- **Soundcheck klappt zu**, sobald alle Zeilen abgehakt sind: der erste Satz rutscht nach oben.
+- **Größere Tippflächen:** Gewicht −/+ im Satz, Kopfzeilen-Knöpfe, Zweitknöpfe, Soundcheck-Start und das ✕ am
+  Banner mindestens 44 px.
+- **Hell:** „Jetzt gleich:“ und „Beim nächsten Mal“ liegen über 4,5 : 1.
+- **Kleine Telefone** (unter 700 px Höhe): Der Anlass-Banner zeigt nur seinen Namen, „Training starten“
+  bleibt im ersten Bild.
+
 ## 2026-10-28.5
 
 ### Neu

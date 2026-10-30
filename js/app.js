@@ -888,7 +888,12 @@ function startSession() {
   session.mobility = null;
   if (mobility) $('mobility-gemacht').onchange = e => { if (session) session.mobility = e.target.checked ? mobility.id : null; };
   $('warmup').querySelectorAll('.kv.check input').forEach(cb => {
-    cb.onchange = () => cb.closest('.kv').classList.toggle('erledigt', cb.checked);
+    cb.onchange = () => {
+      cb.closest('.kv').classList.toggle('erledigt', cb.checked);
+      // Alles abgehakt: der Soundcheck klappt zu, damit der erste Satz nach oben rutscht.
+      const alle = [...$('warmup').querySelectorAll('.kv.check input')];
+      if (alle.every(c => c.checked)) cb.closest('details').open = false;
+    };
   });
   if (wuSek) wuBinde(wuSek);
   wuHaltBinde();
@@ -1967,7 +1972,7 @@ const kuStopp = () => { clearInterval(kuTimer); kuTimer = null; kuPausiert = fal
 
 function renderKursKnopf() {
   const z = KU.zustand(alleLogs);
-  $('go-kurs').textContent = z.fertig ? t('home.kursFertig') : t('home.kurs', { woche: z.woche });
+  $('go-kurs').textContent = z.fertig ? t('home.kursFertig') : t('home.kursTag', { woche: z.woche });
   renderMoshKnopf();
 }
 

@@ -158,7 +158,7 @@ code{background:var(--sunken);color:var(--akzent);padding:2px 6px;border-radius:
 .head h1{flex:1}
 .icon-btn{
   background:transparent;border:1px solid var(--line);color:var(--akzent);
-  font-size:1.125rem;line-height:1;width:40px;height:40px;cursor:pointer;
+  font-size:1.125rem;line-height:1;width:44px;height:44px;cursor:pointer;
   border-radius:2px;
 }
 .icon-btn:active{background:var(--tint-akzent)}
@@ -321,7 +321,7 @@ details.info[open]>summary::after{content:' ▾'}
 .kv.check.halt .v{flex:1 1 0;min-width:0}
 .kv.check.halt::after{content:"";flex-basis:100%;height:0;order:1}
 .wu-halt{order:2;margin:2px 0 4px 26px;background:transparent;border:1px solid var(--akzent);color:var(--akzent);font-family:var(--mono);font-size:0.75rem;letter-spacing:.12em;padding:8px 14px;cursor:pointer;white-space:nowrap}
-.wu-timer button{background:transparent;border:1px solid var(--akzent);color:var(--akzent);font-family:var(--mono);font-size:0.8125rem;letter-spacing:.14em;padding:11px 18px;cursor:pointer;white-space:nowrap}
+.wu-timer button{background:transparent;border:1px solid var(--akzent);color:var(--akzent);font-family:var(--mono);font-size:0.8125rem;letter-spacing:.14em;padding:11px 18px;min-height:44px;cursor:pointer;white-space:nowrap}
 
 /* ── Knoepfe ──────────────────────────────────────────────── */
 .btn{
@@ -388,7 +388,7 @@ dialog::backdrop{background:var(--backdrop)}
 /* ── Aktionsleiste ────────────────────────────────────────── */
 .actions{display:flex;gap:9px;margin-top:12px;flex-wrap:wrap}
 .actions .btn{margin-top:0;flex:1 1 calc(50% - 5px)}
-.btn.small{padding:13px 8px;font-size:0.6875rem;letter-spacing:.14em}
+.btn.small{min-height:44px;padding:13px 8px;font-size:0.6875rem;letter-spacing:.14em}
 
 /* ── Zufalls-WOD ──────────────────────────────────────────── */
 .wod-format{font-size:1.875rem;font-weight:600;font-family:var(--display);color:var(--stahl);margin:4px 0 6px;text-transform:uppercase;letter-spacing:.02em}
@@ -442,7 +442,7 @@ dialog::backdrop{background:var(--backdrop)}
 /* ── Gewicht im Satz nachjustieren ────────────────────────── */
 .wadj{display:flex;align-items:center;gap:8px}
 .wadj button{
-  width:34px;height:34px;flex:none;background:transparent;border:1px solid var(--line);
+  width:44px;height:44px;flex:none;background:transparent;border:1px solid var(--line);
   color:var(--muted);font-family:var(--mono);font-size:1.0625rem;line-height:1;cursor:pointer;
 }
 .wadj button:active{border-color:var(--akzent);color:var(--akzent)}
@@ -549,7 +549,7 @@ dialog::backdrop{background:var(--backdrop)}
   background:var(--tint-rost);border:1px solid var(--line)}
 .korrektur .ks b{color:var(--rost);font-family:var(--mono);font-size:0.6875rem;
   letter-spacing:.12em;text-transform:uppercase;margin-right:6px}
-.korrektur .kn{font-family:var(--mono);font-size:0.65625rem;letter-spacing:.14em;
+.korrektur .kn{font-family:var(--mono);font-size:0.6875rem;letter-spacing:.14em;
   text-transform:uppercase;color:var(--dim);margin:0 0 4px}
 .korrektur .kv{margin:3px 0}
 p.quelle{margin-top:10px;color:var(--dim);font-style:italic;line-height:1.5}
@@ -1540,10 +1540,18 @@ button.tstop:hover .szene{border-color:var(--muted)}
   transform:rotate(-1.2deg);overflow-wrap:anywhere}
 :root[data-theme="light"] .anlass-name{color:var(--fg)}
 .anlass-satz{font-size:0.9375rem;line-height:1.4;color:var(--fg);overflow-wrap:anywhere}
-.anlass-x{position:absolute;top:4px;right:4px;width:32px;height:32px;border:0;border-radius:2px;
+.anlass-x{position:absolute;top:0;right:0;width:44px;height:44px;border:0;border-radius:2px;
   background:transparent;color:var(--muted);font-size:0.875rem;cursor:pointer}
 .anlass-x:hover,.anlass-x:focus-visible{color:var(--fg);background:var(--panel2)}
 .anlass[data-typ="gedenk"]{background:transparent;border-color:transparent}
 .anlass[data-typ="gedenk"] .anlass-name{background:transparent;color:var(--muted);padding-left:0;transform:none}
 @media (min-width:600px){.anlass{--s:4px}}
 @media (prefers-reduced-motion:reduce){.apx.anim{animation:none}}
+
+/* Hell: zwei kleine Texte der Korrektur lagen knapp unter 4,5:1 (4,03 und 4,29). */
+:root[data-theme="light"] .korrektur .ks b{color:#8a3f15}
+:root[data-theme="light"] .korrektur .kn{color:var(--muted)}
+
+/* Kleine Telefone: der Anlass-Banner schrumpft auf den Namen, damit der
+   Knopf "Training starten" im ersten Bild bleibt. */
+@media (max-height:700px){.anlass-szene,.anlass-satz{display:none}}
