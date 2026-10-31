@@ -113,6 +113,7 @@
     <div class="spalte">
       <div id="today" class="plakat"></div>
       <div id="instrumente"></div>
+      <button type="button" id="kurs-karte" class="kurs-karte" hidden></button>
       <div class="actions">
         <button id="swap-workout" class="btn ghost small">Workout wechseln</button>
         <button id="go-wod" class="btn small" data-i18n="home.jam">Jam</button>
@@ -241,6 +242,7 @@
     </div>
     <div id="ku-hinweise"></div>
     <div id="ku-rad"></div>
+    <div id="ku-watch"></div>
     <h2 data-i18n="ku.kugelnTitel">Welche Kugel?</h2>
     <div id="ku-kugeln"></div>
     <p class="fine" data-i18n="ku.kugelnHinweis">Die letzte Kugel ist vorbelegt. Was du einträgst, steht im Verlauf unter Tour › Kugel.</p>
@@ -282,11 +284,9 @@
     </div>
     <h2 data-i18n="ku.ende">Wie war die Kugel?</h2>
     <p class="fine" data-i18n="ku.endeHinweis">Zweimal „zu leicht“ in Folge: nächstes Mal die schwerere Kugel. Zweimal „zäh“: die leichtere.</p>
-    <div class="up-steuer">
-      <button class="btn ghost" data-bew="leicht" data-i18n="ku.b.leicht">Zu leicht</button>
-      <button class="btn" data-bew="passend" data-i18n="ku.b.passend">Passend</button>
-      <button class="btn ghost" data-bew="zaeh" data-i18n="ku.b.zaeh">Zäh</button>
-    </div>
+    <div id="ku-bew"></div>
+    <p class="fine" id="ku-ende-watch" hidden></p>
+    <button id="ku-speichern" class="btn" data-i18n="ku.speichern">Speichern</button>
   </div>
 </section>
 

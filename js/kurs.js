@@ -418,16 +418,48 @@ export const BEWERTUNGEN = ['leicht', 'passend', 'zaeh'];
 export const bewertungOk = b => BEWERTUNGEN.includes(b);
 
 /**
- * Soll die Kugel wechseln? Zwei Einheiten in Folge als "leicht" bewertet →
- * 'hoch'. Zwei in Folge "zaeh" → 'runter'. Sonst null. Es bleibt ein
+ * Soll die Kugel bei diesem Baustein wechseln? Zwei Einheiten in Folge als
+ * "leicht" bewertet → 'hoch', zweimal "zaeh" → 'runter', sonst null. Zaehlt nur,
+ * was dieser Baustein selbst bekommen hat; alte Logs kennen nur eine Bewertung
+ * fuer die ganze Einheit und gelten fuer jeden Baustein. Es bleibt ein
  * Vorschlag: gewogen wird nichts, gespeichert wird nur die Bewertung.
  */
-export function lastVorschlag(logs = []) {
-  const letzte = kursLogs(logs).slice(-2).map(l => l.bewertung);
+export function kugelVorschlag(logs = [], schluessel) {
+  const letzte = kursLogs(logs)
+    .map(l => (l.bewertungen ? l.bewertungen[schluessel] : l.bewertung))
+    .filter(bewertungOk).slice(-2);
   if (letzte.length < 2) return null;
   if (letzte.every(b => b === 'leicht')) return 'hoch';
   if (letzte.every(b => b === 'zaeh')) return 'runter';
   return null;
+}
+
+/** Nur Bausteine dieser Einheit mit einer gueltigen Bewertung. */
+export function bereinigeBewertungen(roh, e) {
+  const out = {};
+  if (!roh || typeof roh !== 'object') return out;
+  for (const b of kugelBausteine(e)) if (bewertungOk(roh[b.schluessel])) out[b.schluessel] = roh[b.schluessel];
+  return out;
+}
+
+/** Eine Bewertung fuer die ganze Einheit (Historie, Export): die haeufigste, bei Gleichstand "passend". */
+export function gesamtBewertung(bewertungen = {}) {
+  const n = { leicht: 0, passend: 0, zaeh: 0 };
+  for (const b of Object.values(bewertungen)) if (bewertungOk(b)) n[b]++;
+  const hoechste = Math.max(n.leicht, n.passend, n.zaeh);
+  const sieger = BEWERTUNGEN.filter(b => n[b] === hoechste);
+  return hoechste > 0 && sieger.length === 1 ? sieger[0] : 'passend';
+}
+
+/**
+ * Alle 36 Einheiten als Leiste: je Einheit Woche, Tag, ob gemacht und ob dort
+ * ein Check steht. `absolviert` ist die Zahl der abgeschlossenen Einheiten.
+ */
+export function segmente(absolviert = 0) {
+  return Array.from({ length: WOCHEN * PRO_WOCHE }, (_, i) => {
+    const woche = Math.floor(i / PRO_WOCHE) + 1, tag = TAGE[i % PRO_WOCHE];
+    return { woche, tag, fertig: i < absolviert, jetzt: i === absolviert, test: tag === 'C' && !!TESTS[woche], phase: phase(woche).id };
+  });
 }
 
 /** Wie viele Einheiten dieser Woche sind schon gemacht (0..3)? */

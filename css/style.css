@@ -1062,7 +1062,25 @@ input[type=checkbox]{accent-color:var(--akzent);width:16px;height:16px}
 #ku-abbruch{margin-top:10px}
 #ku-bloecke{margin-top:14px}
 #ku-ende .up-steuer .btn{padding-left:6px;padding-right:6px}
-#ku-geschafft .btn.an{border-color:var(--akzent);color:var(--akzent)}
+#ku-geschafft .btn.an,.ku-bew .btn.an{border-color:var(--akzent);color:var(--akzent)}
+.ku-bew{margin-top:14px}
+.ku-bew .name{display:block;font-weight:600}
+.ku-bew .up-steuer{margin-top:6px}
+#ku-speichern{margin-top:18px}
+.ku-tipp{flex-basis:100%;margin:2px 0 0}
+/* Fortschritt im Kurs: 36 Einheiten, je drei pro Woche; ein Check hat einen Strich darunter. */
+.leiste{display:flex;gap:2px;margin:8px 0}
+.leiste i{flex:1;height:10px;background:var(--line);box-sizing:border-box}
+.leiste i.w{margin-left:5px}
+.leiste i.w:first-child{margin-left:0}
+.leiste i.f{background:var(--akzent)}
+.leiste i.j{outline:1px solid var(--akzent);outline-offset:-1px}
+.leiste i.t{border-bottom:3px solid var(--stahl)}
+.kurs-karte{display:block;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;
+  border:1px solid var(--line);background:var(--panel);border-radius:2px;padding:10px 12px;margin-top:12px}
+.kurs-karte b{display:block}
+.kurs-karte .fine{display:block}
+.ku-erfolg{margin-top:12px}
 .ku-kugel{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
 .ku-kugel .name{flex:1;min-width:0;overflow-wrap:anywhere;font-size:1.125rem;line-height:1.2}
 .ku-kugel button{width:40px;height:40px;padding:0}
