@@ -509,6 +509,12 @@ export const TEXTE = {
     'rechner.nurStange': 'Leere Stange',
     'rechner.nichtExakt': 'Mit deinen Scheiben nicht exakt ladbar. Am nächsten:',
     'rechner.ungleich': 'Die Seiten unterscheiden sich um {kg} kg.',
+    'rechner.fest': 'Feste Hantel:',
+    'rechner.festTreffer': '{kg} kg ({n} da)',
+    'rechner.festKeine': 'Keine feste Hantel mit diesem Gewicht. Da sind: {liste}.',
+    'gym.festeHanteln': 'Feste Hanteln (Stück × kg)',
+    'gym.baenderFarben': 'Widerstandsbänder (Farben)',
+    'gym.baenderFehler': 'Das lese ich nicht. Bis zu 8 Farben, jede höchstens 20 Zeichen, mit Komma getrennt.',
 
     /* ---- Max-Out ---- */
     'mo.titel': 'Max-Out',
@@ -1949,6 +1955,12 @@ export const TEXTE = {
     'rechner.nurStange': 'Empty bar',
     'rechner.nichtExakt': 'Not exactly loadable with your plates. Closest:',
     'rechner.ungleich': 'The sides differ by {kg} kg.',
+    'rechner.fest': 'Fixed dumbbell:',
+    'rechner.festTreffer': '{kg} kg ({n} available)',
+    'rechner.festKeine': 'No fixed dumbbell with this weight. You have: {liste}.',
+    'gym.festeHanteln': 'Fixed dumbbells (count × kg)',
+    'gym.baenderFarben': 'Resistance bands (colours)',
+    'gym.baenderFehler': 'I cannot read that. Up to 8 colours, each at most 20 characters, separated by commas.',
 
     /* ---- Max-out ---- */
     'mo.titel': 'Max-out',

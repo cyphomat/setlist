@@ -189,4 +189,28 @@ ok('gleiche Seiten schlagen weniger Scheiben', (() => {
 })());
 ok('ohne Stange keine Ladeanzeige', G.kurzhantelLaden(6, { scheiben: SCH }) === null);
 
+print('\n--- Feste Hanteln und Baender ---');
+{
+  const o = G.gyms({ gyms: [{ id: 'home', geraete: ['festhanteln', 'baender'], festeHanteln: [{ kg: 5, n: 2 }],
+    baenderFarben: ['schwarz', ' rot ', 'gruen', 'Rot', 'lila', '', 5] }] })[0];
+  ok('neue Geraete im Katalog', G.ALLE_GERAETE.includes('festhanteln') && G.ALLE_GERAETE.includes('baender'));
+  eq('Name feste Hanteln', G.geraetName('festhanteln'), 'Feste Hanteln');
+  gj('feste Hanteln werden gelesen', o.festeHanteln, [{ kg: 5, n: 2 }]);
+  gj('Baender: getrimmt, ohne Doppelte (auch in anderer Schreibung) und ohne Unsinn', o.baenderFarben, ['schwarz', 'rot', 'gruen', 'lila']);
+  gj('gymFuerDatei behaelt beides', G.gymFuerDatei(o), o);
+  ok('ohne Angaben keine neuen Felder', !('festeHanteln' in G.gyms({ gyms: [{ id: 'a' }] })[0]) && !('baenderFarben' in G.gyms({ gyms: [{ id: 'a' }] })[0]));
+  gj('feste Hantel 5 kg gefunden', G.festeHantel(5, o), { kg: 5, n: 2 });
+  eq('8 kg gibt es nicht fest', G.festeHantel(8, o), null);
+  eq('ohne Hanteln null', G.festeHantel(5, { id: 'x' }), null);
+  eq('ohne Ort null', G.festeHantel(5, null), null);
+  gj('Hantelfeld wie Scheibenfeld: 2×5', G.scheibenAusText('2×5'), [{ kg: 5, n: 2 }]);
+  gj('Baender lesen', G.baenderAusText('schwarz, rot; grün + lila'), ['schwarz', 'rot', 'grün', 'lila']);
+  gj('leer ist leer', G.baenderAusText(' '), []);
+  eq('zu lange Farbe ist null', G.baenderAusText('ein-wirklich-viel-zu-langer-farbname'), null);
+  eq('zu viele Baender sind null', G.baenderAusText('a,b,c,d,e,f,g,h,i'), null);
+  eq('doppelte Farbe ist null statt still gekuerzt', G.baenderAusText('rot, Rot'), null);
+  eq('Baender schreiben', G.baenderText(['schwarz', 'rot']), 'schwarz, rot');
+  eq('Text ist wieder lesbar', G.baenderText(G.baenderAusText('schwarz, rot, grün, lila')), 'schwarz, rot, grün, lila');
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

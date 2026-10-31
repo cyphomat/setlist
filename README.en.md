@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-2815%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-2833%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -251,7 +251,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 |---|---|
 | **First-time setup** | No programme in the repo? Then the app asks: bar, the five lifts with a starting weight, strength days, optionally bike days — and writes a valid `config.json` from that. No JSON by hand. |
 | **Your voice** | Your reason, your own lines and old personal bests, right in the app. The reason shows up on hard days, the bests on their anniversaries. |
-| **Places and equipment** | Several gyms (home gym, box, studio …) each with their own kit. The jam only draws from what is there. With no places set up everything stays allowed. Enter bell, bar and plates and the **load calculator** (Backstage → Places) works, and the course shows under the bell what to put on — even when a weight cannot be loaded exactly. |
+| **Places and equipment** | Several gyms (home gym, box, studio …) each with their own kit. The jam only draws from what is there. With no places set up everything stays allowed. Enter bell, bar and plates and the **load calculator** (Backstage → Places) works, and the course shows under the bell what to put on — even when a weight cannot be loaded exactly. Fixed dumbbells (count × kg) and resistance bands (colours only, as their strength depends on the brand) can be entered too. |
 | **Place picker in the header** | A button shows where you are and switches places — on the home screen and in the jam. The picker lists how many jam movements are possible at each place. |
 | **Update hint for forks** | A fork stays where it branched off. The app compares its version against the original's and says so once, with the way to update. |
 | **Language** | Interface in German or English, switchable in the backstage. |
@@ -505,7 +505,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-2815 tests in 32 files. No build, no dependencies.
+2833 tests in 32 files. No build, no dependencies.
 
 ### Browser probes (optional)
 
