@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="App öffnen" src="https://img.shields.io/badge/App-öffnen-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-2883%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-2911%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-keiner-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Abhängigkeiten" src="https://img.shields.io/badge/Abhängigkeiten-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="Lizenz: MIT" src="https://img.shields.io/badge/Lizenz-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -211,7 +211,7 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 | **Wattziele** | Aus der eFTP statt Prozentangaben. |
 | **Unplugged** | Fünfzehn Minuten, nur Körpergewicht, im Zweifel leise. Feste Intervalle mit geführter Uhr statt Wiederholungszahlen — für den Morgen, an dem noch jemand schläft. Der Leise-Modus lässt alles Springende weg und gibt keinen Ton, nur Vibration. |
 | **Kettlebell Mosh Pit** | Das Folgeprogramm nach dem Kurs: Swing, Goblet Squat und einarmiges Drücken, je drei Sätze. Erst mehr Wiederholungen (10 · 12 · 15 · 17 · 20), dann eine um 4 kg schwerere Kugel und wieder von unten — wie beim 5x5, nur mit Kugel. Zweimal nicht geschafft: eine Stufe zurück. Das nächste Ziel folgt aus den Logs. |
-| **Kettlebell-Kurs** | Zwölf Wochen, drei Einheiten pro Woche: erst Hüfte, Swing und Get-up sauber, dann einarmig und nach der Uhr, am Ende Dichte und ein Test in Woche 12. Jede vierte Woche ist Entlastung. Die Einheit führt durch, Sätze hakst du ab, Takt und Pausen laufen allein. Wiederholungen und Seite (links, rechts) stehen groß auf der Bühne, vor Kugelwechsel, nach dem Rad und vor dem Tragen steht eine Umbaupause, und unter der Bühne steht, wie die Übung geht und was oft schiefläuft, bei Hinge, Swing, Einarm-Swing, Goblet Squat, Press und Get-up mit Pixelbildern der Haltungen. Vor der Einheit trägst du ein, mit welcher Kugel du arbeitest (in kg, die letzte ist vorbelegt); Gesamtuhr, Stoppuhr und Countdowns laufen mit. In Woche 4 und 8 stehen Checks, in Woche 12 der Abschlusstest. Danach bewertest du jede Kugel einzeln (zu leicht, passend, zäh) — zweimal zu leicht oder zu zäh bei derselben Übung, und die App schlägt die andere Kugel vor. Auf Home zeigt eine Leiste, wie weit du bist, und nach jeder Einheit steht ein Erfolg da. Zeichnest du mit der Apple Watch auf, stellst du das ein, und Setlist schickt nichts doppelt nach intervals.icu; ohne Watch geht die Einheit mit geschätzter Last dorthin. Verlauf und Checks stehen in der Tour unter „Kugel“. Wo du stehst, folgt aus den Logs. Steht am gewählten Ort ein **Zwift Ride** und bist du in den letzten Stunden nicht gefahren, schlägt die Einheit sechs Minuten Rad zum Aufwärmen vor (locker, drei kurze Antritte); ein Schalter lässt dich es jederzeit an- oder abwählen. |
+| **Kettlebell-Kurs** | Zwölf Wochen, drei Einheiten pro Woche: erst Hüfte, Swing und Get-up sauber, dann einarmig und nach der Uhr, am Ende Dichte und ein Test in Woche 12. Jede vierte Woche ist Entlastung. Die Einheit führt durch, Sätze hakst du ab, Takt und Pausen laufen allein. Wiederholungen und Seite (links, rechts) stehen groß auf der Bühne, vor Kugelwechsel, nach dem Rad und vor dem Tragen steht eine Umbaupause, und unter der Bühne steht, wie die Übung geht und was oft schiefläuft, bei Hinge, Swing, Einarm-Swing, Goblet Squat, Press und Get-up mit Pixelbildern der Haltungen. Vor der Einheit trägst du ein, mit welcher Kugel du arbeitest (in kg, die letzte ist vorbelegt); Gesamtuhr, Stoppuhr und Countdowns laufen mit. Auf Wunsch sagt eine Stimme Umbau, Pause, Handwechsel und die nächste Übung an, praktisch, wenn das Handy an der Anlage hängt. In Woche 4 und 8 stehen Checks, in Woche 12 der Abschlusstest. Danach bewertest du jede Kugel einzeln (zu leicht, passend, zäh) — zweimal zu leicht oder zu zäh bei derselben Übung, und die App schlägt die andere Kugel vor. Auf Home zeigt eine Leiste, wie weit du bist, und nach jeder Einheit steht ein Erfolg da. Zeichnest du mit der Apple Watch auf, stellst du das ein, und Setlist schickt nichts doppelt nach intervals.icu; ohne Watch geht die Einheit mit geschätzter Last dorthin. Verlauf und Checks stehen in der Tour unter „Kugel“. Wo du stehst, folgt aus den Logs. Steht am gewählten Ort ein **Zwift Ride** und bist du in den letzten Stunden nicht gefahren, schlägt die Einheit sechs Minuten Rad zum Aufwärmen vor (locker, drei kurze Antritte); ein Schalter lässt dich es jederzeit an- oder abwählen. |
 | **Jam** | Fünf Formate, 31 Übungen, Lasten aus dem aktuellen Stand. Nie zwei Langhantelteile. Auf Wunsch **zu zweit** im Wechsel (I go, you go) an einem Gerät, ohne Check-in: die Anzeige sagt, wer dran ist, mit „Wechsel“ in der Uhrleiste tauscht ihr, und am Ende steht die Bilanz im Log. |
 | **Skalierung** | Jede Übung nennt Alternativen. „Kann ich nicht" nimmt sie dauerhaft raus. |
 
@@ -477,6 +477,7 @@ Wiederholungen. Abschaltbar unter *Backstage → Verbindungen*.
 | `js/export.js` | Einheiten als CSV, sicher gegen Formeln. |
 | `js/feuer.js` | Pixelfeuer (Doom-Algorithmus, eigene Umsetzung). |
 | `js/ansager.js` | Entscheidet, was nach der Einheit angesagt wird. |
+| `js/sprache.js` | Sprachansagen im Kurs: Umbau, Pause, Handwechsel, nächste Übung. |
 | `js/anlaesse.js` | Welcher saisonale Banner an welchem Tag gilt (Datumsregeln, Ostern, Rang), dazu der Schalter auf dem Gerät. |
 | `js/soundcheck.js` | Wochen-Soundcheck: Kalenderwochen, Fälligkeit, Serie, Faderstand, Bereinigen der Eingaben. |
 | `js/zusammen.js` | Zusammen trainieren: Verabredungen, Einladungslinks lesen und bauen, Handschlag, gemeinsame Tage für die Aufnäher. |
@@ -511,7 +512,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-2883 Tests in 32 Dateien. Kein Build, keine Abhängigkeiten.
+2911 Tests in 33 Dateien. Kein Build, keine Abhängigkeiten.
 
 ### Browserproben (optional)
 
