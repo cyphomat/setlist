@@ -101,14 +101,17 @@ const HILFE = {
     fehler: ['Rücken rund', 'Knie zu tief: wird zur Kniebeuge', 'Oben ins Hohlkreuz überstrecken']
   },
   swing2: {
+    bild: 'swing2',
     schritte: ['Kugel etwa einen Fuß vor dir, Füße etwas breiter als die Hüfte.', 'Kugel kippen und mit langen Armen hoch zwischen die Beine schwingen.', 'Hüfte kräftig nach vorn strecken: die Kugel schwebt bis Brusthöhe.', 'Kugel fallen lassen, Hüfte zurück, nächste Wiederholung.'],
     fehler: ['Die Kugel mit den Armen hochziehen', 'Mit dem Rücken statt der Hüfte schwingen', 'Oben nach hinten lehnen']
   },
   swing1: {
+    bild: 'swing1',
     schritte: ['Wie beidarmig, nur eine Hand am Henkel.', 'Die freie Hand bleibt locker neben dem Körper.', 'Die Schulter bleibt tief, der Rumpf dreht sich nicht mit.', 'Seite wechseln nur am Hochpunkt oder in der Pause.'],
     fehler: ['Schulter wird mit hochgezogen', 'Der Rumpf dreht zur Kugel']
   },
   goblet: {
+    bild: 'goblet',
     schritte: ['Kugel an der Brust halten, beide Hände am Henkel, Ellbogen nah am Körper.', 'Füße etwas breiter als die Schultern, Zehen leicht nach außen.', 'Gerade nach unten sinken, die Ellbogen gehen zwischen die Knie.', 'Aus den Fersen hochdrücken, oben Hüfte und Knie strecken.'],
     fehler: ['Fersen heben ab', 'Knie fallen nach innen', 'Der Oberkörper kippt nach vorn']
   },
@@ -134,6 +137,7 @@ const HILFE = {
     fehler: ['Die Kugel schlägt aufs Handgelenk', 'Mit dem Arm hochgezogen statt mit der Hüfte', 'Der Ellbogen steht weit ab']
   },
   press: {
+    bild: 'press',
     schritte: ['Aus der Frontposition: Gesäß und Bauch fest, Faust vor der Schulter.', 'Die Kugel senkrecht nach oben drücken, bis der Arm am Ohr gestreckt ist.', 'Oben bleibt das Handgelenk gerade, der Rumpf steht stabil.', 'Kontrolliert zurück in die Frontposition.'],
     fehler: ['Hohlkreuz beim Drücken', 'Die Kugel wandert nach vorn']
   },
@@ -145,7 +149,7 @@ const HILFE = {
 for (const [id, h] of Object.entries(HILFE)) Object.assign(UEBUNGEN[id], h);
 
 /** Bildstreifen zu Uebungen, in der Reihenfolge des Bogens assets/pixel/figuren.png (gebaut von tools/pixel.mjs aus tools/pixel-figur.mjs). */
-export const FIGUREN = [{ id: 'hinge', n: 2 }, { id: 'getup', n: 7 }];
+export const FIGUREN = [{ id: 'hinge', n: 2 }, { id: 'getup', n: 7 }, { id: 'swing2', n: 2 }, { id: 'swing1', n: 2 }, { id: 'goblet', n: 2 }, { id: 'press', n: 2 }];
 
 /** Wo die Bilder einer Uebung im Bogen liegen: erstes Bild, Anzahl, Bilder im ganzen Bogen. */
 export function figur(id) {

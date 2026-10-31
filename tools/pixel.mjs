@@ -33,7 +33,7 @@ import { GITARREN as GITARREN_SPEC, gitarrenBilder } from './pixel-gitarren.mjs'
 import { MOTIVE as ANLASS_MOTIVE, MOTIV_KANTE } from '../js/anlaesse.js';
 import { KANTE as ANLASS_KANTE, PALETTE as ANLASS_FARBEN, motivRaster } from './pixel-anlaesse.mjs';
 import { FIGUREN } from '../js/kurs.js';
-import { HINGE, GETUP, figurBilder, FIGUR_B, FIGUR_H } from './pixel-figur.mjs';
+import { HINGE, GETUP, SWING2, SWING1, GOBLET, PRESS, figurBilder, FIGUR_B, FIGUR_H } from './pixel-figur.mjs';
 import { feld as feuerFeld, schritt as feuerSchritt, PALETTE as FEUER } from '../js/feuer.js';
 
 const WURZEL = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -1565,7 +1565,7 @@ if (GITARREN_SPEC.map(g => g.id).join() !== gitarrenIds.join()) {
 }
 
 /** Uebungsfiguren fuer die Hilfe im Kurs: je Uebung ein paar Bilder, Reihenfolge wie FIGUREN in js/kurs.js. */
-const FIGUR_HALTUNGEN = { hinge: HINGE, getup: GETUP };
+const FIGUR_HALTUNGEN = { hinge: HINGE, getup: GETUP, swing2: SWING2, swing1: SWING1, goblet: GOBLET, press: PRESS };
 if (FIGUREN.map(f => `${f.id}:${f.n}`).join() !== Object.entries(FIGUR_HALTUNGEN).map(([id, h]) => `${id}:${h.length}`).join()) {
   throw new Error('Figuren in tools/pixel-figur.mjs und FIGUREN in js/kurs.js passen nicht zusammen');
 }
