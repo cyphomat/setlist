@@ -10,6 +10,23 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-31.2
+
+### Neu
+- **Kugel und Kurzhantel mit eigenen Scheiben.** Ein Ort kennt jetzt optional die Kugel ohne Scheiben, die
+  Kurzhantelstange und einen Scheibenvorrat (Backstage → Orte, etwa „2×2,5 + 2×1,25 + 0,5“). Kugel und Stange
+  teilen sich den Vorrat. Ohne Angaben ändert sich nichts.
+- **Lastrechner** unter Backstage → Orte: Gewicht eingeben, die App sagt, welche Scheiben auf die Kugel kommen,
+  bei der Kurzhantel je Seite (gleichmäßig, wo es geht; sonst steht der Unterschied dabei). Was sich mit dem
+  Vorrat nicht exakt laden lässt, zeigt die zwei nächsten ladbaren Gewichte. Beispiel: mit 12 kg Basis und
+  8 kg Scheiben gehen 14 Gewichte bis 20 kg, glatte 16 kg nicht (15,75 oder 16,25).
+- **Im Kettlebell-Kurs** steht unter jeder Kugel, was aufgesteckt wird; + und − springen von ladbarem zu
+  ladbarem Gewicht. Gilt nur, wo der gewählte Ort eine Kugel-Basis kennt.
+- **Zwift Ride** als Gerät für Orte; das Homegym-Vorschlag bekommt es.
+
+### Geändert
+- Die Kugel in kg wird auf Viertelkilo gerundet statt auf halbe (13,25 wurde sonst zu 13,5).
+
 ## 2026-10-31.1
 
 ### Neu

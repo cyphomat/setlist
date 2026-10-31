@@ -118,4 +118,75 @@ ok('Unsinn statt Entwurf ebenfalls nicht', !G.darfSpeichern('nope', zwei, true))
 ok('unbrauchbarer Repo-Stand blockiert nicht', G.darfSpeichern([], null, false));
 
 
+print('\n--- Gewichte am Ort ---');
+const gj = (n, a, b) => ok(n, JSON.stringify(a) === JSON.stringify(b), `(${JSON.stringify(a)} != ${JSON.stringify(b)})`);
+const SCH = [{ kg: 2.5, n: 2 }, { kg: 1.25, n: 2 }, { kg: 0.5, n: 1 }];
+const keller = G.gyms({ gyms: [{ id: 'home', name: 'Homegym', geraete: ['kettlebell', 'kurzhantel', 'zwiftride'],
+  kugelBasis: 12, kurzhantelStange: 2, scheiben: SCH }] })[0];
+ok('Zwift Ride ist ein bekanntes Geraet', G.ALLE_GERAETE.includes('zwiftride') && keller.geraete.includes('zwiftride'));
+ok('Homegym-Vorlage nennt Zwift Ride', G.vorlagen().find(o => o.id === 'home').geraete.includes('zwiftride'));
+gj('Ausstattung wird gelesen', [keller.kugelBasis, keller.kurzhantelStange, keller.scheiben], [12, 2, SCH]);
+ok('ohne Angaben keine neuen Felder (Orte wie bisher)',
+  Object.keys(G.gyms({ gyms: [{ id: 'a', geraete: [] }] })[0]).join() === 'id,name,geraete');
+gj('kaputte Angaben fliegen raus statt falsch zu rechnen',
+  G.gyms({ gyms: [{ id: 'a', kugelBasis: 'x', kurzhantelStange: -2, scheiben: [{ kg: 0.1, n: 2 }, { kg: 5, n: 0 }, null] }] })[0],
+  { id: 'a', name: 'a', geraete: [] });
+gj('gymFuerDatei behaelt die Ausstattung', G.gymFuerDatei(keller), keller);
+gj('Vorrat: gleiche Scheiben zusammen, schwerste zuerst',
+  G.vorrat([{ kg: 1.25, n: 1 }, { kg: 2.5, n: 1 }, { kg: 1.25, n: 1 }]), [{ kg: 2.5, n: 1 }, { kg: 1.25, n: 2 }]);
+
+print('\n--- Scheibentext ---');
+gj('Text lesen', G.scheibenAusText('2×2,5 + 2×1,25 + 0,5'), SCH);
+gj('x und Punkt gehen auch', G.scheibenAusText('2x2.5 + 2*1.25 + 0.5 kg'), SCH);
+gj('leer ist kein Fehler, nur kein Vorrat', G.scheibenAusText('  '), []);
+ok('Unsinn ist null', G.scheibenAusText('abc') === null && G.scheibenAusText('2×') === null);
+ok('Gewicht ausserhalb der Viertel ist null', G.scheibenAusText('0,3') === null);
+ok('zu viele Stueck sind null statt still gekappt', G.scheibenAusText('9×5') === null);
+ok('zu viele Arten sind null', G.scheibenAusText('1 + 2 + 3 + 4 + 5 + 6 + 7') === null);
+eq('Text schreiben', G.scheibenText(SCH), '2×2.5 + 2×1.25 + 0.5');
+gj('Text ist wieder lesbar', G.scheibenAusText(G.scheibenText(SCH, kg => String(kg).replace('.', ','))), SCH);
+eq('Ladung als Text', G.ladungText([2.5, 1.25, 2.5]), '2×2.5 + 1.25');
+
+print('\n--- Kugel laden ---');
+eq('14 Gewichte mit diesen Scheiben', G.ladbareGewichte(12, SCH).length, 14);
+gj('genau diese Gewichte', G.ladbareGewichte(12, SCH),
+  [12, 12.5, 13.25, 13.75, 14.5, 15, 15.75, 16.25, 17, 17.5, 18.25, 18.75, 19.5, 20]);
+gj('12 kg ist die Kugel allein', G.kugelLaden(12, keller).exakt, { gewicht: 12, scheiben: [] });
+gj('17,5 kg exakt', G.kugelLaden(17.5, keller).exakt.scheiben, [2.5, 2.5, 0.5]);
+gj('20 kg nimmt alles', G.kugelLaden(20, keller).exakt.scheiben, [2.5, 2.5, 1.25, 1.25, 0.5]);
+const k16 = G.kugelLaden(16, keller);
+ok('16 kg ist nicht exakt ladbar', k16.exakt === null);
+gj('aber 15,75 und 16,25 liegen daneben', [k16.darunter.gewicht, k16.darueber.gewicht], [15.75, 16.25]);
+ok('ueber 20 gibt es kein Darueber', G.kugelLaden(21, keller).darueber === null && G.kugelLaden(21, keller).darunter.gewicht === 20);
+ok('unter der Basis gibt es kein Darunter', G.kugelLaden(10, keller).darunter === null && G.kugelLaden(10, keller).darueber.gewicht === 12);
+ok('13,3 wird nicht still zu 13,25', G.kugelLaden(13.3, keller).exakt === null);
+ok('jede ladbare Zahl wird auch exakt gefunden',
+  G.ladbareGewichte(12, SCH).every(w => G.kugelLaden(w, keller).exakt && G.kugelLaden(w, keller).exakt.gewicht === w));
+ok('Summe der Scheiben stimmt immer',
+  G.ladbareGewichte(12, SCH).every(w => Math.abs(12 + G.kugelLaden(w, keller).exakt.scheiben.reduce((s, x) => s + x, 0) - w) < 1e-9));
+ok('nie mehr Scheiben als im Vorrat',
+  G.ladbareGewichte(12, SCH).every(w => {
+    const l = G.kugelLaden(w, keller).exakt.scheiben;
+    return SCH.every(x => l.filter(y => y === x.kg).length <= x.n);
+  }));
+ok('ohne Kugel-Basis keine Ladeanzeige', G.kugelLaden(16, { scheiben: SCH }) === null && G.kugelLaden(16, null) === null);
+ok('ohne Scheiben geht nur die Kugel', G.kugelLaden(12, { kugelBasis: 12 }).exakt.scheiben.length === 0
+  && G.kugelLaden(14, { kugelBasis: 12 }).exakt === null);
+ok('Unsinn als Ziel ist null', G.kugelLaden(0, keller) === null && G.kugelLaden('x', keller) === null);
+
+print('\n--- Kurzhantel laden ---');
+gj('Stange allein', G.kurzhantelLaden(2, keller).exakt, { gewicht: 2, scheiben: [], seiten: { a: [], b: [], gleich: true } });
+const k9 = G.kurzhantelLaden(9.5, keller).exakt;
+ok('9,5 kg: beide Seiten gleich (2,5 + 1,25)', k9 && k9.seiten.gleich && JSON.stringify(k9.seiten.a) === '[2.5,1.25]' && JSON.stringify(k9.seiten.b) === '[2.5,1.25]');
+const k5 = G.kurzhantelLaden(5, keller).exakt;
+ok('5 kg braucht die 0,5er: Seiten ungleich', k5 && !k5.seiten.gleich);
+ok('die schwerere Seite steht zuerst', k5.seiten.a.reduce((s, x) => s + x, 0) >= k5.seiten.b.reduce((s, x) => s + x, 0));
+ok('beide Seiten zusammen sind die Ladung', G.ladungText([...k5.seiten.a, ...k5.seiten.b]) === G.ladungText(k5.scheiben));
+ok('gleiche Seiten schlagen weniger Scheiben', (() => {
+  // 7 kg auf 2 kg Stange: eine 5er (ungleich) oder 2×2,5 (gleich) — es zaehlt gleich.
+  const r = G.kurzhantelLaden(7, { kurzhantelStange: 2, scheiben: [{ kg: 5, n: 1 }, { kg: 2.5, n: 2 }] }).exakt;
+  return r && r.seiten.gleich && JSON.stringify(r.seiten.a) === '[2.5]' && JSON.stringify(r.seiten.b) === '[2.5]';
+})());
+ok('ohne Stange keine Ladeanzeige', G.kurzhantelLaden(6, { scheiben: SCH }) === null);
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

@@ -313,7 +313,7 @@ export function bereinigeKugeln(roh, e) {
   const aus = {};
   for (const [k, v] of Object.entries(roh && typeof roh === 'object' ? roh : {})) {
     const kg = Number(v);
-    if (erlaubt.has(k) && Number.isFinite(kg) && kg > 0 && kg <= KUGEL_MAX) aus[k] = Math.round(kg * 2) / 2;
+    if (erlaubt.has(k) && Number.isFinite(kg) && kg > 0 && kg <= KUGEL_MAX) aus[k] = Math.round(kg * 4) / 4;
   }
   return aus;
 }

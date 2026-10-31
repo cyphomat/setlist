@@ -2018,7 +2018,7 @@ let kuEinheit = null, kuAblauf = [], kuIndex = 0, kuRest = 0, kuTimer = null, ku
 let kuGesamt = 0, kuSchritt = 0, kuKugeln = {}, kuGeschafft = true;
 
 const kuZeit = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-const kuKg = kg => `${dez(kg, Number.isInteger(kg) ? 0 : 1)} kg`;
+const kuKg = kg => `${kgFmt(kg)} kg`;
 
 const kuStopp = () => { clearInterval(kuTimer); kuTimer = null; kuPausiert = false; };
 
@@ -2067,27 +2067,82 @@ function kuLastText(b) {
   return b.last ? t(`ku.last.${b.last}`) : '';
 }
 
+/**
+ * Der Ort, dessen Scheiben fuer die Kugel gelten: der gewaehlte, wenn er eine
+ * Kugel-Basis kennt; ohne Auswahl der erste, der eine kennt. Ein gewaehlter Ort
+ * ohne Zahlen (das Studio) liefert nichts, statt die Scheiben vom Keller zu zeigen.
+ */
+function ladeOrt(feld) {
+  const orte = G.gyms(config);
+  const wahl = gymWahl();
+  if (wahl) { const o = orte.find(x => x.id === wahl); return o && o[feld] ? o : null; }
+  return orte.find(o => o[feld]) || null;
+}
+
+/** Die naechste ladbare Kugel ueber oder unter `jetzt`; ohne Zahlen am Ort der feste Schritt. */
+function naechsteKugel(jetzt, richtung) {
+  const ort = ladeOrt('kugelBasis');
+  if (!ort) return jetzt + richtung * KU.KUGEL_SCHRITT;
+  const liste = G.ladbareGewichte(ort.kugelBasis, ort.scheiben);
+  const z = richtung > 0 ? liste.find(x => x > jetzt + 1e-9) : [...liste].reverse().find(x => x < jetzt - 1e-9);
+  return z === undefined ? jetzt : z;
+}
+
+/** Eine Ladung als Text: bei der Kugel die Scheiben, bei der Kurzhantel je Seite. */
+function ladungHtml(art, l) {
+  if (art === 'kugel') return l.scheiben.length ? G.ladungText(l.scheiben, kgFmt) : t('rechner.nurKugel');
+  if (!l.scheiben.length) return t('rechner.nurStange');
+  const s = l.seiten;
+  return s.gleich ? G.ladungText(s.a, kgFmt) : `${G.ladungText(s.a, kgFmt) || '–'} | ${G.ladungText(s.b, kgFmt) || '–'}`;
+}
+
+/**
+ * Das Ergebnis des Rechners in den Zeilen der Stange: exakt eine Zeile, sonst
+ * die nahen Gewichte darunter. `art` ist 'kugel' oder 'kurzhantel'.
+ */
+function ladeHtml(art, res) {
+  if (!res) return '';
+  const kopf = art === 'kugel' ? t('rechner.scheiben') : t('rechner.proSeite');
+  if (res.exakt) {
+    const s = res.exakt.seiten;
+    const diff = s && !s.gleich && s.a.reduce((x, y) => x + y, 0) - s.b.reduce((x, y) => x + y, 0);
+    return `<p class="platten">${kopf} <b>${ladungHtml(art, res.exakt)}</b></p>${
+      diff ? `<p class="platten alt">${t('rechner.ungleich', { kg: kgFmt(diff) })}</p>` : ''}`;
+  }
+  const nah = [res.darunter, res.darueber].filter(Boolean)
+    .map(l => `<p class="platten alt">${kgFmt(l.gewicht)} kg: <b>${ladungHtml(art, l)}</b></p>`).join('');
+  return `<p class="platten nicht">${t('rechner.nichtExakt')}</p>${nah}`;
+}
+
 function renderKugeln() {
   $('ku-kugeln').innerHTML = KU.kugelBausteine(kuEinheit).map(b => `
     <div class="ku-kugel" data-k="${escHtml(b.schluessel)}">
       <span class="name">${escHtml(b.name)}</span>
       <button class="btn ghost" data-d="-1" aria-label="${escHtml(t('ku.leichter'))}">−</button>
-      <input type="number" inputmode="decimal" min="0" max="${KU.KUGEL_MAX}" step="${KU.KUGEL_SCHRITT}"
-        value="${kuKugeln[b.schluessel] || ''}" placeholder="kg" aria-label="${escHtml(b.name)} kg">
+      <input type="text" inputmode="decimal" autocomplete="off"
+        value="${kuKugeln[b.schluessel] ? escHtml(kgFmt(kuKugeln[b.schluessel])) : ''}" placeholder="kg" aria-label="${escHtml(b.name)} kg">
       <button class="btn ghost" data-d="1" aria-label="${escHtml(t('ku.schwerer'))}">+</button>
+      <div class="ku-lade"></div>
     </div>`).join('');
   $('ku-kugeln').querySelectorAll('.ku-kugel').forEach(zeile => {
-    const k = zeile.dataset.k, feld = zeile.querySelector('input');
+    const k = zeile.dataset.k, feld = zeile.querySelector('input'), lade = zeile.querySelector('.ku-lade');
+    // Ohne Kugel-Basis am Ort bleibt die Zeile leer — keine Ladeanzeige aus geratenen Zahlen.
+    const zeigeLadung = () => {
+      const ort = ladeOrt('kugelBasis');
+      lade.innerHTML = ort && kuKugeln[k] ? ladeHtml('kugel', G.kugelLaden(kuKugeln[k], ort)) : '';
+    };
     const setze = kg => {
-      kg = Math.max(0, Math.min(KU.KUGEL_MAX, Math.round(kg * 2) / 2));
+      kg = Math.max(0, Math.min(KU.KUGEL_MAX, Math.round(kg * 4) / 4));
       if (kg > 0) kuKugeln[k] = kg; else delete kuKugeln[k];
-      feld.value = kg > 0 ? kg : '';
+      feld.value = kg > 0 ? kgFmt(kg) : '';
+      zeigeLadung();
       kuZieleAktualisieren();
     };
     feld.onchange = () => setze(Number(String(feld.value).replace(',', '.')) || 0);
     zeile.querySelectorAll('button').forEach(b => {
-      b.onclick = () => setze((kuKugeln[k] || KU.letzteKugel(alleLogs, k) || 0) + Number(b.dataset.d) * KU.KUGEL_SCHRITT);
+      b.onclick = () => setze(naechsteKugel(kuKugeln[k] || KU.letzteKugel(alleLogs, k) || 0, Number(b.dataset.d)));
     });
+    zeigeLadung();
   });
 }
 
@@ -4344,9 +4399,80 @@ let gymEntwurf = null;
 // gespeichert werden.
 let gymGeaendert = false;
 
+/** Ein Gewicht im Format der Sprache, ohne unnoetige Nullen: 2,5 · 15,75 · 12. */
+const kgFmt = kg => Number(kg).toLocaleString(locale(), { maximumFractionDigits: 2 });
+
+/* ---------- Lastrechner ----------
+   Wie die Scheiben pro Seite bei der Langhantel, nur fuer Kugel und
+   Kurzhantel. Gerechnet wird mit dem gespeicherten Ort, nicht mit dem
+   Entwurf: sonst stuende hier etwas, das im Repo noch nicht liegt. */
+
+let rechnerArt = 'kugel', rechnerKg = '';
+
+function renderRechner() {
+  const box = $('rechner');
+  if (!box) return;
+  if (!config) { box.innerHTML = ''; return; }
+  box.innerHTML = `
+    <div class="chips">${['kugel', 'kurzhantel'].map(a => `
+      <button class="rechner-art ${a === rechnerArt ? 'an' : ''}" data-art="${a}">${t(`rechner.${a}`)}</button>`).join('')}
+    </div>
+    <label class="feld"><span>${t('rechner.kg')}</span>
+      <input id="rechner-kg" type="text" inputmode="decimal" autocomplete="off"
+             value="${escHtml(rechnerKg)}" placeholder="16"></label>
+    <div id="rechner-aus"></div>`;
+  box.querySelectorAll('.rechner-art').forEach(b => {
+    b.onclick = () => { rechnerArt = b.dataset.art; renderRechner(); };
+  });
+  $('rechner-kg').oninput = ev => { rechnerKg = ev.target.value; renderRechnerAus(); };
+  renderRechnerAus();
+}
+
+function renderRechnerAus() {
+  const aus = $('rechner-aus');
+  if (!aus) return;
+  const kugel = rechnerArt === 'kugel';
+  const ort = ladeOrt(kugel ? 'kugelBasis' : 'kurzhantelStange');
+  if (!ort) { aus.innerHTML = `<p class="fine">${t('rechner.leer')}</p>`; return; }
+  const kg = Number(rechnerKg.trim().replace(',', '.'));
+  const res = kg > 0 ? (kugel ? G.kugelLaden(kg, ort) : G.kurzhantelLaden(kg, ort)) : null;
+  aus.innerHTML = `${ladeHtml(rechnerArt, res)}
+    <p class="fine">${t('rechner.ort', { name: escHtml(ort.name) })} ${t('rechner.gemeinsam')}</p>`;
+}
+
+/** Ungueltige Eingabe markieren; der Entwurf bleibt, wie er war. */
+function gewichtFehler(el) {
+  el.style.color = 'var(--rost)';
+  banner(t('gym.gewichtFehler'), 'err', 6000);
+}
+
+/**
+ * Basis der Kugel, Gewicht der Stange und der gemeinsame Scheibenvorrat.
+ * Immer gezeichnet, nur versteckt, solange weder Kettlebell noch Kurzhantel
+ * angehakt sind: Neuzeichnen wuerde den aufgeklappten Ort zuklappen.
+ */
+function gewichteFelder(o, i) {
+  const an = id => o.geraete.includes(id);
+  const feld = (zeige, klasse, schluessel, wert, ph) => `
+    <label class="feld" data-zeige="${zeige}" data-i="${i}" ${an(zeige) ? '' : 'hidden'}>
+      <span>${t(schluessel)}</span>
+      <input class="${klasse}" data-i="${i}" type="text" inputmode="decimal" autocomplete="off"
+             value="${wert ? escHtml(kgFmt(wert)) : ''}" placeholder="${ph}"></label>`;
+  return `<div class="gym-gewichte" data-zeige="kettlebell kurzhantel" data-i="${i}"
+               ${an('kettlebell') || an('kurzhantel') ? '' : 'hidden'}>
+    ${feld('kettlebell', 'gym-kb', 'gym.kugelBasis', o.kugelBasis, '12')}
+    ${feld('kurzhantel', 'gym-stange', 'gym.stange', o.kurzhantelStange, '2')}
+    <label class="feld"><span>${t('gym.scheiben')}</span>
+      <input class="gym-scheiben" data-i="${i}" type="text" autocomplete="off"
+             value="${escHtml(G.scheibenText(o.scheiben, kgFmt))}" placeholder="2×2,5 + 2×1,25 + 0,5"></label>
+    <p class="fine">${t('gym.gewichteHinweis')}</p>
+  </div>`;
+}
+
 function renderGymVerwaltung() {
   const box = $('gym-liste');
   if (!box) return;
+  renderRechner();
 
   // Ohne geladene Konfiguration entsteht hier KEIN Entwurf. Sonst waere er
   // leer, wuerde als Modulvariable haengen bleiben und beim naechsten
@@ -4381,6 +4507,7 @@ function renderGymVerwaltung() {
             <input type="checkbox" class="gym-geraet" data-i="${i}" data-g="${g.id}"
                    ${o.geraete.includes(g.id) ? 'checked' : ''}>
             <span class="v">${g.name}</span></label>`).join('')}
+        ${gewichteFelder(o, i)}
         <button class="btn ghost small danger gym-weg" data-i="${i}">${t('gym.loeschen')}</button>
       </div>
     </details>`;
@@ -4395,6 +4522,34 @@ function renderGymVerwaltung() {
       o.geraete = el.checked
         ? [...new Set([...o.geraete, el.dataset.g])]
         : o.geraete.filter(x => x !== el.dataset.g);
+      gymGeaendert = true;
+      // Die Felder zu Kugel und Stange nur zeigen, solange das Geraet angehakt ist.
+      // Kein Neuzeichnen: das wuerde den aufgeklappten Ort wieder zuklappen.
+      box.querySelectorAll(`[data-zeige][data-i="${el.dataset.i}"]`).forEach(f => {
+        f.hidden = !f.dataset.zeige.split(' ').some(id => o.geraete.includes(id));
+      });
+    };
+  });
+  box.querySelectorAll('.gym-kb, .gym-stange').forEach(el => {
+    el.onchange = () => {
+      const o = gymEntwurf[+el.dataset.i], feld = el.classList.contains('gym-kb') ? 'kugelBasis' : 'kurzhantelStange';
+      const text = el.value.trim();
+      const kg = Number(text.replace(',', '.'));
+      if (!text) delete o[feld];
+      else if (G.gymFuerDatei({ ...o, [feld]: kg })[feld] === undefined) return gewichtFehler(el);
+      else o[feld] = kg;
+      el.style.color = '';
+      gymGeaendert = true;
+    };
+  });
+  box.querySelectorAll('.gym-scheiben').forEach(el => {
+    el.onchange = () => {
+      const o = gymEntwurf[+el.dataset.i];
+      const liste = el.value.trim() ? G.scheibenAusText(el.value) : [];
+      if (liste === null) return gewichtFehler(el);
+      if (liste.length) o.scheiben = liste; else delete o.scheiben;
+      el.value = G.scheibenText(liste, kgFmt);
+      el.style.color = '';
       gymGeaendert = true;
     };
   });
@@ -4436,7 +4591,7 @@ async function speichereGyms() {
     }
 
     const neu = datei.data;
-    neu.gyms = gymEntwurf.map(o => ({ id: o.id, name: o.name, geraete: o.geraete }));
+    neu.gyms = gymEntwurf.map(G.gymFuerDatei);
     await S.writeFile('config.json', neu, `Orte und Geräte aktualisiert`, datei.sha);
     config = neu;
     S.cache({ config });

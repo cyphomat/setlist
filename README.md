@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="App öffnen" src="https://img.shields.io/badge/App-öffnen-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-2740%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-2781%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-keiner-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Abhängigkeiten" src="https://img.shields.io/badge/Abhängigkeiten-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="Lizenz: MIT" src="https://img.shields.io/badge/Lizenz-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -251,7 +251,7 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 |---|---|
 | **Ersteinrichtung** | Kein Programm im Repo? Dann fragt die App: Stange, die fünf Übungen mit Startgewicht, Krafttage, optional Radtage — und schreibt daraus eine gültige `config.json`. Kein JSON von Hand. |
 | **Deine Stimme** | Dein Grund, eigene Sprüche und alte Bestleistungen direkt in der App. Der Grund erscheint an harten Tagen, die Bestleistungen an ihren Jahrestagen. |
-| **Orte und Geräte** | Mehrere Gyms (Homegym, Box, Studio …) mit eigener Ausstattung. Der Jam würfelt nur aus dem, was dort steht. Ohne eingerichtete Orte bleibt alles erlaubt. |
+| **Orte und Geräte** | Mehrere Gyms (Homegym, Box, Studio …) mit eigener Ausstattung. Der Jam würfelt nur aus dem, was dort steht. Ohne eingerichtete Orte bleibt alles erlaubt. Trägst du Kugel, Stange und Scheiben ein, rechnet der **Lastrechner** (Backstage → Orte) und der Kurs zeigt unter der Kugel, was aufgesteckt wird — auch wenn ein Gewicht nicht exakt ladbar ist. |
 | **Ortswahl in der Kopfzeile** | Ein Knopf zeigt, wo du gerade bist, und stellt um — auf dem Startbildschirm wie im Jam. In der Auswahl steht je Ort, wie viele Jam-Bewegungen dort möglich sind. |
 | **Update-Hinweis für Forks** | Ein Fork bleibt stehen, wo er abgezweigt ist. Die App vergleicht ihre Version mit der des Originals und sagt einmalig Bescheid, samt Weg zum Aktualisieren. |
 | **Sprache** | Oberfläche auf Deutsch oder Englisch, umschaltbar im Backstage. |
@@ -461,7 +461,7 @@ Wiederholungen. Abschaltbar unter *Backstage → Verbindungen*.
 | `js/content.js` | Wissensschicht: Cues, Soundcheck, Technik, Encore, Stimme. |
 | `js/bibliothek.js` | Bündelt alle Übungen zu einer durchsuchbaren Liste. |
 | `js/i18n.js` | Oberflächentexte auf Deutsch und Englisch. |
-| `js/geraete.js` | Orte, Ausstattung, Machbarkeit einer Bewegung. |
+| `js/geraete.js` | Orte, Ausstattung, Machbarkeit einer Bewegung, Scheibenrechner für Kugel und Kurzhantel. |
 | `js/sicher.js` | Maskiert Fremdtext, prüft Adressen. |
 | `js/aktualisierung.js` | Vergleicht die eigene Version mit der des Originals; Autor, Issues und Quelltext-Link (im Fork der Fork). |
 | `js/einrichten.js` | Baut aus ein paar Antworten eine gültige `config.json`. |
@@ -511,7 +511,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-2740 Tests in 32 Dateien. Kein Build, keine Abhängigkeiten.
+2781 Tests in 32 Dateien. Kein Build, keine Abhängigkeiten.
 
 ### Browserproben (optional)
 
