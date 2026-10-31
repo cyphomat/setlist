@@ -10,14 +10,20 @@
 //      uebertragen sind. Geht der verloren, ist das Training weg.
 //
 // Beides braucht nur den localStorage, den es hier als Ersatz gibt.
+// defineProperty statt Zuweisung: Deno bringt einen eigenen localStorage mit,
+// dessen Setter eine Zuweisung verschluckt.
 const speicher = new Map();
-globalThis.localStorage = {
-  getItem: k => (speicher.has(k) ? speicher.get(k) : null),
-  setItem: (k, v) => speicher.set(k, String(v)),
-  removeItem: k => speicher.delete(k),
-  get length() { return speicher.size; },
-  key: i => [...speicher.keys()][i] ?? null
-};
+Object.defineProperty(globalThis, 'localStorage', {
+  configurable: true,
+  writable: true,
+  value: {
+    getItem: k => (speicher.has(k) ? speicher.get(k) : null),
+    setItem: (k, v) => speicher.set(k, String(v)),
+    removeItem: k => speicher.delete(k),
+    get length() { return speicher.size; },
+    key: i => [...speicher.keys()][i] ?? null
+  }
+});
 
 const S = await import('../js/store.js');
 

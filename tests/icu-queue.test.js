@@ -5,12 +5,18 @@
 // werden — geht sie verloren, fehlt das Training in Fitness und Ermuedung.
 // Zusaetzlich der Schalter, der entscheidet, ob ueberhaupt etwas an einen
 // fremden Dienst geht.
+// defineProperty statt Zuweisung: Deno bringt einen eigenen localStorage mit,
+// dessen Setter eine Zuweisung verschluckt.
 const speicher = new Map();
-globalThis.localStorage = {
-  getItem: k => (speicher.has(k) ? speicher.get(k) : null),
-  setItem: (k, v) => speicher.set(k, String(v)),
-  removeItem: k => speicher.delete(k)
-};
+Object.defineProperty(globalThis, 'localStorage', {
+  configurable: true,
+  writable: true,
+  value: {
+    getItem: k => (speicher.has(k) ? speicher.get(k) : null),
+    setItem: (k, v) => speicher.set(k, String(v)),
+    removeItem: k => speicher.delete(k)
+  }
+});
 
 const ICU = await import('../js/intervals.js');
 
