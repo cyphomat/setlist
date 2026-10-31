@@ -201,6 +201,20 @@ print('\n--- Jede Gitarre hat Name, Typ und Bedingung, in beiden Sprachen ---');
   I.setSprache('de');
 }
 
+print('\n--- Jede Uebungsfigur hat Beschriftung und Beschreibung, in beiden Sprachen ---');
+{
+  const K = await import('../js/kurs.js');
+  for (const sp of ['de', 'en']) {
+    I.setSprache(sp);
+    const fehlt = [];
+    for (const f of K.FIGUREN) {
+      for (const k of [...Array.from({ length: f.n }, (_, i) => `ku.fig.${f.id}.${i}`), `ku.fig.${f.id}.alt`]) if (I.t(k) === k) fehlt.push(k);
+    }
+    eq(`${sp}: nichts fehlt`, fehlt.join(), '');
+  }
+  I.setSprache('de');
+}
+
 print('\n--- Doppelte Schluessel ---');
 // Ein Schluessel, der im Quelltext zweimal steht, gewinnt beim zweiten Mal
 // still — so stand einmal "{woche}" im Klartext auf Heute. Ohne Dateizugriff

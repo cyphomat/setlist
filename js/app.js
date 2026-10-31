@@ -2258,12 +2258,21 @@ function kuSeiteText(a) {
   return t(`ku.${a.seite === 1 ? 'links' : 'rechts'}${richtung ? 'Her' : ''}`);
 }
 
+/** Der Bildstreifen einer Uebung aus dem Bogen assets/pixel/figuren.png (tools/pixel.mjs). */
+function kuFigurHtml(id) {
+  const f = id && KU.figur(id);
+  if (!f) return '';
+  const bilder = Array.from({ length: f.n }, (_, i) => `<figure><span class="fig-bild" style="--i:${f.start + i};--n:${f.gesamt}"></span>
+    <figcaption>${escHtml(t(`ku.fig.${id}.${i}`))}</figcaption></figure>`).join('');
+  return `<div class="fig" role="img" aria-label="${escHtml(t(`ku.fig.${id}.alt`))}">${bilder}</div>`;
+}
+
 /** Wie die Bewegung geht und was oft schief laeuft, fuer die Uebungen eines Bausteins. */
 function kuHilfeHtml(b, kopf) {
   const teile = b.u.map(id => {
     const u = KU.UEBUNGEN[id];
     if (!u || !u.schritte) return '';
-    return `<div class="u"><b>${escHtml(u.name)}</b>
+    return `<div class="u"><b>${escHtml(u.name)}</b>${kuFigurHtml(u.bild)}
       <ol>${u.schritte.map(x => `<li>${escHtml(x)}</li>`).join('')}</ol>
       <p class="fehler">${escHtml(t('ku.hilfe.fehler'))}: ${escHtml(u.fehler.join(' · '))}</p></div>`;
   }).join('');

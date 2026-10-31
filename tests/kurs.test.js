@@ -230,4 +230,11 @@ print('\n--- Umbauten ---');
 print('\n--- Erklaerung je Uebung ---');
 ok('jede Uebung ausser dem Rad hat Schritte und Fehler', Object.entries(K.UEBUNGEN).filter(([id]) => id !== 'rad').every(([, u]) => u.schritte.length >= 3 && u.fehler.length >= 2));
 
+print('\n--- Bildstreifen je Uebung ---');
+ok('jede Uebung mit Bild hat ihren Platz im Bogen', Object.entries(K.UEBUNGEN).filter(([, u]) => u.bild).every(([, u]) => K.figur(u.bild) && K.figur(u.bild).n >= 1));
+ok('jede Figur im Bogen gehoert zu einer Uebung', K.FIGUREN.every(f => Object.values(K.UEBUNGEN).some(u => u.bild === f.id)));
+ok('die Bilder folgen einander ohne Luecke', K.FIGUREN.every(f => K.figur(f.id).start === K.FIGUREN.slice(0, K.FIGUREN.indexOf(f)).reduce((a, x) => a + x.n, 0)));
+eq('Bilder im ganzen Bogen', K.figur('hinge').gesamt, K.FIGUREN.reduce((a, f) => a + f.n, 0));
+ok('unbekannte Figur gibt null', K.figur('gibt-es-nicht') === null);
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

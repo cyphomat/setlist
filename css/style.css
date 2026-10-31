@@ -1037,6 +1037,12 @@ input[type=checkbox]{accent-color:var(--akzent);width:16px;height:16px}
 .ku-hilfe .u b{display:block;margin-bottom:4px}
 .ku-hilfe ol{margin:0 0 6px;padding-left:1.25em}
 .ku-hilfe li{margin:2px 0}
+.ku-hilfe .fig{display:flex;flex-wrap:wrap;gap:4px 10px;margin:2px 0 8px;--z:2}
+.ku-hilfe .fig figure{margin:0}
+.ku-hilfe .fig figcaption{font-family:var(--mono);font-size:0.6875rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:center}
+.fig-bild{display:block;width:calc(76px * var(--z));height:calc(72px * var(--z));background:url('../assets/pixel/figuren.png') no-repeat;
+  background-size:calc(var(--n) * 76px * var(--z)) calc(72px * var(--z));background-position:calc(var(--i) * -76px * var(--z)) 0;image-rendering:pixelated}
+@media (max-width:359px){ .ku-hilfe .fig{--z:1} }
 .ku-hilfe .fehler{font-size:0.8125rem;color:var(--muted);margin:0}
 .buehne .danach{
   font-family:var(--mono);font-size:0.75rem;letter-spacing:.08em;color:var(--dim);margin-top:8px;
