@@ -7,10 +7,11 @@ export function roundTo(weight, step) {
 
 /**
  * Was im Log steht, aber kein Training ist: eine Anpassung setzt Gewichte,
- * ein Mobility-Haken ist zehn Minuten Dehnen. Beides haelt keine Serie am
- * Leben und zaehlt nicht als Einheit.
+ * ein Mobility-Haken ist zehn Minuten Dehnen, ein Abend-Check-in ein Ja oder
+ * Nein auf seine eigene Frage. Nichts davon haelt eine Serie am Leben oder
+ * zaehlt als Einheit.
  */
-export const KEIN_TRAINING = ['anpassung', 'mobility'];
+export const KEIN_TRAINING = ['anpassung', 'mobility', 'checkin'];
 export const istTraining = l => !!(l && l.date && !KEIN_TRAINING.includes(l.type));
 
 /** Startzustand allein aus der Programmdefinition. */
@@ -138,6 +139,7 @@ export function applyLog(state, config, log) {
   if (log.type && log.type !== 'strength') {
     next.updated = new Date().toISOString();
     const eintrag = log.type === 'mobility' ? { date: log.date, type: 'mobility', uebung: log.uebung || '' }
+      : log.type === 'checkin' ? { date: log.date, type: 'checkin', ja: !!log.ja }
       : { date: log.date, type: log.type, label: log.label || 'WOD', ...(log.type === 'kurs' ? { kurs: log.kurs || 'kettlebell', woche: log.woche, tag: log.tag, bewertung: log.bewertung } : {}) };
     next.history = [...(next.history || []), eintrag].slice(-100);
     return next;

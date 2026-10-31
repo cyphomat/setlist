@@ -344,6 +344,7 @@ function renderHome() {
   $('today').innerHTML = plakatHtml(d, plan);
   plakatGlut();
   renderAnlass();
+  renderCheckin();
   $('start').onclick = startMitPausenCheck;
   renderInstrumente();
   $('zitat').innerHTML = `${meilensteinKarte()}${zitatHtml(d)}`;
@@ -355,6 +356,46 @@ function renderHome() {
   renderWeek();
   renderIcuStatus();
   renderWeights(d.fortschritt);
+}
+
+/**
+ * Abend-Check-in auf Heute. Ohne eigene Frage in `ziele.checkin` bleibt die
+ * Karte leer. Die Antwort steht bewusst neutral da: Ja ist hervorgehoben,
+ * Nein ist nur gewaehlt, nicht geruegt — und beides laesst sich korrigieren.
+ */
+function renderCheckin() {
+  const box = $('checkin');
+  if (!box) return;
+  const frage = config && config.ziele && config.ziele.checkin;
+  if (!frage) { box.innerHTML = ''; return; }
+  const c = ST.checkinWoche(geladeneLogs(), new Date());
+  const zeilen = [];
+  if (c.ja > 0) zeilen.push(tn('ci.woche', c.tage, { ja: c.ja, tage: c.tage }));
+  if (c.serie >= 2) zeilen.push(t('ci.serie', { n: c.serie }));
+  box.innerHTML = `<div class="checkin">
+    <span class="kicker">${escHtml(t('ci.kicker'))}</span>
+    <p class="frage">${escHtml(frage)}</p>
+    <div class="actions">
+      <button class="btn small" data-ci="1" aria-pressed="${c.heute === true}">${escHtml(t('ci.ja'))}</button>
+      <button class="btn ghost small" data-ci="0" aria-pressed="${c.heute === false}">${escHtml(t('ci.nein'))}</button>
+    </div>
+    ${zeilen.length ? `<p class="fine">${escHtml(zeilen.join(' '))}</p>` : ''}
+  </div>`;
+  box.querySelectorAll('button[data-ci]').forEach(b => { b.onclick = () => antwortCheckin(b.dataset.ci === '1'); });
+}
+
+async function antwortCheckin(ja) {
+  if (!config) return;
+  const heute = P.ymd(new Date());
+  const log = { date: heute, type: 'checkin', ja, finished: new Date().toISOString() };
+  const nachher = geladeneLogs().concat([log]);
+  alleLogs = nachher;
+  S.cacheLogs(nachher);
+  state = P.applyLog(state, config, log);
+  S.cache({ state });
+  renderCheckin();
+  try { await commit(log); banner(t('ci.erledigt'), 'ok', 2500); }
+  catch { S.queue(log); banner(t('ci.keinNetz'), '', 5000); }
 }
 
 /** Die laufende Serie, fuer den Kopf der Wochenkarte. Gesetzt in renderHome. */
@@ -699,6 +740,16 @@ async function commitMobility(log) {
   let n = 2;
   while (await S.readFile(path)) path = `${S.LOG_DIR}/${log.date}-mobility-${n++}.json`;
   await S.writeFile(path, log, `Mobility am ${log.date}`);
+  return path;
+}
+
+/** Abend-Check-in: wie Mobility eine eigene kleine Datei ohne Zustand. Jede
+ * Antwort ist eine neue Datei; am Tag zaehlt die mit dem juengsten `finished`. */
+async function commitCheckin(log) {
+  let path = `${S.LOG_DIR}/${log.date}-checkin.json`;
+  let n = 2;
+  while (await S.readFile(path)) path = `${S.LOG_DIR}/${log.date}-checkin-${n++}.json`;
+  await S.writeFile(path, log, `Check-in am ${log.date}`);
   return path;
 }
 
@@ -1300,6 +1351,7 @@ async function finishSession() {
 async function commit(log) {
   if (log.type === 'anpassung') return commitAnpassung(log);
   if (log.type === 'mobility') return commitMobility(log);
+  if (log.type === 'checkin') return commitCheckin(log);
   if (log.type === 'soundcheck') return commitSoundcheck(log);
   if (log.type === 'zusammen') return commitZusammen(log);
   let path = `${S.LOG_DIR}/${log.date}.json`;
@@ -3149,6 +3201,10 @@ function renderListe(logs) {
       return `<div class="hist anpassung"><div class="d">${escHtml(l.date)} · ${t(l.grund === 'schema' ? 'hist.schema' : 'hist.angepasst')}</div>
         <div class="l">${g}${grund ? `<br><span style="color:var(--dim)">${escHtml(grund)}</span>` : ''}</div></div>`;
     }
+    if (l.type === 'checkin') {
+      return `<div class="hist mobility"><div class="d">${escHtml(l.date)} · ${t('hist.checkin')}</div>
+        <div class="l">${escHtml(t(l.ja ? 'ci.ja' : 'ci.nein'))}</div></div>`;
+    }
     if (l.type === 'mobility') {
       return `<div class="hist mobility"><div class="d">${escHtml(l.date)} · ${t('hist.mobility')}</div>
         <div class="l">${escHtml(mobilityName(l.uebung))}</div></div>`;
@@ -4035,6 +4091,7 @@ function renderPersoenlich() {
   if (!box || !config) return;
 
   $('pers-grund').value = (config.ziele && config.ziele.warum) || '';
+  $('pers-checkin').value = (config.ziele && config.ziele.checkin) || '';
   $('pers-zeilen').value = PS.eigeneZeilen(stimme);
 
   box.innerHTML = PS.rekordEntwurf(config).map(r => `
@@ -4127,9 +4184,9 @@ $('pers-speichern').onclick = async () => {
     // stellt, soll nicht zusaetzlich ein Datum eintippen muessen.
     const verletzungen = VL.stempleEnde(VL.baueVerletzungen(injEntwurf || VL.entwurf(config)),
       VL.alle(datei.data), P.ymd(new Date()));
-    const neu = PS.setzeName(PS.setzeEinstieg(PS.setzeKadenzZiel(VL.setzeInConfig(PS.setzeChecks(
+    const neu = PS.setzeCheckin(PS.setzeName(PS.setzeEinstieg(PS.setzeKadenzZiel(VL.setzeInConfig(PS.setzeChecks(
       PS.setzeInConfig(datei.data, { grund: $('pers-grund').value, rekorde }), checks), verletzungen), $('pers-kadenz').value),
-      $('pers-einstieg-art').value, $('pers-einstieg-min').value), $('pers-name').value);
+      $('pers-einstieg-art').value, $('pers-einstieg-min').value), $('pers-name').value), $('pers-checkin').value);
     await S.writeFile('config.json', neu, 'Persönliches aktualisiert', datei.sha);
     config = neu;
 

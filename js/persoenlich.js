@@ -265,6 +265,22 @@ export function warmupZeilen(allgemein, config, detail, maskiere = s => s) {
 export const eigenerName = config => (config && typeof config.name === 'string' ? bereinigeName(config.name) : null);
 
 /** Namen setzen; leer nimmt ihn heraus. Dieselbe Bereinigung wie bei Namen aus fremden Links. */
+/**
+ * Die Frage fuer den Abend-Check-in. Sie gehoert ihm: die App gibt keine vor,
+ * und ohne Text bleibt der Check-in unsichtbar.
+ */
+export const CHECKIN_MAX = 80;
+export function setzeCheckin(config, wert) {
+  const neu = JSON.parse(JSON.stringify(config || {}));
+  const frage = String(wert ?? '').replace(/\s+/g, ' ').trim().slice(0, CHECKIN_MAX);
+  if (frage) neu.ziele = { ...(neu.ziele || {}), checkin: frage };
+  else if (neu.ziele) {
+    delete neu.ziele.checkin;
+    if (!Object.keys(neu.ziele).length) delete neu.ziele;
+  }
+  return neu;
+}
+
 export function setzeName(config, wert) {
   const neu = JSON.parse(JSON.stringify(config || {}));
   const n = bereinigeName(wert);
