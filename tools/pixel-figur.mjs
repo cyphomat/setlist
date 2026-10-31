@@ -1,15 +1,15 @@
 // Uebungsfiguren aus Gelenkwinkeln, als Pixelbild fuer den Bogen assets/pixel/figuren.png
-// (gebaut von tools/pixel.mjs). Seitenansicht, Blick nach rechts, Bilder 76 x 72.
+// (gebaut von tools/pixel.mjs). Seitenansicht, Blick nach rechts, Bilder 76 x 82.
 //
 // Statt Pixel von Hand zu setzen, stehen hier die Winkel der Gelenke. Der Boden wird aus den
 // Stuetzpunkten (Fuss, Hand, Knie) berechnet; schwebt einer, bricht der Bau ab.
-// GETUP ist vorbereitet, aber noch nicht im Bogen.
+// Seitenansicht heisst: was nur von vorn zu sehen ist (Knie nach innen, Ellbogen zwischen den Knien), zeigen die Bilder nicht.
 //
 // Winkel in Grad, mathematisch (0 = rechts, 90 = oben, 180 = links, 270 = unten),
 // jeweils die Richtung vom Gelenk zum naechsten. Laengen sind Pixel, Anteile
 // nach einem Erwachsenen von 38 px Hoehe.
 
-const B = 76, H = 72, BODEN = 66;      // Bildgroesse und Bodenlinie
+const B = 76, H = 82, BODEN = 76;      // Bildgroesse und Bodenlinie
 const SK = 1.3;                        // Massstab gegenueber 38 px Koerperhoehe
 const KUGEL = 4.6;                     // Radius der Kugel
 const L = Object.fromEntries(Object.entries({ thigh: 9.3, shin: 8.7, foot: 3.5, torso: 11.4, neck: 2, head: 3.1, ua: 7.2, fa: 5.6, hand: 2.4 }).map(([k, v]) => [k, v * SK]));

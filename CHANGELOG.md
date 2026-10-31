@@ -10,6 +10,16 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-31.8
+
+### Neu
+- **Turkish Get-up im Kurs als Bildfolge:** In der Hilfe zur Übung stehen sieben Pixelbilder von der Seite:
+  Liegen, Ellbogen, Hand, Brücke, Schwung, Knien, Stand. Auf dem Handy ist die Folge ein Streifen zum Wischen
+  (doppelt groß, mit sichtbarer Leiste), auf größeren Bildschirmen ein Raster. Beschriftung und Beschreibung in
+  beiden Sprachen.
+- Das Bildfeld ist jetzt 76 × 82 px, damit die Kugel über dem Kopf beim Stehen nicht abgeschnitten wird;
+  die Hinge-Bilder wachsen dadurch um etwas Luft nach oben.
+
 ## 2026-10-31.7
 
 ### Neu

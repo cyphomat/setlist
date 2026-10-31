@@ -113,6 +113,7 @@ const HILFE = {
     fehler: ['Fersen heben ab', 'Knie fallen nach innen', 'Der Oberkörper kippt nach vorn']
   },
   getup: {
+    bild: 'getup',
     schritte: ['Auf dem Rücken: Kugel im gestreckten Arm über der Schulter, das Bein auf dieser Seite angewinkelt.', 'Auf den Ellbogen stützen, dann auf die Hand, Brust aufrichten.', 'Hüfte anheben, das gestreckte Bein unter dich ziehen, in den Kniestand.', 'Aufstehen. Zurück in umgekehrter Reihenfolge.'],
     fehler: ['Der Blick geht von der Kugel weg', 'Der Arm knickt ein', 'Zu schnell: jede Position kurz halten']
   },
@@ -144,7 +145,7 @@ const HILFE = {
 for (const [id, h] of Object.entries(HILFE)) Object.assign(UEBUNGEN[id], h);
 
 /** Bildstreifen zu Uebungen, in der Reihenfolge des Bogens assets/pixel/figuren.png (gebaut von tools/pixel.mjs aus tools/pixel-figur.mjs). */
-export const FIGUREN = [{ id: 'hinge', n: 2 }];
+export const FIGUREN = [{ id: 'hinge', n: 2 }, { id: 'getup', n: 7 }];
 
 /** Wo die Bilder einer Uebung im Bogen liegen: erstes Bild, Anzahl, Bilder im ganzen Bogen. */
 export function figur(id) {
