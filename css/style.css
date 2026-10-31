@@ -1082,8 +1082,8 @@ input[type=checkbox]{accent-color:var(--akzent);width:16px;height:16px}
 /* Fortschritt im Kurs: 36 Einheiten, je drei pro Woche; ein Check hat einen Strich darunter. */
 .leiste{display:flex;gap:2px;margin:8px 0}
 .leiste i{flex:1;height:10px;background:var(--line);box-sizing:border-box}
-.leiste i.w{margin-left:5px}
-.leiste i.w:first-child{margin-left:0}
+.leiste i.wa{margin-left:5px}
+.leiste i.wa:first-child{margin-left:0}
 .leiste i.f{background:var(--akzent)}
 .leiste i.j{outline:1px solid var(--akzent);outline-offset:-1px}
 .leiste i.t{border-bottom:3px solid var(--stahl)}

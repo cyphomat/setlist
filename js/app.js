@@ -2033,7 +2033,7 @@ function kuSpracheKnopf() {
 }
 
 function renderKursKnopf() {
-  const z = KU.zustand(alleLogs);
+  const z = KU.zustand(geladeneLogs());
   $('go-kurs').textContent = z.fertig ? t('home.kursFertig') : t('home.kursTag', { woche: z.woche });
   renderKursKarte(z);
   renderMoshKnopf();
@@ -2041,7 +2041,7 @@ function renderKursKnopf() {
 
 /** Die 36 Einheiten als Leiste; ein Strich darunter markiert einen Check. */
 const kursLeisteHtml = n => `<span class="leiste" aria-hidden="true">${KU.segmente(n).map(s =>
-  `<i class="${[s.fertig && 'f', s.jetzt && 'j', s.test && 't', s.tag === 'A' && 'w'].filter(Boolean).join(' ')}"></i>`).join('')}</span>`;
+  `<i class="${[s.fertig && 'f', s.jetzt && 'j', s.test && 't', s.tag === 'A' && 'wa'].filter(Boolean).join(' ')}"></i>`).join('')}</span>`;
 
 /** Auf Home: wie weit der Kurs ist. Erst nach der ersten Einheit, ein Tipp oeffnet den Kurs. */
 function renderKursKarte(z) {
@@ -2094,7 +2094,7 @@ const kuRadVorschlag = () => KU.radVorschlag({ zwiftride: hatZwift(gewaehlterOrt
 const kuRadAn = () => (kuRadWahl === null ? kuRadVorschlag().an : kuRadWahl);
 
 /** Den Plan der naechsten Einheit neu aufbauen, mit oder ohne Rad. */
-function kuPlanNeu() { kuEinheit = KU.naechste(alleLogs, { rad: kuRadAn() }); }
+function kuPlanNeu() { kuEinheit = KU.naechste(geladeneLogs(), { rad: kuRadAn() }); }
 
 function renderKuRad() {
   const box = $('ku-rad');
@@ -2115,7 +2115,7 @@ function renderKuRad() {
 
 function starteKurs() {
   kuStopp();
-  const z = KU.zustand(alleLogs);
+  const z = KU.zustand(geladeneLogs());
   if (z.fertig) { banner(t('ku.fertigKurs'), 'ok', 5000); return; }
   kuRadWahl = null;
   kuPlanNeu();
@@ -2127,7 +2127,7 @@ function starteKurs() {
   show('kurs');
   // Im Hintergrund auffrischen: ein anderes Geraet kann schon weiter sein.
   S.readAllLogs().then(logs => {
-    if (logs.length === alleLogs.length || !$('ku-lauf').hidden || !$('ku-ende').hidden) return;
+    if (logs.length === geladeneLogs().length || !$('ku-lauf').hidden || !$('ku-ende').hidden) return;
     alleLogs = logs; S.cacheLogs(logs);
     kuPlanNeu();
     kuVorbelegen();
@@ -2140,7 +2140,7 @@ function kuVorbelegen() {
   if (!kuEinheit) return;
   const neu = {};
   for (const b of KU.kugelBausteine(kuEinheit)) {
-    const kg = kuKugeln[b.schluessel] || KU.letzteKugel(alleLogs, b.schluessel);
+    const kg = kuKugeln[b.schluessel] || KU.letzteKugel(geladeneLogs(), b.schluessel);
     if (kg) neu[b.schluessel] = kg;
   }
   kuKugeln = neu;
@@ -2209,8 +2209,8 @@ function renderKugeln() {
       <input type="text" inputmode="decimal" autocomplete="off"
         value="${kuKugeln[b.schluessel] ? escHtml(kgFmt(kuKugeln[b.schluessel])) : ''}" placeholder="kg" aria-label="${escHtml(b.name)} kg">
       <button class="btn ghost" data-d="1" aria-label="${escHtml(t('ku.schwerer'))}">+</button>
-      <div class="ku-lade"></div>${KU.kugelVorschlag(alleLogs, b.schluessel)
-        ? `<p class="fine ku-tipp">${escHtml(t(`ku.vorschlag.${KU.kugelVorschlag(alleLogs, b.schluessel)}`))}</p>` : ''}
+      <div class="ku-lade"></div>${KU.kugelVorschlag(geladeneLogs(), b.schluessel)
+        ? `<p class="fine ku-tipp">${escHtml(t(`ku.vorschlag.${KU.kugelVorschlag(geladeneLogs(), b.schluessel)}`))}</p>` : ''}
     </div>`).join('');
   $('ku-kugeln').querySelectorAll('.ku-kugel').forEach(zeile => {
     const k = zeile.dataset.k, feld = zeile.querySelector('input'), lade = zeile.querySelector('.ku-lade');
@@ -2228,7 +2228,7 @@ function renderKugeln() {
     };
     feld.onchange = () => setze(Number(String(feld.value).replace(',', '.')) || 0);
     zeile.querySelectorAll('button').forEach(b => {
-      b.onclick = () => setze(naechsteKugel(kuKugeln[k] || KU.letzteKugel(alleLogs, k) || 0, Number(b.dataset.d)));
+      b.onclick = () => setze(naechsteKugel(kuKugeln[k] || KU.letzteKugel(geladeneLogs(), k) || 0, Number(b.dataset.d)));
     });
     zeigeLadung();
   });
@@ -2236,9 +2236,9 @@ function renderKugeln() {
 
 /** Dauer samt Umbauten; haengt an den eingetragenen Kugeln, darum auch beim Aendern neu. */
 function kuUebersicht() {
-  const z = KU.zustand(alleLogs);
+  const z = KU.zustand(geladeneLogs());
   $('ku-uebersicht').innerHTML = `<p class="lead">${escHtml(t('ku.uebersicht', {
-    min: KU.minuten(kuEinheit, { kugeln: kuKugeln }), woche: z.woche, gesamt: KU.WOCHEN, fertig: KU.wocheFortschritt(alleLogs), pro: KU.PRO_WOCHE
+    min: KU.minuten(kuEinheit, { kugeln: kuKugeln }), woche: z.woche, gesamt: KU.WOCHEN, fertig: KU.wocheFortschritt(geladeneLogs()), pro: KU.PRO_WOCHE
   }))}</p>`;
 }
 
@@ -2477,7 +2477,7 @@ async function kuSpeichern() {
     kurs: KU.KURS_ID,
     woche: e.woche,
     tag: e.tag,
-    einheit: KU.zustand(alleLogs).einheit,
+    einheit: KU.zustand(geladeneLogs()).einheit,
     label: KU.label(e),
     dauerSekunden: Math.max(60, kuGesamt),
     bewertung,
@@ -2494,10 +2494,10 @@ async function kuSpeichern() {
   // noch den A/B-Wechsel an.
   state = P.applyLog(state, config, log);
   S.cache({ state });
-  alleLogs = alleLogs.concat([log]);
+  alleLogs = geladeneLogs().concat([log]);
   S.cacheLogs(alleLogs);
 
-  const z = KU.zustand(alleLogs);
+  const z = KU.zustand(geladeneLogs());
   // Der Erfolg haengt nur an den eigenen Logs, nicht am Netz: er steht immer da.
   const n = z.absolviert;
   const meilen = [];
@@ -2582,13 +2582,13 @@ let mpEinheit = null, mpWerte = {}, mpGesamt = 0, mpTimer = null, mpRest = 0, mp
 const mpStopp = () => { clearInterval(mpTimer); mpTimer = null; mpPause = false; $('mp-leiste').hidden = true; };
 
 function renderMoshKnopf() {
-  const sichtbar = KU.zustand(alleLogs).fertig || MP.moshLogs(alleLogs).length > 0;
+  const sichtbar = KU.zustand(geladeneLogs()).fertig || MP.moshLogs(geladeneLogs()).length > 0;
   $('go-mosh').hidden = !sichtbar;
 }
 
 function starteMosh() {
   mpStopp();
-  mpEinheit = MP.naechste(alleLogs);
+  mpEinheit = MP.naechste(geladeneLogs());
   mpGesamt = 0;
   mpWerte = {};
   for (const l of mpEinheit.lifts) mpWerte[l.id] = { kg: l.kg || 0, reps: l.reps, erledigt: Array(mpEinheit.saetze).fill(false) };
@@ -2688,10 +2688,10 @@ async function mpSpeichern() {
   const vorherHist = state.history || [];
   state = P.applyLog(state, config, log);
   S.cache({ state });
-  alleLogs = alleLogs.concat([log]);
+  alleLogs = geladeneLogs().concat([log]);
   S.cacheLogs(alleLogs);
 
-  const naechste = MP.naechste(alleLogs).lifts
+  const naechste = MP.naechste(geladeneLogs()).lifts
     .map(l => `${KU.UEBUNGEN[l.id].name} ${l.reps}${l.kg ? ` @ ${kuKg(l.kg)}` : ''}`).join(' · ');
   $('done-body').innerHTML = `
     <div class="card">
