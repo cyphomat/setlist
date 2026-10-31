@@ -10,6 +10,20 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-31.11
+
+### Behoben
+- **Kurs-Fortschritt auf Home:** Die Karte „Kettlebell-Kurs“ und der Knopf „Kurs · Woche N“ standen nach dem Start
+  auf Woche 1, weil sie nur die schon nachgeladenen Einheiten lasen und nicht den Zwischenspeicher. Erst nach einem
+  Besuch im Kurs stimmten sie. Kurs und Mosh Pit lesen jetzt wie der Rest von Home den Zwischenspeicher mit.
+- **Kurs-Übersicht springt nicht mehr um:** Der Plan zeigte beim Öffnen kurz die Übungen von Woche 1 und wechselte
+  dann auf die echte Woche, sobald das Nachladen fertig war. Er baut jetzt gleich auf dem Stand des
+  Zwischenspeichers auf. Ein Speichern vor dem Nachladen überschreibt den Zwischenspeicher nicht mehr mit einer
+  einzelnen Einheit.
+- **Fortschrittsleiste breiter als der Bildschirm:** Die zwölf Wochenanfänge der Leiste trugen die Klasse `w`, die
+  global eine Karte mit Innenabstand und Rahmen ist. Jedes dieser Segmente war dadurch 30 px breit, und Home lief auf
+  dem Handy seitlich über. Die Klasse heißt jetzt `wa`.
+
 ## 2026-10-31.10
 
 ### Neu
