@@ -338,6 +338,10 @@ export function interferenz(fahrten = [], jetzt = new Date()) {
     .filter(f => f.zeit)
     .map(f => ({ ...f, ts: new Date(f.zeit) }))
     .filter(f => !isNaN(f.ts) && f.ts <= jetzt)
+    // Eine kurze lockere Fahrt ist kein Umfang: Das Aufwaermen vor dem Kurs
+    // landet ueber Zwift als Sechs-Minuten-Fahrt in intervals.icu und soll die
+    // Warnung fuer die naechste Einheit nicht ausloesen.
+    .filter(f => !(f.minutes > 0 && f.minutes < 15 && artDerFahrt(f) === 'locker'))
     .sort((a, b) => b.ts - a.ts);
   if (!mitZeit.length) return null;
 

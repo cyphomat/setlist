@@ -10,6 +10,22 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-31.3
+
+### Neu
+- **Aufwärmen auf dem Rad im Kettlebell-Kurs.** Hat der gewählte Ort ein Zwift Ride und bist du in den letzten
+  drei Stunden nicht mindestens 15 Minuten gefahren (aus intervals.icu), steht vor dem Halo ein Radblock: sechs
+  Minuten, an Testtagen acht, erst locker, dann drei (vier) Antritte von 20 Sekunden mit 40 Sekunden locker
+  dazwischen. Er läuft nach der Uhr, mit Signal vor jedem Wechsel, und die Bühne sagt am Ende „Danach: Halo“.
+  Eigene Planung nach gängiger Praxis, nicht aus einer Studie.
+- **Schalter „Auf dem Rad aufwärmen“** in der Kurs-Ansicht, wenn irgendein Ort ein Zwift Ride hat. Er ist aus
+  der Regel vorbelegt und hat immer das letzte Wort; ohne gewählten Ort schlägt die App kein Rad vor. Der
+  Plan, Woche und Tag und das Log bleiben unverändert, das Rad zählt nicht als Kugelbaustein.
+
+### Geändert
+- Eine kurze lockere Fahrt (unter 15 Minuten) löst die Warnung „Rad vor Eisen“ nicht mehr aus. Das Aufwärmen
+  landet über Zwift als Sechs-Minuten-Fahrt in intervals.icu und würde sonst die nächste Einheit verwarnen.
+
 ## 2026-10-31.2
 
 ### Neu

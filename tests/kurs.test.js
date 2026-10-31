@@ -104,4 +104,51 @@ print('\n--- Bewegtes Gewicht ---');
   eq('unbekannte Woche nichts', K.tonnage(log(1, { woche: 99, tag: 'A', kugeln: { hinge: 16 } })), 0);
 }
 
+print('\n--- Aufwaermen auf dem Rad ---');
+{
+  const ohne = K.einheit(1, 'A'), mit = K.einheit(1, 'A', { rad: true });
+  ok('ohne Rad bleibt der Plan, wie er war', ohne.bloecke[0].warm && ohne.bloecke[0].u[0] === 'halo' && !ohne.bloecke.some(b => b.art === 'rad'));
+  eq('mit Rad steht es vor dem Halo', mit.bloecke[0].art, 'rad');
+  eq('danach kommt das Halo', mit.bloecke[1].u[0], 'halo');
+  eq('Rest des Plans gleich', mit.bloecke.length, ohne.bloecke.length + 1);
+  eq('sechs Minuten', mit.bloecke[0].minuten, 6);
+  eq('Testtag: acht Minuten', K.einheit(4, 'C', { rad: true }).bloecke[0].minuten, 8);
+  ok('Teile ergeben genau die Minuten', [mit, K.einheit(4, 'C', { rad: true })].every(e =>
+    e.bloecke[0].teile.reduce((s, x) => s + x.sek, 0) === e.bloecke[0].minuten * 60));
+  gleichJson('drei Antritte, jeder 20 s', mit.bloecke[0].teile.filter(x => x.phase === 'antritt').map(x => x.sek), [20, 20, 20]);
+  eq('es beginnt locker', mit.bloecke[0].teile[0].phase, 'locker');
+  ok('Rad zaehlt nicht als Kugelbaustein', K.kugelBausteine(mit).map(x => x.schluessel).join() === K.kugelBausteine(ohne).map(x => x.schluessel).join());
+  eq('Label nennt das Rad nicht', K.label(mit), K.label(ohne));
+  eq('Dauer waechst um die Radzeit (aufgerundet auf fuenf)', K.minuten(mit) >= K.minuten(ohne) + 5, true);
+  const schritte = K.ablauf(mit).filter(a => a.art === 'rad');
+  eq('Ablauf: ein Schritt je Teil', schritte.length, mit.bloecke[0].teile.length);
+  ok('Ablauf: Sekunden stimmen und es gibt keine Pause dazwischen',
+    schritte.every((a, i) => a.sekunden === mit.bloecke[0].teile[i].sek && a.nr === i + 1) && K.ablauf(mit).slice(0, schritte.length).every(a => a.art === 'rad'));
+  eq('naechste() reicht die Wahl durch', K.naechste([], { rad: true }).bloecke[0].art, 'rad');
+  eq('Rad ist in jeder Woche und an jedem Tag moeglich',
+    [1, 4, 5, 8, 9, 12].every(w => K.TAGE.every(t => K.einheit(w, t, { rad: true }).bloecke[0].art === 'rad')), true);
+  ok('Uebung Rad ist gepflegt', K.UEBUNGEN.rad && K.UEBUNGEN.rad.name && K.UEBUNGEN.rad.cue && K.UEBUNGEN.rad.erklaerung);
+  ok('Zustand haengt nicht vom Rad ab', K.zustand(logs(5)).woche === 2);
+}
+
+print('\n--- Rad vorschlagen ---');
+{
+  const jetzt = new Date('2026-11-01T18:00:00');
+  const fahrt = (start, min) => ({ zeit: start, minutes: min });
+  eq('kein Zwift Ride: nichts', K.radVorschlag({ zwiftride: false, jetzt }).an, false);
+  eq('kein Zwift Ride: Grund kein', K.radVorschlag({ zwiftride: false, jetzt }).grund, 'kein');
+  eq('Zwift Ride, keine Fahrt: an', K.radVorschlag({ zwiftride: true, jetzt }).an, true);
+  eq('ohne Argumente: aus', K.radVorschlag().an, false);
+  const schon = K.radVorschlag({ zwiftride: true, jetzt, fahrten: [fahrt('2026-11-01T16:30:00', 45)] });
+  eq('Fahrt vor 45 Min. beendet: schon warm', schon.an, false);
+  eq('Grund schon', schon.grund, 'schon');
+  eq('Minuten seit Ende der Fahrt', schon.vorMin, 45);
+  eq('Fahrt vor Stunden: wieder an', K.radVorschlag({ zwiftride: true, jetzt, fahrten: [fahrt('2026-11-01T12:00:00', 45)] }).an, true);
+  eq('knapp unter drei Stunden zaehlt noch', K.radVorschlag({ zwiftride: true, jetzt, fahrten: [fahrt('2026-11-01T14:20:00', 50)] }).an, false);
+  eq('Aufwaermfahrt (6 Min.) zaehlt nicht', K.radVorschlag({ zwiftride: true, jetzt, fahrten: [fahrt('2026-11-01T17:50:00', 6)] }).an, true);
+  eq('Fahrt ohne Uhrzeit zaehlt nicht', K.radVorschlag({ zwiftride: true, jetzt, fahrten: [{ minutes: 60 }] }).an, true);
+  eq('Fahrt in der Zukunft zaehlt nicht', K.radVorschlag({ zwiftride: true, jetzt, fahrten: [fahrt('2026-11-02T10:00:00', 60)] }).an, true);
+  eq('Unsinn in der Liste bricht nichts', K.radVorschlag({ zwiftride: true, jetzt, fahrten: [null, {}, { zeit: 'x', minutes: 60 }] }).an, true);
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

@@ -2016,6 +2016,7 @@ $('up-abbruch').onclick = () => {
 
 let kuEinheit = null, kuAblauf = [], kuIndex = 0, kuRest = 0, kuTimer = null, kuPausiert = false;
 let kuGesamt = 0, kuSchritt = 0, kuKugeln = {}, kuGeschafft = true;
+let kuRadWahl = null;   // null: der Vorschlag gilt; sonst die Wahl am Schalter
 
 const kuZeit = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 const kuKg = kg => `${kgFmt(kg)} kg`;
@@ -2028,11 +2029,47 @@ function renderKursKnopf() {
   renderMoshKnopf();
 }
 
+/* ---------- Aufwaermen auf dem Rad ----------
+   Der Ort entscheidet, ob es einen Vorschlag gibt (Zwift Ride da), die Fahrten
+   aus intervals.icu, ob er sich lohnt (schon gefahren = schon warm). Der
+   Schalter in der Kurs-Ansicht hat immer das letzte Wort — so laesst sich das
+   Rad auch ausprobieren, wenn die Regel gerade keins vorschlaegt.        */
+
+const hatZwift = o => !!o && o.geraete.includes('zwiftride');
+const gewaehlterOrt = () => G.gyms(config).find(o => o.id === gymWahl()) || null;
+
+/** Den Schalter zeigen, wenn am gewaehlten Ort ein Rad steht; ohne Auswahl, wenn irgendein Ort eins hat. */
+const radSchalterSichtbar = () => (gymWahl() ? hatZwift(gewaehlterOrt()) : G.gyms(config).some(hatZwift));
+
+const kuRadVorschlag = () => KU.radVorschlag({ zwiftride: hatZwift(gewaehlterOrt()), fahrten: fahrtenListe(), jetzt: new Date() });
+const kuRadAn = () => (kuRadWahl === null ? kuRadVorschlag().an : kuRadWahl);
+
+/** Den Plan der naechsten Einheit neu aufbauen, mit oder ohne Rad. */
+function kuPlanNeu() { kuEinheit = KU.naechste(alleLogs, { rad: kuRadAn() }); }
+
+function renderKuRad() {
+  const box = $('ku-rad');
+  if (!box) return;
+  if (!kuEinheit || !radSchalterSichtbar()) { box.innerHTML = ''; return; }
+  const v = kuRadVorschlag();
+  const min = kuEinheit.test ? KU.RAD_MINUTEN_TEST : KU.RAD_MINUTEN;
+  box.innerHTML = `<label class="kv check"><input type="checkbox" id="ku-rad-an" ${kuRadAn() ? 'checked' : ''}>
+      <span class="v">${t('ku.rad.schalter', { min })}</span></label>
+    <p class="fine">${t(`ku.rad.grund.${v.grund}`, { min: v.vorMin })}</p>`;
+  $('ku-rad-an').onchange = ev => {
+    kuRadWahl = ev.target.checked;
+    kuPlanNeu();
+    kuVorbelegen();
+    renderKurs();
+  };
+}
+
 function starteKurs() {
   kuStopp();
   const z = KU.zustand(alleLogs);
   if (z.fertig) { banner(t('ku.fertigKurs'), 'ok', 5000); return; }
-  kuEinheit = KU.naechste(alleLogs);
+  kuRadWahl = null;
+  kuPlanNeu();
   kuVorbelegen();
   $('ku-plan').hidden = false;
   $('ku-lauf').hidden = true;
@@ -2043,7 +2080,7 @@ function starteKurs() {
   S.readAllLogs().then(logs => {
     if (logs.length === alleLogs.length || !$('ku-lauf').hidden || !$('ku-ende').hidden) return;
     alleLogs = logs; S.cacheLogs(logs);
-    kuEinheit = KU.naechste(alleLogs);
+    kuPlanNeu();
     kuVorbelegen();
     if (kuEinheit) renderKurs();
   }).catch(() => {});
@@ -2154,6 +2191,7 @@ function kuZieleAktualisieren() {
 
 /** Das Ziel eines Bausteins in einer Zeile, fuer die Uebersicht. */
 function kuZiel(b) {
+  if (b.art === 'rad') return t('ku.zielRad', { min: b.minuten });
   let z;
   if (b.art === 'takt') z = t('ku.zielTakt', { runden: b.runden, n: b.wdh, s: b.takt });
   else if (b.art === 'zeit') z = t(b.seiten ? 'ku.zielZeitSeite' : 'ku.zielZeit', { saetze: b.saetze, s: b.sek });
@@ -2188,6 +2226,7 @@ function renderKurs() {
   const v = KU.lastVorschlag(alleLogs);
   if (v) hinweise.push(t(`ku.vorschlag.${v}`));
   $('ku-hinweise').innerHTML = hinweise.map(x => `<p class="lead">${escHtml(x)}</p>`).join('');
+  renderKuRad();
 
   $('ku-uebersicht').innerHTML = `<p class="lead">${escHtml(t('ku.uebersicht', {
     min: KU.minuten(e), woche: z.woche, gesamt: KU.WOCHEN, fertig: KU.wocheFortschritt(alleLogs), pro: KU.PRO_WOCHE
@@ -2226,17 +2265,19 @@ function kuStartLauf() {
 function kuZeigeSchritt() {
   const a = kuAblauf[kuIndex];
   if (!a) return kuEnde();
-  const pause = a.art === 'pause', takt = a.art === 'takt', zeit = a.art === 'zeit';
+  const pause = a.art === 'pause', takt = a.art === 'takt', zeit = a.art === 'zeit', rad = a.art === 'rad';
   const gesamt = kuEinheit.bloecke.length;
   kuSchritt = 0;
   $('ku-buehne').classList.toggle('pause', pause);
-  $('ku-fertig').hidden = takt || pause || zeit;
-  $('ku-runde').textContent = `${t('ku.baustein', { n: a.block + 1, gesamt })} · ${t(takt ? 'ku.runde' : 'ku.satz', { n: a.nr, gesamt: a.von })}`;
-  $('ku-was').textContent = pause ? t('ku.pauseJetzt') : KU.blockName(a.b);
-  $('ku-cue').textContent = pause ? '' : `${kuJetzt(a)}. ${KU.UEBUNGEN[a.b.u[0]].cue}`;
+  $('ku-fertig').hidden = takt || pause || zeit || rad;
+  const teil = rad ? t('ku.rad.teil', { n: a.nr, gesamt: a.von }) : t(takt ? 'ku.runde' : 'ku.satz', { n: a.nr, gesamt: a.von });
+  $('ku-runde').textContent = `${t('ku.baustein', { n: a.block + 1, gesamt })} · ${teil}`;
+  $('ku-was').textContent = pause ? t('ku.pauseJetzt') : rad ? t(`ku.rad.${a.phase}`) : KU.blockName(a.b);
+  $('ku-cue').textContent = pause ? '' : rad ? t(`ku.rad.cue.${a.phase}`) : `${kuJetzt(a)}. ${KU.UEBUNGEN[a.b.u[0]].cue}`;
   const naechster = kuAblauf.slice(kuIndex + 1).find(x => x.art !== 'pause');
-  $('ku-danach').textContent = pause && naechster ? t('up.danach', { name: KU.blockName(naechster.b) }) : '';
-  if (takt || pause || zeit) {
+  // Nach dem Rad sagt die Buehne an, was kommt; zwischen den Radteilen waere es Laerm.
+  $('ku-danach').textContent = naechster && (pause || (rad && naechster.art !== 'rad')) ? t('up.danach', { name: KU.blockName(naechster.b) }) : '';
+  if (takt || pause || zeit || rad) {
     kuRest = a.sekunden;
     $('ku-uhr').textContent = kuRest;
   } else {
@@ -2258,7 +2299,7 @@ function kuTicke() {
     if (a.art === 'satz') { $('ku-uhr').textContent = kuZeit(kuSchritt); return; }
     kuRest--;
     $('ku-uhr').textContent = Math.max(0, kuRest);
-    if (kuRest === 3 && a.art === 'pause') upSignal(false);
+    if (kuRest === 3 && (a.art === 'pause' || a.art === 'rad')) upSignal(false);
     if (kuRest <= 0) { kuIndex++; upSignal(true); kuZeigeSchritt(); }
   }, 1000);
 }
@@ -2282,6 +2323,7 @@ async function kuSpeichern(bewertung) {
   if (!e || !KU.bewertungOk(bewertung)) return;
   $('ku-ende').hidden = true;
   $('ku-plan').hidden = false;
+  kuRadWahl = null;
   const log = {
     date: P.ymd(new Date()),
     type: 'kurs',
