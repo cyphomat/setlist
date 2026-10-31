@@ -83,7 +83,11 @@ export const UEBUNGEN = {
   highpull: { name: 'High Pull', cue: 'Elbow leads, bell rises to the chin.',
     standard: 'Die Kugel kommt mit hohem Ellbogen bis zur Brust, die Hüfte macht die Arbeit. Oben stehen Hüfte und Knie ganz gestreckt.',
     erklaerung: 'Vorstufe zum Snatch: die Hüftstreckung des Swings, dazu ein Zug nach oben. Wer das sauber kann, versteht, wie der Snatch später funktioniert.',
-    leichter: ['Leichtere Kugel', 'Weniger Wiederholungen'], schwerer: ['Schwerere Kugel', 'Dichter getaktet'] }
+    leichter: ['Leichtere Kugel', 'Weniger Wiederholungen'], schwerer: ['Schwerere Kugel', 'Dichter getaktet'] },
+  rad: { name: 'Zwift Ride', cue: 'Spin easy, then a few short spin-ups.',
+    standard: 'Locker treten, so dass du dich unterhalten könntest. Bei den Antritten kurz zügig, etwa 7 von 10, kein Sprint, danach sofort wieder locker. Aufstehen musst du nicht.',
+    erklaerung: 'Wärmt Kreislauf und Beine vor, bevor die Kugel dran ist. Kurz und locker genug, dass es dir nichts wegnimmt. Eigene Planung nach gängiger Praxis, nicht aus einer Studie; die Antritte sind keine Intervalle.',
+    leichter: ['Nur den lockeren Teil treten', 'Antritte weglassen'], schwerer: ['Antritte zügiger', 'Eine Minute länger locker'] }
 };
 
 const U = Object.keys(UEBUNGEN);
@@ -100,6 +104,52 @@ const satz = (u, saetze, wdh, extra = {}) => ({ art: 'saetze', u: [].concat(u), 
 const zeit = (u, saetze, sek, extra = {}) => ({ art: 'zeit', u: [].concat(u), saetze, sek, pause: 45, ...extra });
 const takt = (u, runden, wdh, taktSek = 30, extra = {}) => ({ art: 'takt', u: [].concat(u), runden, wdh, takt: taktSek, ...extra });
 const warm = () => satz('halo', 1, 5, { seiten: true, warm: true, pause: 0, last: 'leicht' });
+
+/* Aufwaermen auf dem Rad (Zwift Ride). Kein Teil des Plans, sondern eine
+   Zutat: `einheit(woche, tag, { rad: true })` stellt es vor das Halo. Der Plan
+   selbst und damit Woche, Tag und Log bleiben, wie sie sind.
+
+   Sechs Minuten, an Testtagen acht: erst locker, dann drei (vier) Antritte
+   von 20 Sekunden mit 40 Sekunden locker dazwischen. Eigene Planung nach
+   gaengiger Praxis, nicht aus einer Studie; die Antritte sollen nicht
+   ermueden, sondern wecken.                                               */
+const RAD_ANTRITT = 20, RAD_ERHOLUNG = 40;
+
+function radBlock(minuten) {
+  const antritte = minuten >= 8 ? 4 : 3;
+  const teile = [{ phase: 'locker', sek: minuten * 60 - antritte * (RAD_ANTRITT + RAD_ERHOLUNG) }];
+  for (let i = 0; i < antritte; i++) {
+    teile.push({ phase: 'antritt', sek: RAD_ANTRITT }, { phase: 'locker', sek: RAD_ERHOLUNG });
+  }
+  return { art: 'rad', u: ['rad'], warm: true, minuten, teile };
+}
+
+/** Dauer in Minuten; an Testtagen (Check in Woche 4, 8, 12) etwas laenger. */
+export const RAD_MINUTEN = 6;
+export const RAD_MINUTEN_TEST = 8;
+
+/** Eine Fahrt von mindestens dieser Laenge, die hoechstens so lange her ist, waermt schon. */
+export const RAD_MIN_FAHRT = 15;
+export const RAD_SCHON_STUNDEN = 3;
+
+/**
+ * Soll das Rad vor die Einheit? `zwiftride`: der gewaehlte Ort hat eins.
+ * `fahrten`: die entdoppelten Fahrten aus intervals.icu (mit `zeit`, `minutes`).
+ * Ergebnis { an, grund } mit grund 'kein' (kein Rad am Ort), 'schon' (vor
+ * `vorMin` Minuten gefahren) oder 'ok'. Ein Vorschlag, den man umstellen kann.
+ */
+export function radVorschlag({ zwiftride = false, fahrten = [], jetzt = new Date() } = {}) {
+  if (!zwiftride) return { an: false, grund: 'kein' };
+  const j = new Date(jetzt).getTime();
+  for (const f of fahrten || []) {
+    if (!f || !f.zeit) continue;
+    const start = new Date(f.zeit).getTime(), min = Number(f.minutes) || 0;
+    if (isNaN(start) || min < RAD_MIN_FAHRT || start > j) continue;
+    const vor = j - (start + min * 60000);
+    if (vor < RAD_SCHON_STUNDEN * 3600000) return { an: false, grund: 'schon', vorMin: Math.max(0, Math.round(vor / 60000)) };
+  }
+  return { an: true, grund: 'ok' };
+}
 
 /* Wochenplaene. Drei Einheiten je Woche, `wi` ist die Woche in der Phase
    (0..3). Die vierte Woche ist jeweils Entlastung.                       */
@@ -196,27 +246,32 @@ export function zustand(logs = []) {
   };
 }
 
-/** Der Plan einer Einheit. `woche` 1..12, `tag` A/B/C. */
-export function einheit(woche, tag) {
+/**
+ * Der Plan einer Einheit. `woche` 1..12, `tag` A/B/C. Mit `{ rad: true }` steht
+ * das Aufwaermen auf dem Rad davor (an Testtagen etwas laenger).
+ */
+export function einheit(woche, tag, { rad = false } = {}) {
   const p = phase(woche);
   if (!p || !TAGE.includes(tag)) return null;
   const wi = woche - p.von;
   const bloecke = PLAN[p.id][tag](wi);
   const testId = (bloecke.find(b => b.test) || {}).test || null;
+  if (rad) bloecke.unshift(radBlock(testId ? RAD_MINUTEN_TEST : RAD_MINUTEN));
   return { kurs: KURS_ID, woche, tag, phase: p.id, entlastung: woche === p.bis && !testId, test: !!testId, testId, bloecke };
 }
 
 /** Der Plan der naechsten Einheit — oder null, wenn der Kurs durch ist. */
-export function naechste(logs = []) {
+export function naechste(logs = [], opt = {}) {
   const z = zustand(logs);
-  return z.fertig ? null : einheit(z.woche, z.tag);
+  return z.fertig ? null : einheit(z.woche, z.tag, opt);
 }
 
 /** Dauer in Minuten, aufgerundet auf volle fuenf. Schaetzung, kein Versprechen. */
 export function minuten(e) {
   let s = 0;
   for (const b of e.bloecke) {
-    if (b.art === 'takt') s += b.runden * b.takt;
+    if (b.art === 'rad') s += b.minuten * 60;
+    else if (b.art === 'takt') s += b.runden * b.takt;
     else if (b.art === 'zeit') s += b.saetze * (b.sek * (b.seiten ? 2 : 1) + b.pause);
     else s += b.saetze * ((b.seiten ? 2 : 1) * b.wdh * 3 + b.pause);
   }
@@ -227,12 +282,18 @@ export function minuten(e) {
  * Der Ablauf als flache Liste. Die Oberflaeche geht ihn nur ab:
  *   satz  — wartet auf "fertig"
  *   takt  — laeuft nach der Uhr weiter
+ *   rad   — ein Teil des Rad-Aufwaermens, laeuft nach der Uhr
  *   pause — zaehlt herunter, ueberspringbar
  * Die letzte Pause eines Bausteins entfaellt; Bausteine trennt nichts.
  */
 export function ablauf(e) {
   const schritte = [];
   e.bloecke.forEach((b, bi) => {
+    if (b.art === 'rad') {
+      // Das Rad laeuft nach der Uhr, Teil fuer Teil, ohne Pausen dazwischen.
+      b.teile.forEach((x, i) => schritte.push({ art: 'rad', block: bi, nr: i + 1, von: b.teile.length, sekunden: x.sek, phase: x.phase, b }));
+      return;
+    }
     const n = b.art === 'takt' ? b.runden : b.saetze;
     for (let i = 1; i <= n; i++) {
       if (b.art === 'zeit') {

@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-2781%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-2815%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -211,7 +211,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | **Power targets** | From eFTP instead of percentages. |
 | **Unplugged** | Fifteen minutes, bodyweight only, quiet if needed. Fixed intervals with a guided clock instead of rep counts — for the morning when someone is still asleep. Quiet mode drops everything that jumps and makes no sound, only vibration. |
 | **Kettlebell Mosh Pit** | The follow-up after the course: swing, goblet squat and one-arm press, three sets each. More reps first (10 · 12 · 15 · 17 · 20), then a bell 4 kg heavier and back to the bottom — like the 5x5, just with a bell. Miss twice: one rung back. The next target follows from the logs. |
-| **Kettlebell course** | Twelve weeks, three sessions a week: hips, swing and get-up first, then one-armed and by the clock, finally density and a test in week 12. Every fourth week is a deload. The session guides you: you tick off sets, tempo and rests run on their own. Before a session you enter which bell you work with (in kg, the last one is prefilled); a total clock, stopwatch and countdowns run along. Weeks 4 and 8 hold checks, week 12 the final test. Afterwards you say how the bell felt — twice too light or too tough, and the app suggests the other bell. History and checks live in the tour under “Bell”. Where you stand follows from the logs. |
+| **Kettlebell course** | Twelve weeks, three sessions a week: hips, swing and get-up first, then one-armed and by the clock, finally density and a test in week 12. Every fourth week is a deload. The session guides you: you tick off sets, tempo and rests run on their own. Before a session you enter which bell you work with (in kg, the last one is prefilled); a total clock, stopwatch and countdowns run along. Weeks 4 and 8 hold checks, week 12 the final test. Afterwards you say how the bell felt — twice too light or too tough, and the app suggests the other bell. History and checks live in the tour under “Bell”. Where you stand follows from the logs. If the selected place has a **Zwift Ride** and you have not ridden in the last few hours, the session suggests six minutes on the bike to warm up (easy, three short spin-ups); a switch lets you turn it on or off any time. |
 | **Jam** | Five formats, 31 movements, loads from your current state. Never two barbell parts. Optionally **together**, taking turns (I go, you go) on one device, no check-in: the display says whose turn it is, “Switch” in the clock bar swaps you, and the log keeps the tally. |
 | **Scaling** | Every movement names alternatives. “Can't do this” removes it for good. |
 
@@ -505,7 +505,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-2781 tests in 32 files. No build, no dependencies.
+2815 tests in 32 files. No build, no dependencies.
 
 ### Browser probes (optional)
 

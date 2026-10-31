@@ -222,6 +222,9 @@ const lang = C.interferenz([fahrt(3, 120, 110)], jetzt);
 eq('lange Fahrt wird erkannt', lang.stufe, 'stark');
 
 eq('lockere Fahrt vor 6 h: nichts', C.interferenz([fahrt(6, 60, 40)], jetzt), null);
+eq('kurze lockere Fahrt (Rad-Aufwaermen) loest nichts aus', C.interferenz([fahrt(1, 6, 4)], jetzt), null);
+ok('kurze, harte Fahrt zaehlt weiter', C.interferenz([fahrt(1, 10, 60)], jetzt) !== null);
+ok('Aufwaermfahrt verdeckt keine aeltere harte Fahrt', (() => { const r = C.interferenz([fahrt(1, 6, 4), fahrt(3, 50, 90)], jetzt); return r && r.stufe === 'stark'; })());
 eq('lockere Fahrt vor 1 h: nur Hinweis', C.interferenz([fahrt(1, 60, 40)], jetzt).stufe, 'gering');
 
 print('\n--- Es zaehlt die juengste Fahrt ---');
