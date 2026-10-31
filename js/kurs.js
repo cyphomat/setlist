@@ -90,6 +90,61 @@ export const UEBUNGEN = {
     leichter: ['Nur den lockeren Teil treten', 'Antritte weglassen'], schwerer: ['Antritte zügiger', 'Eine Minute länger locker'] }
 };
 
+/* Fuer die laufende Einheit: wie die Bewegung geht und woran man sie erkennt,
+   wenn sie schief laeuft. Eigene Beschreibung nach gaengiger Anleitung, kurz
+   genug, um sie zwischen zwei Saetzen zu lesen. `strecke` heisst: man geht
+   (Platz suchen), `richtung`: die "Seiten" sind Kreisrichtungen.           */
+const HILFE = {
+  hinge: {
+    schritte: ['Füße hüftbreit, die Kugel steht zwischen den Füßen.', 'Hüfte nach hinten schieben, Knie nur leicht beugen, Rücken lang.', 'Henkel mit beiden Händen greifen, Schultern nach hinten unten.', 'Aus der Hüfte aufrichten, oben das Gesäß fest anspannen.'],
+    fehler: ['Rücken rund', 'Knie zu tief: wird zur Kniebeuge', 'Oben ins Hohlkreuz überstrecken']
+  },
+  swing2: {
+    schritte: ['Kugel etwa einen Fuß vor dir, Füße etwas breiter als die Hüfte.', 'Kugel kippen und mit langen Armen hoch zwischen die Beine schwingen.', 'Hüfte kräftig nach vorn strecken: die Kugel schwebt bis Brusthöhe.', 'Kugel fallen lassen, Hüfte zurück, nächste Wiederholung.'],
+    fehler: ['Die Kugel mit den Armen hochziehen', 'Mit dem Rücken statt der Hüfte schwingen', 'Oben nach hinten lehnen']
+  },
+  swing1: {
+    schritte: ['Wie beidarmig, nur eine Hand am Henkel.', 'Die freie Hand bleibt locker neben dem Körper.', 'Die Schulter bleibt tief, der Rumpf dreht sich nicht mit.', 'Seite wechseln nur am Hochpunkt oder in der Pause.'],
+    fehler: ['Schulter wird mit hochgezogen', 'Der Rumpf dreht zur Kugel']
+  },
+  goblet: {
+    schritte: ['Kugel an der Brust halten, beide Hände am Henkel, Ellbogen nah am Körper.', 'Füße etwas breiter als die Schultern, Zehen leicht nach außen.', 'Gerade nach unten sinken, die Ellbogen gehen zwischen die Knie.', 'Aus den Fersen hochdrücken, oben Hüfte und Knie strecken.'],
+    fehler: ['Fersen heben ab', 'Knie fallen nach innen', 'Der Oberkörper kippt nach vorn']
+  },
+  getup: {
+    schritte: ['Auf dem Rücken: Kugel im gestreckten Arm über der Schulter, das Bein auf dieser Seite angewinkelt.', 'Auf den Ellbogen stützen, dann auf die Hand, Brust aufrichten.', 'Hüfte anheben, das gestreckte Bein unter dich ziehen, in den Kniestand.', 'Aufstehen. Zurück in umgekehrter Reihenfolge.'],
+    fehler: ['Der Blick geht von der Kugel weg', 'Der Arm knickt ein', 'Zu schnell: jede Position kurz halten']
+  },
+  halo: {
+    schritte: ['Kugel mit beiden Händen an den Henkelseiten vor der Brust halten, der Körper der Kugel zeigt nach oben.', 'Eng um den Kopf kreisen: hinter dem Nacken vorbei, am anderen Ohr wieder nach vorn.', 'Rippen unten, Kopf ruhig.', 'Nach der Hälfte die Richtung wechseln.'],
+    fehler: ['Der Kreis wird weit, der Rücken geht ins Hohlkreuz', 'Der Kopf kippt nach vorn']
+  },
+  carry: {
+    schritte: ['Kugel neben dir aufnehmen, Rücken gerade wie beim Hinge.', 'Aufrecht stehen, Schulter nach hinten unten, Rippen unten.', 'In normalem Tempo gehen, der Rumpf kippt nicht zur Kugel.', 'Am Ende der Strecke wenden. Die Hand wechselst du in der Pause.'],
+    fehler: ['Zur Kugel hin lehnen', 'Die Schulter wird hochgezogen', 'Mit der freien Hand ausbalancieren']
+  },
+  rackcarry: {
+    schritte: ['Kugel in die Frontposition: Ellbogen am Körper, Faust vor der Schulter.', 'Die Kugel liegt am Unterarm, das Handgelenk bleibt gerade.', 'Aufrecht gehen, Rippen unten, Gesäß fest.', 'Am Ende der Strecke wenden. Die Hand wechselst du in der Pause.'],
+    fehler: ['Hohlkreuz', 'Der Ellbogen löst sich vom Körper']
+  },
+  clean: {
+    schritte: ['Kugel zwischen die Füße, eine Hand am Henkel, wie zum einarmigen Swing anschwingen.', 'Die Hüfte streckt: die Kugel steigt eng am Körper entlang.', 'Sie klappt um den Unterarm in die Frontposition, ohne aufs Handgelenk zu schlagen.', 'Ablassen: die Kugel schwingt zurück, die Hüfte geht nach hinten.'],
+    fehler: ['Die Kugel schlägt aufs Handgelenk', 'Mit dem Arm hochgezogen statt mit der Hüfte', 'Der Ellbogen steht weit ab']
+  },
+  press: {
+    schritte: ['Aus der Frontposition: Gesäß und Bauch fest, Faust vor der Schulter.', 'Die Kugel senkrecht nach oben drücken, bis der Arm am Ohr gestreckt ist.', 'Oben bleibt das Handgelenk gerade, der Rumpf steht stabil.', 'Kontrolliert zurück in die Frontposition.'],
+    fehler: ['Hohlkreuz beim Drücken', 'Die Kugel wandert nach vorn']
+  },
+  highpull: {
+    schritte: ['Wie beim einarmigen Swing, der Ellbogen führt.', 'Die Hüfte streckt kräftig, der Ellbogen zieht hoch und nach außen.', 'Die Kugel steigt bis zur Brust, das Handgelenk bleibt gerade.', 'Kugel fallen lassen, Hüfte zurück.'],
+    fehler: ['Mit den Armen statt der Hüfte ziehen', 'Die Kugel ist zu weit vom Körper', 'Rücken rund']
+  }
+};
+for (const [id, h] of Object.entries(HILFE)) Object.assign(UEBUNGEN[id], h);
+UEBUNGEN.carry.strecke = true;
+UEBUNGEN.rackcarry.strecke = true;
+UEBUNGEN.halo.richtung = true;
+
 const U = Object.keys(UEBUNGEN);
 
 /**
@@ -266,52 +321,89 @@ export function naechste(logs = [], opt = {}) {
   return z.fertig ? null : einheit(z.woche, z.tag, opt);
 }
 
-/** Dauer in Minuten, aufgerundet auf volle fuenf. Schaetzung, kein Versprechen. */
-export function minuten(e) {
-  let s = 0;
-  for (const b of e.bloecke) {
-    if (b.art === 'rad') s += b.minuten * 60;
-    else if (b.art === 'takt') s += b.runden * b.takt;
-    else if (b.art === 'zeit') s += b.saetze * (b.sek * (b.seiten ? 2 : 1) + b.pause);
-    else s += b.saetze * ((b.seiten ? 2 : 1) * b.wdh * 3 + b.pause);
-  }
-  return Math.max(5, Math.ceil(s / 60 / 5) * 5);
+/* Umbauten: Zeit, um vom Rad zu steigen, die Kugel mit Scheiben neu zu laden
+   oder zur Gehstrecke zu kommen. Dazu die kurze Pause beim Handwechsel.
+   Eigene Schaetzung, gedacht fuer eine aufschraubbare Kugel.              */
+export const UMBAU_SEKUNDEN = { rad: 90, kugel: 90, strecke: 30 };
+export const WECHSEL_SEKUNDEN = 10;
+
+const nutztKugel = b => b.art !== 'rad' && !b.ohneLast;
+const gehtStrecke = b => b.u.some(id => (UEBUNGEN[id] || {}).strecke);
+
+/**
+ * Welche Umbauten stehen vor welchem Baustein? Eine Liste je Baustein mit
+ * 'rad' (vom Rad runter), 'kugel' (anderes Gewicht) und 'strecke' (zur
+ * Gehstrecke). Die Kugel wechselt, wenn beide Gewichte bekannt sind und
+ * abweichen, sonst wenn sich "leicht"/"schwer" aendert. Das Aufwaermen hat
+ * kein eigenes Gewicht und zaehlt nur ueber "leicht".
+ */
+export function umbauten(e, kugeln = {}) {
+  let stand = null;
+  return e.bloecke.map((b, bi) => {
+    const vor = e.bloecke[bi - 1];
+    const arten = [];
+    if (vor && vor.art === 'rad' && b.art !== 'rad') arten.push('rad');
+    if (nutztKugel(b)) {
+      const kg = b.warm ? 0 : Number(kugeln[kugelSchluessel(b)]) || 0;
+      const last = b.last || null;
+      if (stand && (kg && stand.kg ? kg !== stand.kg : last !== stand.last)) arten.push('kugel');
+      stand = { kg: kg || (stand && stand.last === last ? stand.kg : 0), last };
+    }
+    if (vor && gehtStrecke(b) && !gehtStrecke(vor)) arten.push('strecke');
+    return arten;
+  });
 }
 
 /**
  * Der Ablauf als flache Liste. Die Oberflaeche geht ihn nur ab:
- *   satz  — wartet auf "fertig"
- *   takt  — laeuft nach der Uhr weiter
- *   rad   — ein Teil des Rad-Aufwaermens, laeuft nach der Uhr
- *   pause — zaehlt herunter, ueberspringbar
- * Die letzte Pause eines Bausteins entfaellt; Bausteine trennt nichts.
+ *   satz   — wartet auf "fertig"; bei `seiten` je Seite ein Schritt (seite 1 = links)
+ *   takt   — laeuft nach der Uhr weiter
+ *   zeit   — Tragen: Countdown, je Seite ein Schritt
+ *   rad    — ein Teil des Rad-Aufwaermens, laeuft nach der Uhr
+ *   pause  — zaehlt herunter, ueberspringbar; `grund` 'wechsel' (Hand wechseln) oder 'satz'
+ *   umbau  — Rad verlassen, Kugel laden, zur Strecke gehen; `arten`, `b` ist der naechste Baustein
+ * Die letzte Pause eines Bausteins entfaellt; vor einem Baustein steht, wenn
+ * noetig, ein Umbau. `kugeln` sind die eingetragenen Gewichte je Baustein.
  */
-export function ablauf(e) {
+export function ablauf(e, { kugeln = {} } = {}) {
   const schritte = [];
+  const vorBlock = umbauten(e, kugeln);
   e.bloecke.forEach((b, bi) => {
+    if (vorBlock[bi].length) {
+      const sekunden = Math.max(...vorBlock[bi].map(x => UMBAU_SEKUNDEN[x]));
+      schritte.push({ art: 'umbau', sekunden, arten: vorBlock[bi], block: bi, nr: 0, von: 0, b });
+    }
     if (b.art === 'rad') {
       // Das Rad laeuft nach der Uhr, Teil fuer Teil, ohne Pausen dazwischen.
       b.teile.forEach((x, i) => schritte.push({ art: 'rad', block: bi, nr: i + 1, von: b.teile.length, sekunden: x.sek, phase: x.phase, b }));
       return;
     }
     const n = b.art === 'takt' ? b.runden : b.saetze;
+    const seiten = b.seiten && b.art !== 'takt' ? 2 : 1;
+    // Bei Kreisrichtungen (Halo) gibt es nichts umzugreifen.
+    const wechsel = seiten === 2 && !(UEBUNGEN[b.u[0]] || {}).richtung ? WECHSEL_SEKUNDEN : 0;
     for (let i = 1; i <= n; i++) {
-      if (b.art === 'zeit') {
-        // Tragen: je Seite ein Schritt mit Countdown.
-        for (let seite = 1; seite <= (b.seiten ? 2 : 1); seite++) {
-          schritte.push({ art: 'zeit', block: bi, nr: i, von: n, sekunden: b.sek, seite: b.seiten ? seite : 0, b });
-        }
-        if (b.pause > 0 && i < n) schritte.push({ art: 'pause', sekunden: b.pause, block: bi, nr: i, von: n, b });
-        continue;
+      for (let seite = 1; seite <= seiten; seite++) {
+        const s = { art: b.art === 'takt' ? 'takt' : b.art === 'zeit' ? 'zeit' : 'satz', block: bi, nr: i, von: n, b };
+        if (b.art === 'takt') s.sekunden = b.takt;
+        if (b.art === 'zeit') s.sekunden = b.sek;
+        if (seiten === 2) s.seite = seite;
+        else if (b.art === 'takt' && b.seitenwechsel) s.seite = i % 2 === 1 ? 1 : 2;
+        else s.seite = 0;
+        schritte.push(s);
+        if (seite < seiten && wechsel) schritte.push({ art: 'pause', grund: 'wechsel', sekunden: wechsel, block: bi, nr: i, von: n, seite: seite + 1, b });
       }
-      const s = { art: b.art === 'takt' ? 'takt' : 'satz', block: bi, nr: i, von: n, b };
-      if (b.art === 'takt') s.sekunden = b.takt;
-      if (b.art === 'takt' && b.seitenwechsel) s.seite = i % 2 === 1 ? 1 : 2;
-      schritte.push(s);
-      if (b.art !== 'takt' && b.pause > 0 && i < n) schritte.push({ art: 'pause', sekunden: b.pause, block: bi, nr: i, von: n, b });
+      if (b.art !== 'takt' && b.pause > 0 && i < n) schritte.push({ art: 'pause', grund: 'satz', sekunden: b.pause, block: bi, nr: i, von: n, b });
     }
   });
   return schritte;
+}
+
+/** Dauer in Minuten, aufgerundet auf volle fuenf. Schaetzung, kein Versprechen. */
+export function minuten(e, opt = {}) {
+  let s = 0;
+  for (const a of ablauf(e, opt)) s += a.art === 'satz' ? a.b.wdh * 3 : a.sekunden;
+  return Math.max(5, Math.ceil(s / 60 / 5) * 5);
 }
 
 /** Name des Bausteins, bei Komplexen mit Pfeil verbunden. */
