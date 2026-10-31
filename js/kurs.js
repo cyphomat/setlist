@@ -96,6 +96,7 @@ export const UEBUNGEN = {
    (Platz suchen), `richtung`: die "Seiten" sind Kreisrichtungen.           */
 const HILFE = {
   hinge: {
+    bild: 'hinge',
     schritte: ['Füße hüftbreit, die Kugel steht zwischen den Füßen.', 'Hüfte nach hinten schieben, Knie nur leicht beugen, Rücken lang.', 'Henkel mit beiden Händen greifen, Schultern nach hinten unten.', 'Aus der Hüfte aufrichten, oben das Gesäß fest anspannen.'],
     fehler: ['Rücken rund', 'Knie zu tief: wird zur Kniebeuge', 'Oben ins Hohlkreuz überstrecken']
   },
@@ -141,6 +142,16 @@ const HILFE = {
   }
 };
 for (const [id, h] of Object.entries(HILFE)) Object.assign(UEBUNGEN[id], h);
+
+/** Bildstreifen zu Uebungen, in der Reihenfolge des Bogens assets/pixel/figuren.png (gebaut von tools/pixel.mjs aus tools/pixel-figur.mjs). */
+export const FIGUREN = [{ id: 'hinge', n: 2 }];
+
+/** Wo die Bilder einer Uebung im Bogen liegen: erstes Bild, Anzahl, Bilder im ganzen Bogen. */
+export function figur(id) {
+  let start = 0;
+  for (const f of FIGUREN) { if (f.id === id) return { start, n: f.n, gesamt: FIGUREN.reduce((a, x) => a + x.n, 0) }; start += f.n; }
+  return null;
+}
 UEBUNGEN.carry.strecke = true;
 UEBUNGEN.rackcarry.strecke = true;
 UEBUNGEN.halo.richtung = true;

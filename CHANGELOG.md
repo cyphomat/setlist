@@ -10,6 +10,17 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-31.7
+
+### Neu
+- **Hip Hinge im Kurs als Bild:** In der Hilfe zur Übung stehen über den Schritten zwei Pixelbilder, „Start“
+  (aufrecht, die Kugel zwischen den Füßen) und „Unten“ (Hüfte zurück, Rücken lang, Hände am Henkel). Sie
+  haben eine Beschreibung für Screenreader, beide Sprachen und passen sich der Breite an (doppelt, unter
+  360 px einfach). Weitere Übungen, zuerst das Get-up, folgen, wenn der Hinge trägt.
+- **Die Figur entsteht aus Gelenkwinkeln** (`tools/pixel-figur.mjs`), nicht aus Hand gesetzten Pixeln.
+  Den Boden berechnet das Skript aus Fuß, Hand und Kugel; schwebt einer davon, bricht der Bau ab.
+  Der Bogen `assets/pixel/figuren.png` entsteht in `tools/pixel.mjs`.
+
 ## 2026-10-31.6
 
 ### Neu

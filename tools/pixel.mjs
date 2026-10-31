@@ -9,6 +9,7 @@
 //   assets/pixel/aufnaeher.png  je 24×24, Reihenfolge wie M.BILDER
 //   assets/pixel/raenge.png     je 96×48, Reihenfolge wie M.RAENGE
 //   assets/pixel/boss.png, shirts.png, embleme.png, platten.png
+//   assets/pixel/figuren.png    je 76×72, Reihenfolge wie FIGUREN in js/kurs.js (Winkel in tools/pixel-figur.mjs)
 //   assets/pixel/anlaesse.png   je Motiv zwei Bilder 15×15, Reihenfolge wie MOTIVE in js/anlaesse.js
 //   assets/pixel/logo.png       der Schriftzug fuer die Kopfzeile
 //   icons/icon-*.png            das App-Icon, ganzzahlig vergroessert
@@ -31,6 +32,8 @@ import { GITARREN as GITARREN_LISTE } from '../js/gitarren.js';
 import { GITARREN as GITARREN_SPEC, gitarrenBilder } from './pixel-gitarren.mjs';
 import { MOTIVE as ANLASS_MOTIVE, MOTIV_KANTE } from '../js/anlaesse.js';
 import { KANTE as ANLASS_KANTE, PALETTE as ANLASS_FARBEN, motivRaster } from './pixel-anlaesse.mjs';
+import { FIGUREN } from '../js/kurs.js';
+import { HINGE, figurBilder, FIGUR_B, FIGUR_H } from './pixel-figur.mjs';
 import { feld as feuerFeld, schritt as feuerSchritt, PALETTE as FEUER } from '../js/feuer.js';
 
 const WURZEL = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -1561,6 +1564,16 @@ if (GITARREN_SPEC.map(g => g.id).join() !== gitarrenIds.join()) {
   throw new Error(`Gitarren in tools/pixel-gitarren.mjs (${GITARREN_SPEC.map(g => g.id)}) und js/gitarren.js (${gitarrenIds}) passen nicht zusammen`);
 }
 
+/** Uebungsfiguren fuer die Hilfe im Kurs: je Uebung ein paar Bilder, Reihenfolge wie FIGUREN in js/kurs.js. */
+const FIGUR_HALTUNGEN = { hinge: HINGE };
+if (FIGUREN.map(f => `${f.id}:${f.n}`).join() !== Object.entries(FIGUR_HALTUNGEN).map(([id, h]) => `${id}:${h.length}`).join()) {
+  throw new Error('Figuren in tools/pixel-figur.mjs und FIGUREN in js/kurs.js passen nicht zusammen');
+}
+const figurenBogen = () => {
+  const namen = Object.entries(FIGUR_HALTUNGEN).flatMap(([id, h]) => h.map(p => `${id} ${p.name}`));
+  return bogen(eindeutig(Object.values(FIGUR_HALTUNGEN).flatMap(figurBilder), namen), FIGUR_B, FIGUR_H);
+};
+
 /** Die Banner-Motive der Anlaesse: je Motiv zwei Bilder nebeneinander, hintereinander im Bogen. */
 if (ANLASS_KANTE !== MOTIV_KANTE) throw new Error('Kantenlaenge der Anlass-Motive in js/anlaesse.js und tools/pixel-anlaesse.mjs verschieden');
 function anlassBogen() {
@@ -1580,6 +1593,7 @@ const ausgaben = {
   'assets/pixel/aufnaeher.png': bogen(eindeutig(BILDER.map(aufnaeher), BILDER), 24, 24),
   'assets/pixel/gitarren.png': bogen(eindeutig(gitarrenBilder(), gitarrenIds), 24, 56),
   'assets/pixel/boss.png': endgegner(),
+  'assets/pixel/figuren.png': figurenBogen(),
   'assets/pixel/logo.png': schriftzug(),
   'icons/icon-180.png': iconIn(180),
   'icons/icon-192.png': iconIn(192),
@@ -1620,6 +1634,7 @@ for (const [name, b] of Object.entries(ausgaben)) {
 console.log(`assets/pixel/aufnaeher.png  ${BILDER.length} × 24×24, alle verschieden`);
 console.log(`assets/pixel/raenge.png     ${RAENGE.length} × 96×48`);
 console.log('assets/pixel/boss.png       4 × 24×24');
+console.log(`assets/pixel/figuren.png    ${FIGUREN.reduce((a, f) => a + f.n, 0)} × ${FIGUR_B}×${FIGUR_H}`);
 console.log(`assets/pixel/gitarren.png ${gitarrenIds.length} × 24×56, alle verschieden`);
 console.log(`assets/pixel/shirts.png     ${ADJ.length} × 2 × ${SHIRT_W}×${SHIRT_H}`);
 console.log(`assets/pixel/embleme.png    ${NOMEN.length} × 20×20, alle verschieden`);
