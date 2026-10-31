@@ -741,4 +741,17 @@ print('\n--- Nach 5x5: ableitbar und ohne Folgen fuer die Pause ---');
 }
 
 
+print('\n--- Abend-Check-in ---');
+{
+  const vor = P.initialState(config);
+  const nach = P.applyLog(vor, config, { date: '2026-09-10', type: 'checkin', ja: true, finished: '2026-09-10T20:00:00.000Z' });
+  eq('Check-in steht in der Historie', nach.history[nach.history.length - 1].type, 'checkin');
+  eq('mit seiner Antwort', nach.history[nach.history.length - 1].ja, true);
+  eq('und ohne WOD-Etikett', nach.history[nach.history.length - 1].label, undefined);
+  eq('laesst Arbeitsgewichte unberuehrt', JSON.stringify(nach.lifts), JSON.stringify(vor.lifts));
+  eq('und den A/B-Wechsel', nach.next, vor.next);
+  eq('ein Nein bleibt ein Nein', P.applyLog(vor, config, { date: '2026-09-10', type: 'checkin', ja: false }).history[0].ja, false);
+  eq('ist kein Training', P.istTraining({ date: '2026-09-10', type: 'checkin' }), false);
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="App öffnen" src="https://img.shields.io/badge/App-öffnen-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-2705%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-2740%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-keiner-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Abhängigkeiten" src="https://img.shields.io/badge/Abhängigkeiten-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="Lizenz: MIT" src="https://img.shields.io/badge/Lizenz-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -188,6 +188,7 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 | **Pixel-Bühne** | Jeder Aufnäher hat ein eigenes Pixelbild, auch jede Stufe einer Leiter: die Gigs wachsen vom Setlist-Zettel über Ticket, Plakat und Amp bis zum hochgehaltenen Feuerzeug, die Kilometer vom Fahrrad bis zur Weltkugel, und im Plattenclub steht jeder Lift als eigene Figur mit 1–4 Scheiben an der Stange. Die Form zeigt die Kategorie: Bühne rund, Kraft achteckig, Rad eckig, Comeback Wappen, Serie Stern. Jeder Rang hat seine Szene, von der Garage bis zur Hall of Fame, darunter die Tour mit allen Stationen; freigespielte lassen sich antippen und wieder groß ansehen, mit dem Tag, an dem sie dazukamen. An Tagen mit **SCHWER** brennt hinter dem Wort ein kleines Pixelfeuer. Nach der Einheit sagt ein **Ansager** die großen Momente an: neuer Rang, neuer Aufnäher, wieder auf dem Stand vor der Pause, eine runde Marke wie „100 KG“, der Wochenregler auf elf, „FLAWLESS“. Es gibt höchstens eine Ansage je Einheit, und unter *Backstage → App* lässt sie sich abschalten. Mit „Bewegung reduzieren“ im System gibt es kein Feuer und keinen Sprung. Eigene Pixel-Art, keine fremden Grafiken. |
 | **Monats-Tour** | Jeden Monat drei Ziele aus deinem eigenen Wochenplan: die geplanten Krafteinheiten, die geplanten Fahrten (ohne Rad: vier Tage Jam, Unplugged oder Mobility) und halb so viele saubere Einheiten. Am Ende wartet der **Endgegner** des Monats, vom Frostriesen im Januar bis zum Krampus im Dezember, mit einer Lebensleiste, die mit jedem erfüllten Ziel ein Drittel verliert. Tage vor der ersten Einheit und in einer Verletzungspause zählen nicht zum Soll. Fällt der Gegner, sagt der Ansager **TOUR KOMPLETT**; dazu Aufnäher für 1, 3, 6 und 12 besiegte Monate. Die Karte steht im Merch, die Zeile im Wochenkopf. |
 | **Wochen-Soundcheck** | Sonntags für die laufende Woche, montags und dienstags noch für die vergangene: die Zahlen der Woche (Einheiten, Jams, Mobility, Fahrten, Tonnen, saubere Sätze), als Mischpult mit einem Fader je Zahl (gemessen an der eigenen Bestmarke der acht Wochen davor), dazu „Lief gut“, „Hakt“ und drei Vorsätze auf einer Setlist aus Papier. Er liegt als eigene Datei im Datenrepo (`soundcheck/JJJJ-Www.json`), ohne Netz in der Warteschlange. Die Vorsätze stehen danach im Wochenkopf, frühere Soundchecks in der Tour. Aufnäher für 4 und 12 Wochen in Folge. |
+| **Abend-Check-in** | Eine Ja/Nein-Frage, die du dir selbst stellst (Backstage → Persönlich, etwa „Eiweiß getroffen?“); ohne Frage gibt es keine Karte. Auf Heute zwei Knöpfe, am selben Tag zählt die letzte Antwort. Die Wochenzeile („3 von 4 Tagen“) steht ab dem ersten Ja, die Serie ab zwei Tagen. Die App gibt nichts vor und verknüpft die Antwort nicht mit der Waage; Training ist es auch nicht. |
 | **Zu zweit trainieren** | In der Einheit eincheckt man, mit wem man heute trainiert; in der Pause steht dann „Max ist dran“, und der Knopf heißt „Fertig“ (I go, you go). Den **Handschlag** machen beide über zwei Links, die sie sich selbst schicken, oder per Einfügen in der App — es gibt keinen Server dazwischen, und im Link stehen nur Kennung, Schritt und Name. Jede Seite führt nur ihre eigene Datei unter `zusammen/` im Datenrepo. „Bestätigt“ heißt: beide Telefone waren beteiligt, mehr nicht. Dazu acht Aufnäher (Duett, Faustgruß, Tourpartner 5/15/30, feste Verabredung 2/4/8 Wochen), die erst auftauchen, wenn es eine Verabredung gibt. Gezählt werden Tage und Wochen, kein Vergleich zwischen Personen. |
 | **Flightcase-Look** | Karten mit Kantenschutz an den Ecken wie am Case, Überschriften als Gaffa-Streifen mit Edding-Schrift, das Tageswort in Anton. Beide Schriften liegen im Repo (`assets/fonts/`, Lizenzen daneben), es wird nichts von außen geladen. |
 | **Ansage gegen Gefühl** | In der Tour: jede Einheit mit beiden Werten, dazu die Trefferquote — Ansage und gefühlte Schwere nebeneinander statt nur behauptet. |
@@ -510,7 +511,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-2705 Tests in 32 Dateien. Kein Build, keine Abhängigkeiten.
+2740 Tests in 32 Dateien. Kein Build, keine Abhängigkeiten.
 
 ### Browserproben (optional)
 

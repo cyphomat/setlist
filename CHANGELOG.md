@@ -10,6 +10,16 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-31.1
+
+### Neu
+- **Abend-Check-in.** Eine Ja/Nein-Frage, die du dir selbst stellst (Backstage → Persönlich, etwa „Eiweiß
+  getroffen?“). Ohne Frage gibt es keine Karte. Auf Heute stehen zwei Knöpfe; am selben Tag zählt die letzte
+  Antwort. Darunter steht die Woche („3 von 4 Tagen“, ab dem ersten Ja) und ab zwei Tagen in Folge die Serie.
+  Gezählt wird ab der ersten Antwort, ein Abend, der noch nicht war, ist keine Lücke. Die App gibt nichts vor
+  und verknüpft die Antwort nicht mit der Waage. Der Eintrag liegt als eigene kleine Datei in `einheiten/`, wie
+  bei Mobility: kein Training, keine Serie, keine Pause beendet, Arbeitsgewichte unberührt.
+
 ## 2026-10-30.1
 
 ### Behoben

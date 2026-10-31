@@ -507,6 +507,53 @@ export function gewichtsErfolge(reihe = [], zielGewicht = null) {
   };
 }
 
+/**
+ * Abend-Check-in: ein Ja oder Nein auf die Frage, die er selbst gestellt hat
+ * (`ziele.checkin`). Die App weiss nicht, was die Antwort bedeutet, und
+ * verknuepft sie bewusst nicht mit der Waage — sie zaehlt nur, wie oft er
+ * ja sagen konnte. Ein Nein ist keine Strafe, nur kein Treffer.
+ *
+ * Pro Tag zaehlt die letzte Antwort (ein Fehltipp laesst sich korrigieren).
+ * `tage` zaehlt von Montag (oder der ersten Antwort ueberhaupt) bis heute,
+ * aber heute nur, wenn schon beantwortet ist: ein Abend, der noch nicht war,
+ * ist keine Luecke. Dieselbe Regel haelt die Serie am Leben, bis der Tag um
+ * ist. Vor der ersten Antwort fehlt nichts — wer am Mittwoch anfaengt, hat
+ * keine zwei verpassten Tage.
+ *
+ * Gibt zurueck: `heute` (true/false/null), `ja`, `tage`, `serie`.
+ */
+export function checkinWoche(logs = [], heute = new Date()) {
+  const antwort = new Map(), stand = new Map();
+  for (const l of logs) {
+    if (!l || l.type !== 'checkin' || !l.date) continue;
+    const zeit = l.finished || '';
+    if (!antwort.has(l.date) || zeit >= stand.get(l.date)) { antwort.set(l.date, !!l.ja); stand.set(l.date, zeit); }
+  }
+
+  if (!antwort.size) return { heute: null, ja: 0, tage: 0, serie: 0 };
+
+  const mittag = new Date(heute);
+  mittag.setHours(12, 0, 0, 0);
+  const heuteKey = tagesKey(mittag);
+  const hatHeute = antwort.has(heuteKey);
+  const ende = new Date(mittag);
+  if (!hatHeute) ende.setDate(ende.getDate() - 1);
+
+  const erste = [...antwort.keys()].sort()[0];
+  const montagKey = tagesKey(montagVon(heute));
+  const start = erste > montagKey ? erste : montagKey;
+  let ja = 0, tage = 0;
+  for (const d = new Date(ende); tagesKey(d) >= start; d.setDate(d.getDate() - 1)) {
+    tage++;
+    if (antwort.get(tagesKey(d)) === true) ja++;
+  }
+
+  let serie = 0;
+  for (const d = new Date(ende); antwort.get(tagesKey(d)) === true; d.setDate(d.getDate() - 1)) serie++;
+
+  return { heute: hatHeute ? antwort.get(heuteKey) : null, ja, tage, serie };
+}
+
 /* ---------------------------------------------------------------
    Aerobe Basis: Effizienzfaktor und Entkopplung.
 

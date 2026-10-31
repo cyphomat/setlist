@@ -1,6 +1,6 @@
 // Nur die App-Huelle wird gecacht. Trainingsdaten laufen immer live ueber
 // die GitHub-API — veraltete Gewichte im Studio waeren schlimmer als ein Ladebalken.
-const CACHE = 'setlist-2026-10-30.1';
+const CACHE = 'setlist-2026-10-31.1';
 const SHELL = ['./', 'index.html', 'css/style.css', 'js/app.js', 'js/program.js', 'js/store.js', 'js/intervals.js', 'js/coach.js', 'js/content.js', 'js/wod.js', 'js/stats.js', 'js/bibliothek.js', 'js/i18n.js', 'js/geraete.js', 'js/boot.js', 'js/sicher.js', 'js/aktualisierung.js', 'js/einrichten.js', 'js/persoenlich.js', 'js/unplugged.js', 'js/verletzung.js', 'js/merch.js', 'js/wach.js', 'js/hilfs.js', 'js/export.js', 'manifest.json', 'assets/fonts/oswald-latin-var.woff2', 'assets/fonts/anton-latin-400.woff2', 'assets/fonts/permanent-marker-latin-400.woff2', 'icons/icon-512.png', 'assets/pixel/logo.png', 'assets/pixel/aufnaeher.png', 'assets/pixel/gitarren.png', 'assets/pixel/raenge.png', 'assets/pixel/boss.png', 'assets/pixel/shirts.png', 'assets/pixel/embleme.png', 'assets/pixel/platten.png', 'assets/pixel/anlaesse.png', 'js/feuer.js', 'js/ansager.js', 'js/anlaesse.js', 'js/soundcheck.js', 'js/zusammen.js', 'js/gitarren.js', 'js/kurs.js', 'js/moshpit.js', 'js/lokal.js', 'js/sicherung.js'];
 
 self.addEventListener('install', e => {

@@ -709,6 +709,19 @@ button.raus:active{border-color:var(--rost)}
 .meilenstein .kicker{color:var(--stahl)}
 .meilenstein p{margin:7px 0 0;font-size:0.90625rem;line-height:1.55;color:var(--fg)}
 
+/* ── Abend-Check-in ───────────────────────────────────────── */
+.checkin{
+  margin-top:14px;padding:14px 16px;border:1px solid var(--stahl);
+  background:var(--tint-stahl);
+  border-radius:2px;
+}
+.checkin .kicker{color:var(--stahl)}
+.checkin .frage{margin:7px 0 0;font-size:0.90625rem;line-height:1.55;color:var(--fg)}
+.checkin .actions{margin-top:10px}
+.checkin .fine{margin:8px 0 0}
+.checkin .btn[aria-pressed="true"]{background:var(--tint-akzent-stark)}
+.checkin .btn.ghost[aria-pressed="true"]{border-color:var(--fg);color:var(--fg);background:transparent}
+
 /* ── Minierfolge ──────────────────────────────────────────── */
 .erfolg-kopf{
   margin-top:18px;padding:18px;border:1px solid var(--gruen);background:var(--tint-gruen);

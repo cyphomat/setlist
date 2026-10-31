@@ -93,7 +93,8 @@ function pick(list, seed) {
 export function directive(state, config, today = new Date(), letzterLog = null, stimme = null, erholung = null, fahrten = []) {
   const hist = state.history || [];
   // Mobility ist kein Training: zehn Minuten Dehnen beenden keine Pause.
-  const ohneMobility = hist.filter(h => h.type !== 'mobility');
+  // Ein Abend-Check-in erst recht nicht.
+  const ohneMobility = hist.filter(h => h.type !== 'mobility' && h.type !== 'checkin');
   const letzte = ohneMobility.length ? ohneMobility[ohneMobility.length - 1].date : null;
   const tage = daysSince(letzte, today);
   // Eine Woche nur auf dem Rad haelt die Serie genauso wie eine im Studio —

@@ -1037,4 +1037,49 @@ print('\n--- Tonnage: Kettlebell ---');
   eq('Jam und Unplugged bleiben bei null', S.tonnage({ type: 'wod' }) + S.tonnage({ type: 'unplugged' }), 0);
 }
 
+print('\n--- Abend-Check-in ---');
+{
+  const ci = (date, ja, finished) => ({ date, type: 'checkin', ja, finished: finished || `${date}T20:00:00.000Z` });
+  const MI = new Date(2026, 8, 16, 21, 0); // Mi, 16.09.2026
+  const leer = S.checkinWoche([], MI);
+  eq('ohne Antworten keine Tage', leer.tage, 0);
+  eq('und keine Serie', leer.serie, 0);
+  eq('heute ist offen', leer.heute, null);
+
+  const ganz = S.checkinWoche([ci('2026-09-14', true), ci('2026-09-15', true), ci('2026-09-16', true)], MI);
+  eq('drei Jas von drei Tagen', `${ganz.ja}/${ganz.tage}`, '3/3');
+  eq('Serie von drei', ganz.serie, 3);
+  eq('heute ist ja', ganz.heute, true);
+
+  const nein = S.checkinWoche([ci('2026-09-14', true), ci('2026-09-15', false), ci('2026-09-16', true)], MI);
+  eq('ein Nein zaehlt als Tag, aber nicht als Treffer', `${nein.ja}/${nein.tage}`, '2/3');
+  eq('und beendet die Serie davor', nein.serie, 1);
+
+  const luecke = S.checkinWoche([ci('2026-09-14', true), ci('2026-09-16', true)], MI);
+  eq('eine Luecke ist ein Tag ohne Treffer', `${luecke.ja}/${luecke.tage}`, '2/3');
+  eq('und beendet die Serie', luecke.serie, 1);
+
+  // Der Abend, der noch nicht war, ist keine Luecke.
+  const offen = S.checkinWoche([ci('2026-09-14', true), ci('2026-09-15', true)], MI);
+  eq('heute noch offen: nur bis gestern gezaehlt', `${offen.ja}/${offen.tage}`, '2/2');
+  eq('die Serie lebt bis zum Tagesende', offen.serie, 2);
+  eq('heute bleibt null', offen.heute, null);
+  const montag = S.checkinWoche([ci('2026-09-13', true)], new Date(2026, 8, 14, 9, 0));
+  eq('Montag morgen: noch kein Tag in der Woche', montag.tage, 0);
+  eq('die Serie vom Sonntag steht trotzdem', montag.serie, 1);
+
+  const korrigiert = S.checkinWoche([ci('2026-09-16', false, '2026-09-16T20:00:00.000Z'),
+    ci('2026-09-16', true, '2026-09-16T20:05:00.000Z')], MI);
+  eq('am Tag zaehlt die letzte Antwort', korrigiert.heute, true);
+  const umgekehrt = S.checkinWoche([ci('2026-09-16', true, '2026-09-16T20:05:00.000Z'),
+    ci('2026-09-16', false, '2026-09-16T20:00:00.000Z')], MI);
+  eq('auch wenn die Reihenfolge der Dateien anders ist', umgekehrt.heute, true);
+
+  const spaet = S.checkinWoche([ci('2026-09-16', true)], MI);
+  eq('wer am Mittwoch anfaengt, hat keine verpassten Tage', `${spaet.ja}/${spaet.tage}`, '1/1');
+  const alt = S.checkinWoche([ci('2026-09-08', true), ci('2026-09-09', true)], MI);
+  eq('Antworten aus der Vorwoche zaehlen nicht zur Woche', alt.ja, 0);
+  eq('Strength-Logs zaehlen nie', S.checkinWoche([{ date: '2026-09-16', type: 'strength', lifts: [] }], MI).ja, 0);
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

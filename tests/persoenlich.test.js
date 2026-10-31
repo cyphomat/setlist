@@ -170,4 +170,17 @@ eq('Cardio-Zeile hat 180 Sekunden', WARMUP.allgemein[0].sek, 180);
 eq('Seitstuetz haelt 20 Sekunden', WARMUP.rumpf[1].sek, 20);
 eq('Curl-up haelt 8 Sekunden', WARMUP.rumpf[2].sek, 8);
 
+print('\n--- Abend-Check-in: die Frage ---');
+{
+  eq('Frage wird gesetzt', PS.setzeCheckin({}, 'Eiweiss getroffen?').ziele.checkin, 'Eiweiss getroffen?');
+  eq('Leerraum faellt weg', PS.setzeCheckin({}, '  Eiweiss   getroffen? \n').ziele.checkin, 'Eiweiss getroffen?');
+  eq('lange Fragen werden gekappt', PS.setzeCheckin({}, 'x'.repeat(200)).ziele.checkin.length, PS.CHECKIN_MAX);
+  gleich('andere Ziele bleiben', PS.setzeCheckin({ ziele: { warum: 'Kinder' } }, 'Ja?').ziele, { warum: 'Kinder', checkin: 'Ja?' });
+  gleich('leer entfernt nur die Frage', PS.setzeCheckin({ ziele: { warum: 'Kinder', checkin: 'Ja?' } }, '').ziele, { warum: 'Kinder' });
+  eq('leer entfernt die leere Huelle', PS.setzeCheckin({ ziele: { checkin: 'Ja?' } }, '  ').ziele, undefined);
+  const alt = { ziele: { warum: 'x' } };
+  PS.setzeCheckin(alt, 'Neu?');
+  gleich('das Original bleibt unberuehrt', alt, { ziele: { warum: 'x' } });
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);
