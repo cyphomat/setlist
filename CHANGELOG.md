@@ -10,6 +10,16 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-31.9
+
+### Neu
+- **Mehr Übungen mit Bild:** Swing, Einarm-Swing, Goblet Squat und Press haben in der Hilfe zur Übung je zwei
+  Pixelbilder von der Seite (Swing unten und oben, Goblet Start und unten, Press Rack und oben). Beim Einarm-Swing
+  hängt die freie Hand abgestellt neben dem Körper, damit man ihn vom beidarmigen Swing unterscheidet. Beschriftung
+  und Beschreibung in beiden Sprachen.
+- Beim Get-up schaut die Figur im Kniestand und im Stand auf die Kugel („Eyes on the bell“), der Kopf ist
+  dort leicht nach oben gekippt.
+
 ## 2026-10-31.8
 
 ### Neu

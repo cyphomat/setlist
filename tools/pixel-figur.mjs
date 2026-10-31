@@ -33,8 +33,10 @@ export function gelenke(p) {
   const fKnie = plus(hip, p.fThigh, L.thigh), fKnoechel = plus(fKnie, p.fShin, L.shin), fZeh = plus(fKnoechel, p.fFoot, L.foot);
   const ell = plus(sh, p.ua, L.ua), hand = plus(ell, p.fa, L.fa), faust = plus(hand, p.fa, L.hand);
   const fEll = plus(sh, p.fUa, L.ua), fHand = plus(fEll, p.fFa, L.fa);
-  // boden: Kugel steht auf dem Boden, die Faust greift den Henkel; frei: sie steht zwischen den Fuessen, die Haende hängen
+  // boden: Kugel steht auf dem Boden, die Faust greift den Henkel; frei: sie steht zwischen den Fuessen, die Haende haengen
+  // greift: die Kugel haengt in Richtung kugelWinkel an der Faust (Standard: nach unten)
   const kugel = p.kugel === 'boden' ? [faust[0], faust[1] - KUGEL - 1.9]
+    : p.kugel === 'greift' ? plus(faust, p.kugelWinkel ?? 270, KUGEL + 1.9)
     : p.kugel === 'frei' ? [knoechel[0] + 5, knoechel[1] - R.foot + KUGEL] : null;
   return { hip, sh, kopf, knie, knoechel, zeh, fKnie, fKnoechel, fZeh, ell, hand, faust, fEll, fHand, ...(kugel && { kugel }) };
 }
@@ -53,6 +55,30 @@ export const HINGE = [
     ua: 255, fa: 255, fUa: 255, fFa: 255, kugel: 'boden', stuetz: ['knoechel', 'kugel'], passt: [['kugel', ['torso', 'kopf']]] }
 ];
 
+/** Swing, beidarmig: unten die Kugel zwischen den Beinen, oben die Huefte gestreckt und die Kugel in Brusthoehe. */
+export const SWING2 = [
+  { name: 'Unten', torso: 40, kopf: 50, thigh: 297, shin: 260, foot: 0, fThigh: 297, fShin: 260, fFoot: 0,
+    ua: 246, fa: 244, fUa: 246, fFa: 244, kugel: 'greift', kugelWinkel: 244, stuetz: ['knoechel'] },
+  { name: 'Oben', ...STEHEN, ua: 5, fa: 5, fUa: 5, fFa: 5, kugel: 'greift', kugelWinkel: 5, stuetz: ['zeh'] }
+];
+
+/** Einarm-Swing: wie beidarmig, die freie Hand haengt locker neben dem Koerper. */
+// (leicht vom Koerper abgestellt, sonst verschwindet sie in der Seitenansicht hinter dem Rumpf)
+export const SWING1 = SWING2.map(p => ({ ...p, fUa: 300, fFa: 292 }));
+
+/** Goblet Squat: Kugel an der Brust, Ellbogen nah am Koerper; unten Brust hoch, Fersen am Boden. */
+export const GOBLET = [
+  { name: 'Start', ...STEHEN, ua: 285, fa: 60, fUa: 285, fFa: 60, kugel: 'greift', kugelWinkel: 270, stuetz: ['zeh'] },
+  { name: 'Unten', torso: 78, kopf: 84, thigh: 350, shin: 245, foot: 0, fThigh: 350, fShin: 245, fFoot: 0,
+    ua: 285, fa: 60, fUa: 285, fFa: 60, kugel: 'greift', kugelWinkel: 270, stuetz: ['knoechel'] }
+];
+
+/** Press, einarmig: Faust vor der Schulter (Rack), dann senkrecht nach oben. */
+export const PRESS = [
+  { name: 'Rack', ...STEHEN, ua: 280, fa: 70, fUa: 270, fFa: 270, kugel: 'greift', kugelWinkel: 200, stuetz: ['zeh'] },
+  { name: 'Oben', ...STEHEN, ua: 90, fa: 90, fUa: 270, fFa: 270, kugel: 'oben', stuetz: ['zeh'] }
+];
+
 /** Turkish Get-up, von der Seite, Kugel in der nahen (rechten) Hand. */
 export const GETUP = [
   { name: '1 Liegen', torso: 180, kopf: 180, thigh: 55, shin: 290, foot: 0, fThigh: 352, fShin: 352, fFoot: 90,
@@ -69,10 +95,10 @@ export const GETUP = [
   { name: '5 Beinschwung', torso: 162, kopf: 148, thigh: 355, shin: 270, foot: 0, fThigh: 262, fShin: 180, fFoot: 215,
     ua: 90, fa: 90, fUa: 270, fFa: 270, kugel: 'oben', stuetz: ['knoechel', 'fKnie', 'fKnoechel', 'fHand'],
     passt: [['fKnie', ['fThigh']], ['fKnoechel', ['fShin']], ['fHand', ['fUa', 'fFa']]] },
-  { name: '6 Halbkniend', torso: 90, kopf: 90, thigh: 355, shin: 270, foot: 0, fThigh: 262, fShin: 180, fFoot: 215,
+  { name: '6 Halbkniend', torso: 90, kopf: 102, thigh: 355, shin: 270, foot: 0, fThigh: 262, fShin: 180, fFoot: 215,
     ua: 90, fa: 90, fUa: 270, fFa: 270, kugel: 'oben', stuetz: ['knoechel', 'fKnie', 'fKnoechel'],
     passt: [['fKnie', ['fThigh']], ['fKnoechel', ['fShin']]] },
-  { name: '7 Stand', ...STEHEN, ua: 90, fa: 90, fUa: 270, fFa: 270, kugel: 'oben', stuetz: ['zeh'] }
+  { name: '7 Stand', ...STEHEN, kopf: 102, ua: 90, fa: 90, fUa: 270, fFa: 270, kugel: 'oben', stuetz: ['zeh'] }
 ];
 
 /** Radius des Gliedes, das am Stuetzpunkt endet (Mittelpunkt liegt um so viel ueber dem Boden). */
