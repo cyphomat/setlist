@@ -74,6 +74,7 @@ print('\n--- Kugel in kg ---');
   ok('Komplex hat einen Schluessel', K.kugelBausteine(K.einheit(9, 'A')).some(x => x.schluessel === 'clean+press'));
   gleichJson('bereinigt: nur gueltige Schluessel und Zahlen', K.bereinigeKugeln({ hinge: '16', goblet: 0, carry: -4, fremd: 8, x: 'a' }, e), { hinge: 16 });
   gleichJson('bereinigt: Halbkilo', K.bereinigeKugeln({ hinge: 12.5 }, e), { hinge: 12.5 });
+  gleichJson('bereinigt: Viertelkilo (13,25 wird nicht zu 13,5)', K.bereinigeKugeln({ hinge: 13.25, goblet: 15.75 }, e), { hinge: 13.25, goblet: 15.75 });
   eq('zu schwer faellt heraus', Object.keys(K.bereinigeKugeln({ hinge: 500 }, e)).length, 0);
   const ls = [log(1, { kugeln: { hinge: 12 } }), log(2, { kugeln: { goblet: 8 } }), log(3, { kugeln: { hinge: 14 } })];
   eq('letzte Kugel', K.letzteKugel(ls, 'hinge'), 14);
