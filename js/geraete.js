@@ -22,7 +22,9 @@ export const GERAETE = [
   { id: 'rudergeraet',    name: 'Rudergerät' },
   { id: 'bikeerg',        name: 'Bike Erg' },
   { id: 'assaultbike',    name: 'Assault Bike' },
-  { id: 'zwiftride',      name: 'Zwift Ride' }
+  { id: 'zwiftride',      name: 'Zwift Ride' },
+  { id: 'festhanteln',    name: 'Feste Hanteln' },
+  { id: 'baender',        name: 'Widerstandsbänder' }
 ];
 
 export const ALLE_GERAETE = GERAETE.map(g => g.id);
@@ -120,7 +122,41 @@ function ausstattung(g) {
   if (kugel !== null) aus.kugelBasis = kugel;
   const stange = gueltigesKg(g.kurzhantelStange);
   if (stange !== null) aus.kurzhantelStange = stange;
+  const fest = vorrat(g.festeHanteln);
+  if (fest.length) aus.festeHanteln = fest;
+  const baender = baenderListe(g.baenderFarben);
+  if (baender.length) aus.baenderFarben = baender;
   return aus;
+}
+
+/* Baender haben keine Zahl: die Staerke einer Farbe haengt von der Marke ab,
+   und die App kennt deine nicht. Gespeichert werden nur die Farben.       */
+const MAX_BAENDER = 8;
+const MAX_FARBE = 20;
+
+function baenderListe(roh) {
+  const aus = [];
+  for (const x of Array.isArray(roh) ? roh : []) {
+    const f = typeof x === 'string' ? x.trim() : '';
+    if (f && f.length <= MAX_FARBE && !aus.some(y => y.toLowerCase() === f.toLowerCase())) aus.push(f);
+  }
+  return aus.slice(0, MAX_BAENDER);
+}
+
+/** "schwarz, rot, gruen" lesen. null, wenn etwas zu lang ist oder zu viele Baender dastehen. */
+export function baenderAusText(text) {
+  const teile = String(text == null ? '' : text).split(/[,;+\n]/).map(x => x.trim()).filter(Boolean);
+  const liste = baenderListe(teile);
+  return liste.length === teile.length ? liste : null;
+}
+
+export const baenderText = liste => baenderListe(liste).join(', ');
+
+/** Gibt es eine feste Hantel mit genau diesem Gewicht? { kg, n } oder null. */
+export function festeHantel(ziel, ort) {
+  const z = Number(ziel);
+  const treffer = ((ort && ort.festeHanteln) || []).find(x => Math.abs(x.kg - z) < 1e-9);
+  return treffer ? { kg: treffer.kg, n: treffer.n } : null;
 }
 
 /** Ein Ort so, wie er in die config.json gehoert: nichts Leeres, nichts Ungueltiges. */

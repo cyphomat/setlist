@@ -2109,11 +2109,12 @@ function kuLastText(b) {
  * Kugel-Basis kennt; ohne Auswahl der erste, der eine kennt. Ein gewaehlter Ort
  * ohne Zahlen (das Studio) liefert nichts, statt die Scheiben vom Keller zu zeigen.
  */
-function ladeOrt(feld) {
+function ladeOrt(...felder) {
   const orte = G.gyms(config);
   const wahl = gymWahl();
-  if (wahl) { const o = orte.find(x => x.id === wahl); return o && o[feld] ? o : null; }
-  return orte.find(o => o[feld]) || null;
+  const hat = o => felder.some(f => o[f]);
+  if (wahl) { const o = orte.find(x => x.id === wahl); return o && hat(o) ? o : null; }
+  return orte.find(hat) || null;
 }
 
 /** Die naechste ladbare Kugel ueber oder unter `jetzt`; ohne Zahlen am Ort der feste Schritt. */
@@ -4474,11 +4475,21 @@ function renderRechnerAus() {
   const aus = $('rechner-aus');
   if (!aus) return;
   const kugel = rechnerArt === 'kugel';
-  const ort = ladeOrt(kugel ? 'kugelBasis' : 'kurzhantelStange');
+  const ort = kugel ? ladeOrt('kugelBasis') : ladeOrt('kurzhantelStange', 'festeHanteln');
   if (!ort) { aus.innerHTML = `<p class="fine">${t('rechner.leer')}</p>`; return; }
   const kg = Number(rechnerKg.trim().replace(',', '.'));
-  const res = kg > 0 ? (kugel ? G.kugelLaden(kg, ort) : G.kurzhantelLaden(kg, ort)) : null;
-  aus.innerHTML = `${ladeHtml(rechnerArt, res)}
+  let html = '';
+  if (kg > 0) {
+    html = ladeHtml(rechnerArt, kugel ? G.kugelLaden(kg, ort) : G.kurzhantelLaden(kg, ort));
+    // Feste Hanteln stehen neben der Stange: ein Treffer ist die schnellere Antwort.
+    if (!kugel && ort.festeHanteln) {
+      const fest = G.festeHantel(kg, ort);
+      html += fest
+        ? `<p class="platten">${t('rechner.fest')} <b>${t('rechner.festTreffer', { kg: kgFmt(fest.kg), n: fest.n })}</b></p>`
+        : (ort.kurzhantelStange ? '' : `<p class="platten nicht">${t('rechner.festKeine', { liste: G.scheibenText(ort.festeHanteln, kgFmt) })}</p>`);
+    }
+  }
+  aus.innerHTML = `${html}
     <p class="fine">${t('rechner.ort', { name: escHtml(ort.name) })} ${t('rechner.gemeinsam')}</p>`;
 }
 
@@ -4500,14 +4511,23 @@ function gewichteFelder(o, i) {
       <span>${t(schluessel)}</span>
       <input class="${klasse}" data-i="${i}" type="text" inputmode="decimal" autocomplete="off"
              value="${wert ? escHtml(kgFmt(wert)) : ''}" placeholder="${ph}"></label>`;
-  return `<div class="gym-gewichte" data-zeige="kettlebell kurzhantel" data-i="${i}"
-               ${an('kettlebell') || an('kurzhantel') ? '' : 'hidden'}>
+  return `<div class="gym-gewichte" data-zeige="kettlebell kurzhantel festhanteln baender" data-i="${i}"
+               ${['kettlebell', 'kurzhantel', 'festhanteln', 'baender'].some(an) ? '' : 'hidden'}>
     ${feld('kettlebell', 'gym-kb', 'gym.kugelBasis', o.kugelBasis, '12')}
     ${feld('kurzhantel', 'gym-stange', 'gym.stange', o.kurzhantelStange, '2')}
-    <label class="feld"><span>${t('gym.scheiben')}</span>
+    <label class="feld" data-zeige="kettlebell kurzhantel" data-i="${i}" ${an('kettlebell') || an('kurzhantel') ? '' : 'hidden'}>
+      <span>${t('gym.scheiben')}</span>
       <input class="gym-scheiben" data-i="${i}" type="text" autocomplete="off"
              value="${escHtml(G.scheibenText(o.scheiben, kgFmt))}" placeholder="2×2,5 + 2×1,25 + 0,5"></label>
-    <p class="fine">${t('gym.gewichteHinweis')}</p>
+    <p class="fine" data-zeige="kettlebell kurzhantel" data-i="${i}" ${an('kettlebell') || an('kurzhantel') ? '' : 'hidden'}>${t('gym.gewichteHinweis')}</p>
+    <label class="feld" data-zeige="festhanteln" data-i="${i}" ${an('festhanteln') ? '' : 'hidden'}>
+      <span>${t('gym.festeHanteln')}</span>
+      <input class="gym-feste" data-i="${i}" type="text" autocomplete="off"
+             value="${escHtml(G.scheibenText(o.festeHanteln, kgFmt))}" placeholder="2×5"></label>
+    <label class="feld" data-zeige="baender" data-i="${i}" ${an('baender') ? '' : 'hidden'}>
+      <span>${t('gym.baenderFarben')}</span>
+      <input class="gym-baender" data-i="${i}" type="text" autocomplete="off"
+             value="${escHtml(G.baenderText(o.baenderFarben))}" placeholder="schwarz, rot, grün, lila"></label>
   </div>`;
 }
 
@@ -4591,6 +4611,28 @@ function renderGymVerwaltung() {
       if (liste === null) return gewichtFehler(el);
       if (liste.length) o.scheiben = liste; else delete o.scheiben;
       el.value = G.scheibenText(liste, kgFmt);
+      el.style.color = '';
+      gymGeaendert = true;
+    };
+  });
+  box.querySelectorAll('.gym-feste').forEach(el => {
+    el.onchange = () => {
+      const o = gymEntwurf[+el.dataset.i];
+      const liste = el.value.trim() ? G.scheibenAusText(el.value) : [];
+      if (liste === null) return gewichtFehler(el);
+      if (liste.length) o.festeHanteln = liste; else delete o.festeHanteln;
+      el.value = G.scheibenText(liste, kgFmt);
+      el.style.color = '';
+      gymGeaendert = true;
+    };
+  });
+  box.querySelectorAll('.gym-baender').forEach(el => {
+    el.onchange = () => {
+      const o = gymEntwurf[+el.dataset.i];
+      const liste = G.baenderAusText(el.value);
+      if (liste === null) { el.style.color = 'var(--rost)'; return banner(t('gym.baenderFehler'), 'err', 6000); }
+      if (liste.length) o.baenderFarben = liste; else delete o.baenderFarben;
+      el.value = G.baenderText(liste);
       el.style.color = '';
       gymGeaendert = true;
     };

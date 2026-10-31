@@ -10,6 +10,16 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-31.4
+
+### Neu
+- **Feste Hanteln und Widerstandsbänder** als Geräte für Orte. Bei den festen Hanteln trägst du Stück und
+  Gewicht ein (etwa „2×5“), bei den Bändern nur die Farben. Die Stärke einer Farbe hängt von der Marke ab
+  und ist der App nicht bekannt, deshalb steht dort keine Zahl.
+- **Lastrechner, Kurzhantel:** Trifft das Ziel eine feste Hantel, steht sie als eigene Zeile daneben
+  („Feste Hantel: 5 kg (2 da)“). Hat ein Ort nur feste Hanteln und keine Stange, nennt der Rechner, welche
+  da sind. Der Jam bekommt dadurch keine neuen Übungen.
+
 ## 2026-10-31.3
 
 ### Neu
