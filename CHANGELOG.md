@@ -10,6 +10,28 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-31.6
+
+### Neu
+- **Kettlebell-Kurs, Auswertung:** Am Ende bewertest du jede Kugel einzeln (zu leicht, passend, zäh), vorbelegt
+  mit „passend“. Der Vorschlag „schwerere“ oder „leichtere Kugel“ kommt jetzt je Übung, direkt an der
+  Kugelzeile. Das Log bekommt `bewertungen` je Baustein; `bewertung` bleibt als häufigster Wert erhalten,
+  alte Logs gelten weiter für jede Übung.
+- **Erfolg nach jeder Kurs-Einheit:** eine Karte mit „Einheit n von 36“ und der Leiste, dazu ein Satz bei der
+  ersten Einheit, einer vollen Woche und am Ende einer Phase. Sie hängt nur an den eigenen Logs und steht auch
+  ohne Netz da.
+- **Home:** eine Karte „Woche 3 von 12 · 7 von 36 Einheiten“ mit 36 Segmenten (je drei pro Woche, ein Strich
+  unter den drei Checks). Sie erscheint nach der ersten Einheit, ein Tipp öffnet den Kurs.
+- **Apple Watch:** ein Schalter im Kurs-Plan („Ich zeichne mit der Apple Watch auf“, bleibt auf dem Gerät).
+  Ist er an, schickt Setlist die Einheit nicht nach intervals.icu, damit sie nicht doppelt steht, und erinnert
+  am Ende daran, das Training auf der Watch zu beenden.
+
+### Behoben
+- **Kurs, Unplugged und Mosh Pit kamen nie in intervals.icu an.** Eine Zeile am Anfang von `alsAktivitaet`
+  ließ nur Kraft und WOD durch; die Zweige für die anderen Einheiten darunter waren toter Code. Jetzt gehen
+  alle vier Einheiten mit Dauer und geschätzter Last hin, Max-Out und Mobility weiterhin nicht. Zwei
+  Kurs-Einheiten am selben Tag bekommen verschiedene IDs.
+
 ## 2026-10-31.5
 
 ### Neu

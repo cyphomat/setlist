@@ -57,6 +57,15 @@ eq('eigene Kennung', b.external_id, 'setlist-2026-09-04-wod');
 print('\n--- Ohne Dauer keine erfundene Last ---');
 eq('fehlende Zeiten ergeben nichts', I.alsAktivitaet({ date:'2026-09-05', type:'strength', lifts:[] }, config), null);
 eq('unter einer Minute ergibt nichts', I.alsAktivitaet({ date:'2026-09-05', type:'wod', dauerSekunden: 30 }, config), null);
+{
+  const kurs = { date: '2026-10-31', type: 'kurs', einheit: 1, label: 'Kettlebell-Kurs · Woche 1A · Hip Hinge', dauerSekunden: 1500, finished: '2026-10-31T10:00:00.000Z' };
+  const k = I.alsAktivitaet(kurs, config);
+  ok('Kurs wird uebertragen', k && k.moving_time === 1500 && /Kettlebell-Kurs/.test(k.name) && k.icu_training_load > 0);
+  eq('Kurs: ID enthaelt die Einheit', k.external_id, 'setlist-2026-10-31-kurs-1');
+  ok('zwei Kurs-Einheiten am Tag kollidieren nicht', I.alsAktivitaet({ ...kurs, einheit: 2 }, config).external_id !== k.external_id);
+  ok('Unplugged und Mosh Pit werden uebertragen', ['unplugged', 'moshpit'].every(t => I.alsAktivitaet({ date: '2026-10-31', type: t, dauerSekunden: 900 }, config)));
+  eq('Kurs unter einer Minute ergibt nichts', I.alsAktivitaet({ ...kurs, dauerSekunden: 30 }, config), null);
+}
 eq('Max-Out wird nicht uebertragen', I.alsAktivitaet({ date:'2026-09-05', type:'maxout', lift:'squat', weight:100, reps:1 }, config), null);
 eq('null bleibt null', I.alsAktivitaet(null, config), null);
 

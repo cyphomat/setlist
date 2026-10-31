@@ -293,13 +293,16 @@ function lokalIso(d) {
          `T${z(d.getHours())}:${z(d.getMinutes())}:${z(d.getSeconds())}`;
 }
 
+/** Diese Einheiten gehen nach intervals.icu; Max-Out und Mobility nicht. */
+const UEBERTRAGBAR = ['strength', 'wod', 'unplugged', 'kurs', 'moshpit'];
+
 /**
  * Log -> Aktivitaet. Gibt null zurueck, wenn keine Dauer bekannt ist:
  * ohne Dauer laesst sich keine ehrliche Last angeben, und eine
  * erfundene waere schlimmer als ein fehlender Eintrag.
  */
 export function alsAktivitaet(log, config = {}) {
-  if (!log || (log.type && log.type !== 'strength' && log.type !== 'wod')) return null;
+  if (!log || (log.type && !UEBERTRAGBAR.includes(log.type))) return null;
 
   const faktor = (config.intervals && config.intervals.loadProMinute) || STANDARD_LAST;
   const dauerSek = log.dauerSekunden ||
@@ -330,7 +333,7 @@ export function alsAktivitaet(log, config = {}) {
       }).concat(bereinige(log.hilfs).map(h => `${t(`hilfs.${h.id}`)} — ${h.reps.join('/')}`)).join('\n');
 
   return {
-    external_id: `setlist-${log.date}-${log.type || 'strength'}${log.workout ? '-' + log.workout : ''}`,
+    external_id: `setlist-${log.date}-${log.type || 'strength'}${log.workout ? '-' + log.workout : ''}${istKurs && log.einheit ? '-' + log.einheit : ''}`,
     start_date_local: lokalIso(start),
     type: istWod || istUnplugged || istKurs || istPit ? 'Crossfit' : 'WeightTraining',
     name: istUnplugged ? 'Unplugged — Körpergewicht'

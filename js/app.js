@@ -2015,7 +2015,7 @@ $('up-abbruch').onclick = () => {
    laufen nach der Uhr.                                                  */
 
 let kuEinheit = null, kuAblauf = [], kuIndex = 0, kuRest = 0, kuTimer = null, kuPausiert = false;
-let kuGesamt = 0, kuSchritt = 0, kuKugeln = {}, kuGeschafft = true;
+let kuGesamt = 0, kuSchritt = 0, kuKugeln = {}, kuGeschafft = true, kuBew = {};
 let kuRadWahl = null;   // null: der Vorschlag gilt; sonst die Wahl am Schalter
 
 const kuZeit = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
@@ -2026,7 +2026,47 @@ const kuStopp = () => { clearInterval(kuTimer); kuTimer = null; kuPausiert = fal
 function renderKursKnopf() {
   const z = KU.zustand(alleLogs);
   $('go-kurs').textContent = z.fertig ? t('home.kursFertig') : t('home.kursTag', { woche: z.woche });
+  renderKursKarte(z);
   renderMoshKnopf();
+}
+
+/** Die 36 Einheiten als Leiste; ein Strich darunter markiert einen Check. */
+const kursLeisteHtml = n => `<span class="leiste" aria-hidden="true">${KU.segmente(n).map(s =>
+  `<i class="${[s.fertig && 'f', s.jetzt && 'j', s.test && 't', s.tag === 'A' && 'w'].filter(Boolean).join(' ')}"></i>`).join('')}</span>`;
+
+/** Auf Home: wie weit der Kurs ist. Erst nach der ersten Einheit, ein Tipp oeffnet den Kurs. */
+function renderKursKarte(z) {
+  const box = $('kurs-karte');
+  if (!box) return;
+  box.hidden = z.absolviert === 0;
+  if (box.hidden) return;
+  const stand = t('ku.stat.stand', { woche: z.woche, gesamt: KU.WOCHEN, n: z.absolviert, alle: KU.WOCHEN * KU.PRO_WOCHE });
+  box.setAttribute('aria-label', `${t('ku.titel')}: ${stand}`);
+  box.innerHTML = `<span class="kicker">${escHtml(t('ku.titel'))}</span>
+    <b>${escHtml(stand)}</b>${kursLeisteHtml(z.absolviert)}
+    <span class="fine">${escHtml(z.fertig ? t('ku.fertigKurs') : t('ku.naechste', { woche: z.woche, tag: z.tag }))}</span>`;
+}
+
+/* ---------- Apple Watch ----------
+   Wer mit der Watch aufzeichnet, hat die Einheit schon in intervals.icu (mit
+   Puls). Dann schickt Setlist nichts, damit sie nicht doppelt steht. Die Wahl
+   bleibt auf dem Geraet.                                                   */
+const KU_WATCH_KEY = 'setlist.kurs.watch';
+const kuWatch = () => { try { return localStorage.getItem(KU_WATCH_KEY) === '1'; } catch { return false; } };
+const icuAktiv = () => ICU.pushAktiv() && ICU.isConfigured();
+
+function renderKuWatch() {
+  const box = $('ku-watch');
+  if (!box) return;
+  if (!kuEinheit) { box.innerHTML = ''; return; }
+  const an = kuWatch();
+  const text = an ? t(icuAktiv() ? 'ku.watch.an' : 'ku.watch.anKurz') : (icuAktiv() ? t('ku.watch.aus') : '');
+  box.innerHTML = `<label class="kv check"><input type="checkbox" id="ku-watch-an" ${an ? 'checked' : ''}>
+      <span class="v">${t('ku.watch.schalter')}</span></label>${text ? `<p class="fine">${escHtml(text)}</p>` : ''}`;
+  $('ku-watch-an').onchange = ev => {
+    try { localStorage.setItem(KU_WATCH_KEY, ev.target.checked ? '1' : '0'); } catch { /* dann gilt es nur jetzt */ }
+    renderKuWatch();
+  };
 }
 
 /* ---------- Aufwaermen auf dem Rad ----------
@@ -2160,7 +2200,8 @@ function renderKugeln() {
       <input type="text" inputmode="decimal" autocomplete="off"
         value="${kuKugeln[b.schluessel] ? escHtml(kgFmt(kuKugeln[b.schluessel])) : ''}" placeholder="kg" aria-label="${escHtml(b.name)} kg">
       <button class="btn ghost" data-d="1" aria-label="${escHtml(t('ku.schwerer'))}">+</button>
-      <div class="ku-lade"></div>
+      <div class="ku-lade"></div>${KU.kugelVorschlag(alleLogs, b.schluessel)
+        ? `<p class="fine ku-tipp">${escHtml(t(`ku.vorschlag.${KU.kugelVorschlag(alleLogs, b.schluessel)}`))}</p>` : ''}
     </div>`).join('');
   $('ku-kugeln').querySelectorAll('.ku-kugel').forEach(zeile => {
     const k = zeile.dataset.k, feld = zeile.querySelector('input'), lade = zeile.querySelector('.ku-lade');
@@ -2247,17 +2288,15 @@ function kuUmbauLadung(a) {
 function renderKurs() {
   const e = kuEinheit;
   if (!e) return;
-  const z = KU.zustand(alleLogs);
   $('ku-tag').textContent = t('ku.tag', { woche: e.woche, tag: e.tag });
   $('ku-lead').textContent = `${t(`ku.phase.${e.phase}`)} — ${t(`ku.phase.${e.phase}.text`)}`;
 
   const hinweise = [];
   if (e.testId) hinweise.push(t(`ku.test.${e.testId}`));
   else if (e.entlastung) hinweise.push(t('ku.entlastung'));
-  const v = KU.lastVorschlag(alleLogs);
-  if (v) hinweise.push(t(`ku.vorschlag.${v}`));
   $('ku-hinweise').innerHTML = hinweise.map(x => `<p class="lead">${escHtml(x)}</p>`).join('');
   renderKuRad();
+  renderKuWatch();
 
   kuUebersicht();
 
@@ -2373,7 +2412,29 @@ function kuEnde() {
   $('ku-ende').hidden = false;
   $('ku-geschafft').hidden = !(kuEinheit && kuEinheit.testId);
   kuGeschafftZeigen();
+  // Jede Kugel einzeln bewerten, vorbelegt mit "passend": ein Tipp zum Speichern reicht.
+  kuBew = {};
+  for (const b of KU.kugelBausteine(kuEinheit)) kuBew[b.schluessel] = 'passend';
+  renderKuBewertung();
+  $('ku-ende-watch').hidden = !kuWatch();
+  $('ku-ende-watch').textContent = kuWatch() ? t('ku.watch.ende') : '';
   window.scrollTo(0, 0);
+}
+
+function renderKuBewertung() {
+  const bs = KU.kugelBausteine(kuEinheit);
+  $('ku-bew').innerHTML = bs.map(b => `
+    <div class="ku-bew" data-k="${escHtml(b.schluessel)}">
+      <span class="name">${escHtml(b.name)}${kuKugeln[b.schluessel] ? ` · ${escHtml(kuKg(kuKugeln[b.schluessel]))}` : ''}</span>
+      <div class="up-steuer">${KU.BEWERTUNGEN.map(x =>
+        `<button class="btn ghost${kuBew[b.schluessel] === x ? ' an' : ''}" data-b="${x}">${escHtml(t(`ku.b.${x}`))}</button>`).join('')}</div>
+    </div>`).join('');
+  $('ku-bew').querySelectorAll('.ku-bew').forEach(zeile => zeile.querySelectorAll('[data-b]').forEach(knopf => {
+    knopf.onclick = () => {
+      kuBew[zeile.dataset.k] = knopf.dataset.b;
+      zeile.querySelectorAll('[data-b]').forEach(x => x.classList.toggle('an', x === knopf));
+    };
+  }));
 }
 
 function kuGeschafftZeigen() {
@@ -2381,9 +2442,11 @@ function kuGeschafftZeigen() {
     b.classList.toggle('an', (b.dataset.ges === '1') === kuGeschafft));
 }
 
-async function kuSpeichern(bewertung) {
+async function kuSpeichern() {
   const e = kuEinheit;
-  if (!e || !KU.bewertungOk(bewertung)) return;
+  if (!e) return;
+  const bewertungen = KU.bereinigeBewertungen(kuBew, e);
+  const bewertung = KU.gesamtBewertung(bewertungen);
   $('ku-ende').hidden = true;
   $('ku-plan').hidden = false;
   kuRadWahl = null;
@@ -2399,6 +2462,7 @@ async function kuSpeichern(bewertung) {
     bewertung,
     finished: new Date().toISOString()
   };
+  if (Object.keys(bewertungen).length) log.bewertungen = bewertungen;
   const kugeln = KU.bereinigeKugeln(kuKugeln, e);
   if (Object.keys(kugeln).length) log.kugeln = kugeln;
   if (e.testId) { log.test = e.testId; log.geschafft = kuGeschafft; }
@@ -2413,7 +2477,20 @@ async function kuSpeichern(bewertung) {
   S.cacheLogs(alleLogs);
 
   const z = KU.zustand(alleLogs);
+  // Der Erfolg haengt nur an den eigenen Logs, nicht am Netz: er steht immer da.
+  const n = z.absolviert;
+  const meilen = [];
+  if (n === 1) meilen.push(t('ku.erfolg.erste'));
+  if (!z.fertig && n % KU.PRO_WOCHE === 0) meilen.push(t('ku.erfolg.woche', { woche: n / KU.PRO_WOCHE }));
+  const ph = KU.PHASEN.find(p => n === p.bis * KU.PRO_WOCHE);
+  if (ph && !z.fertig) meilen.push(t('ku.erfolg.phase', { phase: t(`ku.phase.${ph.id}`) }));
   $('done-body').innerHTML = `
+    <div class="card ku-erfolg">
+      <div class="kicker">${escHtml(t('ku.erfolg.kicker'))}</div>
+      <div class="name">${escHtml(t('ku.erfolg.titel', { n, gesamt: KU.WOCHEN * KU.PRO_WOCHE }))}</div>
+      ${kursLeisteHtml(n)}
+      ${meilen.map(m => `<p class="spruch">${escHtml(m)}</p>`).join('')}
+    </div>
     <div class="card">
       <div class="kicker">${escHtml(log.date)} · ${t('hist.kurs')}</div>
       <div class="name">${escHtml(t('ku.tag', { woche: e.woche, tag: e.tag }))}</div>
@@ -2429,7 +2506,8 @@ async function kuSpeichern(bewertung) {
   try {
     await commitKurs(log);
     banner(t('ku.abgeschlossen'), 'ok');
-    if (ICU.pushAktiv() && ICU.isConfigured()) ICU.queuePush(log);
+    // Mit der Watch steht die Einheit schon in intervals.icu; dann nichts doppelt schicken.
+    if (!kuWatch() && icuAktiv()) ICU.queuePush(log);
   } catch { S.queue(log); banner(t('msg.keinNetz'), '', 6000); }
   kuEinheit = null;
   zeigeNeueAufnaeher(log, vorherHist);
@@ -2459,7 +2537,8 @@ $('ku-abbruch').onclick = () => {
   $('ku-lauf').hidden = true;
   $('ku-plan').hidden = false;
 };
-$('ku-ende').querySelectorAll('[data-bew]').forEach(b => { b.onclick = () => kuSpeichern(b.dataset.bew); });
+$('ku-speichern').onclick = kuSpeichern;
+$('kurs-karte').onclick = starteKurs;
 $('ku-geschafft').querySelectorAll('[data-ges]').forEach(b => {
   b.onclick = () => { kuGeschafft = b.dataset.ges === '1'; kuGeschafftZeigen(); };
 });

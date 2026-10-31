@@ -37,10 +37,38 @@ ok('Dauer plausibel (5 bis 45 Min)', [1, 5, 9, 12].every(w => K.TAGE.every(t => 
 }
 
 print('\n--- Kugelwechsel ---');
-eq('zwei leicht: hoch', K.lastVorschlag([log(1, { bewertung: 'leicht' }), log(2, { bewertung: 'leicht' })]), 'hoch');
-eq('zwei zaeh: runter', K.lastVorschlag([log(1, { bewertung: 'zaeh' }), log(2, { bewertung: 'zaeh' })]), 'runter');
-eq('gemischt: nichts', K.lastVorschlag([log(1, { bewertung: 'leicht' }), log(2, { bewertung: 'passend' })]), null);
-eq('eine Einheit: nichts', K.lastVorschlag([log(1, { bewertung: 'leicht' })]), null);
+eq('alte Logs: zwei leicht: hoch', K.kugelVorschlag([log(1, { bewertung: 'leicht' }), log(2, { bewertung: 'leicht' })], 'hinge'), 'hoch');
+eq('alte Logs: zwei zaeh: runter', K.kugelVorschlag([log(1, { bewertung: 'zaeh' }), log(2, { bewertung: 'zaeh' })], 'hinge'), 'runter');
+eq('gemischt: nichts', K.kugelVorschlag([log(1, { bewertung: 'leicht' }), log(2, { bewertung: 'passend' })], 'hinge'), null);
+eq('eine Einheit: nichts', K.kugelVorschlag([log(1, { bewertung: 'leicht' })], 'hinge'), null);
+{
+  const l = (i, b) => log(i, { bewertung: 'passend', bewertungen: b });
+  const reihe = [l(1, { hinge: 'leicht', goblet: 'passend' }), l(2, { hinge: 'leicht', goblet: 'zaeh' })];
+  eq('je Baustein: Hinge zweimal leicht', K.kugelVorschlag(reihe, 'hinge'), 'hoch');
+  eq('je Baustein: Goblet gemischt', K.kugelVorschlag(reihe, 'goblet'), null);
+  eq('Baustein, der nicht dabei war, zaehlt nicht', K.kugelVorschlag([l(1, { hinge: 'leicht' }), l(2, { goblet: 'passend' }), l(3, { hinge: 'leicht' })], 'hinge'), 'hoch');
+  eq('nur eine Bewertung fuer den Baustein', K.kugelVorschlag([l(1, { hinge: 'leicht' }), l(2, { goblet: 'leicht' })], 'hinge'), null);
+}
+{
+  const e = K.einheit(1, 'A');
+  gleichJson('Bewertungen bereinigt: nur Bausteine der Einheit, nur gueltige Werte', K.bereinigeBewertungen({ hinge: 'leicht', goblet: 'kaputt', fremd: 'zaeh', halo: 'leicht', carry: 'zaeh' }, e), { hinge: 'leicht', carry: 'zaeh' });
+  gleichJson('Unsinn bereinigt zu nichts', K.bereinigeBewertungen(null, e), {});
+  eq('Gesamt: haeufigste', K.gesamtBewertung({ a: 'leicht', b: 'leicht', c: 'zaeh' }), 'leicht');
+  eq('Gesamt: Gleichstand ist passend', K.gesamtBewertung({ a: 'leicht', b: 'zaeh' }), 'passend');
+  eq('Gesamt: leer ist passend', K.gesamtBewertung({}), 'passend');
+  eq('Gesamt: alle zaeh', K.gesamtBewertung({ a: 'zaeh', b: 'zaeh', c: 'passend' }), 'zaeh');
+}
+
+print('\n--- Leiste ---');
+{
+  const sg = K.segmente(7);
+  eq('36 Segmente', sg.length, 36);
+  eq('sieben fertig', sg.filter(x => x.fertig).length, 7);
+  ok('das achte ist das naechste', sg[7].jetzt && !sg[7].fertig && sg.filter(x => x.jetzt).length === 1);
+  ok('Checks in Woche 4, 8 und 12, jeweils Tag C', sg.filter(x => x.test).map(x => `${x.woche}${x.tag}`).join() === '4C,8C,12C');
+  ok('Phasen stimmen', sg[0].phase === 'fundament' && sg[12].phase === 'grundlage' && sg[35].phase === 'ausbau');
+  eq('nach 36 kein naechstes', K.segmente(36).filter(x => x.jetzt).length, 0);
+}
 
 print('\n--- Zwischentests ---');
 eq('Woche 4 Tag C: Check 1', K.einheit(4, 'C').testId, 'w4');
