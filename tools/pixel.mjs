@@ -9,7 +9,7 @@
 //   assets/pixel/aufnaeher.png  je 24×24, Reihenfolge wie M.BILDER
 //   assets/pixel/raenge.png     je 96×48, Reihenfolge wie M.RAENGE
 //   assets/pixel/boss.png, shirts.png, embleme.png, platten.png
-//   assets/pixel/figuren.png    je 76×72, Reihenfolge wie FIGUREN in js/kurs.js (Winkel in tools/pixel-figur.mjs)
+//   assets/pixel/figuren.png    je 76×82, Reihenfolge wie FIGUREN in js/kurs.js (Winkel in tools/pixel-figur.mjs)
 //   assets/pixel/anlaesse.png   je Motiv zwei Bilder 15×15, Reihenfolge wie MOTIVE in js/anlaesse.js
 //   assets/pixel/logo.png       der Schriftzug fuer die Kopfzeile
 //   icons/icon-*.png            das App-Icon, ganzzahlig vergroessert
@@ -33,7 +33,7 @@ import { GITARREN as GITARREN_SPEC, gitarrenBilder } from './pixel-gitarren.mjs'
 import { MOTIVE as ANLASS_MOTIVE, MOTIV_KANTE } from '../js/anlaesse.js';
 import { KANTE as ANLASS_KANTE, PALETTE as ANLASS_FARBEN, motivRaster } from './pixel-anlaesse.mjs';
 import { FIGUREN } from '../js/kurs.js';
-import { HINGE, figurBilder, FIGUR_B, FIGUR_H } from './pixel-figur.mjs';
+import { HINGE, GETUP, figurBilder, FIGUR_B, FIGUR_H } from './pixel-figur.mjs';
 import { feld as feuerFeld, schritt as feuerSchritt, PALETTE as FEUER } from '../js/feuer.js';
 
 const WURZEL = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -1565,7 +1565,7 @@ if (GITARREN_SPEC.map(g => g.id).join() !== gitarrenIds.join()) {
 }
 
 /** Uebungsfiguren fuer die Hilfe im Kurs: je Uebung ein paar Bilder, Reihenfolge wie FIGUREN in js/kurs.js. */
-const FIGUR_HALTUNGEN = { hinge: HINGE };
+const FIGUR_HALTUNGEN = { hinge: HINGE, getup: GETUP };
 if (FIGUREN.map(f => `${f.id}:${f.n}`).join() !== Object.entries(FIGUR_HALTUNGEN).map(([id, h]) => `${id}:${h.length}`).join()) {
   throw new Error('Figuren in tools/pixel-figur.mjs und FIGUREN in js/kurs.js passen nicht zusammen');
 }

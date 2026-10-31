@@ -2264,7 +2264,7 @@ function kuFigurHtml(id) {
   if (!f) return '';
   const bilder = Array.from({ length: f.n }, (_, i) => `<figure><span class="fig-bild" style="--i:${f.start + i};--n:${f.gesamt}"></span>
     <figcaption>${escHtml(t(`ku.fig.${id}.${i}`))}</figcaption></figure>`).join('');
-  return `<div class="fig" role="img" aria-label="${escHtml(t(`ku.fig.${id}.alt`))}">${bilder}</div>`;
+  return `<div class="fig${f.n > 3 ? ' viele' : ''}" role="img" aria-label="${escHtml(t(`ku.fig.${id}.alt`))}">${bilder}</div>`;
 }
 
 /** Wie die Bewegung geht und was oft schief laeuft, fuer die Uebungen eines Bausteins. */
