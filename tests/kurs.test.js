@@ -151,4 +151,55 @@ print('\n--- Rad vorschlagen ---');
   eq('Unsinn in der Liste bricht nichts', K.radVorschlag({ zwiftride: true, jetzt, fahrten: [null, {}, { zeit: 'x', minutes: 60 }] }).an, true);
 }
 
+print('\n--- Links und Rechts, Wechsel ---');
+{
+  // Woche 5 A: Clean je Seite, drei Saetze
+  const e = K.einheit(5, 'A');
+  const a = K.ablauf(e).filter(x => x.block === 1);
+  const sat = a.filter(x => x.art === 'satz');
+  eq('Clean: drei Saetze mal zwei Seiten', sat.length, 6);
+  ok('Seiten 1,2 im Wechsel', sat.map(x => x.seite).join('') === '121212');
+  const w = a.filter(x => x.art === 'pause' && x.grund === 'wechsel');
+  eq('je Satz ein Handwechsel', w.length, 3);
+  ok('Wechsel dauert zehn Sekunden und kuendigt Seite 2 an', w.every(x => x.sekunden === K.WECHSEL_SEKUNDEN && x.seite === 2));
+  const sp = a.filter(x => x.art === 'pause' && x.grund === 'satz');
+  eq('zwischen den Saetzen zwei lange Pausen', sp.length, 2);
+  ok('Reihenfolge Links, Wechsel, Rechts, Pause', a.slice(0, 5).map(x => x.art === 'pause' ? x.grund : x.seite).join() === '1,wechsel,2,satz,1');
+  const halo = K.ablauf(e).filter(x => x.block === 0);
+  ok('Halo: zwei Richtungen ohne Wechselpause', halo.length === 2 && halo.every(x => x.art === 'satz') && halo[0].seite === 1 && halo[1].seite === 2);
+  const t = K.ablauf(K.einheit(6, 'B')).filter(x => x.art === 'takt');
+  ok('Takt mit Seitenwechsel: Seite folgt der Runde', t.slice(0, 4).map(x => x.seite).join('') === '1212');
+  const ohne = K.ablauf(K.einheit(1, 'A')).filter(x => x.art === 'satz' && x.b.u[0] === 'hinge');
+  ok('Uebung ohne Seiten: seite 0', ohne.every(x => x.seite === 0));
+}
+
+print('\n--- Umbauten ---');
+{
+  const rad = K.einheit(1, 'A', { rad: true });
+  const a = K.ablauf(rad);
+  const i = a.findIndex(x => x.art === 'umbau');
+  const rest = a.slice(i - 1, i + 2);
+  ok('Vom Rad zum Halo: Umbau von 90 s', rest[0].art === 'rad' && rest[1].art === 'umbau' && rest[1].arten.join() === 'rad' && rest[1].sekunden === 90 && rest[2].b.u[0] === 'halo');
+  ok('Ohne Rad kein Umbau vorm Halo', K.ablauf(K.einheit(1, 'A')).findIndex(x => x.art === 'umbau') !== 0);
+  eq('Der Umbau gehoert zum naechsten Baustein', rest[1].block, 1);
+
+  const e5 = K.einheit(5, 'A');   // Halo leicht, Clean leicht, Press leicht, Goblet schwer, Rack Carry leicht
+  gleichJson('ohne Zahlen: nach "schwer" und zurueck wird umgebaut', K.umbauten(e5), [[], [], [], ['kugel'], ['kugel', 'strecke']]);
+  gleichJson('mit gleichem Gewicht kein Umbau', K.umbauten(e5, { clean: 12, press: 12, goblet: 12, rackcarry: 12 }).map(x => x.filter(y => y === 'kugel')), [[], [], [], [], []]);
+  gleichJson('anderes Gewicht: Umbau', K.umbauten(e5, { clean: 12, press: 12, goblet: 16, rackcarry: 12 }).map(x => x.filter(y => y === 'kugel').length), [0, 0, 0, 1, 1]);
+  gleichJson('Halo ohne Gewicht, Clean 12: leichte Kugel bleibt', K.umbauten(e5, { clean: 12 })[1], []);
+  const u = K.ablauf(e5, { kugeln: { goblet: 16, rackcarry: 12 } }).filter(x => x.art === 'umbau');
+  eq('zwei Umbauten', u.length, 2);
+  ok('Kugel 90 s, Kugel mit Strecke ebenfalls 90 s', u.every(x => x.sekunden === 90));
+  ok('Strecke allein ist kurz', K.ablauf(K.einheit(1, 'A')).some(x => x.art === 'umbau' && x.arten.join() === 'strecke' && x.sekunden === 30));
+  ok('Umbau steht nie am Ende und nie neben einer Pause', [1, 5, 9, 12].every(w => K.TAGE.every(tg => {
+    const l = K.ablauf(K.einheit(w, tg, { rad: true }), { kugeln: {} });
+    return l[l.length - 1].art !== 'umbau' && l.every((x, k) => x.art !== 'umbau' || (l[k - 1].art !== 'pause'));
+  })));
+  ok('Die Dauer waechst um die Umbauten', K.minuten(e5, { kugeln: { goblet: 16 } }) >= K.minuten(K.einheit(5, 'A', {}), { kugeln: { goblet: 12, clean: 12, press: 12, rackcarry: 12 } }));
+}
+
+print('\n--- Erklaerung je Uebung ---');
+ok('jede Uebung ausser dem Rad hat Schritte und Fehler', Object.entries(K.UEBUNGEN).filter(([id]) => id !== 'rad').every(([, u]) => u.schritte.length >= 3 && u.fehler.length >= 2));
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

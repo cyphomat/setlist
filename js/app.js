@@ -2184,7 +2184,16 @@ function renderKugeln() {
   });
 }
 
+/** Dauer samt Umbauten; haengt an den eingetragenen Kugeln, darum auch beim Aendern neu. */
+function kuUebersicht() {
+  const z = KU.zustand(alleLogs);
+  $('ku-uebersicht').innerHTML = `<p class="lead">${escHtml(t('ku.uebersicht', {
+    min: KU.minuten(kuEinheit, { kugeln: kuKugeln }), woche: z.woche, gesamt: KU.WOCHEN, fertig: KU.wocheFortschritt(alleLogs), pro: KU.PRO_WOCHE
+  }))}</p>`;
+}
+
 function kuZieleAktualisieren() {
+  kuUebersicht();
   document.querySelectorAll('#ku-bloecke [data-bz]').forEach(el => {
     el.textContent = kuZiel(kuEinheit.bloecke[Number(el.dataset.bz)]);
   });
@@ -2201,17 +2210,38 @@ function kuZiel(b) {
   return last ? `${z} · ${last}` : z;
 }
 
-/** Was jetzt zu tun ist, fuer genau einen Schritt. */
-function kuJetzt(a) {
-  const b = a.b;
-  let z;
-  if (a.art === 'takt') z = t('ku.jetztWdh', { n: b.wdh });
-  else if (a.art === 'zeit') z = t('ku.jetztZeit', { s: a.sekunden });
-  else z = t(b.seiten ? 'ku.jetztWdhSeite' : 'ku.jetztWdh', { n: b.wdh });
-  if (a.seite) z += ` · ${t('ku.seite', { n: a.seite })}`;
-  const last = kuLastText(b);
-  if (last) z += ` · ${last}`;
-  return z;
+/** Links oder Rechts, gross auf der Buehne; beim Halo die Kreisrichtung. */
+function kuSeiteText(a) {
+  if (!a.seite) return '';
+  const richtung = (KU.UEBUNGEN[a.b.u[0]] || {}).richtung;
+  return t(`ku.${a.seite === 1 ? 'links' : 'rechts'}${richtung ? 'Her' : ''}`);
+}
+
+/** Wie die Bewegung geht und was oft schief laeuft, fuer die Uebungen eines Bausteins. */
+function kuHilfeHtml(b, kopf) {
+  const teile = b.u.map(id => {
+    const u = KU.UEBUNGEN[id];
+    if (!u || !u.schritte) return '';
+    return `<div class="u"><b>${escHtml(u.name)}</b>
+      <ol>${u.schritte.map(x => `<li>${escHtml(x)}</li>`).join('')}</ol>
+      <p class="fehler">${escHtml(t('ku.hilfe.fehler'))}: ${escHtml(u.fehler.join(' · '))}</p></div>`;
+  }).join('');
+  return teile ? `<h3>${escHtml(kopf)}</h3>${teile}` : '';
+}
+
+/** Was beim Umbau zu tun ist: vom Rad runter, Kugel laden, zur Strecke. */
+function kuUmbauText(a) {
+  const kg = kuKugeln[KU.kugelSchluessel(a.b)];
+  return a.arten.map(x => x === 'kugel'
+    ? (kg && !a.b.warm ? t('ku.umbau.kugel', { kg: kuKg(kg) }) : t('ku.umbau.kugelOhne', { last: kuLastText(a.b) }))
+    : t(`ku.umbau.${x}`)).join(' ');
+}
+
+/** Die Scheiben fuer die neue Kugel, wenn am Ort Zahlen stehen. */
+function kuUmbauLadung(a) {
+  const kg = kuKugeln[KU.kugelSchluessel(a.b)];
+  const ort = ladeOrt('kugelBasis');
+  return a.arten.includes('kugel') && kg && ort ? ladeHtml('kugel', G.kugelLaden(kg, ort)) : '';
 }
 
 function renderKurs() {
@@ -2229,9 +2259,7 @@ function renderKurs() {
   $('ku-hinweise').innerHTML = hinweise.map(x => `<p class="lead">${escHtml(x)}</p>`).join('');
   renderKuRad();
 
-  $('ku-uebersicht').innerHTML = `<p class="lead">${escHtml(t('ku.uebersicht', {
-    min: KU.minuten(e), woche: z.woche, gesamt: KU.WOCHEN, fertig: KU.wocheFortschritt(alleLogs), pro: KU.PRO_WOCHE
-  }))}</p>`;
+  kuUebersicht();
 
   renderKugeln();
   $('ku-bloecke').innerHTML = e.bloecke.map((b, i) => `
@@ -2252,7 +2280,7 @@ function renderKurs() {
 
 function kuStartLauf() {
   if (!kuEinheit) return;
-  kuAblauf = KU.ablauf(kuEinheit);
+  kuAblauf = KU.ablauf(kuEinheit, { kugeln: kuKugeln });
   kuIndex = 0;
   kuPausiert = false;
   kuGesamt = 0;
@@ -2266,19 +2294,53 @@ function kuStartLauf() {
 function kuZeigeSchritt() {
   const a = kuAblauf[kuIndex];
   if (!a) return kuEnde();
-  const pause = a.art === 'pause', takt = a.art === 'takt', zeit = a.art === 'zeit', rad = a.art === 'rad';
+  const satz = a.art === 'satz', takt = a.art === 'takt', zeit = a.art === 'zeit', rad = a.art === 'rad';
+  const umbau = a.art === 'umbau', pause = a.art === 'pause';
+  const wechsel = pause && a.grund === 'wechsel';
+  const ruhe = pause || umbau;
   const gesamt = kuEinheit.bloecke.length;
   kuSchritt = 0;
-  $('ku-buehne').classList.toggle('pause', pause);
-  $('ku-fertig').hidden = takt || pause || zeit || rad;
+  $('ku-buehne').classList.toggle('pause', ruhe);
+  $('ku-fertig').hidden = !satz;
   const teil = rad ? t('ku.rad.teil', { n: a.nr, gesamt: a.von }) : t(takt ? 'ku.runde' : 'ku.satz', { n: a.nr, gesamt: a.von });
-  $('ku-runde').textContent = `${t('ku.baustein', { n: a.block + 1, gesamt })} · ${teil}`;
-  $('ku-was').textContent = pause ? t('ku.pauseJetzt') : rad ? t(`ku.rad.${a.phase}`) : KU.blockName(a.b);
-  $('ku-cue').textContent = pause ? '' : rad ? t(`ku.rad.cue.${a.phase}`) : `${kuJetzt(a)}. ${KU.UEBUNGEN[a.b.u[0]].cue}`;
-  const naechster = kuAblauf.slice(kuIndex + 1).find(x => x.art !== 'pause');
+  $('ku-runde').textContent = umbau ? t('ku.umbau.teil', { n: a.block + 1, gesamt }) : `${t('ku.baustein', { n: a.block + 1, gesamt })} · ${teil}`;
+  $('ku-was').textContent = umbau ? t('ku.umbau') : wechsel ? t('ku.wechselJetzt') : pause ? t('ku.pauseJetzt') : rad ? t(`ku.rad.${a.phase}`) : KU.blockName(a.b);
+
+  // Links oder Rechts und die Wiederholungen gross; die Uhr nur dort gross, wo sie zaehlt.
+  const seite = ruhe || rad ? '' : kuSeiteText(a);
+  $('ku-seite').hidden = !seite;
+  $('ku-seite').textContent = seite;
+  const last = ruhe || rad ? '' : kuLastText(a.b);
+  $('ku-wdh').hidden = !(satz || takt);
+  $('ku-wdh').innerHTML = satz || takt
+    ? `<span class="n">${a.b.wdh}</span><span class="x">${escHtml(t('ku.wdhEinheit'))}${last ? ` · ${escHtml(last)}` : ''}</span>` : '';
+  $('ku-uhr').className = `uhr num${satz ? ' klein' : takt ? ' mittel' : ''}`;
+
+  let cue = '';
+  if (umbau) cue = kuUmbauText(a);
+  else if (wechsel) cue = t('ku.wechselCue', { seite: kuSeiteText(a) });
+  else if (rad) cue = t(`ku.rad.cue.${a.phase}`);
+  else if (zeit) {
+    const hand = (KU.UEBUNGEN[a.b.u[0]] || {}).strecke && a.seite ? ` ${t(`ku.hand.${a.seite === 1 ? 'links' : 'rechts'}`)}.` : '';
+    cue = `${t('ku.jetztGehen', { s: a.sekunden })}${hand}${last ? ` ${last}.` : ''}`;
+  } else if (!pause) cue = KU.UEBUNGEN[a.b.u[0]].cue;
+  $('ku-cue').textContent = cue;
+  $('ku-ladung').innerHTML = umbau ? kuUmbauLadung(a) : '';
+
+  const naechster = kuAblauf.slice(kuIndex + 1).find(x => x.art !== 'pause' && x.art !== 'umbau');
   // Nach dem Rad sagt die Buehne an, was kommt; zwischen den Radteilen waere es Laerm.
-  $('ku-danach').textContent = naechster && (pause || (rad && naechster.art !== 'rad')) ? t('up.danach', { name: KU.blockName(naechster.b) }) : '';
-  if (takt || pause || zeit || rad) {
+  const ansage = naechster && (umbau || (pause && !wechsel) || (rad && naechster.art !== 'rad'));
+  $('ku-danach').textContent = ansage ? t('up.danach', { name: KU.blockName(naechster.b) }) : '';
+
+  // Der Platz unter der Buehne: in Pausen und Umbauten die naechste Uebung, sonst die jetzige.
+  let hilfe = '';
+  if (!rad) {
+    if ((umbau || (pause && !wechsel)) && naechster) hilfe = kuHilfeHtml(naechster.b, t('ku.hilfe.naechste', { name: KU.blockName(naechster.b) }));
+    else if (!ruhe || wechsel) hilfe = kuHilfeHtml(a.b, t('ku.hilfe.jetzt'));
+  }
+  $('ku-hilfe').innerHTML = hilfe;
+
+  if (takt || ruhe || zeit || rad) {
     kuRest = a.sekunden;
     $('ku-uhr').textContent = kuRest;
   } else {
@@ -2300,7 +2362,7 @@ function kuTicke() {
     if (a.art === 'satz') { $('ku-uhr').textContent = kuZeit(kuSchritt); return; }
     kuRest--;
     $('ku-uhr').textContent = Math.max(0, kuRest);
-    if (kuRest === 3 && (a.art === 'pause' || a.art === 'rad')) upSignal(false);
+    if (kuRest === 3 && (a.art === 'pause' || a.art === 'umbau' || a.art === 'rad')) upSignal(false);
     if (kuRest <= 0) { kuIndex++; upSignal(true); kuZeigeSchritt(); }
   }, 1000);
 }

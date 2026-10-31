@@ -10,6 +10,23 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-31.5
+
+### Neu
+- **Kettlebell-Kurs, die laufende Einheit:**
+  - **Links und Rechts** stehen groß auf der Bühne, statt „Seite 1“. Bei jedem Satz mit zwei Seiten kommt
+    nach der ersten Seite eine kurze Pause zum Wechseln der Hand („Gleich: RECHTS“). Beim Halo heißt es
+    „links herum“ und „rechts herum“, ohne Pause dazwischen.
+  - **Wiederholungen** sind die große Zahl, dazu die Kugel in kg. Die Stoppuhr tritt zurück, beim Takt
+    bleibt der Countdown deutlich.
+  - **Umbaupausen:** 90 Sekunden vom Rad zum Halo (Absteigen, Schuhe aus), 90 Sekunden, wenn die Kugel
+    umgebaut werden muss (mit der Ladung aus dem Lastrechner), 30 Sekunden zur Gehstrecke vor dem Tragen.
+    Die Kugel wechselt, wenn beide Gewichte eingetragen sind und abweichen, sonst wenn zwischen leichter
+    und schwerer Kugel gewechselt wird. Die Dauer in der Übersicht zählt die Umbauten mit.
+  - **Tragen:** „20 Sekunden gehen, die Länge der Strecke ist egal“ und in welcher Hand die Kugel hängt.
+  - **Erklärung unter der Bühne:** in jeder Übung vier Schritte und die typischen Fehler; in Pausen und
+    Umbauten die der nächsten Übung, damit die Pause zum Lesen reicht.
+
 ## 2026-10-31.4
 
 ### Neu
