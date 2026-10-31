@@ -22,6 +22,7 @@ import * as HL from './hilfs.js';
 import * as X from './export.js';
 import * as F from './feuer.js';
 import * as ANS from './ansager.js';
+import * as SP from './sprache.js';
 import * as ANL from './anlaesse.js';
 import * as SC from './soundcheck.js';
 import * as ZU from './zusammen.js';
@@ -2021,7 +2022,15 @@ let kuRadWahl = null;   // null: der Vorschlag gilt; sonst die Wahl am Schalter
 const kuZeit = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 const kuKg = kg => `${kgFmt(kg)} kg`;
 
-const kuStopp = () => { clearInterval(kuTimer); kuTimer = null; kuPausiert = false; };
+const kuStopp = () => { clearInterval(kuTimer); kuTimer = null; kuPausiert = false; SP.schweige(); };
+
+/** Schalter fuer die Sprachansagen; ohne Sprachausgabe am Geraet bleibt er weg. */
+function kuSpracheKnopf() {
+  const k = $('ku-sprache');
+  k.hidden = !SP.kann();
+  k.textContent = t(SP.istAn() ? 'ku.sp.an' : 'ku.sp.aus');
+  k.classList.toggle('an', SP.istAn());
+}
 
 function renderKursKnopf() {
   const z = KU.zustand(alleLogs);
@@ -2395,6 +2404,8 @@ function kuZeigeSchritt() {
     $('ku-uhr').textContent = kuZeit(0);   // Stoppuhr, zaehlt hoch
   }
   $('ku-gesamt').textContent = t('ku.gesamt', { zeit: kuZeit(kuGesamt) });
+  kuSpracheKnopf();
+  if (SP.istAn()) SP.sprich(SP.sprechtext(a, naechster, { name: KU.blockName, seite: kuSeiteText, umbau: kuUmbauText }));
   kuTicke();
 }
 
@@ -2417,6 +2428,7 @@ function kuTicke() {
 
 function kuEnde() {
   kuStopp();
+  if (SP.istAn()) SP.sprich(t('ku.sp.ende'));
   $('ku-lauf').hidden = true;
   $('ku-ende').hidden = false;
   $('ku-geschafft').hidden = !(kuEinheit && kuEinheit.testId);
@@ -2536,8 +2548,16 @@ $('ku-back').onclick = () => { kuStopp(); renderKursKnopf(); show('home'); };
 $('ku-start').onclick = kuStartLauf;
 $('ku-fertig').onclick = () => { kuIndex++; kuZeigeSchritt(); };
 $('ku-weiter').onclick = () => { kuIndex++; kuZeigeSchritt(); };
+$('ku-sprache').onclick = () => {
+  SP.setzeAn(!SP.istAn());
+  kuSpracheKnopf();
+  // Der Tipp ist die Nutzergeste, die iOS fuer die Sprachausgabe braucht; gleich sagen, was jetzt gilt.
+  if (SP.istAn()) SP.sprich(SP.sprechtext(kuAblauf[kuIndex], kuAblauf.slice(kuIndex + 1).find(x => x.art !== 'pause' && x.art !== 'umbau'), { name: KU.blockName, seite: kuSeiteText, umbau: kuUmbauText }));
+  else SP.schweige();
+};
 $('ku-pause').onclick = () => {
   kuPausiert = !kuPausiert;
+  if (kuPausiert) SP.schweige();
   $('ku-pause').textContent = kuPausiert ? t('up.fortsetzen') : t('up.pausieren');
 };
 $('ku-abbruch').onclick = () => {

@@ -10,6 +10,16 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-10-31.10
+
+### Neu
+- **Sprachansagen im Kettlebell-Kurs:** Ein Schalter unter der Bühne („Sprache an/aus“) lässt das Gerät Umbau,
+  Pause, Handwechsel und die nächste Übung ansagen, dazu bei jedem Satz Übung, Seite und Wiederholungen, damit
+  man im Keller nicht aufs Display schauen muss. Standardmäßig aus; die Wahl bleibt auf dem Gerät. Es spricht die
+  Sprachausgabe des Geräts in der App-Sprache, es gibt keine Audiodateien und keine neuen Abrufe. Taktrunden
+  werden nur in der ersten Runde und beim Seitenwechsel angesagt. Wo das Gerät keine Sprachausgabe hat, fehlt der
+  Schalter. Neues Modul `js/sprache.js`, 28 neue Tests.
+
 ## 2026-10-31.9
 
 ### Neu
