@@ -2345,6 +2345,7 @@ function kuStartLauf() {
   $('ku-plan').hidden = true;
   $('ku-lauf').hidden = false;
   $('ku-ende').hidden = true;
+  SP.mischen();
   kuZeigeSchritt();
 }
 
@@ -2370,7 +2371,7 @@ function kuZeigeSchritt() {
   const last = ruhe || rad ? '' : kuLastText(a.b);
   $('ku-wdh').hidden = !(satz || takt);
   $('ku-wdh').innerHTML = satz || takt
-    ? `<span class="n">${a.b.wdh}</span><span class="x">${escHtml(t('ku.wdhEinheit'))}${last ? ` · ${escHtml(last)}` : ''}</span>` : '';
+    ? `<span class="n">${a.b.wdh}</span><span class="x">${escHtml(t('ku.wdhEinheit'))}${last ? ` · ${escHtml(last)}` : ''}</span>${takt ? `<span class="x takt">${escHtml(t('ku.takt.alle', { s: a.sekunden }))}</span>` : ''}` : '';
   $('ku-uhr').className = `uhr num${satz ? ' klein' : takt ? ' mittel' : ''}`;
 
   let cue = '';

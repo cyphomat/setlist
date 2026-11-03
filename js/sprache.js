@@ -55,7 +55,7 @@ export function sprechtext(a, naechster, h) {
     case 'takt':
       if (a.nr === 1) teile.push(`${h.name(a.b)}.`);
       if (a.seite) teile.push(`${h.seite(a)}.`);
-      if (a.nr === 1) teile.push(t('ku.sp.wdh', { n: a.b.wdh }));
+      if (a.nr === 1) teile.push(`${t('ku.sp.wdh', { n: a.b.wdh })}, ${t('ku.sp.alle', { s: a.sekunden })}.`);
       break;
     default: // satz
       teile.push(`${h.name(a.b)}.`);
@@ -63,6 +63,20 @@ export function sprechtext(a, naechster, h) {
       teile.push(t('ku.sp.wdh', { n: a.b.wdh }));
   }
   return teile.filter(Boolean).join(' ');
+}
+
+/**
+ * Sagt dem Geraet, dass der Ton neben anderer Wiedergabe laufen darf
+ * (Musik, Hoerbuch), statt sie anzuhalten. Nicht jeder Browser kennt das;
+ * dann bleibt alles, wie es war.
+ */
+export function mischen(g = globalThis) {
+  try {
+    const s = g.navigator && g.navigator.audioSession;
+    if (!s) return false;
+    s.type = 'ambient';
+    return true;
+  } catch { return false; }
 }
 
 /** Sagt den Text; was noch laeuft, wird abgebrochen, damit nichts hinterherhinkt. */

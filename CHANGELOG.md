@@ -10,6 +10,16 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-03.1
+
+### Neu
+- **Kurs: „Alle 30 Sek.“ im Takt-Baustein.** Bei Swings und Get-ups steht unter den Wiederholungen jetzt gross, in
+  welchem Takt gearbeitet wird; die Uhr darunter beginnt jede Runde neu, das war bisher nicht erklärt. Die
+  Sprachansage nennt den Takt in der ersten Runde mit („10 Wiederholungen, alle 30 Sekunden“).
+- **Kurs: Ton neben Musik und Hörbuch.** Beim Start meldet der Kurs dem Gerät, dass Ansage und Signale neben anderer
+  Wiedergabe laufen dürfen (`navigator.audioSession`, Safari ab iOS 17), statt sie anzuhalten. Browser ohne diese
+  Schnittstelle verhalten sich wie bisher.
+
 ## 2026-10-31.11
 
 ### Behoben
