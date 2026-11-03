@@ -42,7 +42,8 @@ ok('sagt, was zu tun ist', u.includes(I.t('ku.umbau.rad')));
 ok('endet mit dem, was danach kommt', u.endsWith('Danach: Goblet Squat.'));
 
 print('\n--- Takt: nicht jede Runde ---');
-ok('erste Runde wird angesagt', SP.sprechtext({ art: 'takt', nr: 1, seite: 0, b: swing }, null, h).startsWith('Swing.'));
+ok('erste Runde wird angesagt', SP.sprechtext({ art: 'takt', nr: 1, seite: 0, sekunden: 30, b: swing }, null, h).startsWith('Swing.'));
+eq('nennt den Takt', SP.sprechtext({ art: 'takt', nr: 1, seite: 0, sekunden: 30, b: swing }, null, h), 'Swing. 15 Wiederholungen, alle 30 Sekunden.');
 eq('weitere Runden bleiben still', SP.sprechtext({ art: 'takt', nr: 2, seite: 0, b: swing }, null, h), '');
 eq('ausser bei Seitenwechsel', SP.sprechtext({ art: 'takt', nr: 2, seite: 2, b: swing }, null, h), 'RECHTS.');
 
@@ -56,6 +57,7 @@ print('\n--- Englisch ---');
 I.setSprache('en');
 eq('Pause', SP.sprechtext({ art: 'pause', grund: 'satz', b: swing }, { b: goblet }, h), 'Rest. Next: Goblet Squat.');
 eq('Wiederholungen', SP.sprechtext({ art: 'satz', seite: 0, b: swing }, null, h), 'Swing. 15 reps');
+eq('Takt', SP.sprechtext({ art: 'takt', nr: 1, seite: 0, sekunden: 30, b: swing }, null, h), 'Swing. 15 reps, every 30 seconds.');
 I.setSprache('de');
 
 print('\n--- Schalter ---');
@@ -85,5 +87,14 @@ try { SP.sprich('Pause.', {}); SP.schweige({}); } catch { ohneFehler = false; }
 ok('ohne Sprachausgabe kein Fehler', ohneFehler);
 SP.schweige(fake);
 eq('schweige bricht ab', abgebrochen, 2);
+
+print('\n--- Neben anderer Wiedergabe ---');
+const mitSession = { navigator: { audioSession: { type: 'auto' } } };
+eq('setzt ambient', SP.mischen(mitSession), true);
+eq('Typ ist ambient', mitSession.navigator.audioSession.type, 'ambient');
+eq('ohne audioSession: false', SP.mischen({ navigator: {} }), false);
+eq('ohne navigator: false', SP.mischen({}), false);
+const wirft = { navigator: { get audioSession() { throw new Error('nein'); } } };
+eq('wirft nie', SP.mischen(wirft), false);
 
 print(`\nGesamt: ${pass} bestanden, ${fail} fehlgeschlagen`);
