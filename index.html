@@ -144,6 +144,7 @@
   <header class="head">
     <button id="abort" class="icon-btn" data-i18n-aria="aria.abbrechen" aria-label="Abbrechen">✕</button>
     <h1 id="session-title">Workout</h1>
+    <div id="tagesboss" class="tagesboss" hidden></div>
   </header>
   <div class="pad">
     <div id="session-intent"></div>
@@ -159,6 +160,11 @@
     <span class="mitte"><span class="lbl" data-i18n="ses.pause">UMBAUPAUSE</span><span id="rest-time" class="t">90</span></span>
     <button id="rest-plus" class="tick">+30</button>
     <button id="rest-skip" data-i18n="ses.weiter">WEITER</button>
+    <div id="lager" class="lager" aria-hidden="true" hidden>
+      <p id="lager-blase" class="lager-blase"></p>
+      <span class="roadie sitzt"></span>
+      <canvas id="lager-feuer" class="lager-feuer"></canvas>
+    </div>
   </div>
 </section>
 
