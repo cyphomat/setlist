@@ -10,6 +10,13 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-05.2
+
+### Neu
+- **Roadie neben dem Schriftzug.** Auf der Startseite steht der Roadie neben „SETLIST“; ein Tipp, und er sagt etwas.
+  Er hängt am Schalter **Ansager**. Auf Handys unter 360 px Breite und mit dem Ortswechsler in der Kopfzeile fehlt
+  er, weil dort kein Platz ist.
+
 ## 2026-11-05.1
 
 ### Neu
