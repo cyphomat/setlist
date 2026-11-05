@@ -1330,16 +1330,17 @@ let roadieBlaseTimer = null, roadieJubelTimer = null;
 function roadieKopfAn(an) {
   const b = $('roadie-kopf'), blase = $('roadie-blase');
   if (b) b.hidden = !an;
-  if (!an && blase) blase.hidden = true;
+  if (!an && blase) { blase.hidden = true; $('motto').hidden = false; }
 }
 if ($('roadie-kopf')) $('roadie-kopf').onclick = () => {
   const b = $('roadie-kopf'), blase = $('roadie-blase');
   blase.textContent = t(LF.spruchSchluessel('allg'));
   blase.hidden = false;
+  $('motto').hidden = true;                      // der Spruch nimmt kurz den Platz des Mottos
   b.classList.add('jubel');
   clearTimeout(roadieBlaseTimer); clearTimeout(roadieJubelTimer);
   roadieJubelTimer = setTimeout(() => b.classList.remove('jubel'), 900);
-  roadieBlaseTimer = setTimeout(() => { blase.hidden = true; }, 4500);
+  roadieBlaseTimer = setTimeout(() => { blase.hidden = true; $('motto').hidden = false; }, 4500);
 };
 
 /** Unter dem Geschafft-Screen steht der Roadie und sagt etwas zum Abschluss. */

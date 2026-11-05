@@ -10,6 +10,13 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-05.3
+
+### Geändert
+- **Roadie sitzt jetzt unter der Kopfzeile.** In der Kopfzeile neben „SETLIST“ verschwand er, sobald die Orte geladen
+  waren: Der Ortswechsler trägt den Ortsnamen und nimmt den Platz. Der Roadie steht deshalb links neben dem Motto auf
+  der Startseite, immer und bei jeder Breite. Ein Tipp, und sein Spruch ersetzt kurz das Motto.
+
 ## 2026-11-05.2
 
 ### Neu
