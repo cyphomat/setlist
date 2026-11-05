@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="App öffnen" src="https://img.shields.io/badge/App-öffnen-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-2956%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-2961%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-keiner-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Abhängigkeiten" src="https://img.shields.io/badge/Abhängigkeiten-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="Lizenz: MIT" src="https://img.shields.io/badge/Lizenz-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -512,7 +512,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-2956 Tests in 34 Dateien. Kein Build, keine Abhängigkeiten.
+2961 Tests in 34 Dateien. Kein Build, keine Abhängigkeiten.
 
 ### Browserproben (optional)
 
@@ -579,7 +579,7 @@ Nirgends im Code, nirgends im Repo, in keinem Commit. GitHub-Token und intervals
 
 Setlist ist von [@cyphomat](https://github.com/cyphomat).
 
-- **Fehler gefunden oder einen Wunsch?** Gern als [Issue](https://github.com/cyphomat/setlist/issues) hier im Original-Repo.
+- **Fehler gefunden oder einen Wunsch?** Gern als Issue hier im Original-Repo, mit einem GitHub-Konto: [Fehler melden](https://github.com/cyphomat/setlist/issues/new?template=fehler.yml) oder [Idee und Wunsch](https://github.com/cyphomat/setlist/issues/new?template=idee.yml). Fragen und Gespräch gehören in die [Discussions](https://github.com/cyphomat/setlist/discussions). Dieselben Links stehen in der App unter *Backstage → App → Über Setlist*. **Bitte keine Trainingsdaten, Zugangsdaten oder API-Schlüssel anhängen**, auch nicht als Screenshot; Issues sind öffentlich, eine Beschreibung reicht.
 - **Forken und anpassen ist ausdrücklich erwünscht.** Der Quelltext steht unter der [MIT-Lizenz](LICENSE): verwenden, ändern, weitergeben, auch in einer eigenen Fassung. Wie du deine eigene Instanz aufsetzt, steht unter [Selbst einrichten](#-selbst-einrichten).
 - **Im Fork** zeigt der Quelltext-Link der App (*Backstage → App → Über Setlist*) auf deinen Fork. Feedback geht weiterhin hierher ans Original.
 - **Ohne Gewähr:** Setlist rechnet Gewichte, Pausen und Ansagen nach Faustregeln. Sie ersetzt weder Trainer noch Arzt. Was du an die Stange lädst, entscheidest du.

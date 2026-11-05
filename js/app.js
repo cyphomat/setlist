@@ -1841,6 +1841,7 @@ async function pruefeVersion(manuell = false) {
       return;
     }
     localStorage.setItem(VERSION_KEY, version);
+    renderUeber(); // der Fehler-Link traegt die Fassung
     if (manuell) {
       await leereCaches();
       banner(t('msg.aktuell', { v: version }), 'ok');
@@ -1881,12 +1882,14 @@ function renderUeber() {
   const fork = A.istFork(host);
   const autor = extLink(A.AUTOR.url, A.AUTOR.name);
   const issue = extLink(A.ISSUES, t('ueber.issue'));
+  const fehler = extLink(A.issueFehler(laufendeVersion), t('ueber.fehler'));
+  const idee = extLink(A.issueIdee(), t('ueber.idee'));
   const lizenz = extLink(A.lizenz(host, pfad), t('ueber.lizenzName'));
   const quelle = extLink(A.quelltext(host, pfad), t(fork ? 'ueber.quelleFork' : 'ueber.quelle'));
   const box = $('ueber-box');
   if (box) box.innerHTML = `
     <p>${t('ueber.autor', { autor })}</p>
-    <p>${t('ueber.feedback', { issue })}</p>
+    <p>${t('ueber.feedback', { fehler, idee })}</p>
     <p>${t('ueber.lizenz', { lizenz, quelle })}</p>
     <p>${escHtml(t('ueber.gewaehr'))}</p>`;
   const fuss = $('setup-fuss');

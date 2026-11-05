@@ -1,0 +1,33 @@
+name: Fehler melden
+description: Etwas funktioniert nicht oder zeigt Falsches an.
+labels: ["fehler"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke fürs Melden. **Bitte keine Trainingsdaten, keine Zugangsdaten und keine API-Schlüssel** in dieses Issue schreiben, auch nicht als Screenshot, Log oder Dateianhang. Issues sind öffentlich. Eine Beschreibung reicht: Meldungen aus der App gern abtippen, aber ohne persönliche Werte.
+  - type: textarea
+    id: was
+    attributes:
+      label: Was ist passiert?
+      description: Auf welchem Bildschirm, bei welchem Schritt?
+    validations:
+      required: true
+  - type: textarea
+    id: erwartet
+    attributes:
+      label: Was hättest du erwartet?
+    validations:
+      required: true
+  - type: input
+    id: geraet
+    attributes:
+      label: Gerät und Browser
+      description: Zum Beispiel „iPhone 15, Safari, als App installiert“ oder „Windows, Firefox“.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Fassung
+      description: Steht unter *Backstage → App* als „Version“. Mit dem Link aus der App ist es schon ausgefüllt.
