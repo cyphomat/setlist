@@ -1325,6 +1325,23 @@ function comboZettel(x, y, text) {
   setTimeout(() => d.remove(), 1400);
 }
 
+/** Der Roadie neben dem Schriftzug: antippen, dann sagt er etwas. Aus mit dem Ansager. */
+let roadieBlaseTimer = null, roadieJubelTimer = null;
+function roadieKopfAn(an) {
+  const b = $('roadie-kopf'), blase = $('roadie-blase');
+  if (b) b.hidden = !an;
+  if (!an && blase) blase.hidden = true;
+}
+if ($('roadie-kopf')) $('roadie-kopf').onclick = () => {
+  const b = $('roadie-kopf'), blase = $('roadie-blase');
+  blase.textContent = t(LF.spruchSchluessel('allg'));
+  blase.hidden = false;
+  b.classList.add('jubel');
+  clearTimeout(roadieBlaseTimer); clearTimeout(roadieJubelTimer);
+  roadieJubelTimer = setTimeout(() => b.classList.remove('jubel'), 900);
+  roadieBlaseTimer = setTimeout(() => { blase.hidden = true; }, 4500);
+};
+
 /** Unter dem Geschafft-Screen steht der Roadie und sagt etwas zum Abschluss. */
 function abschlussSpruch() {
   const body = $('done-body');
@@ -5030,6 +5047,7 @@ document.querySelectorAll('.themen button[data-thema]').forEach(b => {
    einlaesst. */
 function renderAnsagerSchalter() {
   const an = ANS.istAn();
+  roadieKopfAn(an);
   document.querySelectorAll('.ansager-wahl button').forEach(b => b.classList.toggle('an', (b.dataset.ansager === 'an') === an));
 }
 document.querySelectorAll('.ansager-wahl button').forEach(b => {

@@ -1659,3 +1659,15 @@ button.tstop:hover .szene{border-color:var(--muted)}
   @keyframes lf-float{from{transform:translateY(0);opacity:1}to{transform:translateY(-46px);opacity:0}}
 }
 @media (prefers-reduced-motion:reduce){ .lf-float{opacity:1} }
+
+/* Der Roadie neben dem Schriftzug auf der Startseite. Er braucht etwa 38 px: auf schmalen Handys und mit
+   dem Ortswechsler in der Kopfzeile ist dafuer kein Platz, dann fehlt er. */
+.roadie-kopf{position:relative;margin-left:6px;padding:0;border:0;cursor:pointer}
+.roadie-kopf::after{content:"";position:absolute;inset:-4px}
+.roadie-kopf:focus-visible{outline:2px solid var(--akzent);outline-offset:2px}
+.roadie-kopf[hidden]{display:none}
+#view-home .head:has(#gym-wahl:not([hidden])) .roadie-kopf{display:none}
+@media (max-width:359px){ .roadie-kopf{display:none} }
+.roadie-blase{position:absolute;top:calc(100% + 6px);left:16px;z-index:7;margin:0;max-width:calc(100% - 32px);box-shadow:0 6px 16px rgba(0,0,0,.35)}
+.roadie-blase[hidden]{display:none}
+@media (prefers-reduced-motion:no-preference){ .roadie-kopf{animation:roadie-atmen 1.4s steps(1) infinite} }
