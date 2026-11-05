@@ -1660,14 +1660,14 @@ button.tstop:hover .szene{border-color:var(--muted)}
 }
 @media (prefers-reduced-motion:reduce){ .lf-float{opacity:1} }
 
-/* Der Roadie neben dem Schriftzug auf der Startseite. Er braucht etwa 38 px: auf schmalen Handys und mit
-   dem Ortswechsler in der Kopfzeile ist dafuer kein Platz, dann fehlt er. */
-.roadie-kopf{position:relative;margin-left:6px;padding:0;border:0;cursor:pointer}
+/* Der Roadie auf der Startseite, in der Zeile unter der Kopfzeile, links neben dem Motto. Ein Tipp, und sein Spruch
+   ersetzt kurz das Motto. In der Kopfzeile selbst ist kein Platz: der Ortswechsler traegt den Ortsnamen. */
+.roadie-zeile{display:flex;align-items:center;gap:10px;margin-top:10px;min-width:0}
+.roadie-zeile #motto,.roadie-zeile .roadie-blase{flex:1;min-width:0}
+.roadie-zeile .motto{margin:0}
+.roadie-zeile .roadie-blase{margin:0}
+.roadie-kopf{position:relative;padding:0;border:0;cursor:pointer}
 .roadie-kopf::after{content:"";position:absolute;inset:-4px}
 .roadie-kopf:focus-visible{outline:2px solid var(--akzent);outline-offset:2px}
-.roadie-kopf[hidden]{display:none}
-#view-home .head:has(#gym-wahl:not([hidden])) .roadie-kopf{display:none}
-@media (max-width:359px){ .roadie-kopf{display:none} }
-.roadie-blase{position:absolute;top:calc(100% + 6px);left:16px;z-index:7;margin:0;max-width:calc(100% - 32px);box-shadow:0 6px 16px rgba(0,0,0,.35)}
-.roadie-blase[hidden]{display:none}
+.roadie-kopf[hidden],.roadie-blase[hidden],#motto[hidden]{display:none}
 @media (prefers-reduced-motion:no-preference){ .roadie-kopf{animation:roadie-atmen 1.4s steps(1) infinite} }
