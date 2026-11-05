@@ -10,6 +10,21 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-05.1
+
+### Neu
+- **Gegner des Tages.** Beim Training steht in der Kopfzeile ein Gegner (Verstärker-Monster, je Wochentag ein anderer
+  Name und eine andere Farbe). Jeder eingetragene Satz nimmt ihm ein Stück seiner Lebensleiste, der letzte Satz
+  lässt ihn fallen. Mehrere Sätze in Folge am Ziel geben Funken und „Combo x3“; ein verfehlter Satz setzt die Combo
+  zurück, zählt aber als Treffer. Es gibt kein Gold und nichts wird gespeichert: Die Leiste rechnet sich aus den Sätzen
+  der laufenden Einheit.
+- **Lagerfeuer in der Satzpause.** Über der Pausenleiste sitzt der Roadie an einem kleinen Pixelfeuer und sagt etwas
+  zur Lage (Satz geschafft, Satz verfehlt, letzter Satz, dazwischen Allgemeines). Nach der Einheit kommentiert er den
+  Abschluss. Texte auf Deutsch und Englisch.
+- Beides hängt am Schalter **Ansager** (*Backstage → App*); der Pausen-Timer bleibt auch ausgeschaltet. Mit „Bewegung
+  reduzieren“ im System gibt es kein Feuer und keine Funken. Neue eigene Pixel-Art in `assets/pixel/lagerfeuer.png`
+  (Quelle `tools/pixel-lagerfeuer.mjs`).
+
 ## 2026-11-03.1
 
 ### Neu

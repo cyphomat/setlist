@@ -1620,3 +1620,42 @@ button.tstop:hover .szene{border-color:var(--muted)}
 /* Kleine Telefone: der Anlass-Banner schrumpft auf den Namen, damit der
    Knopf "Training starten" im ersten Bild bleibt. */
 @media (max-height:700px){.anlass-szene,.anlass-satz{display:none}}
+
+/* ── Gegner des Tages und Lagerfeuer (js/lagerfeuer.js, assets/pixel/lagerfeuer.png, 96 × 24, doppelt gross) ── */
+.roadie,.gegner-bild{flex:none;display:block;background:url('../assets/pixel/lagerfeuer.png') no-repeat;background-size:192px 48px;image-rendering:pixelated;image-rendering:crisp-edges}
+.gegner-bild{width:48px;height:48px;background-position:0 0;filter:hue-rotate(var(--farbe,0deg))}
+.tagesboss.tot .gegner-bild{background-position:-48px 0;filter:hue-rotate(var(--farbe,0deg)) grayscale(.5)}
+.roadie{width:32px;height:36px;background-position:-96px -12px}
+.roadie.jubel{background-position:-128px -12px}
+.roadie.sitzt{background-position:-160px -12px}
+/* Der Gegner sitzt in der festen Kopfzeile der Einheit, damit er bei den Saetzen im Bild bleibt. */
+.tagesboss{flex:1 0 100%;display:grid;grid-template-columns:48px minmax(0,1fr);gap:12px;align-items:center;padding:8px 0 0;border-top:1px solid var(--line)}
+#view-session .head{flex-wrap:wrap}
+.tagesboss[hidden],.lager[hidden],.lager-fertig[hidden]{display:none}
+.gegner-info{display:flex;flex-direction:column;gap:6px;min-width:0}
+.gegner-name{display:flex;gap:8px;align-items:baseline;justify-content:space-between}
+.gegner-name b{font-family:var(--mono);font-size:.8125rem;letter-spacing:.06em;text-transform:uppercase;color:var(--fg);overflow-wrap:anywhere}
+.gegner-name small{font-family:var(--mono);font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.gegner-leben{display:flex;gap:2px;height:10px}
+.gegner-leben span{flex:1;min-width:0;background:var(--panel2);border:1px solid var(--line)}
+.gegner-leben span[data-an="1"]{background:var(--rot);border-color:var(--rost)}
+.tagesboss.tot .gegner-name small{color:var(--gruen)}
+/* Das Lager haengt an der Oberkante der Pausenleiste und folgt ihrer Hoehe (zu zweit, grosse Schrift). */
+.lager{position:absolute;right:12px;bottom:100%;margin-bottom:8px;display:flex;align-items:flex-end;gap:6px;max-width:calc(100vw - 24px);pointer-events:none}
+.lager-blase{margin:0 0 14px;padding:6px 10px;max-width:min(30ch,52vw);background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--fg);font-size:.8125rem;line-height:1.35}
+.lager-blase:empty{display:none}
+.lager-feuer{width:60px;height:68px;margin-left:-6px;image-rendering:pixelated;border-bottom:4px solid var(--rost)}
+.lager .roadie{margin-bottom:4px}
+.lager-fertig{display:flex;align-items:flex-end;gap:8px;margin:14px 0 0}
+.lager-fertig .lager-blase{margin:0 0 6px}
+.funken{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:95}
+.lf-float{position:fixed;z-index:96;pointer-events:none;font-family:var(--mono);font-weight:700;font-size:.875rem;color:#ffd23f;text-shadow:2px 2px 0 #000;white-space:nowrap}
+@media (prefers-reduced-motion:no-preference){
+  .lager .roadie{animation:roadie-atmen 1.4s steps(1) infinite}
+  @keyframes roadie-atmen{50%{transform:translateY(1px)}}
+  .tagesboss.treffer .gegner-bild{animation:gegner-treffer .4s steps(4)}
+  @keyframes gegner-treffer{0%{transform:none;filter:none}25%{transform:translateX(-3px);filter:brightness(2) sepia(1) saturate(6)}50%{transform:translateX(3px)}75%{transform:translateX(-2px)}100%{transform:none;filter:none}}
+  .lf-float{animation:lf-float 1.4s steps(14) forwards}
+  @keyframes lf-float{from{transform:translateY(0);opacity:1}to{transform:translateY(-46px);opacity:0}}
+}
+@media (prefers-reduced-motion:reduce){ .lf-float{opacity:1} }

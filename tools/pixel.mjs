@@ -9,6 +9,7 @@
 //   assets/pixel/aufnaeher.png  je 24×24, Reihenfolge wie M.BILDER
 //   assets/pixel/raenge.png     je 96×48, Reihenfolge wie M.RAENGE
 //   assets/pixel/boss.png, shirts.png, embleme.png, platten.png
+//   assets/pixel/lagerfeuer.png Tagesgegner (2 × 24×24) und Roadie (3 × 16×18), Quelle tools/pixel-lagerfeuer.mjs
 //   assets/pixel/figuren.png    je 76×82, Reihenfolge wie FIGUREN in js/kurs.js (Winkel in tools/pixel-figur.mjs)
 //   assets/pixel/anlaesse.png   je Motiv zwei Bilder 15×15, Reihenfolge wie MOTIVE in js/anlaesse.js
 //   assets/pixel/logo.png       der Schriftzug fuer die Kopfzeile
@@ -34,6 +35,7 @@ import { MOTIVE as ANLASS_MOTIVE, MOTIV_KANTE } from '../js/anlaesse.js';
 import { KANTE as ANLASS_KANTE, PALETTE as ANLASS_FARBEN, motivRaster } from './pixel-anlaesse.mjs';
 import { FIGUREN } from '../js/kurs.js';
 import { HINGE, GETUP, SWING2, SWING1, GOBLET, PRESS, figurBilder, FIGUR_B, FIGUR_H } from './pixel-figur.mjs';
+import { KANTE as LF_KANTE, FIGUR_B as LF_FIGUR_B, FIGUR_H as LF_FIGUR_H, BOGEN_B as LF_B, BOGEN_H as LF_H, GEGNER_FARBE, FIGUR_FARBE, GEGNER_LEBENDIG, GEGNER_BESIEGT, FIGUR_STEHT, FIGUR_JUBEL, FIGUR_SITZT } from './pixel-lagerfeuer.mjs';
 import { feld as feuerFeld, schritt as feuerSchritt, PALETTE as FEUER } from '../js/feuer.js';
 
 const WURZEL = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -1020,6 +1022,23 @@ function endgegner() {
   return b;
 }
 
+/** Tagesgegner (lebendig, besiegt) und der Roadie (steht, jubelt, sitzt am Feuer), 96 × 24. */
+function lagerfeuer() {
+  const b = leer(LF_B, LF_H);
+  const male = (raster, farben, ox, oy) => raster.forEach((zeile, y) => [...zeile].forEach((z, x) => {
+    if (z === '.') return;
+    if (!farben[z]) throw new Error(`Lagerfeuer: Farbe ${z} fehlt`);
+    setze(b, ox + x, oy + y, rgba(farben[z]));
+  }));
+  male(GEGNER_LEBENDIG, GEGNER_FARBE, 0, 0);
+  male(GEGNER_BESIEGT, GEGNER_FARBE, LF_KANTE, 0);
+  [FIGUR_STEHT, FIGUR_JUBEL, FIGUR_SITZT].forEach((r, i) => {
+    if (r.length !== LF_FIGUR_H || r.some(z => z.length !== LF_FIGUR_B)) throw new Error('Lagerfeuer: Figur hat die falsche Groesse');
+    male(r, FIGUR_FARBE, 2 * LF_KANTE + i * LF_FIGUR_B, LF_H - LF_FIGUR_H);
+  });
+  return b;
+}
+
 /* ---------------- Tourshirts ---------------- */
 
 /*
@@ -1594,6 +1613,7 @@ const ausgaben = {
   'assets/pixel/gitarren.png': bogen(eindeutig(gitarrenBilder(), gitarrenIds), 24, 56),
   'assets/pixel/boss.png': endgegner(),
   'assets/pixel/figuren.png': figurenBogen(),
+  'assets/pixel/lagerfeuer.png': lagerfeuer(),
   'assets/pixel/logo.png': schriftzug(),
   'icons/icon-180.png': iconIn(180),
   'icons/icon-192.png': iconIn(192),
@@ -1635,6 +1655,7 @@ console.log(`assets/pixel/aufnaeher.png  ${BILDER.length} × 24×24, alle versch
 console.log(`assets/pixel/raenge.png     ${RAENGE.length} × 96×48`);
 console.log('assets/pixel/boss.png       4 × 24×24');
 console.log(`assets/pixel/figuren.png    ${FIGUREN.reduce((a, f) => a + f.n, 0)} × ${FIGUR_B}×${FIGUR_H}`);
+console.log('assets/pixel/lagerfeuer.png  2 × 24×24 Gegner, 3 × 16×18 Roadie');
 console.log(`assets/pixel/gitarren.png ${gitarrenIds.length} × 24×56, alle verschieden`);
 console.log(`assets/pixel/shirts.png     ${ADJ.length} × 2 × ${SHIRT_W}×${SHIRT_H}`);
 console.log(`assets/pixel/embleme.png    ${NOMEN.length} × 20×20, alle verschieden`);

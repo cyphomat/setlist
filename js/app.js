@@ -22,6 +22,7 @@ import * as HL from './hilfs.js';
 import * as X from './export.js';
 import * as F from './feuer.js';
 import * as ANS from './ansager.js';
+import * as LF from './lagerfeuer.js';
 import * as SP from './sprache.js';
 import * as ANL from './anlaesse.js';
 import * as SC from './soundcheck.js';
@@ -46,6 +47,8 @@ let datenQuelle = 'keine';
 // loest die Warnung aus — eine geratene Warnung waere schlimmer als keine.
 let repoOeffentlich = null;
 let restTimer = null, restLeft = 0;
+// Gegner des Tages und Lagerfeuer (lagerfeuer.js): nur Beiwerk, nichts davon wird gespeichert.
+let combo = 0, gegnerVorher = null, lagerFeuer = null, letzterPunkt = { x: 0, y: 0 };
 // Manuell gewaehltes Workout. Nur fuer diese eine Einheit — der Automat
 // bleibt die Wahrheit darueber, was eigentlich dran waere.
 let workoutOverride = null;
@@ -878,6 +881,7 @@ function startSession() {
     lifts: plan.lifts.map(l => ({ ...l, planWeight: l.weight, done: [] }))
   };
   $('session-title').textContent = `WORKOUT ${plan.workout}`;
+  combo = 0; gegnerVorher = null;
 
   $('session-intent').innerHTML = `
     <div class="directive"><span class="tone ${d.intensitaet.stufe}">${escHtml(tonWort(d.intensitaet.label))}</span>
@@ -1110,6 +1114,7 @@ function renderSession() {
     b.onclick = () => aendereGewicht(+b.dataset.w, +b.dataset.d);
   });
   $('finish').disabled = !session.lifts.every(l => P.saetzeVollstaendig(l.done, l.sets));
+  renderGegner();
 }
 
 function bindSet(btn) {
@@ -1129,14 +1134,16 @@ function bindSet(btn) {
 function recordSet(li, si, reps) {
   const l = session.lifts[li];
   const offenIdx = [...$('session-body').querySelectorAll('details.info')].map(d => d.open);
-  if (reps === undefined) delete l.done[si];
+  if (reps === undefined) { delete l.done[si]; combo = 0; }
   else {
     l.done[si] = reps;
+    combo = LF.comboNach(combo, reps, l.reps);
     // Nach dem letzten Satz der ganzen Einheit gibt es nichts mehr, wofuer
     // man pausieren wuerde — der Timer lief bisher trotzdem einfach weiter.
     const fertig = session.lifts.every(x => P.saetzeVollstaendig(x.done, x.sets));
     if (fertig) stopRest();
-    else startRest(reps >= l.reps ? config.rest.normal : config.rest.afterFail);
+    else startRest(reps >= l.reps ? config.rest.normal : config.rest.afterFail,
+      LF.lage({ reps, ziel: l.reps, offen: LF.gegnerStand(session.lifts).hp }));
   }
   renderSession();
   // Aufgeklappte Erklaerungen ueberleben das Neuzeichnen.
@@ -1200,11 +1207,12 @@ function restBeschriftung(bereit) {
   skip.textContent = bereit ? t('ses.weiter') : t('zu.fertig');
 }
 
-function startRest(seconds) {
+function startRest(seconds, wo = 'allg') {
   restLeft = seconds;
   $('rest').hidden = false;
   $('rest-time').textContent = restLeft;
   restBeschriftung(false);
+  lagerZeigen(wo);
   clearInterval(restTimer);
   restTimer = setInterval(() => {
     restLeft--;
@@ -1218,7 +1226,114 @@ function startRest(seconds) {
     }
   }, 1000);
 }
-const stopRest = () => { clearInterval(restTimer); $('rest').hidden = true; };
+const stopRest = () => { clearInterval(restTimer); $('rest').hidden = true; lagerVerbergen(); };
+
+/* ============================ Gegner des Tages und Lagerfeuer ============================
+   Beiwerk zur Einheit (lagerfeuer.js rechnet, hier wird gezeichnet): Jeder
+   eingetragene Satz trifft den Gegner des Tages; in der Pause sitzt der Roadie
+   am Feuer. Haengt am Schalter des Ansagers, nichts wird gespeichert. Funken
+   und Feuer gibt es nicht bei "Bewegung reduzieren".                      */
+document.addEventListener('pointerdown', e => { letzterPunkt = { x: e.clientX, y: e.clientY }; }, true);
+
+function lagerZeigen(wo) {
+  const el = $('lager');
+  if (!el) return;
+  if (!ANS.istAn()) { el.hidden = true; return; }
+  $('lager-blase').textContent = t(LF.spruchSchluessel(wo));
+  $('lager-feuer').hidden = F.ruhig();
+  el.hidden = false;
+  if (!lagerFeuer) lagerFeuer = F.feuer($('lager-feuer'), { breite: 30, hoehe: 34, kuehlung: 2 });
+  lagerFeuer.start();
+}
+function lagerVerbergen() {
+  if (lagerFeuer) lagerFeuer.stop();
+  if ($('lager')) $('lager').hidden = true;
+}
+
+/** Zeichnet die Lebensleiste und lässt Treffer und Sieg wirken. */
+function renderGegner() {
+  const box = $('tagesboss');
+  if (!box || !session) return;
+  const stand = LF.gegnerStand(session.lifts);
+  const w = LF.wirkung(gegnerVorher, stand);
+  gegnerVorher = stand.hp;
+  if (!ANS.istAn() || !stand.max) { box.hidden = true; return; }
+  const g = LF.gegnerAn(new Date(session.started));
+  const name = t(g.schluessel);
+  box.hidden = false;
+  box.classList.toggle('tot', stand.besiegt);
+  box.classList.toggle('treffer', !!w);
+  box.style.setProperty('--farbe', `${g.farbe}deg`);
+  box.innerHTML = `<span class="gegner-bild" aria-hidden="true"></span>
+    <div class="gegner-info">
+      <div class="gegner-name"><b>${escHtml(name)}</b><small>${escHtml(stand.besiegt ? t('lf.besiegt') : t('lf.hp', { hp: stand.hp, max: stand.max }))}</small></div>
+      <div class="gegner-leben" role="progressbar" aria-label="${escHtml(name)}" aria-valuemin="0" aria-valuemax="${stand.max}" aria-valuenow="${stand.hp}"
+        aria-valuetext="${escHtml(stand.besiegt ? t('lf.ariaTot', { boss: name }) : t('lf.aria', { boss: name, hp: stand.hp, max: stand.max }))}">${
+          Array.from({ length: stand.max }, (_, i) => `<span${i < stand.hp ? ' data-an="1"' : ''}></span>`).join('')}</div>
+    </div>`;
+  if (!w) return;
+  const x = letzterPunkt.x || innerWidth / 2, y = letzterPunkt.y || innerHeight / 2;
+  if (w === 'besiegt') {
+    const r = box.getBoundingClientRect();
+    funken(r.left + 24, r.top + 24, 60, true);
+  } else if (combo > 0) {
+    funken(x, y, LF.comboGross(combo) ? 40 : 22, LF.comboGross(combo));
+  }
+  if (LF.comboZeigen(combo)) comboZettel(x, y, t('lf.combo', { n: combo }));
+}
+
+let funkenCv = null, funkenTeile = [], funkenRaf = null;
+const FUNKEN_FARBEN = ['#ffd23f', '#ff5a4f', '#5fd3e3', '#b6e04a', '#f07ab8', '#ffffff'];
+function funken(x, y, n, gross) {
+  if (F.ruhig() || !ANS.istAn()) return;
+  if (!funkenCv) {
+    funkenCv = document.createElement('canvas');
+    funkenCv.className = 'funken';
+    funkenCv.setAttribute('aria-hidden', 'true');
+    document.body.append(funkenCv);
+  }
+  funkenCv.width = innerWidth; funkenCv.height = innerHeight;
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2, v = (gross ? 3 : 2) + Math.random() * (gross ? 5 : 3.5);
+    funkenTeile.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 2.5, s: Math.floor((Math.random() < .3 ? 4 : 3) * (gross ? 1.4 : 1)),
+      c: FUNKEN_FARBEN[Math.floor(Math.random() * FUNKEN_FARBEN.length)], alter: 0, max: 28 + Math.random() * 22 });
+  }
+  if (!funkenRaf) funkenRaf = requestAnimationFrame(funkenSchritt);
+}
+function funkenSchritt() {
+  funkenRaf = null;
+  const g = funkenCv.getContext('2d');
+  g.clearRect(0, 0, funkenCv.width, funkenCv.height);
+  funkenTeile = funkenTeile.filter(p => p.alter < p.max);
+  for (const p of funkenTeile) {
+    p.alter++; p.x += p.vx; p.y += p.vy; p.vy += 0.28; p.vx *= 0.97;
+    if (p.alter > p.max * 0.7 && (p.alter & 1)) continue;         // flackert zum Schluss
+    g.fillStyle = p.c;
+    g.fillRect(Math.round(p.x / 2) * 2, Math.round(p.y / 2) * 2, p.s, p.s);
+  }
+  if (funkenTeile.length) funkenRaf = requestAnimationFrame(funkenSchritt);
+  else g.clearRect(0, 0, funkenCv.width, funkenCv.height);
+}
+function comboZettel(x, y, text) {
+  const d = document.createElement('div');
+  d.className = 'lf-float';
+  d.setAttribute('aria-hidden', 'true');
+  d.textContent = text;
+  d.style.left = `${Math.max(8, Math.min(innerWidth - 140, x - 40))}px`;
+  d.style.top = `${Math.max(8, y - 28)}px`;
+  document.body.append(d);
+  setTimeout(() => d.remove(), 1400);
+}
+
+/** Unter dem Geschafft-Screen steht der Roadie und sagt etwas zum Abschluss. */
+function abschlussSpruch() {
+  const body = $('done-body');
+  if (!body || !ANS.istAn()) return;
+  const d = document.createElement('div');
+  d.className = 'lager-fertig';
+  d.innerHTML = `<span class="roadie jubel" aria-hidden="true"></span><p class="lager-blase">${escHtml(t(LF.spruchSchluessel('fertig')))}</p>`;
+  body.append(d);
+}
 
 /**
  * Warm-up-Timer: zaehlt die Dauer der ersten Warm-up-Zeile (Cardio) herunter.
@@ -1334,6 +1449,7 @@ async function finishSession() {
   stopRest();
   wuStopp();
   renderDone(before, log);
+  abschlussSpruch();
   show('done');
   toene([660, 880]);
   try {
