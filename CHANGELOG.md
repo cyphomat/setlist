@@ -10,6 +10,16 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-05.4
+
+### Neu
+- **Feedback über GitHub-Formulare.** Zwei Formulare für Issues: *Fehler melden* und *Idee oder Wunsch*. Beide sagen
+  gleich zu Beginn: keine Trainingsdaten, keine Zugangsdaten, keine API-Schlüssel, eine Beschreibung reicht. Leere
+  Issues sind abgeschaltet; Fragen verweisen auf die Discussions.
+- Im Panel *Backstage → App → Über Setlist* führen zwei Links direkt in die Formulare. Der Fehler-Link füllt die
+  Fassung (die Datumsversion, sonst nichts) schon aus. Auch aus einem Fork gehen Meldungen ans Original.
+- Beide READMEs nennen die Links im Abschnitt „Mitmachen“.
+
 ## 2026-11-05.3
 
 ### Geändert

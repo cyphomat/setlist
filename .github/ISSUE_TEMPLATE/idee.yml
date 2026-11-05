@@ -1,0 +1,19 @@
+name: Idee oder Wunsch
+description: Eine Funktion, eine Auswertung oder etwas, das dir fehlt.
+labels: ["idee"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke für die Idee. **Bitte keine Trainingsdaten, keine Zugangsdaten und keine API-Schlüssel** in dieses Issue schreiben, auch nicht als Screenshot. Issues sind öffentlich. Eine Beschreibung reicht.
+  - type: textarea
+    id: fehlt
+    attributes:
+      label: Was fehlt dir?
+    validations:
+      required: true
+  - type: textarea
+    id: trainierst
+    attributes:
+      label: Wie trainierst du gerade?
+      description: Hilft einzuschätzen, wo der Wunsch herkommt. Freiwillig, in eigenen Worten und ohne konkrete Zahlen aus deinen Daten.

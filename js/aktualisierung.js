@@ -61,6 +61,19 @@ export const AUTOR = { name: '@cyphomat', url: `${GITHUB}/cyphomat` };
 export const ISSUES = `${GITHUB}/${URSPRUNG.owner}/${URSPRUNG.repo}/issues`;
 
 /**
+ * Die Formulare unter .github/ISSUE_TEMPLATE/. Der Link fuellt die Fassung
+ * vor, damit sie im Fehlerbericht nicht fehlt. Nur die Datumsversion geht
+ * mit — nichts aus den Daten. Ist keine bekannt (oder sieht der Wert nicht
+ * nach einer Version aus), bleibt das Feld leer.
+ */
+export const issueFehler = (version) => {
+  const v = String(version ?? '');
+  const fassung = /^\d{4}-\d{2}-\d{2}(\.\d+)?$/.test(v) ? `&version=${encodeURIComponent(v)}` : '';
+  return `${ISSUES}/new?template=fehler.yml${fassung}`;
+};
+export const issueIdee = () => `${ISSUES}/new?template=idee.yml`;
+
+/**
  * Wo der Quelltext dieser laufenden Fassung liegt. Im Fork ist das der
  * Fork — wer dort etwas aendert, soll seinen eigenen Code finden. Erkannt
  * wie bei istFork an der Pages-Adresse: <nutzer>.github.io/<repo>/, bei

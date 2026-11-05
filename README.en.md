@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-2956%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-2961%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -506,7 +506,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-2956 tests in 34 files. No build, no dependencies.
+2961 tests in 34 files. No build, no dependencies.
 
 ### Browser probes (optional)
 
@@ -572,7 +572,7 @@ Nowhere in the code, nowhere in the repo, in no commit. The GitHub token and the
 
 Setlist is by [@cyphomat](https://github.com/cyphomat).
 
-- **Found a bug or missing something?** Please open an [issue](https://github.com/cyphomat/setlist/issues) here in the original repo.
+- **Found a bug or missing something?** Please open an issue here in the original repo (a GitHub account is needed): [report a bug](https://github.com/cyphomat/setlist/issues/new?template=fehler.yml) or [suggest an idea](https://github.com/cyphomat/setlist/issues/new?template=idee.yml). Questions and chat belong in the [Discussions](https://github.com/cyphomat/setlist/discussions). The same links are in the app under *Backstage → App → About Setlist*. **Please don't attach training data, credentials or API keys**, not even as a screenshot; issues are public, a description is enough. The forms themselves are in German.
 - **Forking and adapting is explicitly welcome.** The source code is under the [MIT License](LICENSE): use it, change it, pass it on, including as your own version. How to run your own instance is described under [Setting it up yourself](#-setting-it-up-yourself).
 - **In a fork** the app's source link (*Backstage → App → About Setlist*) points to your fork. Feedback still goes here, to the original.
 - **No warranty:** Setlist works out weights, breaks and calls from rules of thumb. It replaces neither a coach nor a doctor. What you load onto the bar is your call.
