@@ -10,6 +10,13 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-06.1
+
+### Neu
+- **Leichte Stange: 10 kg.** Die Einrichtung bietet neben 20 und 15 kg jetzt auch eine 10-kg-Stange an, für alle mit
+  kurzer Langhantel daheim. Plattenrechner, Aufwärmsätze und „Leere Stange" rechnen damit. Die 2-kg-Kurzhantelstange
+  ging schon, sie steht im Ort unter *Kurzhantelstange*.
+
 ## 2026-11-05.4
 
 ### Neu
