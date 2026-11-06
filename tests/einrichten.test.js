@@ -85,4 +85,13 @@ for (const [name, entwurf] of Object.entries({
   }
 }
 
+print('\n--- Leichte Stange (10 kg) ---');
+const leicht = E.baueConfig({ ...E.standardEntwurf(), bar: 10 });
+eq('Config uebernimmt 10 kg', leicht.bar, 10);
+eq('Entwurf mit 10 kg ist gueltig', E.pruefeEntwurf({ ...E.standardEntwurf(), bar: 10 }).length, 0);
+eq('leere 10-kg-Stange', P.plattenText(10, leicht), 'leere Stange');
+eq('20 kg = eine 5er je Seite', P.plattenText(20, leicht), '5');
+ok('unter der Stange laesst sich nichts laden', P.platten(7.5, leicht) === null);
+eq('Aufwaermen beginnt mit 10 kg', P.waermsaetze(40, leicht)[0].weight, 10);
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);
