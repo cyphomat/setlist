@@ -378,6 +378,25 @@ print('\n--- Mobility und Gelenkig ---');
   ok('kein Training', !P.istTraining(st.history[0]) && P.istTraining({ date: '2026-09-07', type: 'wod' }));
 }
 
+print('\n--- Neue Endgegner ---');
+{
+  const mob = d => ({ date: d, type: 'mobility', uebung: 'couch' });
+  const tage = ['03', '07', '10', '14', '17', '21', '24', '28'].map(t => `2026-09-${t}`);
+  const basis = [kraft('2026-08-03', [satz('squat', 95)])]
+    .concat(tage.map((d, i) => kraft(d, [satz('squat', 95, i < 4)])))
+    .concat(['02', '09', '16', '23'].map(t => mob(`2026-09-${t}`)));
+  const ohneLetzte = basis.filter(l => l.date !== '2026-09-28');
+  const letzte = basis.find(l => l.date === '2026-09-28');
+  const b1 = M.neueBosse(ohneLetzte, basis, config, '2026-09');
+  ok('letzte Einheit faellt den Monats-Boss', b1.tour === true && b1.kursBoss === false);
+  ok('schon vorher gefallen: nicht noch einmal', M.neueBosse(basis, basis.concat([kraft('2026-09-29', [satz('squat', 95)])]), config, '2026-09').tour === false);
+  ok('eine Einheit fehlt noch: kein Sieg', M.neueBosse(basis.filter(l => l.date < '2026-09-24'), ohneLetzte, config, '2026-09').tour === false);
+  ok('anderer Monat: kein Sieg', M.neueBosse(ohneLetzte, basis, config, '2026-10').tour === false);
+  ok('leere Logs: nichts', JSON.stringify(M.neueBosse([], [], config, '2026-09')) === '{"tour":false,"kursBoss":false}');
+  ok('ohne Kraftplan kein Boss', M.neueBosse(ohneLetzte, basis, { ...config, week: { slots: [] } }, '2026-09').tour === false);
+  ok('Einheit allein reicht nicht ohne die uebrigen', letzte && M.neueBosse([], [letzte], config, '2026-09').tour === false);
+}
+
 print('\n--- Monats-Tour ---');
 {
   // Plan: Mo Kraft, Mi Rad, Do Kraft. September 2026: 4 Montage, 4 Donnerstage, 5 Mittwoche.

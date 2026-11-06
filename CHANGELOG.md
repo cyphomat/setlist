@@ -10,6 +10,14 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-06.4
+
+### Neu
+- **Der Endgegner geht nicht mehr unter.** Fällt der Monats- oder Kurs-Boss, bleibt auf dem Abschluss-Bildschirm eine
+  Siegkarte mit Boss-Bild und allen Zielen stehen, auch ohne neuen Aufnäher und auch bei ausgeschalteter Ansage. Auf
+  *Heute* steht der Sieg bis Monatsende mit dem Boss-Bild statt nur als Textzeile. Die Ansage bleibt bei Boss-Siegen
+  gut doppelt so lang stehen.
+
 ## 2026-11-06.3
 
 ### Neu

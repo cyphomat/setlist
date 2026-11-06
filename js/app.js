@@ -424,8 +424,13 @@ function tourZeile(logs) {
   const m = M.monatsTour(logs, config, P.ymd(new Date()).slice(0, 7), { fahrten: radFuerMerch(logs) });
   if (!m || m.pause) return '';
   const titel = tourTitel(m.monat);
-  const text = m.komplett ? t('mt.homeSieg', { titel, boss: bossName(m.monat) })
-    : t('mt.home', { titel, n: m.ziele.filter(z => z.ok).length, gesamt: m.ziele.length });
+  // Der Sieg bleibt bis Monatsende sichtbar: mit dem Boss-Bild statt nur als Zeile.
+  if (m.komplett) {
+    const boss = bossName(m.monat);
+    return `<div class="sieg-home"><span class="boss tot" role="img" aria-label="${escHtml(boss)}"></span>
+      <p class="serie monat sieg">${escHtml(t('mt.homeSieg', { titel, boss }))} · ${escHtml(datumKurz(m.besiegtAm))}</p></div>`;
+  }
+  const text = t('mt.home', { titel, n: m.ziele.filter(z => z.ok).length, gesamt: m.ziele.length });
   return `<p class="serie monat${m.komplett ? ' sieg' : ''}">${escHtml(text)}</p>`;
 }
 
@@ -6069,21 +6074,32 @@ async function neueAufnaeherZeigen(log, historie) {
   const rVor = M.rang(vorher, radFuerMerch(vorher)), rNach = M.rang(nachher, radFuerMerch(nachher));
   const vVor = M.verstaerker(vorher, config, new Date(), historie);
   const vNach = M.verstaerker(nachher, config, new Date(), state.history || []);
-  // Endgegner des Monats: vorher stand er noch, jetzt ist er gefallen
+  // Endgegner: vorher stand er noch, jetzt liegt er am Boden
   const monat = log.date.slice(0, 7);
-  const tVor = M.monatsTour(vorher, config, monat, { fahrten: radFuerMerch(vorher) });
-  const tNach = M.monatsTour(nachher, config, monat, { fahrten: radFuerMerch(nachher) });
-  // Endgegner des Kurses: vorher stand er noch, jetzt liegt er am Boden
-  const kbVor = M.kursBoss(vorher), kbNach = M.kursBoss(nachher);
+  const bosse = M.neueBosse(vorher, nachher, config, monat,
+    { fahrtenVorher: radFuerMerch(vorher), fahrtenNachher: radFuerMerch(nachher) });
   const info = { neu, rang: rNach.stufe > rVor.stufe ? rNach.id : null,
-    kursBoss: kbNach && kbNach.komplett && !(kbVor && kbVor.komplett) ? t('kb.name') : null,
-    tour: tNach && tNach.komplett && !(tVor && tVor.komplett) ? bossName(monat) : null,
+    kursBoss: bosse.kursBoss ? t('kb.name') : null,
+    tour: bosse.tour ? bossName(monat) : null,
     elf: !!(vNach && vNach.stufe === 11 && !(vVor && vVor.stufe === 11)) };
   // Neue Gitarren aus denselben Logs; sie koennen auch ohne neuen Aufnaeher kommen.
   const gneu = GT.neueGitarren(vorher, nachher, radFuerMerch(vorher));
   info.gitarre = gneu.map(g => g.id);
-  if ((!neu.length && !gneu.length) || !box.isConnected) return info;
-  box.innerHTML = `${gneu.length ? `<div class="aufnaeher-neu gitarre-neu">
+  // Die Siegkarte bleibt auf dem Abschluss-Bildschirm stehen, auch ohne neuen
+  // Aufnaeher und auch bei ausgeschalteter Ansage.
+  const siege = [];
+  if (bosse.tour) {
+    const m = M.monatsTour(nachher, config, monat, { fahrten: radFuerMerch(nachher) });
+    siege.push(siegKarteHtml({ boss: bossName(monat), kurs: false, datum: m.besiegtAm,
+      ziele: m.ziele.map(z => ({ name: t(`mt.z.${z.id}`), wert: `${Math.min(z.ist, z.soll)}/${z.soll}` })) }));
+  }
+  if (bosse.kursBoss) {
+    const k = M.kursBoss(nachher);
+    siege.push(siegKarteHtml({ boss: t('kb.name'), kurs: true, datum: k.besiegtAm,
+      ziele: k.ziele.map(z => ({ name: t(`ku.check.${z.id}`), wert: datumKurz(z.am) })) }));
+  }
+  if ((!neu.length && !gneu.length && !siege.length) || !box.isConnected) return info;
+  box.innerHTML = `${siege.join('')}${gneu.length ? `<div class="aufnaeher-neu gitarre-neu">
       <span class="kicker">${escHtml(tn('done.neueGitarre', gneu.length))}</span>
       <div class="rack rack-neu">${gneu.map(g => gitarreHtml(g, { zeile: t(`merch.gt.${g.id}`) })).join('')}</div>
     </div>` : ''}${neu.length ? `<div class="aufnaeher-neu">
@@ -6122,13 +6138,13 @@ function ansagen(log, info) {
 function zeigeAnsage(a) {
   const el = $('ansager');
   if (!a || !el) return;
-  el.className = `ansager ${a.art}`;
+  el.className = `ansager ${a.art}${a.lang ? ' lang' : ''}`;
   el.innerHTML = `<span class="ruf">${escHtml(a.ruf)}</span><small>${escHtml(a.unter)}</small>`;
   el.hidden = false;
   void el.offsetWidth;
   el.classList.add('los');
   clearTimeout(ansagerTimer);
-  ansagerTimer = setTimeout(() => { el.hidden = true; }, 2200);
+  ansagerTimer = setTimeout(() => { el.hidden = true; }, a.lang ? 4200 : 2200);
   if (a.art === 'gold') feuerstoss();
 }
 
@@ -6729,6 +6745,22 @@ function monatsTourHtml(touren) {
         <ol class="termine">${frueher.map(zeile).join('')}</ol></details>` : ''}
       <p class="fine">${escHtml(t('mt.fine'))}</p>
     </div>`;
+}
+
+/** Siegkarte nach der Einheit: der Endgegner liegt am Boden, alle Ziele stehen auf erledigt. */
+function siegKarteHtml({ boss, kurs, datum, ziele }) {
+  return `<div class="card monatstour besiegt sieg-karte">
+    <div class="mt-kopf">
+      <span class="boss${kurs ? ' kurs' : ''} tot" role="img" aria-label="${escHtml(boss)}"></span>
+      <div class="mt-wer">
+        <div class="kicker">${escHtml(t('sieg.kopf'))}</div>
+        <div class="name">${escHtml(boss)}</div>
+      </div>
+    </div>
+    <div class="mt-ziele">${ziele.map(z => `
+      <div class="mt-ziel ok"><div class="h"><span>${escHtml(z.name)}</span><b>✓ ${escHtml(z.wert)}</b></div></div>`).join('')}</div>
+    <p class="mt-stand">${escHtml(t('mt.besiegt', { boss, datum: datumKurz(datum) }))}</p>
+  </div>`;
 }
 
 /** Der Kurs-Endgegner: drei Checks, jeder nimmt ein Drittel der Lebensleiste. */
