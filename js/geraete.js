@@ -122,6 +122,8 @@ function ausstattung(g) {
   if (kugel !== null) aus.kugelBasis = kugel;
   const stange = gueltigesKg(g.kurzhantelStange);
   if (stange !== null) aus.kurzhantelStange = stange;
+  const lang = gueltigesKg(g.langhantelStange);
+  if (lang !== null) aus.langhantelStange = lang;
   const fest = vorrat(g.festeHanteln);
   if (fest.length) aus.festeHanteln = fest;
   const baender = baenderListe(g.baenderFarben);
@@ -157,6 +159,17 @@ export function festeHantel(ziel, ort) {
   const z = Number(ziel);
   const treffer = ((ort && ort.festeHanteln) || []).find(x => Math.abs(x.kg - z) < 1e-9);
   return treffer ? { kg: treffer.kg, n: treffer.n } : null;
+}
+
+/**
+ * Gewicht der Langhantelstange am Ort. Ohne eigenen Wert am Ort gilt die
+ * Stange des Programms (`config.bar`). Nur fuer die Ladeanzeige: Mindestgewicht,
+ * Deload und Merch bleiben bei `config.bar`, sonst waere ein Arbeitsgewicht je
+ * nach Ort anders gerundet und der Verlauf nicht vergleichbar.
+ */
+export function stangeAmOrt(config, ort) {
+  const lokal = ort ? gueltigesKg(ort.langhantelStange) : null;
+  return lokal !== null ? lokal : ((config && config.bar) || 20);
 }
 
 /** Ein Ort so, wie er in die config.json gehoert: nichts Leeres, nichts Ungueltiges. */

@@ -10,6 +10,13 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-06.3
+
+### Neu
+- **Stange pro Ort.** Orte mit Langhantel haben ein Feld *Langhantelstange*. Platten und Aufwärmsätze in der Session
+  rechnen mit der Stange des gewählten Orts; ohne Eintrag gilt die Standardstange aus Backstage. Mindestgewicht, Deload
+  und Merch bleiben bei der Standardstange, damit der Verlauf vergleichbar bleibt.
+
 ## 2026-11-06.2
 
 ### Neu
