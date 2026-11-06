@@ -118,6 +118,17 @@ ok('Unsinn statt Entwurf ebenfalls nicht', !G.darfSpeichern('nope', zwei, true))
 ok('unbrauchbarer Repo-Stand blockiert nicht', G.darfSpeichern([], null, false));
 
 
+print('\n--- Langhantelstange am Ort ---');
+const lh = G.gyms({ gyms: [{ id: 'k', geraete: ['langhantel'], langhantelStange: 10 }] })[0];
+eq('Stange am Ort wird gelesen', lh.langhantelStange, 10);
+ok('ungueltige Stange faellt raus', G.gyms({ gyms: [{ id: 'a', langhantelStange: -5 }, { id: 'b', langhantelStange: 'x' }, { id: 'c', langhantelStange: 0.1 }] })
+  .every(o => o.langhantelStange === undefined));
+eq('Ortsstange schlaegt config.bar', G.stangeAmOrt({ bar: 20 }, lh), 10);
+eq('ohne Ortswert gilt config.bar', G.stangeAmOrt({ bar: 15 }, { id: 'x' }), 15);
+eq('ohne Ort gilt config.bar', G.stangeAmOrt({ bar: 15 }, null), 15);
+eq('ohne alles gilt 20', G.stangeAmOrt({}, null), 20);
+eq('Ortsstange bleibt beim Speichern', G.gymFuerDatei(lh).langhantelStange, 10);
+
 print('\n--- Gewichte am Ort ---');
 const gj = (n, a, b) => ok(n, JSON.stringify(a) === JSON.stringify(b), `(${JSON.stringify(a)} != ${JSON.stringify(b)})`);
 const SCH = [{ kg: 2.5, n: 2 }, { kg: 1.25, n: 2 }, { kg: 0.5, n: 1 }];

@@ -525,7 +525,7 @@ export const TEXTE = {
 
     /* ---- Gyms und Geraete ---- */
     'stange.titel': 'Langhantel',
-    'stange.hinweis': 'Gewicht der leeren Stange. Plattenrechner und Aufwärmsätze rechnen damit; Arbeitsgewichte bleiben, wie sie sind.',
+    'stange.hinweis': 'Standardstange. Sie gilt, wo ein Ort keine eigene Langhantelstange hat. Plattenrechner und Aufwärmsätze rechnen damit; Arbeitsgewichte bleiben, wie sie sind.',
     'stange.gespeichert': 'Stange gespeichert: {kg} kg.',
     'gym.titel': 'Orte und Geräte',
     'gym.ueberall': 'Überall',
@@ -549,6 +549,7 @@ export const TEXTE = {
     'gym.alleAus': 'Keine',
     'gym.kugelBasis': 'Kugel ohne Scheiben (kg)',
     'gym.stange': 'Kurzhantelstange (kg)',
+    'gym.langhantelStange': 'Langhantelstange (kg, leer = Standard)',
     'gym.scheiben': 'Scheiben (Stück × kg)',
     'gym.gewichteHinweis': 'Kugel und Stange teilen sich diesen Vorrat, so wie er im Keller liegt. Leer lassen heißt: keine Ladeanzeige.',
     'gym.gewichtFehler': 'Das lese ich nicht. Erlaubt sind Vielfache von 0,25 kg, bis zu 6 Scheibenarten mit je höchstens 6 Stück, etwa 2×2,5 + 2×1,25 + 0,5.',
@@ -2068,7 +2069,7 @@ export const TEXTE = {
 
     /* ---- Gyms and equipment ---- */
     'stange.titel': 'Barbell',
-    'stange.hinweis': 'Weight of the empty bar. The plate calculator and warm-up sets use it; working weights stay as they are.',
+    'stange.hinweis': 'Default bar. It applies wherever a place has no bar of its own. The plate calculator and warm-up sets use it; working weights stay as they are.',
     'stange.gespeichert': 'Bar saved: {kg} kg.',
     'gym.titel': 'Places and equipment',
     'gym.ueberall': 'Anywhere',
@@ -2092,6 +2093,7 @@ export const TEXTE = {
     'gym.alleAus': 'None',
     'gym.kugelBasis': 'Kettlebell without plates (kg)',
     'gym.stange': 'Dumbbell bar (kg)',
+    'gym.langhantelStange': 'Barbell bar (kg, empty = default)',
     'gym.scheiben': 'Plates (count × kg)',
     'gym.gewichteHinweis': 'Kettlebell and bar share this stock, as it lies in the basement. Leave empty for no loading hints.',
     'gym.gewichtFehler': 'I cannot read that. Allowed are multiples of 0.25 kg, up to 6 kinds of plates with at most 6 of each, e.g. 2×2.5 + 2×1.25 + 0.5.',

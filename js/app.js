@@ -916,15 +916,15 @@ function startSession() {
       <div class="body">
         ${plan.lifts.map(l => `
           <p class="tagline" style="margin:12px 0 4px"><b>${escHtml(l.name)}</b> → ${P.fmtWeight(l.weight)}</p>
-          ${P.waermsaetze(l.weight, config).map(w => {
-            const pt = P.plattenText(w.weight, config);
-            const ptAlt = P.plattenGaengigText(w.weight, config);
+          ${P.waermsaetze(l.weight, ladeConfig()).map(w => {
+            const pt = P.plattenText(w.weight, ladeConfig());
+            const ptAlt = P.plattenGaengigText(w.weight, ladeConfig());
             return `<div class="kv">
               <span class="k">${w.saetze > 1 ? w.saetze + '×' : ''}${t('ses.wdh', { n: w.reps })}</span>
               <span class="v"><b>${P.fmtWeight(w.weight)}</b>${pt ? ` — ${pt}` : ''}${
                 ptAlt ? `<span style="color:var(--dim)"> · ${t('ses.plattenOder')} ${ptAlt}</span>` : ''}</span></div>`;
           }).join('')}`).join('')}
-        <p style="color:var(--dim);margin-top:12px">${t('ses.scheibenHinweis', { kg: config.bar })}</p>
+        <p style="color:var(--dim);margin-top:12px">${t('ses.scheibenHinweis', { kg: kgFmt(ladeConfig().bar) })}</p>
       </div>
     </details>
     <details class="info"><summary>${t('ses.technik', { name: skill.name })}</summary>
@@ -2223,6 +2223,8 @@ function renderKuWatch() {
 
 const hatZwift = o => !!o && o.geraete.includes('zwiftride');
 const gewaehlterOrt = () => G.gyms(config).find(o => o.id === gymWahl()) || null;
+/** Die Config mit der Stange des gewaehlten Orts — nur fuer Platten und Aufwaermsaetze. */
+const ladeConfig = () => ({ ...config, bar: G.stangeAmOrt(config, gewaehlterOrt()) });
 
 /** Den Schalter zeigen, wenn am gewaehlten Ort ein Rad steht; ohne Auswahl, wenn irgendein Ort eins hat. */
 const radSchalterSichtbar = () => (gymWahl() ? hatZwift(gewaehlterOrt()) : G.gyms(config).some(hatZwift));
@@ -4232,12 +4234,12 @@ function renderAnsageAbgleich(logs) {
 
 /** Was pro Seite auf die Stange gehört — spart Rechnen zwischen den Sätzen. */
 function plattenZeile(gewicht) {
-  const pt = P.plattenText(gewicht, config);
+  const pt = P.plattenText(gewicht, ladeConfig());
   if (!pt) return `<p class="platten nicht">${t('ses.plattenNicht')}</p>`;
   if (pt === 'leere Stange') return `<p class="platten">${t('ses.plattenLeer')}</p>`;
   // Die zweite Zeile erscheint nur, wenn sie etwas anderes sagt — kommt
   // die erste ohnehin ohne 25er und 15er aus, gibt es nichts zu zeigen.
-  const alt = P.plattenGaengigText(gewicht, config);
+  const alt = P.plattenGaengigText(gewicht, ladeConfig());
   return `<p class="platten">${t('ses.platten')} <b>${pt}</b></p>${
     alt ? `<p class="platten alt">${t('ses.plattenOder')} <b>${alt}</b></p>` : ''}`;
 }
@@ -4819,10 +4821,11 @@ function gewichteFelder(o, i) {
       <span>${t(schluessel)}</span>
       <input class="${klasse}" data-i="${i}" type="text" inputmode="decimal" autocomplete="off"
              value="${wert ? escHtml(kgFmt(wert)) : ''}" placeholder="${ph}"></label>`;
-  return `<div class="gym-gewichte" data-zeige="kettlebell kurzhantel festhanteln baender" data-i="${i}"
-               ${['kettlebell', 'kurzhantel', 'festhanteln', 'baender'].some(an) ? '' : 'hidden'}>
+  return `<div class="gym-gewichte" data-zeige="kettlebell kurzhantel langhantel festhanteln baender" data-i="${i}"
+               ${['kettlebell', 'kurzhantel', 'langhantel', 'festhanteln', 'baender'].some(an) ? '' : 'hidden'}>
     ${feld('kettlebell', 'gym-kb', 'gym.kugelBasis', o.kugelBasis, '12')}
     ${feld('kurzhantel', 'gym-stange', 'gym.stange', o.kurzhantelStange, '2')}
+    ${feld('langhantel', 'gym-lh', 'gym.langhantelStange', o.langhantelStange, kgFmt(config.bar || 20))}
     <label class="feld" data-zeige="kettlebell kurzhantel" data-i="${i}" ${an('kettlebell') || an('kurzhantel') ? '' : 'hidden'}>
       <span>${t('gym.scheiben')}</span>
       <input class="gym-scheiben" data-i="${i}" type="text" autocomplete="off"
@@ -4926,9 +4929,10 @@ function renderGymVerwaltung() {
       });
     };
   });
-  box.querySelectorAll('.gym-kb, .gym-stange').forEach(el => {
+  box.querySelectorAll('.gym-kb, .gym-stange, .gym-lh').forEach(el => {
     el.onchange = () => {
-      const o = gymEntwurf[+el.dataset.i], feld = el.classList.contains('gym-kb') ? 'kugelBasis' : 'kurzhantelStange';
+      const o = gymEntwurf[+el.dataset.i], feld = el.classList.contains('gym-kb') ? 'kugelBasis'
+        : el.classList.contains('gym-lh') ? 'langhantelStange' : 'kurzhantelStange';
       const text = el.value.trim();
       const kg = Number(text.replace(',', '.'));
       if (!text) delete o[feld];
