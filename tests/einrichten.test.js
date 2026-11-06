@@ -94,4 +94,14 @@ eq('20 kg = eine 5er je Seite', P.plattenText(20, leicht), '5');
 ok('unter der Stange laesst sich nichts laden', P.platten(7.5, leicht) === null);
 eq('Aufwaermen beginnt mit 10 kg', P.waermsaetze(40, leicht)[0].weight, 10);
 
+print('\n--- Stange spaeter aendern ---');
+const basis = E.baueConfig(E.standardEntwurf());
+eq('10 kg wird gesetzt', E.setzeStange(basis, 10).bar, 10);
+eq('Zahl als Text geht', E.setzeStange(basis, '15').bar, 15);
+eq('unbekannter Wert aendert nichts', E.setzeStange(basis, 12).bar, 20);
+eq('Null aendert nichts', E.setzeStange(basis, 0).bar, 20);
+ok('Rest der Config bleibt', E.setzeStange(basis, 10).week === basis.week && E.setzeStange(basis, 10).lifts === basis.lifts);
+ok('Original bleibt unveraendert', (E.setzeStange(basis, 10), basis.bar === 20));
+ok('alle Einrichtungs-Stangen sind erlaubt', [20, 15, 10].every(k => E.STANGEN.includes(k)));
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

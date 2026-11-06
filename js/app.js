@@ -4839,10 +4839,36 @@ function gewichteFelder(o, i) {
   </div>`;
 }
 
+/** Die Stange der Langhantel, aenderbar nach dem Setup. */
+function renderStange() {
+  const box = $('bs-stangen');
+  if (!box) return;
+  box.innerHTML = E.STANGEN.map(kg =>
+    `<button data-bar="${kg}" class="${config && Number(config.bar) === kg ? 'an' : ''}">${kg} kg</button>`).join('');
+  box.querySelectorAll('button').forEach(b => { b.onclick = () => speichereStange(Number(b.dataset.bar)); });
+}
+
+async function speichereStange(kg) {
+  if (!config) return;
+  try {
+    const datei = await S.readFile('config.json');
+    if (!datei) throw new Error(t('msg.configNichtLesbar'));
+    const neu = E.setzeStange(datei.data, kg);
+    await S.writeFile('config.json', neu, 'Stange aktualisiert', datei.sha);
+    config = neu;
+    S.cache({ config });
+    renderStange();
+    banner(t('stange.gespeichert', { kg: kgFmt(kg) }), 'ok');
+  } catch (e) {
+    banner(e.message, 'err', 8000);
+  }
+}
+
 function renderGymVerwaltung() {
   const box = $('gym-liste');
   if (!box) return;
   renderRechner();
+  renderStange();
 
   // Ohne geladene Konfiguration entsteht hier KEIN Entwurf. Sonst waere er
   // leer, wuerde als Modulvariable haengen bleiben und beim naechsten

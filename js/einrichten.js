@@ -28,6 +28,19 @@ export const STANDARD_RIDES = [
   { label: 'Sweet Spot', detail: '3x12 Min @ 88-93% FTP, 6 Min locker dazwischen' }
 ];
 
+/** Die Stangen, die die Einrichtung anbietet (kg). */
+export const STANGEN = [20, 15, 10];
+
+/**
+ * Die Stange in einer bestehenden config.json aendern. Unbekannte Werte
+ * lassen die Config unveraendert; alles andere bleibt, wie es ist.
+ */
+export function setzeStange(config, kg) {
+  const n = Number(kg);
+  if (!config || !STANGEN.includes(n)) return config;
+  return { ...config, bar: n };
+}
+
 export const STANDARD_PLATTEN = [25, 20, 15, 10, 5, 2.5, 1.25];
 
 /**
