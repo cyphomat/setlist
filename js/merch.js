@@ -668,6 +668,21 @@ export function kugelRang(logs = []) {
  * Jeder geschaffte nimmt ein Drittel der Leiste; sind alle drei geschafft,
  * ist er besiegt. Ohne Kurs-Einheit gibt es ihn nicht.
  */
+/**
+ * Welche Endgegner sind mit dieser Einheit gefallen? Vorher stand er noch,
+ * nachher liegt er am Boden. `fahrten` getrennt, weil sie zum jeweiligen
+ * Stand der Logs gehoeren. Pausenmonate haben keinen Gegner.
+ */
+export function neueBosse(vorher = [], nachher = [], config = {}, monat, { fahrtenVorher = [], fahrtenNachher = [] } = {}) {
+  const tVor = monatsTour(vorher, config, monat, { fahrten: fahrtenVorher });
+  const tNach = monatsTour(nachher, config, monat, { fahrten: fahrtenNachher });
+  const kVor = kursBoss(vorher), kNach = kursBoss(nachher);
+  return {
+    tour: !!(tNach && !tNach.pause && tNach.komplett && !(tVor && tVor.komplett)),
+    kursBoss: !!(kNach && kNach.komplett && !(kVor && kVor.komplett))
+  };
+}
+
 export function kursBoss(logs = []) {
   if (!kursLogs(logs).length) return null;
   const ziele = kursTests(logs).map(c => ({ id: c.id, woche: c.woche, ok: c.geschafft === true, am: c.geschafft === true ? c.datum : null }));

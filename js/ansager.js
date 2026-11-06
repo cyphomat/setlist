@@ -32,8 +32,8 @@ export function setzeAn(an) {
  */
 export function ansage({ rang = null, tour = null, kursBoss = null, gitarre = null, aufnaeher = [], referenz = null, rund = null, elf = false, sauber = false } = {}) {
   if (rang) return { ruf: t('ans.rang'), unter: rang, art: 'gold' };
-  if (tour) return { ruf: t('ans.tour'), unter: t('ans.tourUnter', { boss: tour }), art: 'gold' };
-  if (kursBoss) return { ruf: t('ans.kursBoss'), unter: t('ans.tourUnter', { boss: kursBoss }), art: 'gold' };
+  if (tour) return { ruf: t('ans.tour'), unter: t('ans.tourUnter', { boss: tour }), art: 'gold', lang: true };
+  if (kursBoss) return { ruf: t('ans.kursBoss'), unter: t('ans.tourUnter', { boss: kursBoss }), art: 'gold', lang: true };
   if (gitarre) return { ruf: t('ans.gitarre'), unter: gitarre, art: 'gold' };
   if (aufnaeher.length) {
     return { ruf: t('ans.aufnaeher'),

@@ -1168,6 +1168,12 @@ button.tstop:hover .szene{border-color:var(--muted)}
 .mt-ziel.ok .h b{color:var(--gruen)}
 .mt-stand{margin:12px 0 0;font-size:0.875rem;color:var(--fg)}
 .monatstour.besiegt .mt-stand{color:var(--akzent);font-weight:600}
+/* Siegkarte: der Boss liegt, die Karte bleibt stehen (Abschluss und Heute) */
+.sieg-karte{border-color:var(--akzent)}
+.sieg-karte .kicker{color:var(--akzent)}
+.sieg-home{display:flex;gap:10px;align-items:center;margin-top:6px}
+.sieg-home .boss{width:40px;height:40px}
+.sieg-home .serie{margin:0}
 .mt-frueher{margin-top:12px}
 .mt-frueher summary{cursor:pointer;font-family:var(--mono);font-size:0.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .mt-frueher .termine{columns:auto}
@@ -1328,10 +1334,12 @@ button.tstop:hover .szene{border-color:var(--muted)}
   letter-spacing:.18em;color:#ffe3a3;text-shadow:0 2px 0 #3a2400}
 @media (prefers-reduced-motion:no-preference){
   .ansager.los{animation:ansage 2.2s ease-out forwards}
+  .ansager.lang.los{animation-duration:4.2s}
   @keyframes ansage{0%{opacity:0;transform:scale(1.3)}12%{opacity:1;transform:scale(1)}78%{opacity:1}100%{opacity:0;transform:scale(.98)}}
 }
 @media (prefers-reduced-motion:reduce){
   .ansager.los{animation:ansageRuhig 2.2s linear forwards}
+  .ansager.lang.los{animation-duration:4.2s}
   @keyframes ansageRuhig{0%,85%{opacity:1}100%{opacity:0}}
 }
 .feuerstoss{position:fixed;left:0;right:0;bottom:0;width:100vw;height:140px;z-index:55;pointer-events:none;image-rendering:pixelated}
