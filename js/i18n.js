@@ -524,6 +524,9 @@ export const TEXTE = {
     'ku.fertigKurs': 'Alle 36 Einheiten geschafft.',
 
     /* ---- Gyms und Geraete ---- */
+    'stange.titel': 'Langhantel',
+    'stange.hinweis': 'Gewicht der leeren Stange. Plattenrechner und Aufwärmsätze rechnen damit; Arbeitsgewichte bleiben, wie sie sind.',
+    'stange.gespeichert': 'Stange gespeichert: {kg} kg.',
     'gym.titel': 'Orte und Geräte',
     'gym.ueberall': 'Überall',
     'gym.hier': 'Hier trainiere ich',
@@ -2064,6 +2067,9 @@ export const TEXTE = {
     'ku.fertigKurs': 'All 36 sessions done.',
 
     /* ---- Gyms and equipment ---- */
+    'stange.titel': 'Barbell',
+    'stange.hinweis': 'Weight of the empty bar. The plate calculator and warm-up sets use it; working weights stay as they are.',
+    'stange.gespeichert': 'Bar saved: {kg} kg.',
     'gym.titel': 'Places and equipment',
     'gym.ueberall': 'Anywhere',
     'gym.hier': 'Training here',

@@ -10,6 +10,12 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-06.2
+
+### Neu
+- **Stange nach dem Setup ändern.** Backstage → *Orte* hat einen Abschnitt *Langhantel* mit 20, 15 und 10 kg. Die Wahl
+  steht in `config.json`; Arbeitsgewichte bleiben, Plattenrechner und Aufwärmsätze folgen der neuen Stange.
+
 ## 2026-11-06.1
 
 ### Neu
