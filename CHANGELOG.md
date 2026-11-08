@@ -10,6 +10,17 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-08.16
+
+### Neu
+- **Curls for the Girls: Pixel-Mähne und Feuerzeug.** Das Haar-o-Meter hat jetzt ein Gesicht mit Sonnenbrille, dessen Frisur
+  in fünf Stufen wächst (kahl, kurz, voll, groß, Hallenformat). Bei der Power Ballad hält ein Pixel-Feuerzeug seine Flamme hoch
+  und flackert, außer bei „Bewegung reduzieren“. Zum Schluss steht die Mähne neben der Frisurhöhe.
+- **Aufnäher „Hair Metal“** in vier Stufen nach der Zahl der Auftritte: Garagenband (1×), Sunset Strip (5×), Arena (15×) und
+  Heavy Rotation (30×), jeweils mit eigenem Pixel-Motiv. Es erscheinen nur Kreise, wenn du Curls gespielt hast. Neue
+  Aufnäher meldet die App nach der Einheit wie sonst.
+- Neuer Bogen `assets/pixel/curls.png`, gezeichnet in `tools/pixel-curls.mjs`.
+
 ## 2026-11-08.15
 
 ### Neu

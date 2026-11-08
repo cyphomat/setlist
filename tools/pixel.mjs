@@ -12,6 +12,7 @@
 //   assets/pixel/lagerfeuer.png Tagesgegner (2 × 24×24) und Roadie (3 × 16×18), Quelle tools/pixel-lagerfeuer.mjs
 //   assets/pixel/figuren.png    je 76×82, Reihenfolge wie FIGUREN in js/kurs.js (Winkel in tools/pixel-figur.mjs)
 //   assets/pixel/anlaesse.png   je Motiv zwei Bilder 15×15, Reihenfolge wie MOTIVE in js/anlaesse.js
+//   assets/pixel/curls.png      fuenf Maehnen und zwei Flammen 24×24 (Quelle tools/pixel-curls.mjs, Zahlen wie in js/curls.js)
 //   assets/pixel/logo.png       der Schriftzug fuer die Kopfzeile
 //   icons/icon-*.png            das App-Icon, ganzzahlig vergroessert
 //   assets/readme/*.png         Banner, Streifen und Icons fuers README
@@ -34,6 +35,8 @@ import { GITARREN as GITARREN_SPEC, gitarrenBilder } from './pixel-gitarren.mjs'
 import { MOTIVE as ANLASS_MOTIVE, MOTIV_KANTE } from '../js/anlaesse.js';
 import { KANTE as ANLASS_KANTE, PALETTE as ANLASS_FARBEN, motivRaster } from './pixel-anlaesse.mjs';
 import { FIGUREN } from '../js/kurs.js';
+import { MAEHNE_BILDER as CU_MAEHNE, FEUERZEUG_BILDER as CU_FEUERZEUG, BILD_KANTE as CU_KANTE } from '../js/curls.js';
+import { KANTE as CU_PX_KANTE, PALETTE as CU_FARBEN, MAEHNE_BILDER as CU_PX_MAEHNE, FEUERZEUG_BILDER as CU_PX_FEUERZEUG, curlsRaster } from './pixel-curls.mjs';
 import { HINGE, GETUP, SWING2, SWING1, GOBLET, PRESS, figurBilder, FIGUR_B, FIGUR_H } from './pixel-figur.mjs';
 import { KANTE as LF_KANTE, FIGUR_B as LF_FIGUR_B, FIGUR_H as LF_FIGUR_H, BOGEN_B as LF_B, BOGEN_H as LF_H, GEGNER_FARBE, FIGUR_FARBE, GEGNER_LEBENDIG, GEGNER_BESIEGT, FIGUR_STEHT, FIGUR_JUBEL, FIGUR_SITZT } from './pixel-lagerfeuer.mjs';
 import { feld as feuerFeld, schritt as feuerSchritt, PALETTE as FEUER } from '../js/feuer.js';
@@ -384,6 +387,43 @@ const EIGENE = {
     '.A...A...A.',
     'AHA.AHA.AHA',
     'HHH.HHH.HHH'
+  ],
+  haarspray: [            // Hair Metal 1, Garagenband: die Dose mit Spruehnebel
+    '..AA.....',
+    '.HHHH..A.',
+    '.HAAH.A..',
+    '.HHHH..A.',
+    '.HAAH.A.A',
+    '.HHHH....',
+    '.HHHH....',
+    '.HHHH....'
+  ],
+  sunset: [               // Hair Metal 5, Sunset Strip: die Sonne ueber dem Horizont
+    '...AAAAA...',
+    '..AAAAAAA..',
+    '.AAAAAAAAA.',
+    'AAAAAAAAAAA',
+    'HHHHHHHHHHH',
+    '.AAAAAAAAA.',
+    '..H.H.H.H..'
+  ],
+  arena: [                // Hair Metal 15, Arena: Traverse mit drei Scheinwerfern
+    'HHHHHHHHHHH',
+    '.H...H...H.',
+    '.A...A...A.',
+    'A.A.A.A.A.A',
+    'A..A...A..A',
+    '...A...A...'
+  ],
+  maehne: [               // Hair Metal 30, Heavy Rotation: die Maehne
+    '..AAAAAAA..',
+    '.AAAAAAAAA.',
+    'AAAHHHHHAAA',
+    'AAHHHHHHHAA',
+    'AAHAAHAAHAA',
+    'AAHHHHHHHAA',
+    '.AAHHHHHAA.',
+    '..AA...AA..'
   ],
   weihnachtsgig: [        // Tannenbaum mit Stern und Kugeln
     '.....A.....',
@@ -834,6 +874,7 @@ const MOTIV = {
   'pit-start': '#pitstart', 'pit-sprung': '#pitsprung', 'pit-serie-3': '#pitserie3', 'pit-serie-6': '#pitserie6',
   'kugelrang-1': '#kr1', 'kugelrang-2': '#kr2', 'kugelrang-3': '#kr3', 'kugelrang-4': '#kr4',
   kursboss: '#kursboss', 'kurs-duett': '#kursduett', 'check-duett': '#checkduett', 'pit-duett': '#pitduett',
+  'hair-1': '#haarspray', 'hair-5': '#sunset', 'hair-15': '#arena', 'hair-30': '#maehne',
   weihnachtsgig: '#weihnachtsgig', eiersuche: '#eiersuche', geisterstunde: '#geisterstunde', kerze: '#kerze'
 };
 /* Symbole, deren Farbe die Aussage ist: Blut bleibt rot. */
@@ -846,7 +887,7 @@ const KATEGORIE = {
   comeback: 'comeback', rueckweg: 'comeback', reunion: 'comeback', serie: 'serie',
   tour: 'tour', soundcheck: 'tour',
   duett: 'buehne', faustgruss: 'buehne', partner: 'buehne', verabredung: 'buehne',
-  kurs: 'buehne', check: 'buehne', kugel: 'buehne', pit: 'buehne', kugelrang: 'buehne', kursboss: 'buehne',
+  kurs: 'buehne', check: 'buehne', kugel: 'buehne', pit: 'buehne', kugelrang: 'buehne', kursboss: 'buehne', hair: 'buehne',
   weihnachtsgig: 'buehne', eiersuche: 'buehne', geisterstunde: 'buehne', kerze: 'buehne'
 };
 
@@ -1608,6 +1649,23 @@ function anlassBogen() {
   return b;
 }
 
+/** Curls for the Girls: Maehne des Haar-o-Meters (5 Stufen) und Feuerzeug (2 Flammen), nebeneinander. */
+if (CU_KANTE !== CU_PX_KANTE || CU_MAEHNE !== CU_PX_MAEHNE || CU_FEUERZEUG !== CU_PX_FEUERZEUG) {
+  throw new Error('Bildzahl oder Kantenlaenge in js/curls.js und tools/pixel-curls.mjs verschieden');
+}
+function curlsBogen() {
+  const bilder = curlsRaster();
+  const b = leer(bilder.length * CU_KANTE, CU_KANTE);
+  bilder.forEach((raster, i) => raster.forEach((zeile, y) => [...zeile].forEach((c, x) => {
+    if (c === '.') return;
+    if (!CU_FARBEN[c]) throw new Error(`Curls-Bild: Farbe ${c} fehlt in der Palette`);
+    setze(b, i * CU_KANTE + x, y, rgba(CU_FARBEN[c]));
+  })));
+  eindeutig(bilder.map((_, i) => { const t = leer(CU_KANTE, CU_KANTE); klebe(t, b, 0, 0, { x: i * CU_KANTE, y: 0, w: CU_KANTE, h: CU_KANTE }); return t; }),
+    bilder.map((_, i) => i < CU_MAEHNE ? `Maehne ${i}` : `Feuerzeug ${i - CU_MAEHNE + 1}`));
+  return b;
+}
+
 const ausgaben = {
   'assets/pixel/aufnaeher.png': bogen(eindeutig(BILDER.map(aufnaeher), BILDER), 24, 24),
   'assets/pixel/gitarren.png': bogen(eindeutig(gitarrenBilder(), gitarrenIds), 24, 56),
@@ -1625,6 +1683,7 @@ const ausgaben = {
   ...Object.fromEntries(Object.entries(README_ICONS).map(([k, n]) => [`assets/readme/i-${k}.png`, readmeIcon(n)])),
   'assets/pixel/shirts.png': bogen(ADJ.flatMap(a => { if (!STOFF[a]) throw new Error(`Kein Stoff fuer ${a}`); return [shirt(STOFF[a], false), shirt(STOFF[a], true)]; }), SHIRT_W, SHIRT_H),
   'assets/pixel/anlaesse.png': anlassBogen(),
+  'assets/pixel/curls.png': curlsBogen(),
   'assets/pixel/embleme.png': bogen(eindeutig(NOMEN.map(emblem), NOMEN), 20, 20),
   'assets/pixel/platten.png': bogen([...PLATTEN, ...KUGEL_PLATTEN].map(p => award(p.id)), AWARD_W, AWARD_H),
   'assets/pixel/raenge.png': bogen(RAENGE.map(r => { const f = SZENE[r.id]; if (!f) throw new Error(`Keine Szene fuer ${r.id}`); return f(); }), 96, 48)
@@ -1660,5 +1719,6 @@ console.log(`assets/pixel/gitarren.png ${gitarrenIds.length} × 24×56, alle ver
 console.log(`assets/pixel/shirts.png     ${ADJ.length} × 2 × ${SHIRT_W}×${SHIRT_H}`);
 console.log(`assets/pixel/embleme.png    ${NOMEN.length} × 20×20, alle verschieden`);
 console.log(`assets/pixel/anlaesse.png  ${ANLASS_MOTIVE.length} × 2 × ${ANLASS_KANTE}×${ANLASS_KANTE}`);
+console.log(`assets/pixel/curls.png     ${CU_MAEHNE} Maehnen + ${CU_FEUERZEUG} Flammen × ${CU_KANTE}×${CU_KANTE}`);
 console.log(`assets/pixel/platten.png    ${PLATTEN.length + KUGEL_PLATTEN.length} × ${AWARD_W}×${AWARD_H}`);
 console.log('assets/pixel/logo.png, icons/icon-*.png, assets/readme/*.png');

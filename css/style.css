@@ -1081,7 +1081,23 @@ input[type=checkbox]{accent-color:var(--akzent);width:16px;height:16px}
 /* Curls for the Girls: Karten wie im Mosh Pit, dazu das Haar-o-Meter. */
 #cu-body{padding-bottom:calc(128px + env(safe-area-inset-bottom))}
 #cu-fertig{margin-top:16px}
-.cu-haar{margin-top:14px}
+.cu-haar{margin-top:14px;display:flex;align-items:center;gap:12px}
+.cu-haar .mitte{flex:1;min-width:0}
+/* Pixelbilder (assets/pixel/curls.png: fuenf Maehnen, zwei Flammen, je 24 x 24, hier doppelt gross) */
+.cu-pix{flex:none;display:block;width:48px;height:48px;background:#17161b url('../assets/pixel/curls.png') no-repeat 0 0;background-size:336px 48px;image-rendering:pixelated;image-rendering:crisp-edges;border:1px solid var(--line)}
+.cu-maehne.s0{background-position:0 0}
+.cu-maehne.s1{background-position:-48px 0}
+.cu-maehne.s2{background-position:-96px 0}
+.cu-maehne.s3{background-position:-144px 0}
+.cu-maehne.s4{background-position:-192px 0}
+.cu-feuerzeug{background-position:-240px 0}
+@media (prefers-reduced-motion:no-preference){
+  .cu-feuerzeug{animation:cu-flackern .5s steps(1) infinite}
+}
+@keyframes cu-flackern{0%{background-position:-240px 0}50%{background-position:-288px 0}}
+.cu-ballade-kopf{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.cu-ballade-kopf .text{flex:1;min-width:0}
+.cu-fertig-kopf{display:flex;align-items:center;gap:12px;margin:12px 0}
 .cu-haar .h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-family:var(--display);text-transform:uppercase;letter-spacing:.06em}
 .cu-haar .t{color:var(--akzent);font-size:1.5rem;font-variant-numeric:tabular-nums}
 .cu-haar .balken{height:10px;margin-top:6px;border:1px solid var(--line);background:var(--panel)}

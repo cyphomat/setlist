@@ -103,6 +103,75 @@ print('\n--- Haar-o-Meter ---');
   })());
 }
 
+print('\n--- Maehne ---');
+{
+  eq('0 cm: kahl', CU.maehneStufe(0), 0);
+  eq('keine Zahl: kahl', CU.maehneStufe(NaN), 0);
+  eq('negativ: kahl', CU.maehneStufe(-3), 0);
+  eq('1 cm: kurz', CU.maehneStufe(1), 1);
+  eq('9 cm: noch kurz', CU.maehneStufe(9), 1);
+  eq('10 cm: voll', CU.maehneStufe(10), 2);
+  eq('19 cm: gross', CU.maehneStufe(19), 3);
+  eq('28 cm: Hallenformat', CU.maehneStufe(28), 4);
+  eq('volle Show: Hallenformat', CU.maehneStufe(CU.HAAR_MAX), 4);
+  eq('ueber dem Maximum bleibt es dabei', CU.maehneStufe(99), CU.MAEHNE_BILDER - 1);
+  ok('waechst nie rueckwaerts, jede Stufe kommt vor', (() => {
+    let letzte = 0; const da = new Set();
+    for (let cm = 0; cm <= CU.HAAR_MAX; cm++) { const s = CU.maehneStufe(cm); if (s < letzte) return false; letzte = s; da.add(s); }
+    return da.size === CU.MAEHNE_BILDER;
+  })());
+}
+
+print('\n--- Pixel-Quellen ---');
+{
+  const PX = await import('../tools/pixel-curls.mjs');
+  eq('Maehnen im Bogen wie in der App', PX.MAEHNE_BILDER, CU.MAEHNE_BILDER);
+  eq('Flammen im Bogen wie in der App', PX.FEUERZEUG_BILDER, CU.FEUERZEUG_BILDER);
+  eq('Kantenlaenge wie in der App', PX.KANTE, CU.BILD_KANTE);
+  const raster = PX.curlsRaster();
+  eq('sieben Bilder', raster.length, CU.MAEHNE_BILDER + CU.FEUERZEUG_BILDER);
+  ok('jedes Bild ist 24 x 24', raster.every(r => r.length === CU.BILD_KANTE && r.every(z => z.length === CU.BILD_KANTE)));
+  ok('nur Farben aus der Palette', raster.every(r => r.every(z => [...z].every(c => c === '.' || PX.PALETTE[c]))));
+  ok('keine zwei Bilder gleich', new Set(raster.map(r => r.join('/'))).size === raster.length);
+}
+
+print('\n--- Aufnaeher Hair Metal ---');
+{
+  const cfg = {
+    bar: 20, rounding: 2.5, firstWorkout: 'A', deload: { afterFails: 3, factor: 0.9 },
+    lifts: { squat: { name: 'Back Squat', increment: 2.5, start: 95 }, bench: { name: 'Bench Press', increment: 2.5, start: 57.5 } },
+    workouts: { A: [{ lift: 'squat', sets: 5, reps: 5 }], B: [{ lift: 'bench', sets: 5, reps: 5 }] },
+    week: { slots: [{ day: 1, type: 'strength' }] }
+  };
+  const HEUTE = new Date(2026, 10, 30);
+  const hat = (liste, id) => (liste.find(a => a.id === id) || {}).verdient || null;
+  const tag = i => `2026-11-${String(i + 1).padStart(2, '0')}`;
+  const curls = n => Array.from({ length: n }, (_, i) => ({ date: tag(i), type: 'curls', finished: `${tag(i)}T19:00:00.000Z`, tracks: [] }));
+
+  eq('Stufen 1, 5, 15, 30', M.HAIR_STUFEN.join(','), '1,5,15,30');
+  eq('ohne Curls kein Hair-Metal-Kreis im Katalog', M.katalog(cfg).filter(a => a.id.startsWith('hair-')).length, 0);
+  eq('mit Curls vier Kreise', M.katalog(cfg, { mitCurls: true }).filter(a => a.id.startsWith('hair-')).length, 4);
+  eq('ohne Curls kein Aufnaeher', M.aufnaeher([], cfg, [], HEUTE).filter(a => a.id.startsWith('hair-')).length, 0);
+  eq('Garagenband beim ersten Mal', hat(M.aufnaeher(curls(1), cfg, [], HEUTE), 'hair-1'), tag(0));
+  eq('vier Mal reichen nicht fuer den Strip', hat(M.aufnaeher(curls(4), cfg, [], HEUTE), 'hair-5'), null);
+  eq('Sunset Strip am Tag des fuenften Mals', hat(M.aufnaeher(curls(5), cfg, [], HEUTE), 'hair-5'), tag(4));
+  eq('Arena am Tag des 15. Mals', hat(M.aufnaeher(curls(15), cfg, [], HEUTE), 'hair-15'), tag(14));
+  eq('Heavy Rotation am Tag des 30. Mals', hat(M.aufnaeher(curls(30), cfg, [], HEUTE), 'hair-30'), tag(29));
+  eq('29 Mal reichen nicht fuer Heavy Rotation', hat(M.aufnaeher(curls(29), cfg, [], HEUTE), 'hair-30'), null);
+  eq('ein Tag mit zwei Auftritten zaehlt zweimal', hat(M.aufnaeher([...curls(1), { ...curls(1)[0], finished: '2026-11-01T21:00:00.000Z' }], cfg, [], HEUTE), 'hair-1'), tag(0));
+  ok('Curls fuellen den Katalog nur um die vier Kreise', M.aufnaeher(curls(30), cfg, [], HEUTE).length - M.aufnaeher([], cfg, [], HEUTE).length === 4);
+  ok('jeder Aufnaeher hat ein Bild im Bogen', ['hair-1', 'hair-5', 'hair-15', 'hair-30'].every(id => M.bildIndex({ id }) >= 0));
+  ok('Bilder eindeutig im Bogen', new Set(M.BILDER).size === M.BILDER.length);
+  const fehlt = [];
+  for (const id of ['hair-1', 'hair-5', 'hair-15', 'hair-30']) for (const praefix of ['merch.p.', 'merch.pb.']) {
+    for (const sp of ['de', 'en']) { I.setSprache(sp); if (I.t(praefix + id, { n: 5 }) === praefix + id) fehlt.push(sp + ':' + praefix + id); }
+  }
+  I.setSprache('de');
+  eq('Texte der Aufnaeher in beiden Sprachen', fehlt.join(' '), '');
+  I.setSprache('de'); const dep = I.t('merch.pb.hair-5', { n: 5 }); I.setSprache('en'); const enp = I.t('merch.pb.hair-5', { n: 5 }); I.setSprache('de');
+  ok('Platzhalter wird in beiden Sprachen ersetzt', dep.includes('5') && enp.includes('5') && !dep.includes('{n}') && !enp.includes('{n}'));
+}
+
 print('\n--- Log bereinigen ---');
 {
   const roh = [

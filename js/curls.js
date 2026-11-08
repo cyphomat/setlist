@@ -73,6 +73,23 @@ export function haarHoehe(tracks = []) {
   return Math.round(cm);
 }
 
+/**
+ * Die Maehne im Bogen assets/pixel/curls.png (tools/pixel-curls.mjs):
+ * fuenf Stufen, danach zwei Flammenbilder fuer das Feuerzeug. Die Zahlen
+ * muessen mit dem Bogen uebereinstimmen; tools/pixel.mjs bricht sonst ab.
+ */
+export const MAEHNE_BILDER = 5;
+export const FEUERZEUG_BILDER = 2;
+export const BILD_KANTE = 24;
+
+/** Welche Maehne zu dieser Hoehe gehoert: 0 = kahl bis 4 = Hallenformat. */
+export function maehneStufe(cm) {
+  const h = Number(cm);
+  if (!(h >= 1)) return 0;
+  const viertel = HAAR_MAX / 4;
+  return Math.min(MAEHNE_BILDER - 1, 1 + Math.floor((h - 1) / viertel));
+}
+
 /** Nur gueltige Tracks und Zahlen ins Log. Saetze und Uebung kommen aus der Setlist, nicht aus der Oberflaeche. */
 export function bereinige(roh) {
   const aus = [];
