@@ -1223,7 +1223,7 @@ function openPicker(li, si) {
  * zusammen decken beides ab.
  */
 let audioCtx = null;
-// Kontext anlegen und erst danach "ambient" setzen: Safari legt die Sitzung
+// Kontext anlegen und erst danach die Sitzung auf "transient" setzen: Safari legt die Sitzung
 // beim Anlegen fest, davor gesetzt geht der Typ verloren.
 function audioBereit() {
   try {
@@ -2222,6 +2222,7 @@ const kuStopp = () => { clearInterval(kuTimer); kuTimer = null; kuPausiert = fal
 function kuSpracheKnopf() {
   const k = $('ku-sprache');
   k.hidden = !SP.kann();
+  $('ku-sp-ios').hidden = k.hidden || !SP.istIos();
   k.textContent = t(SP.istAn() ? 'ku.sp.an' : 'ku.sp.aus');
   k.classList.toggle('an', SP.istAn());
 }

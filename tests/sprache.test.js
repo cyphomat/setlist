@@ -90,8 +90,8 @@ eq('schweige bricht ab', abgebrochen, 2);
 
 print('\n--- Neben anderer Wiedergabe ---');
 const mitSession = { navigator: { audioSession: { type: 'auto' } } };
-eq('setzt ambient', SP.mischen(mitSession), true);
-eq('Typ ist ambient', mitSession.navigator.audioSession.type, 'ambient');
+eq('setzt transient', SP.mischen(mitSession), true);
+eq('Typ ist transient', mitSession.navigator.audioSession.type, 'transient');
 eq('ohne audioSession: false', SP.mischen({ navigator: {} }), false);
 eq('ohne navigator: false', SP.mischen({}), false);
 const wirft = { navigator: { get audioSession() { throw new Error('nein'); } } };
@@ -99,6 +99,10 @@ eq('wirft nie', SP.mischen(wirft), false);
 
 const sprichSession = { ...fake, navigator: { audioSession: { type: 'auto' } } };
 SP.sprich('Pause.', sprichSession);
-eq('sprich setzt ambient neu', sprichSession.navigator.audioSession.type, 'ambient');
+eq('sprich setzt den Typ neu', sprichSession.navigator.audioSession.type, 'transient');
+ok('iPhone erkannt', SP.istIos({ navigator: { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)' } }));
+ok('iPadOS erkannt', SP.istIos({ navigator: { userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', maxTouchPoints: 5 } }));
+ok('Mac nicht iOS', !SP.istIos({ navigator: { userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', maxTouchPoints: 0 } }));
+ok('ohne navigator nicht iOS', !SP.istIos({}));
 
 print(`\nGesamt: ${pass} bestanden, ${fail} fehlgeschlagen`);
