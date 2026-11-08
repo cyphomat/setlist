@@ -497,27 +497,68 @@ function renderWeights(f) {
 
 function renderWeek() {
   if (!config || !state) return;
-  $('week').innerHTML = P.planWeek(state, config).map(s => {
-    const ride = s.type === 'ride' ? ridesByDate.get(s.date) : null;
-    const done = s.done || !!ride;
-    const info = s.type === 'ride' ? RIDE_INFO[s.label] : null;
-    const klasse = `tag ${s.isToday ? 'heute' : ''} ${done ? 'erledigt' : ''} ${s.type === 'ride' ? 'rad' : ''}`;
-    const zeile = `
-        <span class="day">${escHtml(s.tagNr === undefined ? s.day : t('tag.' + s.tagNr))}</span>
-        <span class="what">${done ? '✓ ' : ''}${escHtml(s.label)}
-          <span class="detail">${ride
-            ? `<span class="ride-done">${escHtml(ride.minutes)} MIN · ${escHtml(ride.km)} KM${ride.load ? ` · LOAD ${escHtml(ride.load)}` : ''}</span>`
-            : escHtml(s.detail) + wattZiel(s.label)}</span>
-        </span>`;
-    // Eine Radeinheit, die noch ansteht, traegt ihr Warum selbst: Antippen
-    // klappt es unter der Zeile auf, statt als eigener Kasten dazwischen.
-    if (info && !done) {
-      return `<details class="${klasse}"><summary>${zeile}</summary>
-        <div class="tag-info"><p>${info.warum}</p>
-        <div class="kv"><span class="k">${t('home.achtung')}</span><span class="v">${info.achtung}</span></div></div></details>`;
+  const logs = alleLogs.length ? alleLogs : ((S.cachedLogs() || {}).logs || []);
+  const w = M.wochenStand(logs, config, new Date(), state.history || [], { fahrten: radFuerMerch(logs) });
+  const plan = P.planWeek(state, config);
+  // Ohne Krafttage im Plan gibt es keine Plaetze: dann bleibt es bei der Terminliste.
+  if (!w) { $('week').innerHTML = plan.map(wochenZeileTermin).join(''); return; }
+
+  const tagName = datum => t('tag.' + new Date(datum + 'T12:00:00').getDay());
+  const artName = e => e.art === 'strength' ? (e.workout ? `Workout ${e.workout}` : t('merch.art.kraft'))
+    : t({ kurs: 'ku.titel', moshpit: 'home.mosh', wod: 'home.jam', unplugged: 'home.unplugged', maxout: 'merch.art.maxout', rad: 'merch.art.rad' }[e.art]);
+  const feinheit = e => e.art === 'rad' && (e.minutes || e.km)
+    ? `<span class="ride-done">${escHtml(e.minutes)} MIN · ${escHtml(e.km)} KM</span>` : '';
+  const zeile = (klasse, nr, was, detail) => `<div class="tag ${klasse}">
+        <span class="day">${escHtml(nr)}</span>
+        <span class="what">${was}<span class="detail">${detail}</span></span></div>`;
+
+  // Kopf: wo steht die Woche, und wie viel Luft ist noch?
+  let hinweis = '';
+  if (w.offen && !w.tageUebrig) hinweis = t('wk.vorbei');
+  else if (w.knapp) hinweis = t('wk.knapp');
+  const kopf = `<div class="wk-kopf"><b>${escHtml(w.offen ? t('wk.offen', { n: w.offen }) : t('wk.komplett'))}</b>
+      ${w.offen && w.tageUebrig ? `<span>${escHtml(tn('wk.tage', w.tageUebrig))}</span>` : ''}
+      ${hinweis ? `<span class="wk-hinweis">${escHtml(hinweis)}</span>` : ''}</div>`;
+
+  // Plaetze: erledigte zuerst, dann die offenen mit dem, was als Naechstes dran waere.
+  let workout = state.next, heuteOffen = w.heuteFrei;
+  const plaetze = [];
+  for (let i = 0; i < w.soll; i++) {
+    const e = w.plaetze[i];
+    if (e) {
+      plaetze.push(zeile('erledigt', i + 1, `✓ ${escHtml(artName(e))} · ${escHtml(tagName(e.date))}`, feinheit(e)));
+    } else {
+      const uebungen = config.workouts[workout].map(s => config.lifts[s.lift].name).join(' · ');
+      plaetze.push(zeile(heuteOffen ? 'heute' : '', i + 1, escHtml(`Workout ${workout}`),
+        `${escHtml(uebungen)} · ${escHtml(t('wk.oder'))}`));
+      workout = workout === 'A' ? 'B' : 'A';
+      heuteOffen = false;
     }
-    return `<div class="${klasse}">${zeile}</div>`;
-  }).join('');
+  }
+  const extras = w.extras.map(e => zeile('extra', '+', `✓ ${escHtml(artName(e))} · ${escHtml(tagName(e.date))}`,
+    `${feinheit(e)}${feinheit(e) ? ' · ' : ''}${escHtml(t('wk.extra'))}`));
+
+  // Rad-Tipps: was der Plan fuer die Woche vorschlaegt, ohne Haken und ohne Tag.
+  const tipps = plan.filter(s => s.type === 'ride').map(s => {
+    const info = RIDE_INFO[s.label];
+    const inhalt = `<span class="day">·</span>
+        <span class="what">${escHtml(s.label)}<span class="detail">${escHtml(t('wk.tipp'))} · ${escHtml(s.detail)}${wattZiel(s.label)}</span></span>`;
+    return info
+      ? `<details class="tag tipp"><summary>${inhalt}</summary>
+        <div class="tag-info"><p>${info.warum}</p>
+        <div class="kv"><span class="k">${t('home.achtung')}</span><span class="v">${info.achtung}</span></div></div></details>`
+      : `<div class="tag tipp">${inhalt}</div>`;
+  });
+  $('week').innerHTML = kopf + plaetze.join('') + extras.join('') + tipps.join('');
+}
+
+/** Die alte Terminzeile, nur noch fuer Plaene ohne Krafttage. */
+function wochenZeileTermin(s) {
+  const ride = s.type === 'ride' ? ridesByDate.get(s.date) : null;
+  const done = s.done || !!ride;
+  return `<div class="tag ${s.isToday ? 'heute' : ''} ${done ? 'erledigt' : ''}">
+        <span class="day">${escHtml(s.tagNr === undefined ? s.day : t('tag.' + s.tagNr))}</span>
+        <span class="what">${done ? '✓ ' : ''}${escHtml(s.label)}<span class="detail">${escHtml(s.detail)}</span></span></div>`;
 }
 
 /**

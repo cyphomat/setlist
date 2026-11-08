@@ -294,6 +294,59 @@ print('\n--- Goes to eleven ---');
   eq('Kurs nur aus der Historie zaehlt', M.verstaerker([], config, heute, kursHist).stufe, 5);
 }
 
+print('\n--- Wochenliste ---');
+{
+  const heute = new Date(2026, 9, 1);   // Do 01.10., Woche ab Mo 28.09.
+  const kurs = d => ({ date: d, type: 'kurs', kurs: 'kettlebell' });
+  const fahrt = d => ({ date: d, minutes: 45, km: 20 });
+  const stand = (logs, hist = [], fahrten = []) => M.wochenStand(logs, config, heute, hist, { fahrten });
+
+  const leer = stand([]);
+  eq('leere Woche: zwei Plaetze offen', [leer.soll, leer.plaetze.length, leer.offen].join(), '2,0,2');
+  eq('Do: Do bis So sind vier Tage', leer.tageUebrig, 4);
+  eq('zwei offen bei vier Tagen ist nicht knapp', leer.knapp, false);
+
+  const gemischt = stand([kurs('2026-09-29')], [], [fahrt('2026-09-30')]);
+  eq('Kurs und Fahrt fuellen beide Plaetze', gemischt.plaetze.map(e => e.art).join(), 'kurs,rad');
+  eq('nichts mehr offen', gemischt.offen, 0);
+  eq('Rad traegt Minuten und Kilometer', [gemischt.plaetze[1].minutes, gemischt.plaetze[1].km].join(), '45,20');
+
+  const viel = stand([kurs('2026-09-28'), kurs('2026-09-29'), kurs('2026-09-30')]);
+  eq('der dritte Tag ist ein Extra', [viel.plaetze.length, viel.extras.length].join(), '2,1');
+  eq('Extra ist der spaeteste Tag', viel.extras[0].date, '2026-09-30');
+
+  eq('zwei Dinge am selben Tag: eine Einheit',
+    stand([kurs('2026-09-29')], [], [fahrt('2026-09-29')]).plaetze.length, 1);
+  eq('5x5 gewinnt gegen Kurs am selben Tag',
+    stand([kurs('2026-09-29'), kraft('2026-09-29', [satz('squat', 60)])]).plaetze[0].art, 'strength');
+  eq('Historie ohne Log fuellt den Platz mit Workout',
+    stand([], [{ date: '2026-09-29', type: 'strength', workout: 'A' }]).plaetze[0].workout, 'A');
+  eq('Mobility und Check-in zaehlen nicht',
+    stand([{ date: '2026-09-29', type: 'mobility' }, { date: '2026-09-30', type: 'checkin' }]).plaetze.length, 0);
+  eq('Fahrt der letzten Woche zaehlt nicht', stand([], [], [fahrt('2026-09-25')]).plaetze.length, 0);
+
+  const sa = new Date(2026, 9, 3);      // Sa 03.10.: noch Sa und So
+  const spaet = M.wochenStand([], config, sa, [], {});
+  eq('Sa: zwei Tage uebrig, zwei offen: knapp', [spaet.tageUebrig, spaet.knapp].join(), '2,true');
+  const spaetEins = M.wochenStand([kurs('2026-09-29')], config, sa, [], {});
+  eq('Sa mit einem Platz offen: nicht knapp', spaetEins.knapp, false);
+  const so = new Date(2026, 9, 4);
+  eq('So mit heutiger Einheit: kein Tag mehr',
+    M.wochenStand([kurs('2026-10-04')], config, so, [], {}).tageUebrig, 0);
+  eq('So ohne Einheit: heute zaehlt', M.wochenStand([], config, so, [], {}).tageUebrig, 1);
+
+  // Liste und Regler zaehlen dasselbe
+  for (const [name, logs, hist, fahrten] of [
+    ['leer', [], [], []], ['Kurs+Fahrt', [kurs('2026-09-29')], [], [fahrt('2026-09-30')]],
+    ['viel', [kurs('2026-09-28'), kurs('2026-09-29'), kurs('2026-09-30')], [], []],
+    ['Historie', [], [{ date: '2026-09-29', type: 'kurs' }], []]
+  ]) {
+    const v = M.verstaerker(logs, config, heute, hist, { fahrten }), w = M.wochenStand(logs, config, heute, hist, { fahrten });
+    eq(`Regler und Liste decken sich: ${name}`, v.erledigt, w.plaetze.length);
+  }
+  eq('ohne Krafttage im Plan keine Liste', M.wochenStand([], { week: { slots: [] } }, heute), null);
+}
+
 
 print('\n--- Rad ---');
 {

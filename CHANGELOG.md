@@ -10,6 +10,15 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-08.2
+
+### Neu
+- **Die Wochenliste hat Plätze statt Termine.** So viele Plätze wie der Wochenregler Soll hat; jede Einheit (5×5, Kurs,
+  Rad, Jam, Unplugged, Mosh Pit, Max-out) füllt den nächsten freien Platz, an welchem Tag auch immer. Darüber steht
+  „Noch 1 offen · 2 Tage übrig“, bei knapper Woche ein Satz, dass auch eine kurze Einheit zählt. Mehr als geplant steht
+  als Extra darunter. Die Rad-Einheiten des Plans sind jetzt Rad-Tipps ohne Haken. Regler und Liste zählen aus derselben
+  Funktion und können nicht mehr auseinanderlaufen. Der Kalender-Abgleich mit intervals.icu bleibt unverändert.
+
 ## 2026-11-08.1
 
 ### Neu
