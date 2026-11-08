@@ -69,6 +69,8 @@ export function zeilen(logs, config = {}, { name = (art, id) => id } = {}) {
     } else if (typ === 'wod' || typ === 'unplugged' || typ === 'kurs' || typ === 'moshpit') {
       out.push({ ...basis, art: typ === 'wod' ? 'jam' : typ, notiz: l.label || '',
         dauer: minuten(l.dauerSekunden) });
+    } else if (typ === 'curls') {
+      out.push({ ...basis, art: 'curls', notiz: l.label || '', dauer: minuten(l.dauerSekunden) });
     } else if (typ === 'maxout') {
       out.push({ ...basis, art: 'maxout', uebung: l.check ? name('check', l.check) : liftName(l.lift),
         gewicht: l.weight, saetze: 1, wdh: l.reps, notiz: l.e1rm ? `e1RM ${l.e1rm}` : '' });
