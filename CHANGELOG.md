@@ -10,6 +10,13 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-08.12
+
+### Neu
+- **Backstage: „Ton testen“.** Ein Knopf unter *Töne* spielt vier Kurs-Signale und zeigt darunter den Zustand des
+  Audio-Kontexts (vorher, jetzt), den Typ der Audio-Sitzung und ob Vibration geht. Zum schnellen Prüfen auf dem
+  iPhone, ohne einen Kurs zu starten.
+
 ## 2026-11-08.11
 
 ### Behoben
