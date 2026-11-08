@@ -757,4 +757,30 @@ print('\n--- Abend-Check-in ---');
   eq('ist kein Training', P.istTraining({ date: '2026-09-10', type: 'checkin' }), false);
 }
 
+print('\n--- Offene Radtermine fuer den Kalender ---');
+{
+  // Woche ab Mo 28.09.2026: Rad-Slots Di 29.09. und Sa 03.10.
+  const st = P.initialState(config);
+  const offen = (gefahren, heuteFrei, d) => P.offeneRadTermine(st, config, { gefahren, heuteFrei }, d);
+  const MO = new Date(2026, 8, 28), DO = new Date(2026, 9, 1), SA = new Date(2026, 9, 3), SO = new Date(2026, 9, 4);
+  const tage = l => l.map(e => e.date).join(',');
+  eq('Montag: beide stehen auf ihrem Tag', tage(offen(0, true, MO)), '2026-09-29,2026-10-03');
+  eq('keine verschoben am Montag', offen(0, true, MO).some(e => e.verschoben), false);
+  eq('Donnerstag, nichts gefahren: Di rutscht auf heute, Sa bleibt', tage(offen(0, true, DO)), '2026-10-01,2026-10-03');
+  eq('das verschobene ist markiert', offen(0, true, DO)[0].verschoben, true);
+  eq('heute schon trainiert: Di rutscht auf Freitag', tage(offen(0, false, DO)), '2026-10-02,2026-10-03');
+  eq('eine gefahren: nur die zweite Einheit bleibt offen', offen(1, true, DO).map(e => e.label).join(), 'SST');
+  eq('und sie bleibt auf Samstag', tage(offen(1, true, DO)), '2026-10-03');
+  eq('beide gefahren: nichts offen', offen(2, true, DO).length, 0);
+  eq('mehr gefahren als geplant: nichts offen', offen(5, true, DO).length, 0);
+  eq('Samstag: Di rutscht auf den Sonntag, Sa bleibt', tage(offen(0, true, SA)), '2026-10-03,2026-10-04');
+  eq('Samstag nach dem Training: Sa rutscht auf Sonntag, die andere entfaellt', tage(offen(0, false, SA)), '2026-10-04');
+  eq('Sonntag ohne Training: nur eine Einheit passt', offen(0, true, SO).length, 1);
+  eq('Sonntag nach dem Training: nichts mehr', offen(0, false, SO).length, 0);
+  eq('Kennung bleibt Datum plus ride', offen(0, true, MO)[0].type, 'ride');
+  const ohneRad = { ...config, rides: [] };
+  eq('ohne Radeinheiten im Vorrat nichts', P.offeneRadTermine(st, ohneRad, {}, MO).length, 0);
+  eq('Kraft kommt nie dazu', offen(0, true, MO).some(e => e.type === 'strength'), false);
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

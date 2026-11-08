@@ -10,6 +10,15 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-08.5
+
+### Neu
+- **Der Kalender-Abgleich trägt nur noch ein, was offen ist.** „Rest der Woche eintragen“ legt in intervals.icu nur die
+  Radeinheiten an, die diese Woche noch nicht gefahren sind, auf ihrem Plantag, wenn der heute oder später ist, sonst
+  auf dem nächsten freien Tag bis Sonntag. Kraft kommt nicht mehr in den Kalender: die Woche hat Plätze statt Termine,
+  und ein fester Krafttermin bliebe dort unerledigt stehen. Bereits eingetragene Termine rührt die App nicht an; die
+  alten Kraft-Termine lassen sich in intervals.icu löschen. Ist nichts mehr offen, sagt die App das.
+
 ## 2026-11-08.4
 
 ### Neu

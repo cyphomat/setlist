@@ -484,6 +484,39 @@ export function planWeek(state, config, today = new Date()) {
   });
 }
 
+/**
+ * Was vom Rad noch in den Kalender soll: die Radeinheiten dieser Woche, die
+ * noch nicht gefahren sind, auf Tagen ab heute. Kraft kommt nicht mehr in den
+ * Kalender — die Woche hat Plaetze statt Termine, und ein fester Krafttermin
+ * bliebe dort unerledigt stehen.
+ *
+ * `gefahren`: an wie vielen Tagen dieser Woche schon gefahren wurde; so viele
+ * Radeinheiten gelten als erledigt, in der Reihenfolge des Plans. Eine
+ * Einheit bleibt auf ihrem Plantag, wenn der heute oder spaeter ist (heute
+ * nur, wenn `heuteFrei`), sonst rutscht sie auf den naechsten freien Tag bis
+ * Sonntag. Bleibt kein Tag, entfaellt sie. Die Kennung bleibt `Datum + ride`,
+ * damit der Abgleich mit dem Kalender nichts doppelt anlegt.
+ */
+export function offeneRadTermine(state, config, { gefahren = 0, heuteFrei = true } = {}, heute = new Date()) {
+  const tag = ymd(heute), montag = mondayOf(heute);
+  const frei = Array.from({ length: 7 }, (_, i) => { const d = new Date(montag); d.setDate(montag.getDate() + i); return ymd(d); })
+    .filter(d => d > tag || (d === tag && heuteFrei));
+  const offen = planWeek(state, config, heute).filter(s => s.type === 'ride').slice(Math.max(0, gefahren));
+  const vergeben = new Set(), out = [];
+  // Erst die, die auf ihrem Tag bleiben koennen — sonst nimmt ein verschobener ihnen den Tag weg.
+  const bleiben = new Set(offen.filter(s => frei.includes(s.date) && !vergeben.has(s.date) && vergeben.add(s.date)));
+  for (const s of offen) {
+    let datum = s.date;
+    if (!bleiben.has(s)) {
+      datum = frei.find(d => !vergeben.has(d));
+      if (!datum) continue;
+      vergeben.add(datum);
+    }
+    out.push({ ...s, date: datum, isToday: datum === tag, isPast: false, verschoben: datum !== s.date });
+  }
+  return out.sort((x, y) => x.date.localeCompare(y.date));
+}
+
 export function ymd(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
