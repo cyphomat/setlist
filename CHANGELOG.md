@@ -10,6 +10,14 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-08.18
+
+### Geändert
+- **Curls for the Girls erklärt sich selbst.** Jeder Track trägt eine Zeile zu seiner Rolle (Aufwärmen, Hauptsatz,
+  Drop-Satz, 21er, Ausklang); der erste heißt jetzt „Aqua Net (Warm-up)“ und sagt, wofür der Name steht (das Haarspray der
+  80er). Die Übungstexte beschreiben Stand, Bewegung und typische Fehler, die Einleitung erklärt Gewichtswahl und Ablauf.
+  Setlist, Sätze und Haar-o-Meter bleiben, wie sie waren.
+
 ## 2026-11-08.17
 
 ### Neu

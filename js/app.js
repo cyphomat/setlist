@@ -2999,6 +2999,7 @@ function renderCurls() {
       <p class="cu-ansage">${escHtml(t('cu.a.' + tr.id))}</p>
       </div>${tr.id === 'ballade' ? '<span class="cu-pix cu-feuerzeug" aria-hidden="true"></span>' : ''}
       </div>
+      <p class="fine cu-rolle">${escHtml(t('cu.r.' + tr.id))}</p>
       <p class="cu-uebung">${escHtml(cuName(tr))}</p>
       <p class="fine">${escHtml(t('cu.c.' + tr.muster))}</p>
       <div class="mp-saetze">${cuWerte[tr.id].map((x, k) => `<button class="btn ghost ${x ? 'an' : ''}" data-s="${k}" aria-pressed="${x}">${escHtml(t('mp.satz', { n: k + 1 }))}</button>`).join('')}</div>
