@@ -2534,7 +2534,6 @@ function kuStartLauf() {
   $('ku-plan').hidden = true;
   $('ku-lauf').hidden = false;
   $('ku-ende').hidden = true;
-  SG.mischen();   // einmal, vor dem ersten Ton: mehrfaches Setzen oder danach liess auf dem iPhone alles verstummen
   kuZeigeSchritt();
 }
 

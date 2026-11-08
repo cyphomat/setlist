@@ -10,6 +10,13 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-08.10
+
+### Behoben
+- **Kurs, iPhone: weiter stumm, jetzt ohne `audioSession`.** Auch mit einmaligem Setzen kamen keine Töne. Der Eingriff ist
+  ganz raus (`mischen()`), die Töne laufen mit dem Standard von iOS. Mögliche Ursache bleibt der Stumm-Schalter: Web Audio
+  respektiert ihn, laufende Musik nicht. Ob die Musik die Töne dann überlebt, ist ungeprüft.
+
 ## 2026-11-08.9
 
 ### Behoben

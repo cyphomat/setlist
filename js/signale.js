@@ -1,7 +1,8 @@
 // Signale im Kurs — fuer den Keller, wo das Handy an der Anlage haengt und der
 // Bildschirm nicht im Blick ist: jeder Schritt hat seinen eigenen Ton und sein
 // eigenes Vibrationsmuster, sodass man ihn hoert statt liest. Keine Sprache:
-// die Sprachausgabe von iOS haelt laufende Musik an, Web Audio mischt sich.
+// die Sprachausgabe von iOS haelt laufende Musik an. Kein audioSession-Eingriff:
+// auf dem iPhone 15 blieb es damit stumm.
 //
 // Reine Funktionen, ohne Browser pruefbar. `signal(a)` nimmt einen Schritt des
 // Kurs-Ablaufs (js/kurs.js) und liefert { ton: [Hz…], vib: [ms…] }.
@@ -41,18 +42,4 @@ export function art(a) {
 export function signal(a) {
   const k = art(a);
   return k ? { art: k, ...TABELLE[k] } : null;
-}
-
-/**
- * Sagt dem Geraet, dass der Ton neben anderer Wiedergabe laufen darf (Musik,
- * Hoerbuch), statt sie anzuhalten. Einmal beim Kursstart aufrufen, vor dem
- * ersten Ton (der AudioContext entsteht lazy in toene). Nicht jeder Browser kennt das; dann bleibt alles, wie es war.
- */
-export function mischen(g = globalThis) {
-  try {
-    const s = g.navigator && g.navigator.audioSession;
-    if (!s) return false;
-    s.type = 'ambient';
-    return true;
-  } catch { return false; }
 }

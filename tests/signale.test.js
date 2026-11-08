@@ -35,12 +35,4 @@ ok('Toene sind hoerbar (200–2000 Hz)', alle.every(s => s.ton.every(f => f >= 2
 ok('Vibration: alle Glieder positiv', alle.every(s => s.vib.every(v => v > 0)));
 ok('Legende nennt jede Art', SG.ARTEN.every(k => alle.some(s => s.art === k)));
 
-print('--- Neben anderer Wiedergabe ---');
-const mitSession = { navigator: { audioSession: { type: 'auto' } } };
-eq('setzt ambient', SG.mischen(mitSession), true);
-eq('Typ ist ambient', mitSession.navigator.audioSession.type, 'ambient');
-eq('ohne audioSession: false', SG.mischen({ navigator: {} }), false);
-eq('ohne navigator: false', SG.mischen({}), false);
-eq('wirft nie', SG.mischen({ navigator: { get audioSession() { throw new Error('nein'); } } }), false);
-
 print(`\nGesamt: ${pass} bestanden, ${fail} fehlgeschlagen`);
