@@ -10,6 +10,13 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-08.6
+
+### Behoben
+- **Kurs: Ansagen halten die Musik nicht mehr an (Versuch für iOS).** Der Kurs legt den Audio-Kontext jetzt beim Start an und
+  setzt erst danach `audioSession` auf „ambient“; vor jeder Ansage und jedem Ton wird das neu gesetzt, weil iOS den Typ
+  nach Hintergrund oder Unterbrechung zurücksetzen kann. Ob die Sprachausgabe das auf dem iPhone beachtet, ist ungeprüft.
+
 ## 2026-11-08.5
 
 ### Neu
