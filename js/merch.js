@@ -28,6 +28,8 @@ export const GIG_TYPEN = ['strength', 'wod', 'unplugged', 'kurs', 'moshpit', 'ma
 const typ = l => l.type || 'strength';
 const istGig = l => l && l.date && GIG_TYPEN.includes(typ(l));
 const istKraft = l => typ(l) === 'strength' && Array.isArray(l.lifts);
+/** Zaehlt in der Tour als Kraft-Einheit: 5x5, Kurs (Kettlebell), Mosh Pit, Max-out. */
+const istKraftOderKurs = l => !!l && (istKraft(l) || ['kurs', 'moshpit', 'maxout'].includes(typ(l)));
 /** Fahrten kommen von intervals.icu, nicht aus den Logs. Nur die mit Datum zaehlen. */
 const mitDatum = (fahrten = []) => fahrten.filter(f => f && f.date);
 
@@ -841,10 +843,12 @@ export function wochenEinheiten(logs = [], heute = new Date(), history = [], fah
 /**
  * Der Wochenregler. 0 bis 10 fuer erledigte Einheiten gegen die geplanten
  * Krafteinheiten (siehe `wochenEinheiten`): Faellt 5x5 aus, springt der Kurs
- * oder das Rad ein. Auf ELF dreht er nur, wenn der Plan erfuellt ist UND alle
- * Saetze der 5x5-Tage sauber waren. Mehr Einheiten als geplant drehen ihn
+ * oder das Rad ein. Auf ELF dreht er nur, wenn der Plan erfuellt ist UND alles
+ * sauber war. Mehr Einheiten als geplant drehen ihn
  * nicht weiter — wer mehr trainiert als vorgesehen, bekommt dafuer keinen
- * Applaus. `fahrten` sind die entdoppelten Fahrten aus intervals.icu.
+ * Applaus. Sauber heisst: kein 5x5-Tag mit Fehlversuch, und mindestens ein
+ * 5x5- oder Kurs-Tag; Rad und Jam geben keine Elf und stoeren sie nicht.
+ * `fahrten` sind die entdoppelten Fahrten aus intervals.icu.
  */
 export function verstaerker(logs = [], config = {}, heute = new Date(), history = [], { fahrten = [] } = {}) {
   const slots = (config.week && Array.isArray(config.week.slots)) ? config.week.slots : [];
@@ -858,9 +862,14 @@ export function verstaerker(logs = [], config = {}, heute = new Date(), history 
   // und offen heisst: keine Elf. Lieber eine Stufe zu wenig als eine
   // geschenkte.
   const ausHistorie = history.filter(h => (h.type || 'strength') === 'strength' && inWoche(h.date)).map(h => h.date);
+  // Ein Kurs hat keinen Satz, der scheitern kann: sein Log entsteht erst am
+  // Ende der Einheit, und die Bewertung (leicht/passend/zaeh) misst das
+  // Gefuehl, nicht einen Fehlversuch. Eine abgeschlossene Kurs-Einheit ist sauber.
+  const kursTage = logs.filter(l => l && typ(l) === 'kurs' && inWoche(l.date)).map(l => l.date)
+    .concat(history.filter(h => h && h.type === 'kurs' && inWoche(h.date)).map(h => h.date));
   const erledigt = Math.min(wochenEinheiten(logs, heute, history, fahrten).length, geplant);
   const belegt = new Set(diese.map(l => l.date));
-  const sauber = diese.length > 0 && ausHistorie.every(d => belegt.has(d)) &&
+  const sauber = (diese.length > 0 || kursTage.length > 0) && ausHistorie.every(d => belegt.has(d)) &&
     diese.every(l => l.lifts.length && l.lifts.every(e => e.success));
   const stufe = erledigt >= geplant ? (sauber ? 11 : 10) : Math.round((10 * erledigt) / geplant);
   return { stufe, erledigt, geplant, sauber };
@@ -929,7 +938,8 @@ export function monatsTour(logs = [], config = {}, monat, { fahrten = [], heute 
   const ziel = (id, daten, n) => ({ id, ist: daten.length, soll: n, ok: daten.length >= n, am: daten.length >= n ? daten[n - 1] || null : null });
 
   const sollKraft = soll('strength');
-  const kraft = sortiert(logs).filter(l => istKraft(l) && imMonat(l.date));
+  // Der Kurs ersetzt 5x5, wenn der Ort es nicht hergibt: er zaehlt als Kraft-Einheit.
+  const kraft = sortiert(logs).filter(l => istKraftOderKurs(l) && imMonat(l.date));
   const ziele = [ziel('kraft', einmal(kraft.map(l => l.date)), sollKraft)];
   const rad = mitDatum(fahrten).filter(f => imMonat(f.date));
   const sollRad = radGeplant(config) && mitDatum(fahrten).length ? soll('ride') : 0;
@@ -941,7 +951,8 @@ export function monatsTour(logs = [], config = {}, monat, { fahrten = [], heute 
     const anteil = sollKraft ? Math.max(1, Math.round(TOUR_ERSATZ * zaehlt.length / tage.length)) : 0;
     ziele.push(ziel('neben', einmal(neben), anteil));
   }
-  const sauber = kraft.filter(l => l.lifts.length && l.lifts.every(e => e.success)).map(l => l.date);
+  // Sauber: 5x5 ohne Fehlversuch, oder ein abgeschlossener Kurs (siehe `verstaerker`).
+  const sauber = kraft.filter(l => typ(l) === 'kurs' || (istKraft(l) && l.lifts.length && l.lifts.every(e => e.success))).map(l => l.date);
   ziele.push(ziel('sauber', einmal(sauber), Math.ceil(sollKraft / 2)));
 
   // Ein Monat ganz in der Pause hat keinen Gegner: nichts zu besiegen, nichts verloren.

@@ -10,6 +10,14 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-08.3
+
+### Neu
+- **Der Kurs zählt in der Monats-Tour und für die Elf.** Das Kraftziel der Tour nimmt Tage mit 5×5, Kurs, Mosh Pit oder
+  Max-out, das Ziel „Saubere Einheiten“ dazu abgeschlossene Kurs-Einheiten (der Kurs hat keinen Satz, der scheitern
+  kann). Auf elf geht der Wochenregler mit erfülltem Plan, ohne 5×5-Tag mit Fehlversuch und mit mindestens einem 5×5-
+  oder Kurs-Tag; Rad und Jam geben keine Elf und stören sie nicht. Das Rad-Ziel der Tour zählt weiter Fahrten.
+
 ## 2026-11-08.2
 
 ### Neu

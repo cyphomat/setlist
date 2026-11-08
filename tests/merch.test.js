@@ -276,9 +276,12 @@ print('\n--- Goes to eleven ---');
   // Kurs, Fahrt und Beiwerk fuellen den Platz, wenn 5x5 ausfaellt
   const kurs = d => ({ date: d, type: 'kurs', kurs: 'kettlebell' });
   eq('ein Kurs allein: fuenf', M.verstaerker([kurs('2026-09-29')], config, heute).stufe, 5);
-  eq('Kurs und Kurs: zehn, nie elf', M.verstaerker([kurs('2026-09-29'), kurs('2026-09-30')], config, heute).stufe, 10);
+  eq('Kurs und Kurs: abgeschlossen heisst sauber, elf', M.verstaerker([kurs('2026-09-29'), kurs('2026-09-30')], config, heute).stufe, 11);
   const fahrt = d => ({ date: d, km: 20 });
-  eq('Kurs und Fahrt: zehn', M.verstaerker([kurs('2026-09-29')], config, heute, [], { fahrten: [fahrt('2026-09-30')] }).stufe, 10);
+  eq('Kurs und Fahrt: Plan erfuellt, Kurs sauber: elf', M.verstaerker([kurs('2026-09-29')], config, heute, [], { fahrten: [fahrt('2026-09-30')] }).stufe, 11);
+  eq('Fahrt und Fahrt: zehn, Rad gibt keine Elf', M.verstaerker([], config, heute, [], { fahrten: [fahrt('2026-09-29'), fahrt('2026-09-30')] }).stufe, 10);
+  eq('Jam und Fahrt: zehn', M.verstaerker([{ date: '2026-09-29', type: 'wod' }], config, heute, [], { fahrten: [fahrt('2026-09-30')] }).stufe, 10);
+  eq('Kurs aus der Historie ist sauber', M.verstaerker([], config, heute, [{ date: '2026-09-29', type: 'kurs' }, { date: '2026-09-30', type: 'kurs' }]).stufe, 11);
   eq('eine Fahrt allein: fuenf', M.verstaerker([], config, heute, [], { fahrten: [fahrt('2026-09-30')] }).stufe, 5);
   eq('Fahrt der letzten Woche zaehlt nicht', M.verstaerker([], config, heute, [], { fahrten: [fahrt('2026-09-25')] }).stufe, 0);
   eq('Kurs und sauberes 5x5: elf', M.verstaerker(eine.concat([kurs('2026-09-30')]), config, heute).stufe, 11);
@@ -513,6 +516,24 @@ print('\n--- Monats-Tour ---');
   const ohnePlan = { ...config, week: { slots: [{ day: 3, type: 'ride' }] } };
   ok('ohne Krafttage: keine Tour, kein Aufnaeher', M.monatsTour(sept, ohnePlan, '2026-09', { heute: HEUTE }) === null &&
     !M.katalog(ohnePlan).some(a => a.gruppe === 'tour'));
+
+  // Kettlebell-Monat: der Kurs ersetzt 5x5
+  const kursSept = tage.map(d => ({ date: d, type: 'kurs', kurs: 'kettlebell' }));
+  const kk = M.monatsTour([kraft('2026-08-03', [satz('squat', 95)])].concat(kursSept), config, '2026-09', { heute: HEUTE });
+  const kz = id => kk.ziele.find(x => x.id === id);
+  eq('Kurs zaehlt als Kraft-Einheit', `${kz('kraft').ist}/${kz('kraft').soll}`, '8/8');
+  eq('abgeschlossener Kurs ist sauber', `${kz('sauber').ist}/${kz('sauber').soll}`, '8/4');
+  ok('Kettlebell-Monat ohne 5x5: komplett', kk.komplett);
+  const mitRadK = M.monatsTour([kraft('2026-08-03', [satz('squat', 95)])].concat(kursSept), mitRad, '2026-09', { heute: HEUTE, fahrten });
+  eq('mit Rad: Kurs im Kraftziel, Rad bleibt eigenes Ziel', `${mitRadK.ziele[0].ist}/${mitRadK.ziele[0].soll} ${mitRadK.ziele[1].id}`, '8/8 rad');
+  const gemischt = M.monatsTour([kraft('2026-08-03', [satz('squat', 95)])]
+    .concat(tage.slice(0, 4).map(d => kraft(d, [satz('squat', 95, false)])), kursSept.slice(4)), config, '2026-09', { heute: HEUTE });
+  eq('unsauberes 5x5 zaehlt als Kraft, nicht als sauber', `${gemischt.ziele[0].ist} ${gemischt.ziele.find(x => x.id === 'sauber').ist}`, '8 4');
+  const beiwerk = M.monatsTour([kraft('2026-08-03', [satz('squat', 95)])]
+    .concat([{ date: '2026-09-03', type: 'moshpit' }, { date: '2026-09-07', type: 'maxout' }, { date: '2026-09-10', type: 'wod' }, { date: '2026-09-14', type: 'unplugged' }]),
+    mitRad, '2026-09', { heute: HEUTE });
+  eq('Mosh Pit und Max-out zaehlen als Kraft, Jam und Unplugged nicht', beiwerk.ziele[0].ist, 2);
+  eq('Mosh Pit und Max-out sind nicht sauber', beiwerk.ziele.find(x => x.id === 'sauber').ist, 0);
 }
 
 print('\n--- Soundcheck-Serie ---');
