@@ -801,25 +801,34 @@ export function jahresBilanz(logs = [], config = {}, jahr, { heute = new Date(),
 
 /* ============================ Goes to eleven ============================ */
 
+/** Was fuer den Wochenregler zaehlt, ausser 5x5 und Rad: Kurs (Kettlebell), Jam, Unplugged, Moshpit, Max-out. */
+const REGLER_NEBEN = GIG_TYPEN.filter(a => a !== 'strength');
+
 /**
- * Der Wochenregler. 0 bis 10 fuer erledigte gegen geplante Krafteinheiten.
- * Auf ELF dreht er nur, wenn der Plan erfuellt ist UND alle Saetze der
- * Woche sauber waren. Mehr Einheiten als geplant drehen ihn nicht weiter —
- * wer mehr trainiert als vorgesehen, bekommt dafuer keinen Applaus.
+ * Der Wochenregler. 0 bis 10 fuer erledigte Einheiten gegen die geplanten
+ * Krafteinheiten. Eine Einheit ist ein Tag mit 5x5, Kurs, Fahrt, Jam,
+ * Unplugged, Moshpit oder Max-out: Faellt 5x5 aus, springt der Kurs oder das
+ * Rad ein. Auf ELF dreht er nur, wenn der Plan erfuellt ist UND alle Saetze
+ * der 5x5-Tage sauber waren. Mehr Einheiten als geplant drehen ihn nicht
+ * weiter — wer mehr trainiert als vorgesehen, bekommt dafuer keinen Applaus.
+ * `fahrten` sind die entdoppelten Fahrten aus intervals.icu.
  */
-export function verstaerker(logs = [], config = {}, heute = new Date(), history = []) {
+export function verstaerker(logs = [], config = {}, heute = new Date(), history = [], { fahrten = [] } = {}) {
   const slots = (config.week && Array.isArray(config.week.slots)) ? config.week.slots : [];
   const geplant = slots.filter(s => s && s.type === 'strength').length;
   if (!geplant) return null;
   const tag = ymd(heute), montag = montagKey(tag);
   const inWoche = d => d && montagKey(d) === montag && d <= tag;
   const diese = logs.filter(l => istKraft(l) && inWoche(l.date));
+  const neben = logs.filter(l => l && REGLER_NEBEN.includes(typ(l)) && inWoche(l.date)).map(l => l.date);
+  const rad = mitDatum(fahrten).filter(f => inWoche(f.date)).map(f => f.date);
   // Die Historie im Zustand weiss, DASS trainiert wurde, aber nicht, ob
   // sauber. Fehlt fuer einen ihrer Tage das Log, bleibt "sauber" offen —
   // und offen heisst: keine Elf. Lieber eine Stufe zu wenig als eine
   // geschenkte.
   const ausHistorie = history.filter(h => (h.type || 'strength') === 'strength' && inWoche(h.date)).map(h => h.date);
-  const tage = new Set(diese.map(l => l.date).concat(ausHistorie));
+  const nebenHistorie = history.filter(h => REGLER_NEBEN.includes(h.type) && inWoche(h.date)).map(h => h.date);
+  const tage = new Set(diese.map(l => l.date).concat(ausHistorie, neben, nebenHistorie, rad));
   const erledigt = Math.min(tage.size, geplant);
   const belegt = new Set(diese.map(l => l.date));
   const sauber = diese.length > 0 && ausHistorie.every(d => belegt.has(d)) &&

@@ -10,6 +10,14 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-08.1
+
+### Neu
+- **Der Wochenregler zählt, was du wirklich machst.** Ein Tag mit Kurs (Kettlebell), Rad, Jam, Unplugged, Moshpit oder
+  5×5 füllt einen Platz im Wochenplan; fällt 5×5 wegen des Ortes aus, springt der Kurs oder eine Fahrt ein. Zwei Dinge
+  am selben Tag zählen einmal, mehr als geplant dreht nicht weiter. Auf elf geht er weiter nur mit erfülltem Plan und
+  sauberen 5×5-Sätzen. Der Text heißt jetzt „Einheiten“ statt „Krafteinheiten“.
+
 ## 2026-11-06.4
 
 ### Neu
