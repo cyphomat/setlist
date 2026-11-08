@@ -23,7 +23,7 @@ import * as X from './export.js';
 import * as F from './feuer.js';
 import * as ANS from './ansager.js';
 import * as LF from './lagerfeuer.js';
-import * as SP from './sprache.js';
+import * as SG from './signale.js';
 import * as ANL from './anlaesse.js';
 import * as SC from './soundcheck.js';
 import * as ZU from './zusammen.js';
@@ -1230,7 +1230,7 @@ function audioBereit() {
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === 'suspended') audioCtx.resume();
   } catch { /* Web Audio nicht verfuegbar */ }
-  SP.mischen();
+  SG.mischen();
 }
 function toene(frequenzen, dauerMs = 160) {
   try {
@@ -2216,15 +2216,15 @@ let kuRadWahl = null;   // null: der Vorschlag gilt; sonst die Wahl am Schalter
 const kuZeit = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 const kuKg = kg => `${kgFmt(kg)} kg`;
 
-const kuStopp = () => { clearInterval(kuTimer); kuTimer = null; kuPausiert = false; SP.schweige(); };
+const kuStopp = () => { clearInterval(kuTimer); kuTimer = null; kuPausiert = false; };
 
 /** Schalter fuer die Sprachansagen; ohne Sprachausgabe am Geraet bleibt er weg. */
-function kuSpracheKnopf() {
-  const k = $('ku-sprache');
-  k.hidden = !SP.kann();
-  $('ku-sp-ios').hidden = k.hidden || !SP.istIos();
-  k.textContent = t(SP.istAn() ? 'ku.sp.an' : 'ku.sp.aus');
-  k.classList.toggle('an', SP.istAn());
+/** Das Signal des Schritts: Ton und Vibration, im Leise-Modus nur Vibration. */
+function kuSignal(a) {
+  const sg = SG.signal(a);
+  if (!sg) return;
+  if (navigator.vibrate) navigator.vibrate(sg.vib);
+  if (!upLeise()) toene(sg.ton, 140);
 }
 
 function renderKursKnopf() {
@@ -2602,8 +2602,7 @@ function kuZeigeSchritt() {
     $('ku-uhr').textContent = kuZeit(0);   // Stoppuhr, zaehlt hoch
   }
   $('ku-gesamt').textContent = t('ku.gesamt', { zeit: kuZeit(kuGesamt) });
-  kuSpracheKnopf();
-  if (SP.istAn()) SP.sprich(SP.sprechtext(a, naechster, { name: KU.blockName, seite: kuSeiteText, umbau: kuUmbauText }));
+  kuSignal(a);
   kuTicke();
 }
 
@@ -2620,13 +2619,13 @@ function kuTicke() {
     kuRest--;
     $('ku-uhr').textContent = Math.max(0, kuRest);
     if (kuRest === 3 && (a.art === 'pause' || a.art === 'umbau' || a.art === 'rad')) upSignal(false);
-    if (kuRest <= 0) { kuIndex++; upSignal(true); kuZeigeSchritt(); }
+    if (kuRest <= 0) { kuIndex++; kuZeigeSchritt(); }
   }, 1000);
 }
 
 function kuEnde() {
   kuStopp();
-  if (SP.istAn()) SP.sprich(t('ku.sp.ende'));
+  kuSignal({ art: 'ende' });
   $('ku-lauf').hidden = true;
   $('ku-ende').hidden = false;
   $('ku-geschafft').hidden = !(kuEinheit && kuEinheit.testId);
@@ -2746,16 +2745,8 @@ $('ku-back').onclick = () => { kuStopp(); renderKursKnopf(); show('home'); };
 $('ku-start').onclick = kuStartLauf;
 $('ku-fertig').onclick = () => { kuIndex++; kuZeigeSchritt(); };
 $('ku-weiter').onclick = () => { kuIndex++; kuZeigeSchritt(); };
-$('ku-sprache').onclick = () => {
-  SP.setzeAn(!SP.istAn());
-  kuSpracheKnopf();
-  // Der Tipp ist die Nutzergeste, die iOS fuer die Sprachausgabe braucht; gleich sagen, was jetzt gilt.
-  if (SP.istAn()) SP.sprich(SP.sprechtext(kuAblauf[kuIndex], kuAblauf.slice(kuIndex + 1).find(x => x.art !== 'pause' && x.art !== 'umbau'), { name: KU.blockName, seite: kuSeiteText, umbau: kuUmbauText }));
-  else SP.schweige();
-};
 $('ku-pause').onclick = () => {
   kuPausiert = !kuPausiert;
-  if (kuPausiert) SP.schweige();
   $('ku-pause').textContent = kuPausiert ? t('up.fortsetzen') : t('up.pausieren');
 };
 $('ku-abbruch').onclick = () => {
