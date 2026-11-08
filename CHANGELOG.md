@@ -10,6 +10,13 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-08.9
+
+### Behoben
+- **Kurs, iPhone: die Signale waren stumm.** `audioSession` wurde bei jedem Ton neu und nach dem Anlegen des
+  Audio-Kontexts gesetzt. Jetzt wie vor den Signalen: einmal beim Kursstart, vor dem ersten Ton. Ungeprüft auf dem
+  iPhone; bleibt es stumm, fliegt `mischen()` ganz raus.
+
 ## 2026-11-08.8
 
 ### Geändert

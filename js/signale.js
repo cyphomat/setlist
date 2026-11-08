@@ -45,8 +45,8 @@ export function signal(a) {
 
 /**
  * Sagt dem Geraet, dass der Ton neben anderer Wiedergabe laufen darf (Musik,
- * Hoerbuch), statt sie anzuhalten. Erst nach dem Anlegen des AudioContext
- * aufrufen. Nicht jeder Browser kennt das; dann bleibt alles, wie es war.
+ * Hoerbuch), statt sie anzuhalten. Einmal beim Kursstart aufrufen, vor dem
+ * ersten Ton (der AudioContext entsteht lazy in toene). Nicht jeder Browser kennt das; dann bleibt alles, wie es war.
  */
 export function mischen(g = globalThis) {
   try {
