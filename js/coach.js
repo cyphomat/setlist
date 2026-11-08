@@ -373,7 +373,7 @@ export function interferenz(fahrten = [], jetzt = new Date()) {
    was dort steht, hat Vorrang. Meine Zeilen sind nur die Rueckfall-
    ebene fuer Situationen, fuer die du noch nichts geschrieben hast. */
 
-function hash(text) {
+export function hash(text) {
   let h = 0;
   for (const c of String(text)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
   return h;
@@ -385,7 +385,7 @@ function hash(text) {
  * salzt. Ohne diesen Schritt waeren Muenzwurf und Auswahl gekoppelt — und
  * von zwei eigenen Zeilen erschiene immer nur dieselbe.
  */
-function mische(h) {
+export function mische(h) {
   h ^= h >>> 16; h = Math.imul(h, 2246822507) >>> 0;
   h ^= h >>> 13; h = Math.imul(h, 3266489909) >>> 0;
   h ^= h >>> 16;

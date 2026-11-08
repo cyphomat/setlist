@@ -121,6 +121,7 @@
         <button id="go-unplugged" class="btn ghost small" data-i18n="home.unplugged">Unplugged</button>
         <button id="go-kurs" class="btn ghost small">Kurs</button>
         <button id="go-mosh" class="btn ghost small" data-i18n="home.mosh" hidden>Mosh Pit</button>
+        <button id="go-curls" class="btn ghost small" data-i18n="home.curls">Curls</button>
         <button id="go-mobility" class="btn ghost small" data-i18n="home.mobility">Mobility</button>
         <button id="go-maxout" class="btn ghost small" data-i18n="home.maxout">Max-Out</button>
       </div>
@@ -317,6 +318,30 @@
   <div id="mp-leiste" class="rest" hidden>
     <span><span class="lbl" data-i18n="mp.pause">PAUSE</span><span id="mp-pause-zeit" class="t">90</span></span>
     <button id="mp-weiter" data-i18n="ses.weiter">WEITER</button>
+  </div>
+</section>
+
+<!-- ============ CURLS FOR THE GIRLS ============ -->
+<section id="view-curls" class="view" hidden>
+  <header class="head">
+    <button id="cu-back" class="icon-btn" data-i18n-aria="aria.zurueck" aria-label="Zurück">‹</button>
+    <h1 data-i18n="cu.titel">Curls for the Girls</h1>
+  </header>
+  <div class="pad" id="cu-body">
+    <div class="directive">
+      <span class="tone technik" data-i18n="cu.tag">ARME · 15 MINUTEN · KEINE REKORDJAGD</span>
+      <p class="txt" data-i18n="cu.lead">Live am Sunset Strip.</p>
+    </div>
+    <div class="cu-haar" role="status" aria-live="polite">
+      <div class="h"><span data-i18n="cu.haar">Frisurhöhe</span><span id="cu-haar-wert" class="t">0 cm</span></div>
+      <div class="balken" aria-hidden="true"><span id="cu-haar-balken"></span></div>
+    </div>
+    <div id="cu-tracks"></div>
+    <button id="cu-fertig" class="btn" data-i18n="cu.fertig">Zugabe beenden</button>
+  </div>
+  <div id="cu-leiste" class="rest" hidden>
+    <span><span class="lbl" data-i18n="mp.pause">PAUSE</span><span id="cu-pause-zeit" class="t">60</span></span>
+    <button id="cu-weiter" data-i18n="ses.weiter">WEITER</button>
   </div>
 </section>
 

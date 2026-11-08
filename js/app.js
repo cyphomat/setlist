@@ -16,6 +16,7 @@ import * as PS from './persoenlich.js';
 import * as UP from './unplugged.js';
 import * as KU from './kurs.js';
 import * as MP from './moshpit.js';
+import * as CU from './curls.js';
 import * as M from './merch.js';
 import * as W from './wach.js';
 import * as HL from './hilfs.js';
@@ -80,7 +81,7 @@ const $ = id => document.getElementById(id);
 uebersetzeStatisch();
 const VERSION_KEY = 'setlist.version';
 let laufendeVersion = localStorage.getItem(VERSION_KEY) || '—';
-const VIEWS = ['setup', 'einrichten', 'home', 'session', 'wod', 'unplugged', 'kurs', 'mosh', 'maxout', 'done', 'history', 'bibliothek', 'merch', 'backstage', 'soundcheck'];
+const VIEWS = ['setup', 'einrichten', 'home', 'session', 'wod', 'unplugged', 'kurs', 'mosh', 'curls', 'maxout', 'done', 'history', 'bibliothek', 'merch', 'backstage', 'soundcheck'];
 // Waehrend Einheit, Jam, Unplugged und Max-Out bleibt der Bildschirm an —
 // am Ansichtswechsel festgemacht, damit kein Ausgang (Fertig, Abbrechen,
 // Zurueck) das Freigeben vergessen kann.
@@ -2938,6 +2939,149 @@ $('mp-back').onclick = () => {
 $('mp-fertig').onclick = mpSpeichern;
 $('mp-weiter').onclick = () => { mpPause = false; $('mp-leiste').hidden = true; };
 
+/* ========================= Curls for the Girls =========================
+   Die Spasseinheit fuer die Arme (js/curls.js): acht Tracks, Gewicht frei,
+   keine Folgen fuer das Programm. Hier wird nur abgehakt.                  */
+
+let cuEinheit = null, cuWerte = {}, cuGesamt = 0, cuTimer = null, cuRest = 0, cuPause = false;
+
+const cuStopp = () => { clearInterval(cuTimer); cuTimer = null; cuPause = false; $('cu-leiste').hidden = true; };
+
+function starteCurls() {
+  cuStopp();
+  cuEinheit = CU.einheit(gymGeraete());
+  cuGesamt = 0;
+  cuWerte = {};
+  for (const tr of cuEinheit.tracks) cuWerte[tr.id] = Array(tr.saetze).fill(false);
+  renderCurls();
+  show('curls');
+}
+
+/** Name der Uebung: Bewegung plus Werkzeug, oder der Ersatz ohne Geraet. */
+const cuName = tr => t('cu.p.' + tr.muster, { w: tr.werkzeug ? t('cu.w.' + tr.werkzeug) : '' });
+
+function cuZiel(tr) {
+  const z = tr.ziel;
+  if (z.typ === 'reps') return t(z.seiten ? 'cu.ziel.seite' : 'cu.ziel.reps', { saetze: tr.saetze, n: z.n });
+  if (z.typ === 'halten') return t('cu.ziel.halten', { saetze: tr.saetze, s: z.s });
+  return t('cu.ziel.' + z.typ, { saetze: tr.saetze });
+}
+
+const cuStand = () => cuEinheit.tracks.map(tr => ({ id: tr.id, erledigt: cuWerte[tr.id].filter(Boolean).length }));
+
+/** Haar-o-Meter: Zahl und Balken folgen den abgehakten Saetzen. */
+function cuHaarZeigen() {
+  const cm = CU.haarHoehe(cuStand());
+  $('cu-haar-wert').textContent = t('cu.cm', { n: cm });
+  $('cu-haar-balken').style.width = `${Math.round(100 * cm / CU.HAAR_MAX)}%`;
+}
+
+function renderCurls() {
+  $('cu-tracks').innerHTML = cuEinheit.tracks.map((tr, i) => `<div class="mp-lift cu-track" data-tr="${tr.id}">
+      <div class="h"><span class="name">${i + 1}. ${escHtml(t('cu.t.' + tr.id))}</span><span class="fine">${escHtml(cuZiel(tr))}</span></div>
+      <p class="cu-ansage">${escHtml(t('cu.a.' + tr.id))}</p>
+      <p class="cu-uebung">${escHtml(cuName(tr))}</p>
+      <p class="fine">${escHtml(t('cu.c.' + tr.muster))}</p>
+      <div class="mp-saetze">${cuWerte[tr.id].map((x, k) => `<button class="btn ghost ${x ? 'an' : ''}" data-s="${k}" aria-pressed="${x}">${escHtml(t('mp.satz', { n: k + 1 }))}</button>`).join('')}</div>
+    </div>`).join('');
+
+  $('cu-tracks').querySelectorAll('.cu-track').forEach(karte => {
+    const tr = cuEinheit.tracks.find(x => x.id === karte.dataset.tr), werte = cuWerte[tr.id];
+    karte.querySelectorAll('[data-s]').forEach(b => {
+      b.onclick = () => {
+        const k = Number(b.dataset.s);
+        werte[k] = !werte[k];
+        b.classList.toggle('an', werte[k]);
+        b.setAttribute('aria-pressed', String(werte[k]));
+        if (werte[k] && werte.some(x => !x)) cuPauseStart(tr.pause);
+        cuUhr();
+        cuHaarZeigen();
+      };
+    });
+  });
+  cuHaarZeigen();
+}
+
+/** Eine Uhr: zaehlt die Gesamtzeit ab dem ersten Satz und laesst die Pause herunter. */
+function cuUhr() {
+  if (cuTimer) return;
+  cuTimer = setInterval(() => {
+    cuGesamt++;
+    if (cuPause) {
+      cuRest--;
+      $('cu-pause-zeit').textContent = Math.max(0, cuRest);
+      if (cuRest === 3) upSignal(false);
+      if (cuRest <= 0) { cuPause = false; $('cu-leiste').hidden = true; upSignal(true); }
+    }
+  }, 1000);
+}
+
+function cuPauseStart(sekunden) {
+  cuPause = true;
+  cuRest = sekunden;
+  $('cu-pause-zeit').textContent = cuRest;
+  $('cu-leiste').hidden = false;
+}
+
+async function cuSpeichern() {
+  if (!cuEinheit) return;
+  const tracks = CU.bereinige(cuEinheit.tracks.map(tr => ({ id: tr.id, uebung: tr.uebung, erledigt: cuWerte[tr.id].filter(Boolean).length })));
+  if (!tracks.some(x => x.erledigt > 0)) { banner(t('cu.nichts'), '', 4000); return; }
+  cuStopp();
+  const log = {
+    date: P.ymd(new Date()),
+    type: CU.TYP,
+    label: CU.label(tracks),
+    dauerSekunden: Math.max(60, cuGesamt),
+    haar: CU.haarHoehe(tracks),
+    tracks,
+    finished: new Date().toISOString()
+  };
+  const ort = ortName();
+  if (ort) log.ort = ort;
+  state = P.applyLog(state, config, log);
+  S.cache({ state });
+  alleLogs = geladeneLogs().concat([log]);
+  S.cacheLogs(alleLogs);
+
+  const alle = tracks.length === CU.TRACKS.length && tracks.every(x => x.geschafft);
+  $('done-body').innerHTML = `
+    <div class="card">
+      <div class="kicker">${escHtml(log.date)} · ${t('hist.curls')}</div>
+      <div class="name">${escHtml(t('cu.titel'))}</div>
+      <ul>${tracks.map(x => `<li><span>${escHtml(t('cu.t.' + x.id))}</span><span>${escHtml(t('cu.saetze', { n: x.erledigt, m: x.saetze }))}</span></li>`).join('')}</ul>
+    </div>
+    <p class="spruch">${escHtml(t('cu.haarZeile', { n: log.haar }))} ${escHtml(t('cu.mal', { n: CU.curlsLogs(geladeneLogs()).length }))}</p>
+    <p class="spruch">${escHtml(t(CU.schluss(log.date, alle)))}</p>`;
+  show('done');
+  if (!upLeise()) toene([660, 880]);
+  if (navigator.vibrate) navigator.vibrate([180, 90, 180]);
+
+  try {
+    await commitCurls(log);
+    banner(t('cu.abgeschlossen'), 'ok');
+  } catch { S.queue(log); banner(t('msg.keinNetz'), '', 6000); }
+  cuEinheit = null;
+}
+
+async function commitCurls(log) {
+  let path = `${S.LOG_DIR}/${log.date}-curls.json`;
+  let n = 2;
+  while (await S.readFile(path)) path = `${S.LOG_DIR}/${log.date}-curls-${n++}.json`;
+  await S.writeFile(path, log, `Curls for the Girls am ${log.date}`);
+  const cur = await S.readFile('state.json');
+  await S.writeFile('state.json', state, `Zustand nach Curls ${log.date}`, cur ? cur.sha : stateSha);
+}
+
+$('go-curls').onclick = starteCurls;
+$('cu-back').onclick = () => {
+  const angefangen = cuEinheit && Object.values(cuWerte).some(w => w.some(Boolean));
+  if (angefangen && !confirm(t('cu.abbrechenFrage'))) return;
+  cuStopp(); cuEinheit = null; show('home');
+};
+$('cu-fertig').onclick = cuSpeichern;
+$('cu-weiter').onclick = () => { cuPause = false; $('cu-leiste').hidden = true; };
+
 /* ====================== Programm einrichten ======================
    Wer neu anfaengt, hat noch keine config.json. Frueher stand hier eine
    Fehlermeldung und der Hinweis, die Datei von Hand zu schreiben — samt
@@ -3686,7 +3830,7 @@ function renderListe(logs) {
       const m = l.dauerSekunden ? `${Math.floor(l.dauerSekunden / 60)}:${String(l.dauerSekunden % 60).padStart(2, '0')}` : '—';
       // Bis hierher landete jeder fremde Typ unter "WOD". Unplugged ist
       // aber kein Jam, und in der Historie soll stehen, was man gemacht hat.
-      const art = l.type === 'unplugged' ? t('hist.unplugged') : l.type === 'kurs' ? t('hist.kurs') : l.type === 'moshpit' ? t('hist.moshpit') : 'WOD';
+      const art = l.type === 'unplugged' ? t('hist.unplugged') : l.type === 'kurs' ? t('hist.kurs') : l.type === 'moshpit' ? t('hist.moshpit') : l.type === 'curls' ? t('hist.curls') : 'WOD';
       const leise = l.type === 'unplugged' && l.leise ? ` · ${t('up.leise')}` : '';
       return `<div class="hist wod"><div class="d">${escHtml(l.date)} · ${art} · ${m}${leise}</div>
         <div class="l">${escHtml(l.label || '')}</div></div>`;

@@ -10,6 +10,18 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-08.15
+
+### Neu
+- **Curls for the Girls.** Eine Spaß-Einheit für die Arme im Hair-Metal-Ton: acht Tracks in etwa einer Viertelstunde
+  (Aqua Net, Spandex Attack, Die Single, Der Bassist, Power Ballad, Gitarrensolo, Zugabe, Pose-Down). Das Gewicht wählst du
+  frei, es gibt keine Leiter und keinen Bestwert; stattdessen ein Haar-o-Meter, das mit jedem abgehakten Satz höher toupiert
+  (36 cm bei voller Show). Die Übung folgt der Ausstattung am gewählten Ort: Langhantel, Kurzhantel, feste Hanteln, Band,
+  im Zweifel Handtuch und Diamant-Liegestütze. Jede Übung nennt eine Skalierung. Der Knopf „Curls“ steht auf Home.
+  Die Einheit steht im Log (`type: 'curls'`) und in der Historie und im CSV-Export, fasst aber weder Arbeitsgewichte noch den
+  A/B-Wechsel an und zählt weder als Gig noch für den Wochenregler.
+- Der Bildschirm bleibt in der Einheit an.
+
 ## 2026-11-08.14
 
 ### Geändert
