@@ -2229,12 +2229,15 @@ const kuKg = kg => `${kgFmt(kg)} kg`;
 const kuStopp = () => { clearInterval(kuTimer); kuTimer = null; kuPausiert = false; };
 
 /** Schalter fuer die Sprachansagen; ohne Sprachausgabe am Geraet bleibt er weg. */
-/** Das Signal des Schritts: Ton und Vibration, im Leise-Modus nur Vibration. */
+/**
+ * Das Signal des Schritts: Ton und Vibration. Bewusst nicht vom Leise-Schalter der
+ * Unplugged-Einheit abhaengig (der ist standardmaessig an): im Kurs sind die Signale die Ansage.
+ */
 function kuSignal(a) {
   const sg = SG.signal(a);
   if (!sg) return;
   if (navigator.vibrate) navigator.vibrate(sg.vib);
-  if (!upLeise()) toene(sg.ton, 140);
+  toene(sg.ton, 140);
 }
 
 function renderKursKnopf() {
@@ -2627,7 +2630,10 @@ function kuTicke() {
     if (a.art === 'satz') { $('ku-uhr').textContent = kuZeit(kuSchritt); return; }
     kuRest--;
     $('ku-uhr').textContent = Math.max(0, kuRest);
-    if (kuRest === 3 && (a.art === 'pause' || a.art === 'umbau' || a.art === 'rad')) upSignal(false);
+    if (kuRest === 3 && (a.art === 'pause' || a.art === 'umbau' || a.art === 'rad')) {   // Vorwarnung, ebenfalls unabhaengig vom Leise-Schalter
+      if (navigator.vibrate) navigator.vibrate(60);
+      toene([660], 120);
+    }
     if (kuRest <= 0) { kuIndex++; kuZeigeSchritt(); }
   }, 1000);
 }

@@ -10,6 +10,14 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-08.13
+
+### Behoben
+- **Kurs: Signale waren immer stumm.** Der Kurs fragte den Leise-Schalter der Unplugged-Einheit ab, und der ist
+  standardmäßig an. Deshalb gab es im Kurs nie Töne, nur Vibration (die iOS nicht kennt); aufgefallen ist es erst, als die
+  Sprache durch Signale ersetzt wurde. Der Kurs spielt seine Signale und die Vorwarnung drei Sekunden vor Ende jetzt immer.
+  Der Ton-Test im Backstage bestätigte, dass iOS Töne neben Musik und mit Stumm-Schalter durchlässt.
+
 ## 2026-11-08.12
 
 ### Neu
