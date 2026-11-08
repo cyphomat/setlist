@@ -10,6 +10,13 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-08.4
+
+### Neu
+- **Knappe Woche: die kurze Einheit liegt griffbereit.** Wird die Woche knapp (nicht mehr Tage übrig als Plätze offen),
+  steht in der Wochenliste „Knapp: Unplugged (15 Min) zählt auch.“ und, wenn heute noch nichts war, ein Knopf, der
+  Unplugged startet. Unplugged zählte für Regler und Plätze schon; es war nur nicht zu finden.
+
 ## 2026-11-08.3
 
 ### Neu

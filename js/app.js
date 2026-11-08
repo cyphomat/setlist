@@ -518,7 +518,8 @@ function renderWeek() {
   else if (w.knapp) hinweis = t('wk.knapp');
   const kopf = `<div class="wk-kopf"><b>${escHtml(w.offen ? t('wk.offen', { n: w.offen }) : t('wk.komplett'))}</b>
       ${w.offen && w.tageUebrig ? `<span>${escHtml(tn('wk.tage', w.tageUebrig))}</span>` : ''}
-      ${hinweis ? `<span class="wk-hinweis">${escHtml(hinweis)}</span>` : ''}</div>`;
+      ${hinweis ? `<span class="wk-hinweis">${escHtml(hinweis)}</span>` : ''}
+      ${w.knapp && w.heuteFrei ? `<button type="button" id="wk-unplugged" class="btn ghost small wk-mini">${escHtml(t('wk.unplugged'))}</button>` : ''}</div>`;
 
   // Plaetze: erledigte zuerst, dann die offenen mit dem, was als Naechstes dran waere.
   let workout = state.next, heuteOffen = w.heuteFrei;
@@ -550,6 +551,8 @@ function renderWeek() {
       : `<div class="tag tipp">${inhalt}</div>`;
   });
   $('week').innerHTML = kopf + plaetze.join('') + extras.join('') + tipps.join('');
+  // Die kurze Einheit steht schon auf Home: derselbe Start, nur naeher dran.
+  if ($('wk-unplugged')) $('wk-unplugged').onclick = () => $('go-unplugged').click();
 }
 
 /** Die alte Terminzeile, nur noch fuer Plaene ohne Krafttage. */
