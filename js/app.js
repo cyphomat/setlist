@@ -1226,16 +1226,20 @@ let audioCtx = null;
 function toene(frequenzen, dauerMs = 160) {
   try {
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    frequenzen.forEach((freq, i) => {
-      const start = audioCtx.currentTime + i * (dauerMs / 1000);
-      const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+    const ctx = audioCtx;
+    const spiele = () => frequenzen.forEach((freq, i) => {
+      const start = ctx.currentTime + i * (dauerMs / 1000);
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
       osc.type = 'sine'; osc.frequency.value = freq;
       gain.gain.setValueAtTime(0.2, start);
       gain.gain.exponentialRampToValueAtTime(0.0001, start + dauerMs / 1000);
-      osc.connect(gain).connect(audioCtx.destination);
+      osc.connect(gain).connect(ctx.destination);
       osc.start(start); osc.stop(start + dauerMs / 1000);
     });
+    // iOS meldet bei Fremdwiedergabe 'interrupted' statt 'suspended' und steht erst nach resume() still
+    // auf 'running': Toene erst dann planen, sonst laufen sie auf einer Uhr, die nicht tickt.
+    if (ctx.state === 'running') spiele();
+    else ctx.resume().then(spiele, () => { /* kein Ton, Vibration bleibt */ });
   } catch { /* Web Audio nicht verfuegbar — Vibration bleibt */ }
 }
 

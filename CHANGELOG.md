@@ -10,6 +10,13 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-08.11
+
+### Behoben
+- **Kurs, iPhone: Töne erst planen, wenn der Audio-Kontext läuft.** Auf dem iPhone kam im Kurs kein Ton, auch mit
+  Stumm-Schalter aus. iOS meldet bei fremder Wiedergabe `interrupted` statt `suspended`, und die Töne wurden schon
+  geplant, bevor `resume()` fertig war. Jetzt läuft jeder Ton erst nach dem `resume()`. Ungeprüft auf dem iPhone.
+
 ## 2026-11-08.10
 
 ### Behoben
