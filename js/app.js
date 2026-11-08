@@ -1223,6 +1223,20 @@ function openPicker(li, si) {
  * zusammen decken beides ab.
  */
 let audioCtx = null;
+/** Backstage: spielt die Kurs-Signale nacheinander und zeigt den Zustand des Audio-Kontexts. */
+function tonTest() {
+  const st = $('ton-status');
+  const bericht = (nach) => {
+    const z = audioCtx ? audioCtx.state : '–';
+    const sitz = (navigator.audioSession && navigator.audioSession.type) || '–';
+    st.textContent = t('tontest.status', { vor: nach, jetzt: z, sitz, vib: navigator.vibrate ? 'ja' : 'nein' });
+  };
+  const vor = audioCtx ? audioCtx.state : 'neu';
+  const folge = ['satz', 'takt', 'pause', 'umbau'].map(k => SG.signal({ art: k, nr: 1, grund: 'satz' }));
+  folge.forEach((sg, i) => setTimeout(() => { if (navigator.vibrate) navigator.vibrate(sg.vib); toene(sg.ton, 140); }, i * 900));
+  setTimeout(() => bericht(vor), 400);
+}
+
 function toene(frequenzen, dauerMs = 160) {
   try {
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
@@ -2740,6 +2754,7 @@ $('ku-back').onclick = () => { kuStopp(); renderKursKnopf(); show('home'); };
 $('ku-start').onclick = kuStartLauf;
 $('ku-fertig').onclick = () => { kuIndex++; kuZeigeSchritt(); };
 $('ku-weiter').onclick = () => { kuIndex++; kuZeigeSchritt(); };
+$('ton-test').onclick = tonTest;
 $('ku-pause').onclick = () => {
   kuPausiert = !kuPausiert;
   $('ku-pause').textContent = kuPausiert ? t('up.fortsetzen') : t('up.pausieren');
