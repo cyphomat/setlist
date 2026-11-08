@@ -228,7 +228,7 @@ print('\n--- Texte: beide Sprachen, gleiche Platzhalter ---');
 {
   const schluessel = ['home.curls', 'hist.curls', 'cu.titel', 'cu.tag', 'cu.lead', 'cu.haar', 'cu.cm', 'cu.haarZeile', 'cu.fertig',
     'cu.nichts', 'cu.abbrechenFrage', 'cu.abgeschlossen', 'cu.saetze', 'cu.mal'];
-  for (const t of CU.TRACKS) schluessel.push('cu.t.' + t.id, 'cu.a.' + t.id, 'cu.c.' + t.muster, 'cu.p.' + t.muster, 'cu.p.' + t.ersatz, 'cu.c.' + t.ersatz,
+  for (const t of CU.TRACKS) schluessel.push('cu.t.' + t.id, 'cu.a.' + t.id, 'cu.r.' + t.id, 'cu.c.' + t.muster, 'cu.p.' + t.muster, 'cu.p.' + t.ersatz, 'cu.c.' + t.ersatz,
     'cu.ziel.' + (t.ziel.typ === 'reps' ? (t.ziel.seiten ? 'seite' : 'reps') : t.ziel.typ));
   for (const w of ['langhantel', 'kurzhantel', 'festhanteln', 'baender']) schluessel.push('cu.w.' + w);
   for (let i = 0; i < CU.FIN_N; i++) schluessel.push('cu.fin.' + i);
