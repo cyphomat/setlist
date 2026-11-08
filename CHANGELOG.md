@@ -10,6 +10,14 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-08.7
+
+### Behoben
+- **Kurs, iPhone: ehrlicher Hinweis zur Sprache.** Die Sprachausgabe von iOS hält laufende Musik an, `ambient` ändert das
+  nachweislich nicht. Neben dem Knopf „Sprache“ steht deshalb auf iPhone und iPad ein Hinweis (Deutsch und Englisch).
+  Zusätzlich setzt der Kurs `audioSession` jetzt auf „transient“: Die Musik soll nur kurz pausieren und danach
+  weiterlaufen. Ob das auf dem iPhone klappt, ist ungeprüft.
+
 ## 2026-11-08.6
 
 ### Behoben

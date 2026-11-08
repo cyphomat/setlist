@@ -65,6 +65,12 @@ export function sprechtext(a, naechster, h) {
   return teile.filter(Boolean).join(' ');
 }
 
+/** iPhone/iPad: dort hält die Sprachausgabe laufende Musik an (iPadOS meldet sich als Mac). */
+export function istIos(g = globalThis) {
+  const n = g.navigator || {};
+  return /iPhone|iPad|iPod/.test(n.userAgent || '') || (/Macintosh/.test(n.userAgent || '') && n.maxTouchPoints > 1);
+}
+
 /**
  * Sagt dem Geraet, dass der Ton neben anderer Wiedergabe laufen darf
  * (Musik, Hoerbuch), statt sie anzuhalten. Nicht jeder Browser kennt das;
@@ -74,7 +80,7 @@ export function mischen(g = globalThis) {
   try {
     const s = g.navigator && g.navigator.audioSession;
     if (!s) return false;
-    s.type = 'ambient';
+    s.type = 'transient'; // Musik pausiert kurz und laeuft danach weiter; 'ambient' ignoriert iOS bei der Sprache
     return true;
   } catch { return false; }
 }
