@@ -10,6 +10,12 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-08.14
+
+### Geändert
+- **Kurs: Signale lauter.** Sie liefen mit der Lautstärke der kurzen Piepser (0,2) und gingen neben Musik fast unter.
+  Kurs-Signale und Vorwarnung spielen jetzt mit 0,8; alle anderen Töne bleiben, wie sie waren.
+
 ## 2026-11-08.13
 
 ### Behoben

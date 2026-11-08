@@ -1237,7 +1237,7 @@ function tonTest() {
   setTimeout(() => bericht(vor), 400);
 }
 
-function toene(frequenzen, dauerMs = 160) {
+function toene(frequenzen, dauerMs = 160, laut = 0.2) {
   try {
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
     const ctx = audioCtx;
@@ -1245,7 +1245,7 @@ function toene(frequenzen, dauerMs = 160) {
       const start = ctx.currentTime + i * (dauerMs / 1000);
       const osc = ctx.createOscillator(), gain = ctx.createGain();
       osc.type = 'sine'; osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.2, start);
+      gain.gain.setValueAtTime(laut, start);
       gain.gain.exponentialRampToValueAtTime(0.0001, start + dauerMs / 1000);
       osc.connect(gain).connect(ctx.destination);
       osc.start(start); osc.stop(start + dauerMs / 1000);
@@ -2237,7 +2237,7 @@ function kuSignal(a) {
   const sg = SG.signal(a);
   if (!sg) return;
   if (navigator.vibrate) navigator.vibrate(sg.vib);
-  toene(sg.ton, 140);
+  toene(sg.ton, 140, 0.8);   // lauter als die Piepser: neben Musik muessen sie durchkommen
 }
 
 function renderKursKnopf() {
@@ -2632,7 +2632,7 @@ function kuTicke() {
     $('ku-uhr').textContent = Math.max(0, kuRest);
     if (kuRest === 3 && (a.art === 'pause' || a.art === 'umbau' || a.art === 'rad')) {   // Vorwarnung, ebenfalls unabhaengig vom Leise-Schalter
       if (navigator.vibrate) navigator.vibrate(60);
-      toene([660], 120);
+      toene([660], 120, 0.8);
     }
     if (kuRest <= 0) { kuIndex++; kuZeigeSchritt(); }
   }, 1000);
