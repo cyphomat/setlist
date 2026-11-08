@@ -97,4 +97,8 @@ eq('ohne navigator: false', SP.mischen({}), false);
 const wirft = { navigator: { get audioSession() { throw new Error('nein'); } } };
 eq('wirft nie', SP.mischen(wirft), false);
 
+const sprichSession = { ...fake, navigator: { audioSession: { type: 'auto' } } };
+SP.sprich('Pause.', sprichSession);
+eq('sprich setzt ambient neu', sprichSession.navigator.audioSession.type, 'ambient');
+
 print(`\nGesamt: ${pass} bestanden, ${fail} fehlgeschlagen`);

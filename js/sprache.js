@@ -82,6 +82,7 @@ export function mischen(g = globalThis) {
 /** Sagt den Text; was noch laeuft, wird abgebrochen, damit nichts hinterherhinkt. */
 export function sprich(text, g = globalThis) {
   if (!text || !kann(g)) return;
+  mischen(g); // iOS setzt den Typ nach Pausen im Hintergrund gern zurueck
   try {
     g.speechSynthesis.cancel();
     const u = new g.SpeechSynthesisUtterance(text);
