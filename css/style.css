@@ -1102,7 +1102,7 @@ input[type=checkbox]{accent-color:var(--akzent);width:16px;height:16px}
 .cu-haar .t{color:var(--akzent);font-size:1.5rem;font-variant-numeric:tabular-nums}
 .cu-haar .balken{height:10px;margin-top:6px;border:1px solid var(--line);background:var(--panel)}
 .cu-haar .balken span{display:block;height:100%;width:0;background:var(--akzent);transition:width .25s ease}
-.cu-ansage{margin:6px 0 0;font-family:'Permanent Marker',var(--display);color:var(--fg);font-size:1.0625rem;line-height:1.25}
+.cu-ansage,.mp-ansage{margin:6px 0 0;font-family:'Permanent Marker',var(--display);color:var(--fg);font-size:1.0625rem;line-height:1.25}
 .cu-uebung{margin:8px 0 2px;font-weight:600}
 #ku-abbruch{margin-top:10px}
 #ku-bloecke{margin-top:14px}

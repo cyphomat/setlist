@@ -14,6 +14,7 @@
 // Reine Funktionen, kein I/O.
 
 import { UEBUNGEN, letzteKugel, KUGEL_MAX } from './kurs.js';
+import { hash, mische } from './coach.js';
 
 export const SAETZE = 3;
 export const PAUSE = 90;
@@ -103,6 +104,35 @@ export function bereinigeLifts(roh) {
     aus.push({ lift: e.lift, kg, reps, sets, erledigt: n, geschafft: n === sets });
   }
   return aus;
+}
+
+/* ---------------------------------------------------------------
+   Buehne: Ansagen und Schlusszeilen. Reine Texte aus i18n, nichts davon
+   wird gespeichert und nichts davon aendert die Leiter.                  */
+
+/** Wie viele Schlusszeilen es gibt (i18n 'mp.fin.N' und 'mp.rest.N'). */
+export const FIN_N = 3;
+export const REST_N = 3;
+
+/**
+ * Schluessel der Schlusszeile. Der Tag entscheidet, nicht der Zufall bei
+ * jedem Neuzeichnen: derselbe Abend, dieselbe Zeile. `alleGeschafft`:
+ * jeder Lift komplett, sonst die Zeile fuer "nicht alles".
+ */
+export function schluss(datum, alleGeschafft) {
+  const h = mische(hash(`moshpit-${datum}`));
+  return alleGeschafft ? `mp.fin.${h % FIN_N}` : `mp.rest.${h % REST_N}`;
+}
+
+/**
+ * Die naechste Flamme der Pit-Serie: { stufe, noch } oder null, wenn alle
+ * Stufen erreicht sind. `stufen` kommen aus merch.js (PIT_SERIE_STUFEN); hier
+ * stehen sie nicht, weil merch.js dieses Modul schon einbindet.
+ */
+export function serieZiel(serie, stufen = []) {
+  const s = Math.max(0, Math.floor(Number(serie)) || 0);
+  const stufe = [...stufen].sort((a, b) => a - b).find(n => n > s);
+  return stufe ? { stufe, noch: stufe - s } : null;
 }
 
 /* ---------------------------------------------------------------
