@@ -803,15 +803,48 @@ export function jahresBilanz(logs = [], config = {}, jahr, { heute = new Date(),
 
 /** Was fuer den Wochenregler zaehlt, ausser 5x5 und Rad: Kurs (Kettlebell), Jam, Unplugged, Moshpit, Max-out. */
 const REGLER_NEBEN = GIG_TYPEN.filter(a => a !== 'strength');
+/** Wenn an einem Tag mehreres war, steht in der Liste das Erste aus dieser Reihe. */
+const REGLER_ARTEN = ['strength', 'kurs', 'moshpit', 'wod', 'unplugged', 'maxout', 'rad'];
+
+/**
+ * Die Einheiten dieser Woche bis heute, hoechstens eine je Tag, nach Datum.
+ * Eine Einheit ist ein Tag mit 5x5, Kurs, Fahrt, Jam, Unplugged, Moshpit oder
+ * Max-out. Regler und Wochenliste zaehlen beide hieraus — nie getrennt, sonst
+ * steht oben "2 von 2" und darunter nichts abgehakt.
+ * Jeder Eintrag: { date, art, ... } — bei 5x5 `workout`, bei Rad `minutes`/`km`.
+ */
+export function wochenEinheiten(logs = [], heute = new Date(), history = [], fahrten = []) {
+  const tag = ymd(heute), montag = montagKey(tag);
+  const inWoche = d => d && montagKey(d) === montag && d <= tag;
+  const alle = [];
+  for (const l of logs) {
+    if (!l || !inWoche(l.date)) continue;
+    if (istKraft(l)) alle.push({ date: l.date, art: 'strength', workout: l.workout });
+    else if (REGLER_NEBEN.includes(typ(l))) alle.push({ date: l.date, art: typ(l) });
+  }
+  for (const h of history) {
+    if (!h || !inWoche(h.date)) continue;
+    const art = h.type || 'strength';
+    if (art === 'strength' || REGLER_NEBEN.includes(art)) alle.push({ date: h.date, art, workout: h.workout });
+  }
+  for (const f of mitDatum(fahrten)) if (inWoche(f.date)) alle.push({ date: f.date, art: 'rad', minutes: f.minutes || 0, km: f.km || 0 });
+  const rang = e => REGLER_ARTEN.indexOf(e.art);
+  const jeTag = new Map();
+  for (const e of alle) {
+    const alt = jeTag.get(e.date);
+    // Bei gleicher Art gewinnt der reichere Eintrag (ein Log kennt das Workout, die Historie auch)
+    if (!alt || rang(e) < rang(alt) || (rang(e) === rang(alt) && !alt.workout && e.workout)) jeTag.set(e.date, e);
+  }
+  return [...jeTag.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
 
 /**
  * Der Wochenregler. 0 bis 10 fuer erledigte Einheiten gegen die geplanten
- * Krafteinheiten. Eine Einheit ist ein Tag mit 5x5, Kurs, Fahrt, Jam,
- * Unplugged, Moshpit oder Max-out: Faellt 5x5 aus, springt der Kurs oder das
- * Rad ein. Auf ELF dreht er nur, wenn der Plan erfuellt ist UND alle Saetze
- * der 5x5-Tage sauber waren. Mehr Einheiten als geplant drehen ihn nicht
- * weiter — wer mehr trainiert als vorgesehen, bekommt dafuer keinen Applaus.
- * `fahrten` sind die entdoppelten Fahrten aus intervals.icu.
+ * Krafteinheiten (siehe `wochenEinheiten`): Faellt 5x5 aus, springt der Kurs
+ * oder das Rad ein. Auf ELF dreht er nur, wenn der Plan erfuellt ist UND alle
+ * Saetze der 5x5-Tage sauber waren. Mehr Einheiten als geplant drehen ihn
+ * nicht weiter — wer mehr trainiert als vorgesehen, bekommt dafuer keinen
+ * Applaus. `fahrten` sind die entdoppelten Fahrten aus intervals.icu.
  */
 export function verstaerker(logs = [], config = {}, heute = new Date(), history = [], { fahrten = [] } = {}) {
   const slots = (config.week && Array.isArray(config.week.slots)) ? config.week.slots : [];
@@ -820,21 +853,39 @@ export function verstaerker(logs = [], config = {}, heute = new Date(), history 
   const tag = ymd(heute), montag = montagKey(tag);
   const inWoche = d => d && montagKey(d) === montag && d <= tag;
   const diese = logs.filter(l => istKraft(l) && inWoche(l.date));
-  const neben = logs.filter(l => l && REGLER_NEBEN.includes(typ(l)) && inWoche(l.date)).map(l => l.date);
-  const rad = mitDatum(fahrten).filter(f => inWoche(f.date)).map(f => f.date);
   // Die Historie im Zustand weiss, DASS trainiert wurde, aber nicht, ob
   // sauber. Fehlt fuer einen ihrer Tage das Log, bleibt "sauber" offen —
   // und offen heisst: keine Elf. Lieber eine Stufe zu wenig als eine
   // geschenkte.
   const ausHistorie = history.filter(h => (h.type || 'strength') === 'strength' && inWoche(h.date)).map(h => h.date);
-  const nebenHistorie = history.filter(h => REGLER_NEBEN.includes(h.type) && inWoche(h.date)).map(h => h.date);
-  const tage = new Set(diese.map(l => l.date).concat(ausHistorie, neben, nebenHistorie, rad));
-  const erledigt = Math.min(tage.size, geplant);
+  const erledigt = Math.min(wochenEinheiten(logs, heute, history, fahrten).length, geplant);
   const belegt = new Set(diese.map(l => l.date));
   const sauber = diese.length > 0 && ausHistorie.every(d => belegt.has(d)) &&
     diese.every(l => l.lifts.length && l.lifts.every(e => e.success));
   const stufe = erledigt >= geplant ? (sauber ? 11 : 10) : Math.round((10 * erledigt) / geplant);
   return { stufe, erledigt, geplant, sauber };
+}
+
+/**
+ * Die Woche als Plaetze statt als Termine: so viele Plaetze wie der Regler
+ * Soll hat. Jede Einheit fuellt den naechsten freien Platz, egal an welchem
+ * Tag und womit; was darueber hinausgeht, steht als Extra. `tageUebrig`
+ * zaehlt heute mit, solange heute noch nichts war. `knapp`: es sind nicht
+ * mehr Tage uebrig als Plaetze offen.
+ */
+export function wochenStand(logs = [], config = {}, heute = new Date(), history = [], { fahrten = [] } = {}) {
+  const slots = (config.week && Array.isArray(config.week.slots)) ? config.week.slots : [];
+  const soll = slots.filter(s => s && s.type === 'strength').length;
+  if (!soll) return null;
+  const tag = ymd(heute), montag = montagKey(tag);
+  const einheiten = wochenEinheiten(logs, heute, history, fahrten);
+  const plaetze = einheiten.slice(0, soll), extras = einheiten.slice(soll);
+  const offen = soll - plaetze.length;
+  const sonntag = new Date(montag + 'T12:00:00'); sonntag.setDate(sonntag.getDate() + 6);
+  const bisSonntag = Math.round((sonntag - new Date(tag + 'T12:00:00')) / 864e5) + 1;
+  const heuteFrei = !einheiten.some(e => e.date === tag);
+  const tageUebrig = bisSonntag - (heuteFrei ? 0 : 1);
+  return { soll, plaetze, extras, offen, tageUebrig, heuteFrei, knapp: offen > 0 && tageUebrig <= offen };
 }
 
 /* ============================ Monats-Tour ============================

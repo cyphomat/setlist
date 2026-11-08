@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="App öffnen" src="https://img.shields.io/badge/App-öffnen-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-3002%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-3024%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-keiner-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Abhängigkeiten" src="https://img.shields.io/badge/Abhängigkeiten-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="Lizenz: MIT" src="https://img.shields.io/badge/Lizenz-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -227,7 +227,7 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 | **Saisonales** | Zu Weihnachten (1.–26.12.), Ostern (Gründonnerstag bis Ostermontag) und Halloween (24.–31.10.) hängt unter dem Tageswort ein kleiner Banner mit bewegtem Pixelmotiv und einem Satz; zum Gedenken an Lemmy (28.12.) und Ozzy (22.7.) steht eine stille Kerze da. Unter *Backstage → App* abschaltbar, per ✕ für heute ausgeblendet; nur auf dem Gerät. Eine Einheit im Zeitfenster bringt dazu einen Aufnäher (Weihnachts-Gig, Eiersuche, Geisterstunde, Eine Kerze), der erst an der Wand steht, wenn er verdient ist. |
 | **Hell und dunkel** | Umschalter System / Hell / Dunkel. Zwei echte Fassungen, keine Invertierung. |
 | **Schriftgröße** | Normal / Groß / Sehr groß unter *Backstage → App*. Skaliert die ganze Oberfläche gleichmäßig, gilt nur auf diesem Gerät. |
-| **Startseite als Plakat** | Oben ein Tageswort (TECHNIK, SOLIDE, HART, SCHWER), darunter nur, was heute etwas ändert — Pause, Verletzung, müde Form, Rad zu nah. Form, Schlaf, Gewicht und Rad stehen als kleine Instrumente darunter und klappen auf Antippen auf. Rechts eine Wochenkarte mit Regler und Serie und eine Gewichtsliste, über der die Reunion-Tour steht, bis sie geschafft ist. |
+| **Startseite als Plakat** | Oben ein Tageswort (TECHNIK, SOLIDE, HART, SCHWER), darunter nur, was heute etwas ändert — Pause, Verletzung, müde Form, Rad zu nah. Form, Schlaf, Gewicht und Rad stehen als kleine Instrumente darunter und klappen auf Antippen auf. Rechts eine Wochenkarte mit Regler, Serie und freien Plätzen statt festen Tagen (jede Einheit füllt den nächsten) und eine Gewichtsliste, über der die Reunion-Tour steht, bis sie geschafft ist. |
 | **Tour mit Reitern** | Überblick, Kraft, Körper, Rad, Einheiten. Die Einstellungen liegen getrennt davon im **Backstage** (⚙ in der Tour): Persönlich, Orte, Verbindungen, App. |
 | **Handy und Mac** | Ab 900 px zwei Spalten, in der Tour breitere Raster — dieselbe Reihenfolge, kein Umbau. |
 | **Deutsch und Englisch** | Unter Backstage umschaltbar: Oberfläche, Ansage, Meilensteine, Minierfolge und Meldungen. Übungsinhalte und Sprüche bleiben deutsch. |
@@ -512,7 +512,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-3002 Tests in 34 Dateien. Kein Build, keine Abhängigkeiten.
+3024 Tests in 34 Dateien. Kein Build, keine Abhängigkeiten.
 
 ### Browserproben (optional)
 
