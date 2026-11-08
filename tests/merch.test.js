@@ -272,6 +272,26 @@ print('\n--- Goes to eleven ---');
   eq('Historie und Logs decken sich: elf', M.verstaerker(beide, config, heute, hist).stufe, 11);
   eq('ein Tag ohne Log: keine geschenkte Elf', M.verstaerker(eine, config, heute, hist).stufe, 10);
   eq('ohne Krafttage im Plan kein Regler', M.verstaerker([], { week: { slots: [] } }, heute), null);
+
+  // Kurs, Fahrt und Beiwerk fuellen den Platz, wenn 5x5 ausfaellt
+  const kurs = d => ({ date: d, type: 'kurs', kurs: 'kettlebell' });
+  eq('ein Kurs allein: fuenf', M.verstaerker([kurs('2026-09-29')], config, heute).stufe, 5);
+  eq('Kurs und Kurs: zehn, nie elf', M.verstaerker([kurs('2026-09-29'), kurs('2026-09-30')], config, heute).stufe, 10);
+  const fahrt = d => ({ date: d, km: 20 });
+  eq('Kurs und Fahrt: zehn', M.verstaerker([kurs('2026-09-29')], config, heute, [], { fahrten: [fahrt('2026-09-30')] }).stufe, 10);
+  eq('eine Fahrt allein: fuenf', M.verstaerker([], config, heute, [], { fahrten: [fahrt('2026-09-30')] }).stufe, 5);
+  eq('Fahrt der letzten Woche zaehlt nicht', M.verstaerker([], config, heute, [], { fahrten: [fahrt('2026-09-25')] }).stufe, 0);
+  eq('Kurs und sauberes 5x5: elf', M.verstaerker(eine.concat([kurs('2026-09-30')]), config, heute).stufe, 11);
+  eq('Kurs und unsauberes 5x5: zehn',
+    M.verstaerker([kraft('2026-09-28', [satz('squat', 60, false)]), kurs('2026-09-30')], config, heute).stufe, 10);
+  eq('Kurs und Fahrt am selben Tag zaehlen einmal',
+    M.verstaerker([kurs('2026-09-29')], config, heute, [], { fahrten: [fahrt('2026-09-29')] }).stufe, 5);
+  eq('Jam, Unplugged und Moshpit zaehlen',
+    M.verstaerker([{ date: '2026-09-29', type: 'wod' }, { date: '2026-09-30', type: 'moshpit' }], config, heute).stufe, 10);
+  eq('Mobility und Check-in zaehlen nicht',
+    M.verstaerker([{ date: '2026-09-29', type: 'mobility' }, { date: '2026-09-30', type: 'checkin' }], config, heute).stufe, 0);
+  const kursHist = [{ date: '2026-09-29', type: 'kurs' }];
+  eq('Kurs nur aus der Historie zaehlt', M.verstaerker([], config, heute, kursHist).stufe, 5);
 }
 
 

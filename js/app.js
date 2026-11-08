@@ -439,7 +439,7 @@ function renderAmp() {
   const box = $('amp');
   if (!box || !config || !state) return;
   const logs = alleLogs.length ? alleLogs : ((S.cachedLogs() || {}).logs || []);
-  const v = M.verstaerker(logs, config, new Date(), state.history || []);
+  const v = M.verstaerker(logs, config, new Date(), state.history || [], { fahrten: radFuerMerch(logs) });
   if (!v) { box.innerHTML = `<div class="woche-kopf">${serienZeile()}</div>${soundcheckZeile()}${sicherungZeile(logs)}`; bindeSoundcheck(); return; }
   const punkt = (grad, r) => {
     const a = grad * Math.PI / 180;
@@ -6072,8 +6072,8 @@ async function neueAufnaeherZeigen(log, historie) {
     { fahrten: radFuerMerch(vorher), planFuer: planFuerDatum, soundchecks, zusammen });
   // Rang und Wochenregler: vorher gegen nachher, aus denselben Logs
   const rVor = M.rang(vorher, radFuerMerch(vorher)), rNach = M.rang(nachher, radFuerMerch(nachher));
-  const vVor = M.verstaerker(vorher, config, new Date(), historie);
-  const vNach = M.verstaerker(nachher, config, new Date(), state.history || []);
+  const vVor = M.verstaerker(vorher, config, new Date(), historie, { fahrten: radFuerMerch(vorher) });
+  const vNach = M.verstaerker(nachher, config, new Date(), state.history || [], { fahrten: radFuerMerch(nachher) });
   // Endgegner: vorher stand er noch, jetzt liegt er am Boden
   const monat = log.date.slice(0, 7);
   const bosse = M.neueBosse(vorher, nachher, config, monat,
