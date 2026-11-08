@@ -32,7 +32,9 @@ function attrappe({ ablehnen = false } = {}) {
 }
 
 print('\n--- Welche Ansichten ---');
-for (const v of ['session', 'wod', 'unplugged', 'maxout']) ok(`${v}: wach`, W.wachFuerAnsicht(v));
+// Namen der Ansichten (view-<name> in index.html), nicht der Log-Typen: 'mosh', nicht 'moshpit'.
+for (const v of ['session', 'wod', 'unplugged', 'kurs', 'mosh', 'curls', 'maxout']) ok(`${v}: wach`, W.wachFuerAnsicht(v));
+ok('moshpit ist keine Ansicht', !W.wachFuerAnsicht('moshpit'));
 for (const v of ['home', 'done', 'history', 'merch', 'backstage', 'bibliothek', 'setup'])
   ok(`${v}: darf ausgehen`, !W.wachFuerAnsicht(v));
 

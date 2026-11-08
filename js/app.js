@@ -2974,12 +2974,17 @@ function cuHaarZeigen() {
   const cm = CU.haarHoehe(cuStand());
   $('cu-haar-wert').textContent = t('cu.cm', { n: cm });
   $('cu-haar-balken').style.width = `${Math.round(100 * cm / CU.HAAR_MAX)}%`;
+  $('cu-maehne').className = `cu-pix cu-maehne s${CU.maehneStufe(cm)}`;
 }
 
 function renderCurls() {
   $('cu-tracks').innerHTML = cuEinheit.tracks.map((tr, i) => `<div class="mp-lift cu-track" data-tr="${tr.id}">
+      <div class="${tr.id === 'ballade' ? 'cu-ballade-kopf' : ''}">
+      <div class="${tr.id === 'ballade' ? 'text' : ''}">
       <div class="h"><span class="name">${i + 1}. ${escHtml(t('cu.t.' + tr.id))}</span><span class="fine">${escHtml(cuZiel(tr))}</span></div>
       <p class="cu-ansage">${escHtml(t('cu.a.' + tr.id))}</p>
+      </div>${tr.id === 'ballade' ? '<span class="cu-pix cu-feuerzeug" aria-hidden="true"></span>' : ''}
+      </div>
       <p class="cu-uebung">${escHtml(cuName(tr))}</p>
       <p class="fine">${escHtml(t('cu.c.' + tr.muster))}</p>
       <div class="mp-saetze">${cuWerte[tr.id].map((x, k) => `<button class="btn ghost ${x ? 'an' : ''}" data-s="${k}" aria-pressed="${x}">${escHtml(t('mp.satz', { n: k + 1 }))}</button>`).join('')}</div>
@@ -3039,6 +3044,7 @@ async function cuSpeichern() {
   };
   const ort = ortName();
   if (ort) log.ort = ort;
+  const vorherHist = state.history || [];
   state = P.applyLog(state, config, log);
   S.cache({ state });
   alleLogs = geladeneLogs().concat([log]);
@@ -3051,8 +3057,10 @@ async function cuSpeichern() {
       <div class="name">${escHtml(t('cu.titel'))}</div>
       <ul>${tracks.map(x => `<li><span>${escHtml(t('cu.t.' + x.id))}</span><span>${escHtml(t('cu.saetze', { n: x.erledigt, m: x.saetze }))}</span></li>`).join('')}</ul>
     </div>
-    <p class="spruch">${escHtml(t('cu.haarZeile', { n: log.haar }))} ${escHtml(t('cu.mal', { n: CU.curlsLogs(geladeneLogs()).length }))}</p>
-    <p class="spruch">${escHtml(t(CU.schluss(log.date, alle)))}</p>`;
+    <div class="cu-fertig-kopf"><span class="cu-pix cu-maehne s${CU.maehneStufe(log.haar)}" aria-hidden="true"></span>
+      <p class="spruch" style="margin:0">${escHtml(t('cu.haarZeile', { n: log.haar }))} ${escHtml(t('cu.mal', { n: CU.curlsLogs(geladeneLogs()).length }))}</p></div>
+    <p class="spruch">${escHtml(t(CU.schluss(log.date, alle)))}</p>
+    <div id="done-aufnaeher"></div>`;
   show('done');
   if (!upLeise()) toene([660, 880]);
   if (navigator.vibrate) navigator.vibrate([180, 90, 180]);
@@ -3062,6 +3070,7 @@ async function cuSpeichern() {
     banner(t('cu.abgeschlossen'), 'ok');
   } catch { S.queue(log); banner(t('msg.keinNetz'), '', 6000); }
   cuEinheit = null;
+  zeigeNeueAufnaeher(log, vorherHist);
 }
 
 async function commitCurls(log) {

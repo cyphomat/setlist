@@ -21,6 +21,7 @@ import { serienMarken } from './soundcheck.js';
 import * as ZU from './zusammen.js';
 import { kursLogs, TESTS, tests as kursTests } from './kurs.js';
 import { moshLogs } from './moshpit.js';
+import { curlsLogs } from './curls.js';
 import * as AN from './anlaesse.js';
 
 /** Was als Gig zaehlt: alles, wofuer man ins Studio gegangen ist — und jede Fahrt. */
@@ -138,6 +139,8 @@ export const KUGEL_RAENGE = [
   { id: 'eisenmeister', wochen: 26 }
 ];
 export const PIT_SERIE_STUFEN = [3, 6];
+/** Curls for the Girls: so oft gespielt (Garagenband, Sunset Strip, Arena, Heavy Rotation). */
+export const HAIR_STUFEN = [1, 5, 15, 30];
 const CHECKS = Object.entries(TESTS).map(([woche, id]) => ({ woche: Number(woche), id }));
 
 /**
@@ -145,7 +148,7 @@ const CHECKS = Object.entries(TESTS).map(([woche, id]) => ({ woche: Number(woche
  * `gruppe` ist die Leiter: an der Wand steht je Gruppe nur der naechste
  * fehlende, damit keine Weste voller leerer Kreise entsteht.
  */
-export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHoehe = false, mitPlan = false, mitZusammen = false, mitKurs = false, mitPit = false, mitKursZusammen = false, mitPitZusammen = false, anlaesse = [] } = {}) {
+export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHoehe = false, mitPlan = false, mitZusammen = false, mitKurs = false, mitPit = false, mitCurls = false, mitKursZusammen = false, mitPitZusammen = false, anlaesse = [] } = {}) {
   const lifts = config.lifts || {};
   const bar = config.bar || 20;
   const out = [];
@@ -220,6 +223,8 @@ export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHo
     p('pit-sprung', 'buehne', 'pit-sprung', 'merch.p.pit-sprung');
     for (const n of PIT_SERIE_STUFEN) p(`pit-serie-${n}`, 'buehne', 'pit-serie', 'merch.p.pit-serie', { n });
   }
+  // Wer nie Curls gespielt hat, bekommt keine leeren Kreise dafuer.
+  if (mitCurls) for (const n of HAIR_STUFEN) p(`hair-${n}`, 'buehne', 'hair', `merch.p.hair-${n}`, { n });
   for (const id of Object.keys(ANLASS_AUFNAEHER)) if (anlaesse.includes(id)) p(id, 'buehne', id, `merch.p.${id}`);
   return out;
 }
@@ -294,7 +299,7 @@ function waageFuer(reihe, datum) {
 export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Date(), { fahrten = [], planFuer = null, soundchecks = [], zusammen = [] } = {}) {
   const reihe = gewichtsReihe(wellness);
   const rad = mitDatum(fahrten);
-  const kl = kursLogs(logs), ml = moshLogs(logs);
+  const kl = kursLogs(logs), ml = moshLogs(logs), cl = curlsLogs(logs);
   // Gig-Tage vorab: ob ein Anlass-Aufnaeher im Katalog steht, haengt daran.
   const anlassTage = anlassAufnaeher([...logs.filter(istGig).map(l => l.date), ...rad.map(f => f.date)]);
   const kat = katalog(config, {
@@ -306,6 +311,7 @@ export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Dat
     mitZusammen: zusammen.length > 0,
     mitKurs: kl.length > 0,
     mitPit: ml.length > 0,
+    mitCurls: cl.length > 0,
     mitKursZusammen: kl.length > 0 && zusammen.length > 0,
     mitPitZusammen: ml.length > 0 && zusammen.length > 0
   });
@@ -406,6 +412,8 @@ export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Dat
   for (const [id, tag] of Object.entries(anlassTage)) setze(id, tag);
 
   kettlebellAufnaeher(kl, ml, setze, new Set(gemTage.map(x => x.datum)), logs);
+  // Curls for the Girls: der n-te Auftritt gibt die Stufe, am Tag dieses Auftritts.
+  for (const n of HAIR_STUFEN) if (cl.length >= n) setze(`hair-${n}`, cl[n - 1].date);
 
   const gelenkig = gelenkigeWochen(logs);
   for (const n of GELENKIG_STUFEN) if (gelenkig.length >= n) setze(`gelenkig-${n}`, gelenkig[n - 1]);
@@ -586,6 +594,7 @@ export const BILDER = [
   'duett', 'faustgruss', ...PARTNER_STUFEN.map(n => `partner-${n}`), ...VERABREDUNG_STUFEN.map(n => `verabredung-${n}`),
   'kurs-start', ...KURS_PHASEN.map(k => `kurs-${k.id}`), ...CHECKS.map((c, i) => `check-${i + 1}`), ...KUGEL_STUFEN.map(n => `kugel-${n}`),
   'pit-start', 'pit-sprung', ...PIT_SERIE_STUFEN.map(n => `pit-serie-${n}`),
+  ...HAIR_STUFEN.map(n => `hair-${n}`),
   ...KUGEL_RAENGE.map((r, k) => `kugelrang-${k + 1}`), 'kursboss', 'kurs-duett', 'check-duett', 'pit-duett',
   ...Object.keys(ANLASS_AUFNAEHER),
   ...PLATTEN_STUFEN.map(n => `platten-figur-${n}`), 'koerper-figur'

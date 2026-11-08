@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-3099%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-3137%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -211,7 +211,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | **Power targets** | From eFTP instead of percentages. |
 | **Unplugged** | Fifteen minutes, bodyweight only, quiet if needed. Fixed intervals with a guided clock instead of rep counts — for the morning when someone is still asleep. Quiet mode drops everything that jumps and makes no sound, only vibration. |
 | **Kettlebell Mosh Pit** | The follow-up after the course: swing, goblet squat and one-arm press, three sets each. More reps first (10 · 12 · 15 · 17 · 20), then a bell 4 kg heavier and back to the bottom — like the 5x5, just with a bell. Miss twice: one rung back. The next target follows from the logs. |
-| **Curls for the Girls** | The fun arm session in hair-metal tone: eight tracks in a quarter of an hour, weight up to you, a hair-o-meter instead of a record. The exercise follows the equipment at the place, at home it runs with a band. Does not count as a strength day and never touches working weights. |
+| **Curls for the Girls** | The fun arm session in hair-metal tone: eight tracks in a quarter of an hour, weight up to you, a hair-o-meter instead of a record. The exercise follows the equipment at the place, at home it runs with a band. Add a pixel mane that grows with the hair-o-meter, a flickering lighter at the power ballad and four “Hair Metal” patches. Does not count as a strength day and never touches working weights. |
 | **Kettlebell course** | Twelve weeks, three sessions a week: hips, swing and get-up first, then one-armed and by the clock, finally density and a test in week 12. Every fourth week is a deload. The session guides you: you tick off sets, tempo and rests run on their own. Reps and side (left, right) are big on the stage, a changeover pause comes before a bell change, after the bike and before carrying, and under the stage you read how the move goes and what usually goes wrong, for the hinge, swing, one-arm swing, goblet squat, press and get-up with pixel pictures of the positions. Before a session you enter which bell you work with (in kg, the last one is prefilled); a total clock, stopwatch and countdowns run along. Every step has its own tone and vibration pattern (set, tempo, rest, hand switch left and right, changeover, finish), handy when the phone hangs on the stereo: the tones mix with music that is playing, a voice would stop it on iPhone. Weeks 4 and 8 hold checks, week 12 the final test. Afterwards you rate each bell on its own (too light, right, tough) — twice too light or too tough on the same exercise, and the app suggests the other bell. A bar on Home shows how far you are, and every session ends with an achievement card. If you record with the Apple Watch, you switch that on and Setlist sends nothing twice to intervals.icu; without the watch the session goes there with an estimated load. History and checks live in the tour under “Bell”. Where you stand follows from the logs. If the selected place has a **Zwift Ride** and you have not ridden in the last few hours, the session suggests six minutes on the bike to warm up (easy, three short spin-ups); a switch lets you turn it on or off any time. |
 | **Jam** | Five formats, 31 movements, loads from your current state. Never two barbell parts. Optionally **together**, taking turns (I go, you go) on one device, no check-in: the display says whose turn it is, “Switch” in the clock bar swaps you, and the log keeps the tally. |
 | **Scaling** | Every movement names alternatives. “Can't do this” removes it for good. |
@@ -487,6 +487,7 @@ off under *Backstage → Connections*.
 | `tools/tests.mjs` | Runs every test with Node; the GitHub Action does the same on every push. |
 | `tools/proben.mjs` | Browser probes: the real app in Chromium against a mocked GitHub API (optional, Playwright). |
 | `tools/pixel.mjs` | Builds every pixel graphic: the sheets in `assets/pixel/` (from the sources in `tools/pixel/`), the wordmark and app icons (`icons/`) and the README images (`assets/readme/`); `--pruefe` runs in the Action. |
+| `tools/pixel-curls.mjs` | Draws the five manes and the lighter of Curls for the Girls; `pixel.mjs` assembles them into the sheet. |
 | `tools/pixel-anlaesse.mjs` | Draws the banner motifs (two frames each, flipped by CSS); `pixel.mjs` assembles them into the sheet. |
 | `tools/pixel-gitarren.mjs` | Draws the ten guitars for the rack (body masks, headstocks, colours); `pixel.mjs` assembles them into the sheet. |
 
@@ -508,7 +509,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-3099 tests in 35 files. No build, no dependencies.
+3137 tests in 35 files. No build, no dependencies.
 
 ### Browser probes (optional)
 
