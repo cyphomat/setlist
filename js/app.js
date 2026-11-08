@@ -2804,15 +2804,27 @@ function starteMosh() {
 
 const mpZiel = (l, w) => t(l.seiten ? 'mp.zielSeite' : 'mp.ziel', { saetze: mpEinheit.saetze, reps: w.reps }) + (w.kg ? ` · ${kuKg(w.kg)}` : '');
 
+/** Pit-Serie und Weg zur naechsten Flamme, aus den Logs. Leer, solange keine Serie laeuft. */
+function mpSerieText() {
+  const n = MP.serie(geladeneLogs());
+  if (!n) return '';
+  const ziel = MP.serieZiel(n, M.PIT_SERIE_STUFEN);
+  return t('mp.serieStand', { n }) + (ziel ? ' ' + t('mp.serieNoch', { noch: ziel.noch }) : '');
+}
+
 function renderMosh() {
   const neu = mpEinheit.lifts.some(l => l.neu && !l.kg);
   $('mp-hinweis').innerHTML = neu ? `<p class="lead">${escHtml(t('mp.neu'))}</p>` : '';
+  const serie = mpSerieText();
+  $('mp-serie').textContent = serie;
+  $('mp-serie').hidden = !serie;
   $('mp-leiter').textContent = t('mp.leiter', { leiter: MP.LEITER.join(' · '), kg: MP.SCHRITT_KG });
   $('mp-lifts').innerHTML = mpEinheit.lifts.map(l => {
     const w = mpWerte[l.id];
     const u = KU.UEBUNGEN[l.id];
     return `<div class="mp-lift" data-l="${l.id}">
       <div class="h"><span class="name">${escHtml(u.name)}</span><span class="fine" data-ziel>${escHtml(mpZiel(l, w))}</span></div>
+      <p class="mp-ansage">${escHtml(t('mp.a.' + l.id))}</p>
       <p class="fine">${escHtml(u.cue)}</p>
       <div class="zeile"><span class="lbl">${escHtml(t('mp.kugel'))}</span>
         <button class="btn ghost" data-f="kg" data-d="-1" aria-label="${escHtml(t('ku.leichter'))}">−</button>
@@ -2905,6 +2917,8 @@ async function mpSpeichern() {
       <div class="name">${escHtml(t('mp.titel'))}</div>
       <ul>${uebungen.map(u => `<li><span>${escHtml(MP.liftName(u.lift))}</span><span>${u.sets} × ${u.reps} · ${escHtml(kuKg(u.kg))} · ${escHtml(u.geschafft ? t('mp.ok') : t('mp.nicht'))}</span></li>`).join('')}</ul>
     </div>
+    <p class="spruch">${escHtml(t(MP.schluss(log.date, uebungen.every(u => u.geschafft))))}</p>
+    ${mpSerieText() ? `<p class="spruch">${escHtml(mpSerieText())}</p>` : ''}
     <p class="spruch">${escHtml(t('mp.naechste', { liste: naechste }))}</p>
     <div id="done-aufnaeher"></div>`;
   show('done');

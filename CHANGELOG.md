@@ -10,6 +10,15 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-08.17
+
+### Neu
+- **Mosh Pit auf der Bühne.** Jeder Lift trägt eine Ansage (Swing: „Die Hüfte schnappt zu, die Kugel fliegt von allein.“,
+  Goblet Squat: „Tief in den Graben, die Brust bleibt oben.“, Press: „Faust hoch, Rumpf fest, kein Hohlkreuz.“). Nach der Einheit
+  steht eine Schlusszeile, getrennt für „alle Lifts geschafft“ und „nicht alles“, aus dem Tag gewählt. Läuft eine Pit-Serie,
+  zeigt die Ansicht sie samt Weg zur nächsten Flamme („Noch 2 bis zur nächsten Flamme.“), am Ende auch.
+  Leiter, Ziele und Aufnäher bleiben, wie sie waren; nichts davon wird gespeichert.
+
 ## 2026-11-08.16
 
 ### Neu
