@@ -21,6 +21,10 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
   Aufnäher meldet die App nach der Einheit wie sonst.
 - Neuer Bogen `assets/pixel/curls.png`, gezeichnet in `tools/pixel-curls.mjs`.
 
+### Behoben
+- **Mosh Pit: Bildschirm blieb nicht an.** Die Liste der Wach-Ansichten nannte `moshpit`, die Ansicht heißt aber `mosh`.
+  Die Bildschirmsperre wurde dort nie angefordert, das Display konnte mitten im Satz ausgehen. Kurs, Mosh Pit und Curls halten es jetzt an.
+
 ## 2026-11-08.15
 
 ### Neu
