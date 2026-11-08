@@ -1223,18 +1223,10 @@ function openPicker(li, si) {
  * zusammen decken beides ab.
  */
 let audioCtx = null;
-// Kontext anlegen und erst danach die Sitzung auf "transient" setzen: Safari legt die Sitzung
-// beim Anlegen fest, davor gesetzt geht der Typ verloren.
-function audioBereit() {
+function toene(frequenzen, dauerMs = 160) {
   try {
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === 'suspended') audioCtx.resume();
-  } catch { /* Web Audio nicht verfuegbar */ }
-  SG.mischen();
-}
-function toene(frequenzen, dauerMs = 160) {
-  try {
-    audioBereit();
     frequenzen.forEach((freq, i) => {
       const start = audioCtx.currentTime + i * (dauerMs / 1000);
       const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
@@ -2542,7 +2534,7 @@ function kuStartLauf() {
   $('ku-plan').hidden = true;
   $('ku-lauf').hidden = false;
   $('ku-ende').hidden = true;
-  audioBereit();   // Start ist eine Nutzergeste
+  SG.mischen();   // einmal, vor dem ersten Ton: mehrfaches Setzen oder danach liess auf dem iPhone alles verstummen
   kuZeigeSchritt();
 }
 
