@@ -10,6 +10,17 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-08.8
+
+### Geändert
+- **Kurs: Signale statt Sprache.** Die Sprachausgabe von iOS hält laufende Musik an, weder `ambient` noch `transient`
+  änderten das auf dem iPhone 15. Die Ansage ist deshalb raus (`js/sprache.js`, Knopf „Sprache“, Hinweis). Jeder Schritt
+  hat dafür einen eigenen Ton und ein eigenes Vibrationsmuster (`js/signale.js`): Satz, Takt, Zeit, Pause, Handwechsel
+  links (fallend) und rechts (steigend), Umbau, Rad locker und Antritt, Ende. Eine Zeile im Lauf erklärt sie. Die
+  Töne laufen über Web Audio, `audioSession` steht wieder auf „ambient“, damit sie neben der Musik mischen. Der
+  Leise-Modus bleibt ohne Ton, die Vibration bleibt. Ob die Töne auf dem iPhone die Musik wirklich in Ruhe lassen, ist
+  ungeprüft.
+
 ## 2026-11-08.7
 
 ### Behoben
