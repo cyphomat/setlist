@@ -5292,13 +5292,18 @@ async function planInKalender() {
   if (!ICU.isConfigured()) return banner(t('msg.icuNichtVerbunden'), 'err');
   try {
     banner(t('msg.pruefeKalender'), '', 0);
-    const woche = P.planWeek(state, config);
-    const geplant = woche.map(s => ICU.alsEvent({
+    // Nur was diese Woche noch offen ist, und nur Rad: Kraft hat Plaetze statt Termine.
+    const logs = geladeneLogs(), heute = new Date(), montag = P.ymd(P.mondayOf(heute));
+    const gefahren = new Set(radFuerMerch(logs).filter(f => f.date >= montag && f.date <= P.ymd(heute)).map(f => f.date)).size;
+    const stand = M.wochenStand(logs, config, heute, state.history || [], { fahrten: radFuerMerch(logs) });
+    const offen = P.offeneRadTermine(state, config, { gefahren, heuteFrei: stand ? stand.heuteFrei : true }, heute);
+    if (!offen.length) return banner(t('msg.kalenderNichtsOffen'), 'ok');
+    const geplant = offen.map(s => ICU.alsEvent({
       ...s,
-      watt: s.type === 'ride' ? P.wattBereich((RIDE_INFO[s.label] || {}).ftp, eftp) : null
+      watt: P.wattBereich((RIDE_INFO[s.label] || {}).ftp, eftp)
     })).filter(Boolean);
 
-    const von = woche[0].date, bis = woche[woche.length - 1].date;
+    const von = offen[0].date, bis = offen[offen.length - 1].date;
     const vorhanden = await ICU.events(von, bis);
     const fehlt = ICU.fehlendeEvents(geplant, vorhanden);
 
