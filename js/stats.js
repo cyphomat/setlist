@@ -456,11 +456,16 @@ export function abnehmLage(rate, kraft) {
   if (!rate) return null;
   const faellt = rate.proWoche < 0;
   const p = rate.prozentProWoche || 0;
-  const tempo = !faellt ? 'rauf' : p < RATE.traege ? 'traege' : p > RATE.schnell ? 'schnell' : 'passend';
+  // Die Rauschgrenze gilt in beide Richtungen. Frueher hiess alles, was
+  // nicht faellt, "nach oben": +0,01 kg pro Woche (an echten Daten so
+  // gemessen) bekam den Satz "das ist kein Wasser mehr". Unterhalb der
+  // Grenze laesst sich ein Anstieg so wenig behaupten wie eine Abnahme.
+  const steht = p < RATE.traege;
+  const tempo = steht ? 'traege' : !faellt ? 'rauf' : p > RATE.schnell ? 'schnell' : 'passend';
   const kr = kraft ? kraft.richtung : null;
 
   let stufe;
-  if (!faellt) stufe = 'rauf';
+  if (!faellt) stufe = steht ? 'traege' : 'rauf';
   else if (kr === 'runter') stufe = 'teuer';        // das Defizit kostet gerade Substanz
   else if (tempo === 'schnell') stufe = 'schnell';
   else if (tempo === 'traege') stufe = 'traege';
@@ -468,6 +473,20 @@ export function abnehmLage(rate, kraft) {
   else stufe = 'haltend';
 
   return { stufe, tempo, kraft: kr, rate, spanne: [RATE.traege, RATE.schnell] };
+}
+
+/**
+ * Wie viele Tage die letzte Waage her ist. Die Rate haengt am letzten
+ * Wiegetag, nicht an heute: ohne diese Zahl sieht ein drei Wochen alter
+ * Trend auf Home aus wie der von heute morgen.
+ */
+export const WAAGE_ALT_AB = 7;
+export function waageAlter(reihe = [], heute = new Date()) {
+  const letzte = reihe.length ? reihe[reihe.length - 1].date : null;
+  const dann = letzte ? Date.parse(`${letzte}T00:00:00Z`) : NaN;
+  if (!Number.isFinite(dann)) return null;
+  const jetzt = Date.UTC(heute.getFullYear(), heute.getMonth(), heute.getDate());
+  return Math.max(0, Math.round((jetzt - dann) / 86400000));
 }
 
 /**

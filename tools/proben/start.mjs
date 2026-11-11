@@ -143,4 +143,36 @@ export default async function ({ browser, pruefe }) {
       }
     }
   }
+
+  /* Waage: ein Anstieg im Rauschen ist kein Trend, und eine alte Waage wird benannt */
+  {
+    // Bis 14.09. gewogen (92 kg, +0,02 kg je Woche), danach 17 Tage ohne Waage.
+    const w = Array.from({ length: 60 }, (_, i) => {
+      const d = new Date(2026, 7, 3 + i);
+      return { id: P.ymd(d), ctl: 40, atl: 38, sleepSecs: 7.4 * 3600,
+        ...(i <= 42 ? { weight: Math.round((92 + i * 0.003) * 100) / 100 } : {}) };
+    });
+    for (const [breite, schrift, theme] of [[390, null, 'dunkel'], [320, 'sehr', 'hell'], [320, 'sehr', 'dunkel'], [1280, null, 'hell']]) {
+      const tag = `waage/${theme}/${breite}${schrift ? '/sehr' : ''}`;
+      const { ctx, p, fehler } = await kontext(browser, { logs: verlauf('2026-09-28'), config: CONFIG, heute: '2026-10-01',
+        breite, hoehe: 1000, schrift, theme, vorher: icu(w, []) });
+      await p.waitForTimeout(900);
+      const hinweise = await p.$$eval('#today .hinweis b', l => l.map(x => x.textContent));
+      pruefe(`${tag}: kein „NACH OBEN“ im Plakat`, !hinweise.some(h => /NACH OBEN/.test(h)), hinweise.join(' | '));
+      const chip = p.locator('#instrumente .instr', { hasText: 'kg/Woche' });
+      pruefe(`${tag}: Gewicht als Instrument`, (await chip.count()) === 1);
+      await chip.click();
+      await p.waitForSelector('.instr-detail', { state: 'visible' });
+      const detail = (await p.textContent('.instr-detail')).replace(/\s+/g, ' ').trim();
+      pruefe(`${tag}: Anstieg im Rauschen heißt KAUM BEWEGUNG`, /KAUM BEWEGUNG/.test(detail) && !/NACH OBEN/.test(detail), detail.slice(0, 160));
+      pruefe(`${tag}: letzte Waage vor 17 Tagen steht da`, /Letzte Waage vor 17 Tagen/.test(detail), detail.slice(-120));
+      const k = (await kontraste(p, '.instr-detail span')).filter(x => x.wert < 4.5);
+      pruefe(`${tag}: Kontrast ≥ 4,5`, !k.length, JSON.stringify(k.slice(0, 3)));
+      const u = await ueberlauf(p);
+      pruefe(`${tag}: kein Querlauf`, !u.scroll && !u.raus.length, JSON.stringify(u));
+      pruefe(`keine Seitenfehler (${tag})`, !fehler.length, fehler.join(' | '));
+      await p.screenshot({ path: BILDER + `home-waage-${theme}-${breite}${schrift ? '-sehr' : ''}.png`, fullPage: breite !== 1280 });
+      await ctx.close();
+    }
+  }
 }
