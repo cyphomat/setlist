@@ -21,7 +21,8 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ### Werkzeuge
 - **Veraltete Browserproben nachgezogen.** Sie waren seit den Formularen für Fehler und Wünsche, der fünften Schallplatte
-  (Adamant) und dem Datum am Tour-Sieg veraltet (Über, Merch, Bühne). Die Fork-Probe nutzt `https`, weil Chrome `github.io` ohnehin
+  (Adamant) und dem Datum am Tour-Sieg veraltet (Über, Merch, Bühne). Die Ansager-Prüfung wartet auf den Zustand statt auf 2,6 s: Die Seitenuhr lief in der Probe nur
+  mit etwa zwei Dritteln der echten Zeit, die App selbst blendet nach 2,2 s Seitenzeit aus. Die Fork-Probe nutzt `https`, weil Chrome `github.io` ohnehin
   darauf hochstuft. Mit Deno gehen die Proben auch ohne Node: Playwright ab 1.55 aus npm, `CHROMIUM` auf das vorhandene Chrome.
 
 ## 2026-11-08.18

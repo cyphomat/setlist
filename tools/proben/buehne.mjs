@@ -134,8 +134,10 @@ export default async function ({ browser, pruefe }) {
       `${a.ruf} / neu: ${neu.join(', ')}`);
     const u = await ueberlauf(p);
     pruefe(`Ansager (${theme}) 320: kein Querlauf`, !u.scroll, JSON.stringify(u));
-    await p.waitForTimeout(2600);
-    pruefe(`Ansager (${theme}): verschwindet wieder`, await p.evaluate(() => document.getElementById('ansager').hidden));
+    // Auf den Zustand warten, nicht auf eine Uhr: Die App blendet nach 2,2 s aus, aber die
+    // Seitenuhr kann hinter der echten Zeit herlaufen (gemessen: zwei Drittel), eine feste
+    // Wartezeit war deshalb mal gruen und mal rot.
+    pruefe(`Ansager (${theme}): verschwindet wieder`, await p.waitForSelector('#ansager', { state: 'hidden', timeout: 8000 }).then(() => true, () => false));
     pruefe(`keine Seitenfehler (Ansager ${theme})`, !fehler.length, fehler.join(' | '));
     await ctx.close();
   }
