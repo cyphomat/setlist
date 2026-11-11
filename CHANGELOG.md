@@ -10,6 +10,21 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-11.1
+
+### Behoben
+- **Kopfzeile auf dem Startbildschirm lief bei 320 px mit „Sehr groß“ seitlich über.** Das Logo gab nie nach, dafür
+  wurden die Knöpfe zusammengequetscht, der Tour-Knopf zeitweise auf 25 bis 31 px (auch bei 390 px). Jetzt behalten alle
+  Knöpfe ihre 44 px. Unter 360 px kürzt zuerst der Ortsname, dann gibt das Logo etwas nach, und die Abstände werden
+  enger. Ab 360 px bleibt das Logo unverändert; der Ortsknopf ist dort etwas kürzer, weil der Tour-Knopf nicht mehr
+  schrumpft.
+
+### Werkzeuge
+- **Veraltete Browserproben nachgezogen.** Sie waren seit den Formularen für Fehler und Wünsche, der fünften Schallplatte
+  (Adamant) und dem Datum am Tour-Sieg veraltet (Über, Merch, Bühne). Die Ansager-Prüfung wartet auf den Zustand statt auf 2,6 s: Die Seitenuhr lief in der Probe nur
+  mit etwa zwei Dritteln der echten Zeit, die App selbst blendet nach 2,2 s Seitenzeit aus. Die Fork-Probe nutzt `https`, weil Chrome `github.io` ohnehin
+  darauf hochstuft. Mit Deno gehen die Proben auch ohne Node: Playwright ab 1.55 aus npm, `CHROMIUM` auf das vorhandene Chrome.
+
 ## 2026-11-08.18
 
 ### Geändert
