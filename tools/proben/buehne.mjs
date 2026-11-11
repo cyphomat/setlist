@@ -210,7 +210,7 @@ export default async function ({ browser, pruefe }) {
     pruefe('Ansage: TOUR KOMPLETT', a.ruf === 'TOUR KOMPLETT' && a.unter === 'Erntewolf besiegt' && /gold/.test(a.art), JSON.stringify(a));
     await p.click('#done-ok');
     const nachher = (await p.textContent('#amp .serie.monat').catch(() => '')).trim();
-    pruefe('Home danach: besiegt', nachher === 'September-Tour: Erntewolf besiegt', nachher);
+    pruefe('Home danach: besiegt', nachher === 'September-Tour: Erntewolf besiegt · 28.09.', nachher);
     pruefe('keine Seitenfehler (Tour-Sieg)', !fehler.length, fehler.join(' | '));
     await ctx.close();
   }

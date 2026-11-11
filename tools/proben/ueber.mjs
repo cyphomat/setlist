@@ -2,11 +2,14 @@
 // und als Fußzeile im Setup — Links, Fork, Kontrast, Breiten, Englisch.
 // Aufruf ueber tools/proben.mjs.
 
-import { CONFIG, BILDER, verlauf, kontext, ueberlauf, kontraste } from './gemeinsam.mjs';
+import { CONFIG, BILDER, VERSION, verlauf, kontext, ueberlauf, kontraste } from './gemeinsam.mjs';
 
 const ORIGINAL = 'https://github.com/cyphomat/setlist';
 const ISSUES = `${ORIGINAL}/issues`;
 const AUTOR = 'https://github.com/cyphomat';
+// Feedback geht ueber die Formulare des Originals; der Fehlerbericht traegt die Version.
+const FEHLER = `${ISSUES}/new?template=fehler.yml&version=${VERSION}`;
+const IDEE = `${ISSUES}/new?template=idee.yml`;
 
 /** Jeder Link: neuer Tab, ohne Opener und ohne Referrer. */
 const linkPruefung = (p, sel) => p.$$eval(`${sel} a`, l => l.map(a => ({
@@ -33,10 +36,10 @@ export default async function ({ browser, pruefe }) {
     await p.waitForSelector('#ueber-box a');
     const links = await linkPruefung(p, '#ueber-box');
     const hrefs = links.map(l => l.href);
-    pruefe(`${tag}: vier Links`, links.length === 4, links.map(l => l.text).join(' | '));
+    pruefe(`${tag}: fünf Links`, links.length === 5, links.map(l => l.text).join(' | '));
     pruefe(`${tag}: alle in neuem Tab, ohne Opener/Referrer`, links.every(sauber), JSON.stringify(links.filter(l => !sauber(l))));
-    pruefe(`${tag}: Autor, Issues, Lizenz, Quelltext`, hrefs[0] === AUTOR && hrefs[1] === ISSUES
-      && hrefs[2] === `${ORIGINAL}/blob/main/LICENSE` && hrefs[3] === ORIGINAL, hrefs.join(' '));
+    pruefe(`${tag}: Autor, Fehler, Idee, Lizenz, Quelltext`, hrefs[0] === AUTOR && hrefs[1] === FEHLER && hrefs[2] === IDEE
+      && hrefs[3] === `${ORIGINAL}/blob/main/LICENSE` && hrefs[4] === ORIGINAL, hrefs.join(' '));
     const text = (await p.textContent('#ueber-box')).replace(/\s+/g, ' ');
     pruefe(`${tag}: Inhalt`, /Gebaut von @cyphomat/.test(text) && /MIT-Lizenz/.test(text) && /ausdrücklich erwünscht/.test(text) && /Ohne Gewähr/.test(text), text.slice(0, 120));
     const k = await kontraste(p, '#ueber-box p, #ueber-box a');
@@ -69,15 +72,15 @@ export default async function ({ browser, pruefe }) {
   /* 3 · Im Fork: Quelltext beim Fork, Feedback beim Original */
   {
     const { ctx, p, fehler } = await kontext(browser, { logs, config: CONFIG, heute: '2026-10-01',
-      adresse: 'http://jens.github.io/setlist/', vorher: async c => merke(c) });
+      adresse: 'https://jens.github.io/setlist/', vorher: async c => merke(c) });
     await p.click('#go-history');
     await p.click('#go-backstage');
     await p.click('#bs-tab-app');
     await p.waitForSelector('#ueber-box a');
     const hrefs = (await linkPruefung(p, '#ueber-box')).map(l => l.href);
-    pruefe('Fork: Issues ans Original', hrefs[1] === ISSUES, hrefs[1]);
-    pruefe('Fork: Lizenz im Fork', hrefs[2] === 'https://github.com/jens/setlist/blob/main/LICENSE', hrefs[2]);
-    pruefe('Fork: Quelltext im Fork', hrefs[3] === 'https://github.com/jens/setlist', hrefs[3]);
+    pruefe('Fork: Fehler und Idee ans Original', hrefs[1] === FEHLER && hrefs[2] === IDEE, hrefs.slice(1, 3).join(' '));
+    pruefe('Fork: Lizenz im Fork', hrefs[3] === 'https://github.com/jens/setlist/blob/main/LICENSE', hrefs[3]);
+    pruefe('Fork: Quelltext im Fork', hrefs[4] === 'https://github.com/jens/setlist', hrefs[4]);
     pruefe('Fork: als Fork beschriftet', /deines Forks/.test(await p.textContent('#ueber-box')));
     pruefe('keine Seitenfehler (Fork)', !fehler.length, fehler.join(' | '));
     await ctx.close();

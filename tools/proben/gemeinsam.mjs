@@ -116,7 +116,7 @@ const b64 = o => Buffer.from(JSON.stringify(o)).toString('base64');
  * fahrten: intervals.icu verbinden und diese Aktivitaeten liefern.
  * vorher:  eigener Haken auf dem Kontext, bevor die Seite laedt.
  * adresse: die App unter dieser Adresse ausliefern statt unter localhost,
- *          etwa 'http://jens.github.io/setlist/' fuer einen Fork.
+ *          etwa 'https://jens.github.io/setlist/' fuer einen Fork (https, weil Chrome github.io auf https hochstuft).
  * Gibt die Seite, gesammelte Seitenfehler und alles Geschriebene zurueck.
  */
 export async function kontext(browser, { logs, config, heute, breite = 390, hoehe = 900, schrift = null, theme = 'dunkel', fahrten = null, vorher = null, adresse = null, ohneToken = false, dateien = {}, touch = false, wellness = null }) {

@@ -66,9 +66,9 @@ export default async function ({ browser, pruefe }) {
     const wand = await p.$$eval('#merch-platten .scheibe', l => l.map(x => ({ offen: x.classList.contains('offen'),
       bild: getComputedStyle(x.querySelector('.award')).backgroundImage, filter: getComputedStyle(x.querySelector('.award')).filter,
       label: x.querySelector('.award').getAttribute('aria-label'), lage: getComputedStyle(x.querySelector('.award')).backgroundPosition })));
-    pruefe('Platten: vier gerahmte Auszeichnungen aus dem Pixelbogen', wand.length === 4 && wand.every(w => /platten\.png/.test(w.bild) && /^Auszeichnung /.test(w.label || '')),
+    pruefe('Platten: fünf gerahmte Auszeichnungen aus dem Pixelbogen (Gold bis Adamant)', wand.length === 5 && wand.every(w => /platten\.png/.test(w.bild) && /^Auszeichnung /.test(w.label || '')),
       JSON.stringify(wand.map(w => w.label)));
-    pruefe('Platten: jede mit eigenem Bild', new Set(wand.map(w => w.lage)).size === 4, wand.map(w => w.lage).join(' | '));
+    pruefe('Platten: jede mit eigenem Bild', new Set(wand.map(w => w.lage)).size === 5, wand.map(w => w.lage).join(' | '));
     pruefe('Platten: offene abgedunkelt, verdiente nicht', wand.every(w => /grayscale/.test(w.filter) === w.offen), JSON.stringify(wand.map(w => [w.offen, w.filter])));
     const shirts = await p.$$eval('#merch-shirts .tourshirt', l => l.length);
     pruefe('Tourshirts: Q2, Q3, Q4', shirts === 3, String(shirts));
