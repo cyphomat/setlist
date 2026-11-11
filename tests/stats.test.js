@@ -515,9 +515,33 @@ eq('kaum Bewegung auch',
    S.abnehmLage({ proWoche:-0.1, prozentProWoche:0.08, aktuell:120 }, { richtung:'flach' }).stufe, 'traege');
 eq('nach oben ist eindeutig',
    S.abnehmLage({ proWoche:0.4, prozentProWoche:0.33, aktuell:120 }, { richtung:'rauf' }).stufe, 'rauf');
+// Die Rauschgrenze gilt in beide Richtungen: +0,01 kg/Woche kam an echten
+// Daten heraus und hiess "nach oben, kein Wasser mehr".
+eq('ein Anstieg im Rauschen ist kein Trend',
+   S.abnehmLage({ proWoche:0.01, prozentProWoche:0, aktuell:113.5 }, { richtung:'rauf' }).stufe, 'traege');
+eq('Stillstand auch nicht',
+   S.abnehmLage({ proWoche:0, prozentProWoche:0, aktuell:113.5 }, null).stufe, 'traege');
+eq('knapp unter der Grenze nach oben: kaum Bewegung',
+   S.abnehmLage({ proWoche:0.2, prozentProWoche:0.2, aktuell:113.5 }, { richtung:'flach' }).stufe, 'traege');
+eq('und das Tempo sagt dasselbe',
+   S.abnehmLage({ proWoche:0.2, prozentProWoche:0.2, aktuell:113.5 }, null).tempo, 'traege');
+eq('knapp darueber zaehlt der Anstieg',
+   S.abnehmLage({ proWoche:0.35, prozentProWoche:0.3, aktuell:113.5 }, null).stufe, 'rauf');
+eq('im Rauschen nach oben kostet auch bei fallender Stange nichts',
+   S.abnehmLage({ proWoche:0.05, prozentProWoche:0, aktuell:113.5 }, { richtung:'runter' }).stufe, 'traege');
 eq('ohne Rate keine Lage', S.abnehmLage(null, kr), null);
 ok('ohne Kraftdaten bleibt die Rate lesbar',
    S.abnehmLage(r, null).stufe === 'haltend');
+
+print('\n--- Wie alt die letzte Waage ist ---');
+eq('heute gewogen', S.waageAlter([{ date:'2026-10-12' }], new Date(2026, 9, 12, 7)), 0);
+eq('zwei Wochen her', S.waageAlter([{ date:'2026-10-12' }], new Date(2026, 9, 26, 23, 30)), 14);
+eq('der letzte Eintrag zaehlt', S.waageAlter([{ date:'2026-10-01' }, { date:'2026-10-12' }], new Date(2026, 9, 13)), 1);
+eq('ueber einen Monatswechsel', S.waageAlter([{ date:'2026-10-28' }], new Date(2026, 10, 4)), 7);
+eq('eine Waage aus der Zukunft wird nicht negativ', S.waageAlter([{ date:'2026-10-14' }], new Date(2026, 9, 12)), 0);
+eq('ohne Werte kein Alter', S.waageAlter([]), null);
+eq('kaputtes Datum kein Alter', S.waageAlter([{ date:'gestern' }]), null);
+eq('ab einer Woche wird es gesagt', S.WAAGE_ALT_AB, 7);
 
 print('\n--- Minierfolge auf der Waage ---');
 const erf = S.gewichtsErfolge(sauber);

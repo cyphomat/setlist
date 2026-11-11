@@ -578,6 +578,7 @@ function berechneAbnehmen() {
   abnehmen = {
     rate, kraft,
     lage: ST.abnehmLage(rate, kraft),
+    alter: ST.waageAlter(gewichtsReihe),
     erfolge: ST.gewichtsErfolge(gewichtsReihe, (config && config.ziele && config.ziele.zielGewicht) || null)
   };
 }
@@ -615,14 +616,17 @@ function verletzungsWarmup() {
 /** Eine Zeile, nicht mehr — auf Home zählt, was heute anders wird. */
 function abnehmZeile() {
   if (!abnehmen || !abnehmen.lage) return '';
-  const { lage, rate } = abnehmen;
+  const { lage, rate, alter } = abnehmen;
   const farbe = { fenster: 'var(--gruen)', haltend: 'var(--akzent)', traege: 'var(--muted)',
                   schnell: 'var(--rost)', teuer: 'var(--rot)', rauf: 'var(--rost)' }[lage.stufe];
   const kg = dez(rate.proWoche, 2, true);
+  // Eine alte Waage wird benannt: die Zeile gilt fuer den letzten Wiegetag.
+  const alt = alter != null && alter >= ST.WAAGE_ALT_AB
+    ? ` · ${t('abn.letzte')} ${t('abn.vorTagen', { n: alter })}` : '';
   return `<p class="formzeile" style="border-top-color:${farbe}">
     <span class="fw" style="color:${farbe}">${t('abn.stufe.' + lage.stufe)}</span>
     <span class="ft">${t('abn.text.' + lage.stufe)}</span>
-    <span class="fd">${t('abn.zeile', { kg, prozent: dez(rate.prozentProWoche, 1), jetzt: dez(rate.aktuell, 1) })}</span>
+    <span class="fd">${t('abn.zeile', { kg, prozent: dez(rate.prozentProWoche, 1), jetzt: dez(rate.aktuell, 1) })}${alt}</span>
   </p>`;
 }
 
@@ -640,7 +644,7 @@ function renderAbnehmen() {
     box.innerHTML = `<p class="fine">${t('abn.leer')}</p>`;
     return;
   }
-  const { lage, rate, kraft, erfolge } = abnehmen;
+  const { lage, rate, kraft, erfolge, alter } = abnehmen;
   const breite = 300, hoehe = 74, rand = 5;
   const p = gewichtsReihe.slice(-90);
   const werte = p.flatMap(x => [x.schnitt, x.roh]);
@@ -670,6 +674,8 @@ function renderAbnehmen() {
       <p class="ks" style="margin:10px 0 0"><b>${t('abn.stufe.' + lage.stufe)}</b> ${t('abn.text.' + lage.stufe)}</p>
       <div class="kv"><span class="k">${t('abn.tempo')}</span><span class="v">${
         t('abn.tempoWert', { prozent: rate.prozentProWoche, von: lage.spanne[0], bis: lage.spanne[1] })}</span></div>
+      ${alter != null && alter >= ST.WAAGE_ALT_AB ? `<div class="kv"><span class="k">${t('abn.letzte')}</span><span class="v">${
+        t('abn.vorTagen', { n: alter })}</span></div>` : ''}
       ${kraft ? `<div class="kv"><span class="k">${t('abn.stange')}</span><span class="v">${
         t('abn.stangeWert', { rauf: kraft.gestiegen, gesamt: kraft.uebungen, n: kraft.einheiten })}</span></div>` : ''}
       ${erfolge ? `<div class="kv"><span class="k">${t('abn.seitStart')}</span><span class="v">${

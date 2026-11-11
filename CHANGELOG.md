@@ -10,6 +10,19 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-11.2
+
+### Behoben
+- **Ein Anstieg im Rauschen hieß „NACH OBEN“.** Die Abnehm-Einstufung kannte die Rauschgrenze (0,25 % Körpergewicht pro
+  Woche) nur nach unten. Alles, was nicht fiel, galt als Trend nach oben, auch +0,01 kg pro Woche oder glatter Stillstand,
+  samt dem Satz „das ist kein Wasser mehr“ im Plakat. Jetzt gilt die Grenze in beide Richtungen: darunter steht „KAUM
+  BEWEGUNG“, und erst darüber zählt der Anstieg. Fallende Arbeitsgewichte bei fallendem Gewicht melden sich weiter zuerst.
+
+### Neu
+- **Die letzte Waage hat ein Alter.** Die Rate hängt am letzten Wiegetag, nicht an heute. Liegt er eine Woche oder länger
+  zurück, steht das dabei („Letzte Waage vor 17 Tagen“): in der Gewichtszeile auf Home und im Abnehm-Block der Tour. Die
+  App mahnt nicht und gibt nichts vor, sie sagt nur, von wann die Zahl ist.
+
 ## 2026-11-11.1
 
 ### Behoben
