@@ -617,8 +617,7 @@ function verletzungsWarmup() {
 function abnehmZeile() {
   if (!abnehmen || !abnehmen.lage) return '';
   const { lage, rate, alter } = abnehmen;
-  const farbe = { fenster: 'var(--gruen)', haltend: 'var(--akzent)', traege: 'var(--muted)',
-                  schnell: 'var(--rost)', teuer: 'var(--rot)', rauf: 'var(--rost)' }[lage.stufe];
+  const farbe = abnehmFarbe();
   const kg = dez(rate.proWoche, 2, true);
   // Eine alte Waage wird benannt: die Zeile gilt fuer den letzten Wiegetag.
   const alt = alter != null && alter >= ST.WAAGE_ALT_AB
@@ -5682,6 +5681,10 @@ const FARBE = {
   abnehmen: { fenster: 'var(--gruen)', haltend: 'var(--akzent)', traege: 'var(--muted)',
               schnell: 'var(--rost)', teuer: 'var(--rot)', rauf: 'var(--rost)' }
 };
+/** Die letzte Waage ist eine Woche oder laenger her: der Trend gilt fuer damals, nicht fuer heute. */
+const waageAlt = () => !!abnehmen && abnehmen.alter != null && abnehmen.alter >= ST.WAAGE_ALT_AB;
+/** Farbe der Abnehm-Stufe. Mit alter Waage tritt sie zurueck — Rost und Rot sind Signale fuer heute. */
+const abnehmFarbe = () => waageAlt() ? 'var(--muted)' : FARBE.abnehmen[abnehmen.lage.stufe];
 /** Im Plakat steht der erste Satz; der ganze Absatz liegt hinter dem Instrument. */
 const ersterSatz = text => {
   const m = String(text || '').match(/^.*?[.!?](?=\s|$)/);
@@ -5696,7 +5699,7 @@ function ausnahmenHtml() {
   const schema = schemaVorschlaege();
   const liste = C.ausnahmen({ pause, verletzungen: aktiv, form, stoerung,
     abnehmStufe: abnehmen && abnehmen.lage ? abnehmen.lage.stufe : null,
-    waageAlt: !!abnehmen && abnehmen.alter != null && abnehmen.alter >= ST.WAAGE_ALT_AB, schema });
+    waageAlt: waageAlt(), schema });
   const zeile = (farbe, titel, text) => `<p class="hinweis" style="--hf:${farbe}">
     <b>${escHtml(titel)}</b>${text ? ` <span>${escHtml(text)}</span>` : ''}</p>`;
   return liste.map(a => {
@@ -5738,7 +5741,7 @@ function renderInstrumente() {
       : erholung.hrv != null ? t(erholung.hrvArt === 'sdnn' ? 'erh.hrvSdnn' : 'erh.hrv', { v: erholung.hrv })
       : erholung.ruhepuls != null ? t('erh.ruhepuls', { v: erholung.ruhepuls }) : t('erh.zeile', { label: t(`erh.${erholung.stufe}`) }),
     detail: erholungsZeile });
-  if (abnehmen && abnehmen.lage && abnehmen.rate) liste.push({ id: 'gewicht', farbe: FARBE.abnehmen[abnehmen.lage.stufe],
+  if (abnehmen && abnehmen.lage && abnehmen.rate) liste.push({ id: 'gewicht', farbe: abnehmFarbe(),
     text: t('instr.gewicht', { kg: `${abnehmen.rate.proWoche > 0 ? '+' : abnehmen.rate.proWoche < 0 ? '−' : ''}${zahl(Math.abs(abnehmen.rate.proWoche), 2)}` }),
     detail: abnehmZeile });
   if (stoerung) liste.push({ id: 'rad', farbe: FARBE.stoerung[stoerung.stufe],
