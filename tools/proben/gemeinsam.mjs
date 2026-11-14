@@ -139,7 +139,11 @@ export async function kontext(browser, { logs, config, heute, breite = 390, hoeh
         const von = u.searchParams.get('oldest'), bis = u.searchParams.get('newest');
         body = fahrten.filter(f => f.start_date_local.slice(0, 10) >= von && f.start_date_local.slice(0, 10) <= bis);
       }
-      if (u.pathname.endsWith('/wellness') && wellness) body = wellness;
+      // Wie die echte Antwort: nur der angefragte Zeitraum. Sonst faellt nicht auf, wenn ein Abruf zu kurz greift.
+      if (u.pathname.endsWith('/wellness') && wellness) {
+        const von = u.searchParams.get('oldest') || '', bis = u.searchParams.get('newest') || '9999';
+        body = wellness.filter(w => w.id >= von && w.id <= bis);
+      }
       return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
     });
   }

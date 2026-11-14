@@ -828,7 +828,7 @@ async function trageMobilityEin(uebung, name) {
   S.cacheLogs(nachher);
   state = P.applyLog(state, config, log);
   S.cache({ state });
-  const neu = M.neueAufnaeher(vorher, nachher, config, gewichtsPunkte, new Date(),
+  const neu = M.neueAufnaeher(vorher, nachher, config, waageFuerMerch(), new Date(),
     { fahrten: radFuerMerch(vorher), planFuer: planFuerDatum, soundchecks, zusammen });
   try { await commit(log); banner(t('mob.erledigt', { name }), 'ok'); }
   catch { S.queue(log); banner(t('msg.keinNetz'), '', 6000); }
@@ -6202,6 +6202,29 @@ async function ladeMerchFahrten(logs) {
   return true;
 }
 
+/**
+ * Alle Waagenwerte seit Setlist-Start: Zwischenspeicher plus die frischen
+ * 90 Tage. Die Aufnaeher werden bei jedem Start neu gerechnet — nur mit dem
+ * 90-Tage-Fenster fiele ab, was aelter ist (Stimmgeraet, Koerpergewicht).
+ */
+function waageFuerMerch() {
+  const nachTag = new Map();
+  for (const w of (S.cached().merchWaage || [])) if (w && w.date && w.weight > 0) nachTag.set(w.date, w);
+  for (const w of gewichtsPunkte) if (w && w.date) nachTag.set(w.date, w);
+  return [...nachTag.values()];
+}
+
+/** Einmal die Waage seit der ersten Einheit holen, mit zwei Wochen Vorlauf (siehe waageFuer in merch.js). */
+async function ladeMerchWaage(logs) {
+  const start = ersteEinheit(logs);
+  if (!ICU.isConfigured() || !start) return false;
+  const von = new Date(`${start}T12:00:00`);
+  von.setDate(von.getDate() - 14);
+  const roh = await ICU.wellness(P.ymd(von), P.ymd(new Date()));
+  S.cache({ merchWaage: roh.filter(w => w.weight > 0 && w.date).map(w => ({ date: w.date, weight: w.weight })) });
+  return true;
+}
+
 const datumLang = d => new Date(d + 'T12:00:00').toLocaleDateString(locale());
 const datumKurz = d => new Date(d + 'T12:00:00').toLocaleDateString(locale(), { day: '2-digit', month: '2-digit' });
 
@@ -6308,7 +6331,7 @@ async function neueAufnaeherZeigen(log, historie) {
   const tage = new Set(vorher.map(l => l.date));
   if (!historie.every(h => tage.has(h.date))) return null;
   const nachher = vorher.concat([log]);
-  const neu = M.neueAufnaeher(vorher, nachher, config, gewichtsPunkte, new Date(),
+  const neu = M.neueAufnaeher(vorher, nachher, config, waageFuerMerch(), new Date(),
     { fahrten: radFuerMerch(vorher), planFuer: planFuerDatum, soundchecks, zusammen });
   // Rang und Wochenregler: vorher gegen nachher, aus denselben Logs
   const rVor = M.rang(vorher, radFuerMerch(vorher)), rNach = M.rang(nachher, radFuerMerch(nachher));
@@ -6728,8 +6751,8 @@ async function speichereSoundcheck(key) {
   catch { S.queue({ type: 'soundcheck', ...eintrag }); banner(t('msg.keinNetz'), '', 6000); }
   const logs = geladeneLogs();
   const opts = soundchecks => ({ fahrten: radFuerMerch(logs), planFuer: planFuerDatum, soundchecks, zusammen });
-  const alt = new Set(M.aufnaeher(logs, config, gewichtsPunkte, new Date(), opts(vorher)).filter(a => a.verdient).map(a => a.id));
-  const neu = M.aufnaeher(logs, config, gewichtsPunkte, new Date(), opts(soundchecks)).filter(a => a.verdient && !alt.has(a.id));
+  const alt = new Set(M.aufnaeher(logs, config, waageFuerMerch(), new Date(), opts(vorher)).filter(a => a.verdient).map(a => a.id));
+  const neu = M.aufnaeher(logs, config, waageFuerMerch(), new Date(), opts(soundchecks)).filter(a => a.verdient && !alt.has(a.id));
   renderOrtKnopf();
   renderHome();
   show('home');
@@ -7067,12 +7090,14 @@ async function zeigeMerch(von = 'home') {
   // nur die Rad-Aufnaeher warten auf den naechsten Besuch.
   try { if (logs.length && await ladeMerchFahrten(logs)) renderMerch(logs); }
   catch (e) { console.warn('intervals.icu, Fahrten fuer den Merch-Stand:', e.message); }
+  try { if (logs.length && await ladeMerchWaage(logs)) renderMerch(logs); }
+  catch (e) { console.warn('intervals.icu, Waage fuer den Merch-Stand:', e.message); }
 }
 
 function renderMerch(logs) {
   const heute = new Date();
   const fahrten = radFuerMerch(logs);
-  const liste = M.aufnaeher(logs, config, gewichtsPunkte, heute, { fahrten, planFuer: planFuerDatum, soundchecks, zusammen });
+  const liste = M.aufnaeher(logs, config, waageFuerMerch(), heute, { fahrten, planFuer: planFuerDatum, soundchecks, zusammen });
 
   // Rang — freigespielte Stationen lassen sich wieder ansehen
   const r = M.rang(logs, fahrten);
