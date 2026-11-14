@@ -194,8 +194,14 @@ export default async function ({ browser, pruefe }) {
       const hinweise = await p.$$eval('#today .hinweis b', l => l.map(x => x.textContent));
       pruefe(`${tag}: „NACH OBEN“ ${imPlakat ? 'steht im Plakat' : 'bleibt aus dem Plakat'}`,
         hinweise.some(h => /NACH OBEN/.test(h)) === imPlakat, hinweise.join(' | '));
+      const punkt = await chip.getAttribute('style');
+      pruefe(`${tag}: Punkt am Chip ${imPlakat ? 'in Signalfarbe' : 'grau'}`, punkt.includes(imPlakat ? 'var(--rost)' : 'var(--muted)'), punkt);
       await chip.click();
       await p.waitForSelector('.instr-detail', { state: 'visible' });
+      const rand = await p.$eval('.instr-detail .formzeile', e => e.getAttribute('style'));
+      pruefe(`${tag}: Detailzeile ${imPlakat ? 'in Signalfarbe' : 'grau'}`, rand.includes(imPlakat ? 'var(--rost)' : 'var(--muted)'), rand);
+      const k = (await kontraste(p, '.instr-detail span')).filter(x => x.wert < 4.5);
+      pruefe(`${tag}: Kontrast ≥ 4,5`, !k.length, JSON.stringify(k.slice(0, 3)));
       const detail = (await p.textContent('.instr-detail')).replace(/\s+/g, ' ').trim();
       pruefe(`${tag}: das Instrument sagt es weiter`, /NACH OBEN/.test(detail), detail.slice(0, 160));
       pruefe(`${tag}: Alter ${imPlakat ? 'steht nicht' : 'steht'} dabei`, /Letzte Waage vor 17 Tagen/.test(detail) === !imPlakat, detail.slice(-120));

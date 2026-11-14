@@ -10,6 +10,13 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-14.3
+
+### Behoben
+- **Der Punkt am Gewichts-Chip blieb bei alter Waage rost oder rot.** Das Plakat schweigt seit 2026-11-14.1 zu einem
+  Trend, dessen letzte Waage eine Woche oder länger her ist. Der Chip darunter leuchtete trotzdem weiter in Signalfarbe.
+  Jetzt treten Punkt und Detailzeile dann in Grau zurück. Stufe und „Letzte Waage vor N Tagen“ stehen weiter da.
+
 ## 2026-11-14.2
 
 ### Neu
