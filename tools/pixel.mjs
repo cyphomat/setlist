@@ -665,6 +665,35 @@ const EIGENE = {
     'H...........H',
     'HHHHHHHHHHHHH'
   ],
+  stimmgabel: [           // Stimmgeraet 1, Gestimmt: die Stimmgabel schwingt
+    'A.H...H.A',
+    '..H...H..',
+    'A.H...H.A',
+    '..H...H..',
+    '..HHHHH..',
+    '....H....',
+    '....H....',
+    '...AAA...'
+  ],
+  zeiger: [               // Stimmgeraet 4, Stimmstabil: die Nadel steht in der Mitte
+    '....HHHHH....',
+    '..HH..A..HH..',
+    '.H....A....H.',
+    'H.....A.....H',
+    'H.....A.....H',
+    'H....AAA....H',
+    'HHHHHHHHHHHHH'
+  ],
+  kopfplatte: [           // Stimmgeraet 12, Absolutes Gehoer: sechs Wirbel, alle Saiten sitzen
+    'A.HHHHH.A',
+    '..HAHAH..',
+    'A.HAHAH.A',
+    '..HAHAH..',
+    'A.HHHHH.A',
+    '...HHH...',
+    '...HHH...',
+    '...HHH...'
+  ],
   duett: [                // Duett: zwei Mikrofone auf Staendern
     '.HHH...HHH.',
     'HHAHH.HHAHH',
@@ -865,6 +894,7 @@ const MOTIV = {
   'serie-4': 'serie4', 'serie-12': '#kalender', 'serie-26': 'trainingslager', 'serie-52': 'legende',
   'tour-1': 'tourkomplett', 'tour-3': '#tourplakat', 'tour-6': '#tourbus', 'tour-12': '#lorbeer',
   'soundcheck-4': 'soundcheck4', 'soundcheck-12': '#mischpult',
+  'stimm-1': '#stimmgabel', 'stimm-4': '#zeiger', 'stimm-12': '#kopfplatte',
   duett: '#duett', faustgruss: '#faustgruss',
   'partner-5': '#tickets', 'partner-15': '#backstage', 'partner-30': '#allaccess',
   'verabredung-2': '#verabredung2', 'verabredung-4': '#verabredung4', 'verabredung-8': '#verabredung8',
@@ -885,7 +915,7 @@ const KATEGORIE = {
   platten: 'kraft', club: 'kraft', hangar: 'kraft', koerper: 'kraft', gelenkig: 'kraft',
   km: 'rad', hoehe: 'rad', century: 'rad', doom: 'rad', openair: 'rad', crossover: 'rad',
   comeback: 'comeback', rueckweg: 'comeback', reunion: 'comeback', serie: 'serie',
-  tour: 'tour', soundcheck: 'tour',
+  tour: 'tour', soundcheck: 'tour', stimm: 'tour',
   duett: 'buehne', faustgruss: 'buehne', partner: 'buehne', verabredung: 'buehne',
   kurs: 'buehne', check: 'buehne', kugel: 'buehne', pit: 'buehne', kugelrang: 'buehne', kursboss: 'buehne', hair: 'buehne',
   weihnachtsgig: 'buehne', eiersuche: 'buehne', geisterstunde: 'buehne', kerze: 'buehne'

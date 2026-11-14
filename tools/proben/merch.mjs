@@ -173,7 +173,12 @@ export default async function ({ browser, pruefe }) {
         moving_time: 3600 + (i % 4) * 900, distance: (i === 20 ? 104000 : 30000 + i * 500),
         total_elevation_gain: 350, icu_training_load: 55, icu_intensity: 68, trainer: i % 5 !== 0 });
     }
-    const { ctx, p, fehler, icuAufrufe } = await kontext(browser, { logs, config: CONFIG, heute: '2026-10-01', fahrten });
+    // Waage: fuenf Wochen ab der ersten Einheit je Mo, Mi, Fr gewogen, danach nicht mehr.
+    const wellness = [];
+    for (let woche = 0; woche < 5; woche++) for (const tag of [0, 2, 4]) {
+      wellness.push({ id: P.ymd(new Date(2026, 5, 1 + woche * 7 + tag)), weight: 92 - woche * 0.3 });
+    }
+    const { ctx, p, fehler, icuAufrufe } = await kontext(browser, { logs, config: CONFIG, heute: '2026-10-01', fahrten, wellness });
     await p.waitForTimeout(800);
     const homeSerie = (await p.textContent('#amp')).match(/(\d+) Wochen am Stück/);
     pruefe('Home: die Radwochen halten die Serie', homeSerie && +homeSerie[1] >= 17, homeSerie && homeSerie[0]);
@@ -188,6 +193,17 @@ export default async function ({ browser, pruefe }) {
     pruefe('Kutte: Abschnitt Rad', rad.length >= 4, rad.join(' | '));
     const radVerdient = await p.$$eval('#merch-kutte .patch.k-rad:not(.offen) b', l => l.map(x => x.textContent));
     pruefe('Highway Star, Stairway, Crossover verdient', ['Highway Star', 'Stairway to Heaven'].every(n => radVerdient.includes(n)) && radVerdient.some(n => n.startsWith('Crossover')), radVerdient.join(' | '));
+    const lang = icuAufrufe.filter(a => a.includes('/wellness') && a.includes('oldest=2026-05-18'));
+    pruefe('Waage ab der ersten Einheit geladen, mit zwei Wochen Vorlauf', lang.length === 1, icuAufrufe.filter(a => a.includes('wellness')).join(' | '));
+    const waage = await p.evaluate(() => JSON.parse(localStorage.getItem('setlist.cache') || '{}').merchWaage || []);
+    pruefe('Waage schlank zwischengespeichert', waage.length === wellness.length && waage.every(w => Object.keys(w).join() === 'date,weight'), JSON.stringify(waage.slice(0, 2)));
+    const stimm = await p.$$eval('#merch-kutte .patch.k-tour', l => l.filter(x => /Stimmgerät/.test(x.textContent))
+      .map(x => ({ name: x.querySelector('b').textContent, offen: x.classList.contains('offen'), bild: !!x.querySelector('.pix') })));
+    pruefe('Stimmgerät: fünf Wiegewochen geben Gestimmt und Stimmstabil, Absolutes Gehör steht offen',
+      stimm.map(s => `${s.name}${s.offen ? ' (offen)' : ''}`).join(' | ')
+        === 'Stimmgerät: Gestimmt | Stimmgerät: Stimmstabil | Stimmgerät: Absolutes Gehör (offen)', JSON.stringify(stimm));
+    pruefe('Stimmgerät: jede Stufe mit Bild', stimm.length === 3 && stimm.every(s => s.bild), JSON.stringify(stimm));
+    await p.locator('#merch-kutte .patch.k-tour', { hasText: 'Stimmgerät' }).first().locator('xpath=..').screenshot({ path: BILDER + 'stimmgeraet.png' });
     const shirt = await p.textContent('#merch-shirts .tourshirt');
     pruefe('Tourshirt: Rad auf dem Rücken, km im Kopf', shirt.includes('Rad') && / km/.test(shirt), shirt.replace(/\s+/g, ' ').trim().slice(0, 200));
     const bil = await p.textContent('#merch-bilanz');
@@ -227,6 +243,28 @@ export default async function ({ browser, pruefe }) {
     await p.locator('#merch-shirts').screenshot({ path: BILDER + `shirts-${theme}-360.png` });
     await p.screenshot({ path: BILDER + `p3-merch-${theme}.png`, fullPage: true });
     pruefe(`keine Seitenfehler (${theme})`, !fehler.length, fehler.join(' | '));
+    await ctx.close();
+  }
+
+  /* 4 · Stimmgeraet: schmal mit Sehr gross in beiden Themen, dazu breit */
+  for (const [breite, schrift, theme] of [[320, 'sehr', 'hell'], [320, 'sehr', 'dunkel'], [1280, null, 'hell']]) {
+    const tag = `stimmgerät/${theme}/${breite}${schrift ? '/sehr' : ''}`;
+    // Eine Woche mit drei Wiegetagen (Mo, Di, Do), kurz vor heute.
+    const wellness = [21, 22, 24].map(t => ({ id: P.ymd(new Date(2026, 8, t)), weight: 92 }));
+    const { ctx, p, fehler } = await kontext(browser, { logs: verlauf('2026-09-28'), config: CONFIG, heute: '2026-10-01',
+      breite, schrift, theme, fahrten: [], wellness });
+    await p.click('#go-merch');
+    await p.waitForFunction(() => /Stimmgerät/.test(document.querySelector('#merch-kutte')?.textContent || ''), null, { timeout: 8000 }).catch(() => {});
+    const stimm = await p.$$eval('#merch-kutte .patch.k-tour', l => l.filter(x => /Stimmgerät/.test(x.textContent))
+      .map(x => `${x.querySelector('b').textContent}${x.classList.contains('offen') ? ' (offen)' : ''}`));
+    pruefe(`${tag}: Gestimmt verdient, Stimmstabil als nächster Schritt`,
+      stimm.join(' | ') === 'Stimmgerät: Gestimmt | Stimmgerät: Stimmstabil (offen)', stimm.join(' | '));
+    const k = (await kontraste(p, '#merch-kutte .patch.k-tour:not(.offen) b, #merch-kutte .patch.k-tour:not(.offen) span:not(.pix)')).filter(x => x.wert < 4.5);
+    pruefe(`${tag}: Kontrast ≥ 4,5`, !k.length, JSON.stringify(k.slice(0, 3)));
+    const u = await ueberlauf(p);
+    pruefe(`${tag}: kein Querlauf`, !u.scroll && !u.raus.length, JSON.stringify(u));
+    pruefe(`keine Seitenfehler (${tag})`, !fehler.length, fehler.join(' | '));
+    await p.locator('#merch-kutte').screenshot({ path: BILDER + `stimmgeraet-${theme}-${breite}.png` });
     await ctx.close();
   }
 }

@@ -427,6 +427,30 @@ print('\n--- Aftershow: Roadcrew und Hangar 18 ---');
   eq('dreimal fuenf sind keine zehn am Stueck', hat(summe, 'hangar'), null);
 }
 
+print('\n--- Stimmgeraet: Wochen mit Waage ---');
+{
+  const w = (date, weight = 92) => ({ date, weight });
+  const gig = kraft('2026-08-03', [satz('squat', 95)]);
+  ok('ohne Waage keine Leiter', !M.katalog(config).some(a => a.gruppe === 'stimm'));
+  ok('mit Waage drei Stufen', [1, 4, 12].every(n => M.katalog(config, { mitGewicht: true }).some(a => a.id === `stimm-${n}`)));
+  const woche = [w('2026-09-07'), w('2026-09-08'), w('2026-09-08', 91.5), w('2026-09-10')];
+  eq('dritter Wiegetag macht die Woche voll, doppelt zaehlt einmal', M.wiegeWochen(woche).join(','), '2026-09-10');
+  eq('ueber die Wochengrenze: noch nicht', M.wiegeWochen([w('2026-09-06'), w('2026-09-07'), w('2026-09-08')]).length, 0);
+  eq('Gestimmt am dritten Wiegetag', hat(M.aufnaeher([gig], config, woche, HEUTE), 'stimm-1'), '2026-09-10');
+  eq('die Zahl ist egal: auch wenn das Gewicht steigt',
+    hat(M.aufnaeher([gig], config, [w('2026-09-07', 90), w('2026-09-08', 93), w('2026-09-10', 96)], HEUTE), 'stimm-1'), '2026-09-10');
+  eq('Wiegen vor der ersten Einheit zaehlt nicht',
+    hat(M.aufnaeher([kraft('2026-09-14', [satz('squat', 95)])], config, woche, HEUTE), 'stimm-1'), null);
+  eq('ohne Einheit kein Stimmgeraet', hat(M.aufnaeher([], config, woche, HEUTE), 'stimm-1'), null);
+  const vier = [];
+  for (const mo of ['2026-08-03', '2026-08-10', '2026-08-24', '2026-09-14'])   // mit Luecken
+    for (let i = 0; i < 3; i++) { const d = new Date(mo + 'T12:00:00'); d.setDate(d.getDate() + i * 2); vier.push(w(P.ymd(d))); }
+  const a4 = M.aufnaeher([gig], config, vier, HEUTE);
+  eq('vier Wochen, nicht am Stueck: Stufe 4', hat(a4, 'stimm-4'), '2026-09-18');
+  eq('zwoelf noch nicht', hat(a4, 'stimm-12'), null);
+  ok('drei eigene Bilder', [1, 4, 12].every(n => M.BILDER.includes(`stimm-${n}`)));
+}
+
 print('\n--- Mobility und Gelenkig ---');
 {
   const mob = (date, uebung = 'couch') => ({ date, type: 'mobility', uebung, finished: `${date}T07:00:00Z` });

@@ -6,6 +6,7 @@
 import * as I from '../js/intervals.js';
 import * as ST from '../js/stats.js';
 import * as C from '../js/coach.js';
+import * as M from '../js/merch.js';
 import roh from './fixtures/icu-fahrten.js';
 import wroh from './fixtures/icu-wellness.js';
 
@@ -196,6 +197,17 @@ const well = wroh.map(I.alsWellness);
   const erh = C.erholung(well);
   eq('Erholung auf echten Daten: Reihe ist SDNN', erh.hrvArt, 'sdnn');
   ok('Erholung auf echten Daten: Basis und Wert 5..300 ms', erh.hrv == null || (zwischen(erh.hrv, 5, 300) && zwischen(erh.basis, 5, 300)));
+}
+
+/* ---------- Stimmgeraet: Wiegewochen an der echten Waage ---------- */
+{
+  const reihe = ST.gewichtsReihe(well);
+  const wochen = M.wiegeWochen(reihe);
+  const wiegetage = new Set(reihe.map(p => p.date));
+  ok('Wiegewochen: jede wurde an einem Wiegetag voll', wochen.every(d => wiegetage.has(d)));
+  ok('Wiegewochen: nie mehr, als die Wiegetage hergeben', wochen.length <= Math.floor(wiegetage.size / M.STIMM_TAGE));
+  ok('Wiegewochen: aufsteigend, je Woche hoechstens eine',
+    wochen.every((d, i) => i === 0 || Date.parse(d) - Date.parse(wochen[i - 1]) >= 86400000));
 }
 
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

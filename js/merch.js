@@ -66,6 +66,9 @@ const SERIE_STUFEN = [4, 12, 26, 52];
 /** Wochen mit mindestens dreimal Mobility — 1, 4, 12 solcher Wochen. */
 export const GELENKIG_STUFEN = [1, 4, 12];
 export const GELENKIG_TAGE = 3;
+/** Stimmgeraet: Wochen mit mindestens dreimal Waage — 1, 4, 12 solcher Wochen. */
+export const STIMM_STUFEN = [1, 4, 12];
+export const STIMM_TAGE = 3;
 const PLATTEN_STUFEN = [1, 2, 3, 4];
 /** Besiegte Monats-Endgegner — 1, 3, 6, 12 Monate. */
 export const TOUR_STUFEN = [1, 3, 6, 12];
@@ -196,6 +199,8 @@ export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHo
   for (const n of SERIE_STUFEN) p(`serie-${n}`, 'serie', 'serie', 'merch.p.serie', { n });
   if (kraftGeplant(config)) for (const n of TOUR_STUFEN) p(`tour-${n}`, 'tour', 'tour', 'merch.p.tour', { n });
   for (const n of SOUNDCHECK_STUFEN) p(`soundcheck-${n}`, 'tour', 'soundcheck', 'merch.p.soundcheck', { n });
+  // Ohne Waage gibt es nichts zu stimmen — und keine leeren Kreise dafuer.
+  if (mitGewicht) for (const n of STIMM_STUFEN) p(`stimm-${n}`, 'tour', 'stimm', `merch.p.stimm-${n}`, { n, tage: STIMM_TAGE });
   // Wer nie mit jemandem verabredet war, bekommt keine leeren Kreise dafuer —
   // wie bei den Fahrten: was es ohne die Daten nicht gibt, fehlt nicht.
   if (mitZusammen) {
@@ -418,6 +423,15 @@ export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Dat
   const gelenkig = gelenkigeWochen(logs);
   for (const n of GELENKIG_STUFEN) if (gelenkig.length >= n) setze(`gelenkig-${n}`, gelenkig[n - 1]);
 
+  // Stimmgeraet: belohnt das Messen, nie die Zahl. Gezaehlt wird ab der
+  // ersten Einheit, wie bei den Fahrten — sonst hinge es am Abruffenster,
+  // ob eine Woche von vor dem Start noch mitzaehlt.
+  const ersterGig = logs.filter(istGig).map(l => l.date).sort()[0];
+  if (ersterGig) {
+    const gestimmt = wiegeWochen(reihe, ersterGig);
+    for (const n of STIMM_STUFEN) if (gestimmt.length >= n) setze(`stimm-${n}`, gestimmt[n - 1]);
+  }
+
   // Serien: dieselbe Rechnung wie der Rekord in der Tour, mit Verletzungspause.
   const fenster = pausenFenster(config, ymd(heute));
   for (const w of wochenSerie(tage, fenster)) {
@@ -440,6 +454,23 @@ export function mobilityTage(logs = []) {
     if (l.type === 'mobility' || (typ(l) === 'strength' && l.mobility)) tage.add(l.date);
   }
   return [...tage].sort();
+}
+
+/**
+ * Je Woche (Mo–So) mit mindestens STIMM_TAGE Wiegetagen der Tag, an dem
+ * sie es wurde. Die Wochen muessen nicht am Stueck sein, und was auf der
+ * Waage stand, spielt keine Rolle.
+ */
+export function wiegeWochen(reihe = [], ab = null) {
+  const tage = [...new Set(reihe.filter(p => p && p.date && (!ab || p.date >= ab)).map(p => p.date))].sort();
+  const zaehler = new Map(), out = [];
+  for (const d of tage) {
+    const k = montagKey(d);
+    const n = (zaehler.get(k) || 0) + 1;
+    zaehler.set(k, n);
+    if (n === STIMM_TAGE) out.push(d);
+  }
+  return out;
 }
 
 /** Je Woche mit mindestens GELENKIG_TAGE Mobility-Tagen der Tag, an dem sie es wurde. */
@@ -590,7 +621,7 @@ export const BILDER = [
   'club', 'hangar', ...KOERPER_MARKEN.map(m => `koerper-${m.lift}`), ...GELENKIG_STUFEN.map(n => `gelenkig-${n}`),
   ...KM_STUFEN.map(n => `km-${n}`), 'hoehe', 'century', 'doom', 'openair', ...CROSSOVER_STUFEN.map(n => `crossover-${n}`),
   'comeback', 'rueckweg', 'reunion', ...SERIE_STUFEN.map(n => `serie-${n}`), ...TOUR_STUFEN.map(n => `tour-${n}`),
-  ...SOUNDCHECK_STUFEN.map(n => `soundcheck-${n}`),
+  ...SOUNDCHECK_STUFEN.map(n => `soundcheck-${n}`), ...STIMM_STUFEN.map(n => `stimm-${n}`),
   'duett', 'faustgruss', ...PARTNER_STUFEN.map(n => `partner-${n}`), ...VERABREDUNG_STUFEN.map(n => `verabredung-${n}`),
   'kurs-start', ...KURS_PHASEN.map(k => `kurs-${k.id}`), ...CHECKS.map((c, i) => `check-${i + 1}`), ...KUGEL_STUFEN.map(n => `kugel-${n}`),
   'pit-start', 'pit-sprung', ...PIT_SERIE_STUFEN.map(n => `pit-serie-${n}`),

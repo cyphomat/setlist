@@ -10,6 +10,21 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-14.2
+
+### Neu
+- **Stimmgerät: ein Aufnäher fürs Wiegen.** Die Waage ist der Tuner: Sie zeigt nur an, wo du stehst. Eine Woche (Mo–So) mit
+  mindestens drei Wiegetagen zählt, die Wochen müssen nicht am Stück sein, und es wird nie weniger. Eine Woche heißt
+  „Gestimmt“, vier „Stimmstabil“, zwölf „Absolutes Gehör“, jede Stufe mit eigenem Pixelbild (Stimmgabel, Zeiger in der
+  Mitte, Kopfplatte). Belohnt wird das Messen, nicht die Zahl: Was auf der Waage steht, spielt keine Rolle. Die Leiter
+  gibt es nur mit verbundener Waage, gezählt wird ab der ersten Einheit.
+
+### Behoben
+- **Aufnäher mit Waage hingen am 90-Tage-Fenster.** Die Kutte wird bei jedem Start neu gerechnet, die Waage kam aber nur
+  für die letzten 90 Tage. Ein Körpergewicht-Aufnäher, dessen Lift länger her ist, konnte so wieder verschwinden. Der
+  Merch-Stand lädt die Waage jetzt einmal ab der ersten Einheit (mit zwei Wochen Vorlauf) und merkt sie sich schlank,
+  wie schon die Fahrten. Kurve, Trend und Abnehm-Auswertung bleiben beim 90-Tage-Fenster.
+
 ## 2026-11-14.1
 
 ### Behoben
