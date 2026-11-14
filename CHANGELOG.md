@@ -10,6 +10,14 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-14.1
+
+### Behoben
+- **Ein alter Waage-Trend sprach im Plakat wie eine Ansage von heute.** „ZU SCHNELL“, „GEHT AN DIE SUBSTANZ“ und „NACH
+  OBEN“ standen auf Home, egal wie lange die letzte Waage her war. Die Rate hängt aber am letzten Wiegetag. Liegt er eine
+  Woche oder länger zurück, schweigt das Plakat dazu: Es zeigt nur, was heute etwas ändert. Das Gewichts-Instrument
+  darunter bleibt und nennt weiter Stufe und Alter („Letzte Waage vor 17 Tagen“).
+
 ## 2026-11-11.2
 
 ### Behoben

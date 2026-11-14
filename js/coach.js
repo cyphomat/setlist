@@ -567,7 +567,7 @@ const AUSNAHME = {
 };
 
 export function ausnahmen({ pause = null, verletzungen = [], form = null,
-                            stoerung = null, abnehmStufe = null, schema = [] } = {}) {
+                            stoerung = null, abnehmStufe = null, waageAlt = false, schema = [] } = {}) {
   const out = [];
   if (pause) out.push({ art: 'pause', stufe: 'vorschlag' });
   // Ein festgefahrener Lift steht da, bevor man startet — der Dialog beim
@@ -580,6 +580,9 @@ export function ausnahmen({ pause = null, verletzungen = [], form = null,
   }
   if (form && AUSNAHME.form.includes(form.stufe)) out.push({ art: 'form', stufe: form.stufe });
   if (stoerung && AUSNAHME.stoerung.includes(stoerung.stufe)) out.push({ art: 'stoerung', stufe: stoerung.stufe });
-  if (abnehmStufe && AUSNAHME.abnehmen.includes(abnehmStufe)) out.push({ art: 'abnehmen', stufe: abnehmStufe });
+  // Eine alte Waage aendert heute nichts: die Rate haengt am letzten
+  // Wiegetag, und "ZU SCHNELL" von vor drei Wochen ist keine Ansage fuer
+  // heute. Das Instrument bleibt und nennt Stufe und Alter.
+  if (abnehmStufe && !waageAlt && AUSNAHME.abnehmen.includes(abnehmStufe)) out.push({ art: 'abnehmen', stufe: abnehmStufe });
   return out;
 }

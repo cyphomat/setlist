@@ -5695,7 +5695,8 @@ function ausnahmenHtml() {
   const aktiv = VL.aktive(config);
   const schema = schemaVorschlaege();
   const liste = C.ausnahmen({ pause, verletzungen: aktiv, form, stoerung,
-    abnehmStufe: abnehmen && abnehmen.lage ? abnehmen.lage.stufe : null, schema });
+    abnehmStufe: abnehmen && abnehmen.lage ? abnehmen.lage.stufe : null,
+    waageAlt: !!abnehmen && abnehmen.alter != null && abnehmen.alter >= ST.WAAGE_ALT_AB, schema });
   const zeile = (farbe, titel, text) => `<p class="hinweis" style="--hf:${farbe}">
     <b>${escHtml(titel)}</b>${text ? ` <span>${escHtml(text)}</span>` : ''}</p>`;
   return liste.map(a => {

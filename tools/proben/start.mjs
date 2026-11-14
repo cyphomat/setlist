@@ -175,4 +175,33 @@ export default async function ({ browser, pruefe }) {
       await ctx.close();
     }
   }
+
+  /* Waage: ein echter Anstieg spricht im Plakat nur, solange die Waage frisch ist */
+  {
+    // +0,42 kg je Woche, klar ueber dem Rauschen. Einmal bis heute gewogen, einmal 17 Tage nicht mehr.
+    const steigend = bis => Array.from({ length: 60 }, (_, i) => {
+      const d = new Date(2026, 7, 3 + i);
+      return { id: P.ymd(d), ctl: 40, atl: 38, sleepSecs: 7.4 * 3600,
+        ...(i <= bis ? { weight: Math.round((90 + i * 0.06) * 100) / 100 } : {}) };
+    });
+    for (const [name, bis, imPlakat] of [['frisch', 59, true], ['alt', 42, false]]) {
+      const tag = `waage-steigt/${name}`;
+      const { ctx, p, fehler } = await kontext(browser, { logs: verlauf('2026-09-28'), config: CONFIG, heute: '2026-10-01',
+        hoehe: 1000, vorher: icu(steigend(bis), []) });
+      await p.waitForSelector('#instrumente .instr', { state: 'visible' });
+      const chip = p.locator('#instrumente .instr', { hasText: 'kg/Woche' });
+      await chip.waitFor({ state: 'visible' });
+      const hinweise = await p.$$eval('#today .hinweis b', l => l.map(x => x.textContent));
+      pruefe(`${tag}: „NACH OBEN“ ${imPlakat ? 'steht im Plakat' : 'bleibt aus dem Plakat'}`,
+        hinweise.some(h => /NACH OBEN/.test(h)) === imPlakat, hinweise.join(' | '));
+      await chip.click();
+      await p.waitForSelector('.instr-detail', { state: 'visible' });
+      const detail = (await p.textContent('.instr-detail')).replace(/\s+/g, ' ').trim();
+      pruefe(`${tag}: das Instrument sagt es weiter`, /NACH OBEN/.test(detail), detail.slice(0, 160));
+      pruefe(`${tag}: Alter ${imPlakat ? 'steht nicht' : 'steht'} dabei`, /Letzte Waage vor 17 Tagen/.test(detail) === !imPlakat, detail.slice(-120));
+      pruefe(`keine Seitenfehler (${tag})`, !fehler.length, fehler.join(' | '));
+      await p.screenshot({ path: BILDER + `home-waage-steigt-${name}.png`, fullPage: true });
+      await ctx.close();
+    }
+  }
 }

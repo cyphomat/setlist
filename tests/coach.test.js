@@ -504,6 +504,9 @@ print('\n--- Was auf Home sprechen darf ---');
   eq('leichte Stoerung spricht', C.ausnahmen({ stoerung: { stufe: 'leicht' } }).length, 1);
   eq('traeges Abnehmen nicht', C.ausnahmen({ abnehmStufe: 'traege' }).length, 0);
   eq('nach oben schon', C.ausnahmen({ abnehmStufe: 'rauf' })[0].art, 'abnehmen');
+  eq('mit alter Waage auch das nicht', C.ausnahmen({ abnehmStufe: 'rauf', waageAlt: true }).length, 0);
+  eq('alte Waage laesst den Rest sprechen', C.ausnahmen({ form: { stufe: 'platt' }, abnehmStufe: 'teuer', waageAlt: true })
+    .map(x => x.art).join(), 'form');
 }
 
 print('\n--- Ruhepuls und Befinden ---');
