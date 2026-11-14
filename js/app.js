@@ -579,6 +579,7 @@ function berechneAbnehmen() {
     rate, kraft,
     lage: ST.abnehmLage(rate, kraft),
     alter: ST.waageAlter(gewichtsReihe),
+    rueckkehr: ST.waageRueckkehr(gewichtsReihe),
     erfolge: ST.gewichtsErfolge(gewichtsReihe, (config && config.ziele && config.ziele.zielGewicht) || null)
   };
 }
@@ -5699,7 +5700,7 @@ function ausnahmenHtml() {
   const schema = schemaVorschlaege();
   const liste = C.ausnahmen({ pause, verletzungen: aktiv, form, stoerung,
     abnehmStufe: abnehmen && abnehmen.lage ? abnehmen.lage.stufe : null,
-    waageAlt: waageAlt(), schema });
+    waageAlt: waageAlt(), rueckkehr: abnehmen ? abnehmen.rueckkehr : null, schema });
   const zeile = (farbe, titel, text) => `<p class="hinweis" style="--hf:${farbe}">
     <b>${escHtml(titel)}</b>${text ? ` <span>${escHtml(text)}</span>` : ''}</p>`;
   return liste.map(a => {
@@ -5716,6 +5717,11 @@ function ausnahmenHtml() {
       }
       case 'form': return zeile(FARBE.form[a.stufe], t('form.zeile', { v: `${form.form > 0 ? '+' : ''}${form.form}` }), ersterSatz(form.text));
       case 'stoerung': return zeile(FARBE.stoerung[a.stufe], t('stoer.zeile', { h: Math.round(stoerung.stunden) }), ersterSatz(stoerung.text));
+      case 'waage': {
+        const z = abnehmen.rueckkehr;
+        return zeile('var(--stahl)', t('abn.zurueck'), t(`abn.zurueck.${z.richtung}`,
+          { n: z.pause, kg: dez(z.kg, 1), diff: dez(Math.abs(z.diff), 1) }));
+      }
       case 'abnehmen': return zeile(FARBE.abnehmen[a.stufe], t(`abn.stufe.${a.stufe}`), ersterSatz(t(`abn.text.${a.stufe}`)));
       default: return '';
     }

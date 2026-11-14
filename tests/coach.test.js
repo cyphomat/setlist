@@ -504,6 +504,8 @@ print('\n--- Was auf Home sprechen darf ---');
   eq('leichte Stoerung spricht', C.ausnahmen({ stoerung: { stufe: 'leicht' } }).length, 1);
   eq('traeges Abnehmen nicht', C.ausnahmen({ abnehmStufe: 'traege' }).length, 0);
   eq('nach oben schon', C.ausnahmen({ abnehmStufe: 'rauf' })[0].art, 'abnehmen');
+  eq('die erste Waage nach einer Pause spricht', C.ausnahmen({ rueckkehr: { richtung: 'runter' } }).map(a => `${a.art}/${a.stufe}`).join(), 'waage/runter');
+  eq('und steht vor der Abnehm-Zeile', C.ausnahmen({ rueckkehr: { richtung: 'rauf' }, abnehmStufe: 'rauf' }).map(a => a.art).join(), 'waage,abnehmen');
   eq('mit alter Waage auch das nicht', C.ausnahmen({ abnehmStufe: 'rauf', waageAlt: true }).length, 0);
   eq('alte Waage laesst den Rest sprechen', C.ausnahmen({ form: { stufe: 'platt' }, abnehmStufe: 'teuer', waageAlt: true })
     .map(x => x.art).join(), 'form');

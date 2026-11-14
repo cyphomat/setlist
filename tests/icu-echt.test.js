@@ -210,4 +210,15 @@ const well = wroh.map(I.alsWellness);
     wochen.every((d, i) => i === 0 || Date.parse(d) - Date.parse(wochen[i - 1]) >= 86400000));
 }
 
+/* ---------- Zurueck auf der Waage: an der echten Reihe ---------- */
+{
+  const reihe = ST.gewichtsReihe(well);
+  // Jeden Wiegetag einmal als "heute" nehmen: wo eine Rueckkehr gemeldet wird, muss sie plausibel sein.
+  const alle = reihe.map((p, i) => ST.waageRueckkehr(reihe.slice(0, i + 1), new Date(`${p.date}T08:00:00`))).filter(Boolean);
+  ok('Rueckkehr: in den echten Daten kommt mindestens eine vor', alle.length >= 1);
+  ok('Rueckkehr: Pause mindestens eine Woche', alle.every(z => z.pause >= ST.WAAGE_ALT_AB));
+  ok('Rueckkehr: Gewicht 30..250 kg', alle.every(z => zwischen(z.kg, 30, 250) && zwischen(z.schnitt, 30, 250)));
+  ok('Rueckkehr: Abstand zum Schnitt unter 10 kg', alle.every(z => Math.abs(z.diff) < 10));
+}
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);
