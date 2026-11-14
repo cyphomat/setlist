@@ -10,6 +10,14 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-14.4
+
+### Neu
+- **Wieder auf der Waage.** Nach einer Wiegepause von einer Woche oder länger bekommt die erste Waage einen Satz im
+  Plakat: „Nach 17 Tagen Pause: 91,4 kg, 0,8 kg unter deinem Schnitt von davor.“ Verglichen wird mit dem 7-Tage-Schnitt
+  vor der Pause, nicht mit dem letzten Einzelwert. Die Zeile wertet nicht, steht in Stahl statt in einer Signalfarbe und
+  verschwindet von selbst: mit dem zweiten Wiegen, spätestens nach zwei Tagen. Gespeichert wird dafür nichts.
+
 ## 2026-11-14.3
 
 ### Behoben

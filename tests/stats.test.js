@@ -541,6 +541,27 @@ eq('ueber einen Monatswechsel', S.waageAlter([{ date:'2026-10-28' }], new Date(2
 eq('eine Waage aus der Zukunft wird nicht negativ', S.waageAlter([{ date:'2026-10-14' }], new Date(2026, 9, 12)), 0);
 eq('ohne Werte kein Alter', S.waageAlter([]), null);
 eq('kaputtes Datum kein Alter', S.waageAlter([{ date:'gestern' }]), null);
+
+print('\n--- Zurueck auf der Waage ---');
+{
+  const r = (date, roh, schnitt = roh) => ({ date, roh, schnitt, n: 1 });
+  const reihe = [r('2026-09-10', 92.4, 92.3), r('2026-09-14', 91.9, 92.2), r('2026-10-01', 91.4, 91.9)];
+  const z = S.waageRueckkehr(reihe, new Date(2026, 9, 1, 8));
+  eq('Pause in Tagen', z.pause, 17);
+  eq('gegen den Schnitt davor, nicht gegen den Einzelwert', z.diff, -0.8);
+  eq('Richtung runter', z.richtung, 'runter');
+  eq('der neue Wert steht drin', z.kg, 91.4);
+  eq('am Tag danach noch', (S.waageRueckkehr(reihe, new Date(2026, 9, 2, 23)) || {}).pause, 17);
+  eq('am uebernaechsten Tag nicht mehr', S.waageRueckkehr(reihe, new Date(2026, 9, 3)), null);
+  eq('das zweite Wiegen beendet es', S.waageRueckkehr([...reihe, r('2026-10-02', 91.6)], new Date(2026, 9, 2)), null);
+  eq('sechs Tage sind keine Pause', S.waageRueckkehr([r('2026-09-25', 92), r('2026-10-01', 91.4)], new Date(2026, 9, 1)), null);
+  eq('sieben schon', (S.waageRueckkehr([r('2026-09-24', 92), r('2026-10-01', 91.4)], new Date(2026, 9, 1)) || {}).pause, 7);
+  eq('drueber heisst rauf', S.waageRueckkehr([r('2026-09-14', 92, 92.2), r('2026-10-01', 93.1)], new Date(2026, 9, 1)).richtung, 'rauf');
+  eq('auf die Zehntel gleich heisst gleich', S.waageRueckkehr([r('2026-09-14', 92, 92.2), r('2026-10-01', 92.24)], new Date(2026, 9, 1)).richtung, 'gleich');
+  eq('ein einzelner Wert ist keine Rueckkehr', S.waageRueckkehr([r('2026-10-01', 91)], new Date(2026, 9, 1)), null);
+  eq('ohne Werte nichts', S.waageRueckkehr([]), null);
+  eq('ohne Schnitt davor nichts', S.waageRueckkehr([{ date: '2026-09-14', roh: 92 }, r('2026-10-01', 91)], new Date(2026, 9, 1)), null);
+}
 eq('ab einer Woche wird es gesagt', S.WAAGE_ALT_AB, 7);
 
 print('\n--- Minierfolge auf der Waage ---');

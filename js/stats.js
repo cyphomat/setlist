@@ -490,6 +490,29 @@ export function waageAlter(reihe = [], heute = new Date()) {
 }
 
 /**
+ * Zurueck auf der Waage: der letzte Wiegetag ist heute oder gestern, und
+ * davor lag eine Pause von mindestens WAAGE_ALT_AB Tagen. Verglichen wird
+ * mit dem Schnitt vor der Pause, nicht mit dem letzten Einzelwert — ein
+ * einzelner Morgen ist zur Haelfte Wasser.
+ *
+ * Abgeleitet, nicht gespeichert: mit dem zweiten Wiegen ist die Pause
+ * keine mehr, und die Zeile im Plakat verschwindet von selbst.
+ */
+export const RUECKKEHR_TAGE = 1;
+export function waageRueckkehr(reihe = [], heute = new Date()) {
+  if (reihe.length < 2) return null;
+  const alter = waageAlter(reihe, heute);
+  if (alter == null || alter > RUECKKEHR_TAGE) return null;
+  const neu = reihe[reihe.length - 1], vor = reihe[reihe.length - 2];
+  const tag = d => Date.parse(`${d}T00:00:00Z`);
+  const pause = Math.round((tag(neu.date) - tag(vor.date)) / 86400000);
+  if (!Number.isFinite(pause) || pause < WAAGE_ALT_AB) return null;
+  if (!(neu.roh > 0) || !(vor.schnitt > 0)) return null;
+  const diff = Math.round((neu.roh - vor.schnitt) * 10) / 10;
+  return { pause, kg: neu.roh, schnitt: vor.schnitt, diff, richtung: diff < 0 ? 'runter' : diff > 0 ? 'rauf' : 'gleich' };
+}
+
+/**
  * Minierfolge auf der Waage — abgeleitet, nicht gepflegt, dieselbe
  * Invariante wie ueberall sonst. Bewusst OHNE Zielgewicht: eins ist
  * nirgends hinterlegt, und eines zu erfinden waere seine Entscheidung,

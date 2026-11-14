@@ -176,6 +176,32 @@ export default async function ({ browser, pruefe }) {
     }
   }
 
+  /* Waage: die erste Waage nach einer Pause bekommt einen Satz im Plakat */
+  {
+    // Bis 14.09. taeglich gewogen, dann 17 Tage nichts, heute wieder.
+    const w = Array.from({ length: 60 }, (_, i) => {
+      const d = new Date(2026, 7, 3 + i);
+      return { id: P.ymd(d), ctl: 40, atl: 38, sleepSecs: 7.4 * 3600,
+        ...(i <= 42 || i === 59 ? { weight: Math.round((92 - i * 0.03) * 100) / 100 } : {}) };
+    });
+    for (const [breite, schrift, theme] of [[390, null, 'dunkel'], [320, 'sehr', 'hell'], [320, 'sehr', 'dunkel'], [1280, null, 'hell']]) {
+      const tag = `waage-zurück/${theme}/${breite}${schrift ? '/sehr' : ''}`;
+      const { ctx, p, fehler } = await kontext(browser, { logs: verlauf('2026-09-28'), config: CONFIG, heute: '2026-10-01',
+        breite, hoehe: 1000, schrift, theme, vorher: icu(w, []) });
+      await p.waitForSelector('#today .hinweis', { state: 'visible', timeout: 8000 }).catch(() => {});
+      const zeilen = await p.$$eval('#today .hinweis', l => l.map(x => x.textContent.replace(/\s+/g, ' ').trim()));
+      pruefe(`${tag}: ein Satz zur Rückkehr im Plakat`, zeilen.length === 1
+        && /^WIEDER AUF DER WAAGE Nach 17 Tagen Pause: 90,2 kg, 0,6 kg unter deinem Schnitt von davor\.$/.test(zeilen[0]), zeilen.join(' | '));
+      const k = (await kontraste(p, '#today .hinweis b, #today .hinweis span')).filter(x => x.wert < 4.5);
+      pruefe(`${tag}: Kontrast ≥ 4,5`, !k.length, JSON.stringify(k.slice(0, 3)));
+      const u = await ueberlauf(p);
+      pruefe(`${tag}: kein Querlauf`, !u.scroll && !u.raus.length, JSON.stringify(u));
+      pruefe(`keine Seitenfehler (${tag})`, !fehler.length, fehler.join(' | '));
+      await p.locator('#today').screenshot({ path: BILDER + `waage-zurueck-${theme}-${breite}${schrift ? '-sehr' : ''}.png` });
+      await ctx.close();
+    }
+  }
+
   /* Waage: ein echter Anstieg spricht im Plakat nur, solange die Waage frisch ist */
   {
     // +0,42 kg je Woche, klar ueber dem Rauschen. Einmal bis heute gewogen, einmal 17 Tage nicht mehr.
