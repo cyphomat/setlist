@@ -20,6 +20,7 @@ import * as CU from './curls.js';
 import * as M from './merch.js';
 import * as W from './wach.js';
 import * as HL from './hilfs.js';
+import * as ST from './strava.js';
 import * as X from './export.js';
 import * as F from './feuer.js';
 import * as ANS from './ansager.js';
@@ -86,7 +87,13 @@ const VIEWS = ['setup', 'einrichten', 'home', 'session', 'wod', 'unplugged', 'ku
 // am Ansichtswechsel festgemacht, damit kein Ausgang (Fertig, Abbrechen,
 // Zurueck) das Freigeben vergessen kann.
 const wach = W.wachHalter();
+// Die Einheit, die auf dem Geschafft-Screen gerade fuer Strava bereitsteht.
+// Wer den Screen verlaesst, nimmt sie mit: so zeigt ein Abschluss ohne
+// Export (Curls, Unplugged) nie den Knopf der Einheit davor.
+let stravaLog = null;
 const show = n => {
+  if (n !== 'done') stravaLog = null;
+  else $('done-strava').hidden = !stravaTextJetzt();
   VIEWS.forEach(v => $('view-' + v).hidden = v !== n);
   window.scrollTo(0, 0);
   wach.setze(W.wachFuerAnsicht(n));
@@ -1542,6 +1549,7 @@ async function finishSession() {
   wuStopp();
   renderDone(before, log);
   abschlussSpruch();
+  stravaLog = log;
   show('done');
   toene([660, 880]);
   try {
@@ -1891,6 +1899,33 @@ $('finish').onclick = finishSession;
 // den Zustand geaendert haben — sonst stuende auf Home der alte Stand.
 $('abort').onclick = () => { if (confirm(t('ses.verwerfen'))) { stopRest(); wuStopp(); session = null; renderHome(); show('home'); } };
 $('done-ok').onclick = () => { renderHome(); show('home'); };
+
+/**
+ * Die Einheit als Text fuer Strava (js/strava.js). Kopiert in die
+ * Zwischenablage; geht das nicht (aeltere Browser, Home-Bildschirm-App
+ * ohne Freigabe), kommt eine .txt ueber dieselbe Datei-Hilfe wie beim CSV.
+ * Der Text entsteht im Browser und geht an keinen Dienst.
+ */
+function stravaTextJetzt() {
+  if (!stravaLog) return '';
+  return ST.stravaText(stravaLog, {
+    config, t,
+    zahl: v => Number(v).toLocaleString(locale(), { maximumFractionDigits: 2 }),
+    name: (art, id) => art === 'mosh' ? MP.liftName(id) : t(`hilfs.${id}`)
+  });
+}
+$('done-strava').onclick = async () => {
+  const text = stravaTextJetzt();
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    banner(t('strava.kopiert'), 'ok', 4500);
+  } catch {
+    try {
+      if (await gibDatei(text, `setlist-${stravaLog.date}.txt`, 'text/plain')) banner(t('strava.datei'), 'ok', 4500);
+    } catch (e) { banner(t('exp.fehler', { msg: e.message }), 'err', 5000); }
+  }
+};
 $('rest-skip').onclick = stopRest;
 /**
  * Update-Erkennung. Der Service Worker holt zwar bei jedem Start vom Netz,
@@ -2739,6 +2774,7 @@ async function kuSpeichern() {
     </div>
     <p class="spruch">${escHtml(z.fertig ? t('ku.fertigKurs') : t('ku.naechste', { woche: z.woche, tag: z.tag }))}</p>
     <div id="done-aufnaeher"></div>`;
+  stravaLog = log;
   show('done');
   if (!upLeise()) toene([660, 880]);
   if (navigator.vibrate) navigator.vibrate([180, 90, 180]);
@@ -2927,6 +2963,7 @@ async function mpSpeichern() {
     ${mpSerieText() ? `<p class="spruch">${escHtml(mpSerieText())}</p>` : ''}
     <p class="spruch">${escHtml(t('mp.naechste', { liste: naechste }))}</p>
     <div id="done-aufnaeher"></div>`;
+  stravaLog = log;
   show('done');
   if (!upLeise()) toene([660, 880]);
   if (navigator.vibrate) navigator.vibrate([180, 90, 180]);
@@ -3451,6 +3488,7 @@ async function wodAbschliessen() {
     </div>
     <p class="spruch">${t('wod.spruch')}</p>
     <div id="done-aufnaeher"></div>`;
+  stravaLog = log;
   show('done');
   toene([660, 880]);
   try {

@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="App öffnen" src="https://img.shields.io/badge/App-öffnen-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-3211%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-3246%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-keiner-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Abhängigkeiten" src="https://img.shields.io/badge/Abhängigkeiten-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="Lizenz: MIT" src="https://img.shields.io/badge/Lizenz-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -223,6 +223,7 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 | **Offline** | Einheiten werden gepuffert. Tour und Radansicht zeigen den letzten Stand. |
 | **Bildschirm bleibt an** | Während Einheit, Jam, Unplugged und Max-Out geht das Display nicht aus. Zum Abhaken muss nicht entsperrt werden. Danach gibt die App den Bildschirm wieder frei. |
 | **Export als CSV** | *Backstage → App*: alle Einheiten als Tabelle für Excel, Numbers oder Sheets. Entsteht im Browser, geht an keinen Dienst; Text aus deinen Daten kommt nie als Formel an. |
+| **Für Strava kopieren** | Auf dem Geschafft-Screen: die Einheit als Text, ein Satz pro Zeile („Satz 2: 5 Wdh × 80 kg“), zum Einfügen oder Scannen in Strava. |
 | **Selbstaktualisierend** | Prüft die Version beim Start und lädt sich genau einmal neu. |
 | **Sound und Vibration** | Ton bei Pausenende und Einheitsabschluss, zusätzlich zur Vibration — Ton respektiert den Stumm-Schalter, Vibration nicht. |
 | **Saisonales** | Zu Weihnachten (1.–26.12.), Ostern (Gründonnerstag bis Ostermontag) und Halloween (24.–31.10.) hängt unter dem Tageswort ein kleiner Banner mit bewegtem Pixelmotiv und einem Satz; zum Gedenken an Lemmy (28.12.) und Ozzy (22.7.) steht eine stille Kerze da. Unter *Backstage → App* abschaltbar, per ✕ für heute ausgeblendet; nur auf dem Gerät. Eine Einheit im Zeitfenster bringt dazu einen Aufnäher (Weihnachts-Gig, Eiersuche, Geisterstunde, Eine Kerze), der erst an der Wand steht, wenn er verdient ist. |
@@ -477,6 +478,7 @@ Wiederholungen. Abschaltbar unter *Backstage → Verbindungen*.
 | `js/hilfs.js` | Aftershow: Hilfsübungen bereinigen, letztes Mal, Bilanz. |
 | `js/wach.js` | Hält den Bildschirm während des Trainings an. |
 | `js/export.js` | Einheiten als CSV, sicher gegen Formeln. |
+| `js/strava.js` | Eine Einheit als Text zum Einfügen in Strava. |
 | `js/feuer.js` | Pixelfeuer (Doom-Algorithmus, eigene Umsetzung). |
 | `js/ansager.js` | Entscheidet, was nach der Einheit angesagt wird. |
 | `js/signale.js` | Signale im Kurs: eigener Ton und eigene Vibration je Schritt, ohne Sprache. |
@@ -515,7 +517,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-3211 Tests in 36 Dateien. Kein Build, keine Abhängigkeiten.
+3246 Tests in 37 Dateien. Kein Build, keine Abhängigkeiten.
 
 ### Browserproben (optional)
 
