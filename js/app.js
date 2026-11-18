@@ -20,7 +20,7 @@ import * as CU from './curls.js';
 import * as M from './merch.js';
 import * as W from './wach.js';
 import * as HL from './hilfs.js';
-import * as ST from './strava.js';
+import * as SV from './strava.js';
 import * as X from './export.js';
 import * as F from './feuer.js';
 import * as ANS from './ansager.js';
@@ -1908,7 +1908,7 @@ $('done-ok').onclick = () => { renderHome(); show('home'); };
  */
 function stravaTextJetzt() {
   if (!stravaLog) return '';
-  return ST.stravaText(stravaLog, {
+  return SV.stravaText(stravaLog, {
     config, t,
     zahl: v => Number(v).toLocaleString(locale(), { maximumFractionDigits: 2 }),
     name: (art, id) => art === 'mosh' ? MP.liftName(id) : t(`hilfs.${id}`)

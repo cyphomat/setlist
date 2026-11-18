@@ -10,6 +10,14 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-18.2
+
+### Behoben
+- **Die App startete nicht mehr.** Mit 2026-11-18.1 kam `js/strava.js` unter dem Namen `ST` in `js/app.js`, der dort schon
+  für `js/stats.js` vergeben war. Der Browser brach beim Laden mit „Identifier 'ST' has already been declared“ ab und
+  zeigte nichts an. Der Strava-Import heißt jetzt `SV`. Wer die App schon installiert hat, bekommt sie mit dieser
+  Version wieder: der Cache-Name hat sich geändert, die kaputte Fassung wird ersetzt.
+
 ## 2026-11-18.1
 
 ### Neu
