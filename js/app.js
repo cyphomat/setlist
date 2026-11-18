@@ -21,6 +21,7 @@ import * as M from './merch.js';
 import * as W from './wach.js';
 import * as HL from './hilfs.js';
 import * as SV from './strava.js';
+import * as MK from './mobkurs.js';
 import * as X from './export.js';
 import * as F from './feuer.js';
 import * as ANS from './ansager.js';
@@ -82,7 +83,7 @@ const $ = id => document.getElementById(id);
 uebersetzeStatisch();
 const VERSION_KEY = 'setlist.version';
 let laufendeVersion = localStorage.getItem(VERSION_KEY) || '—';
-const VIEWS = ['setup', 'einrichten', 'home', 'session', 'wod', 'unplugged', 'kurs', 'mosh', 'curls', 'maxout', 'done', 'history', 'bibliothek', 'merch', 'backstage', 'soundcheck'];
+const VIEWS = ['setup', 'einrichten', 'home', 'session', 'wod', 'unplugged', 'mobkurs', 'kurs', 'mosh', 'curls', 'maxout', 'done', 'history', 'bibliothek', 'merch', 'backstage', 'soundcheck'];
 // Waehrend Einheit, Jam, Unplugged und Max-Out bleibt der Bildschirm an —
 // am Ansichtswechsel festgemacht, damit kein Ausgang (Fertig, Abbrechen,
 // Zurueck) das Freigeben vergessen kann.
@@ -1794,7 +1795,8 @@ $('swap-workout').onclick = () => {
   renderHome();
 };
 $('go-wod').onclick = () => { starteWod(WOD.seedAus(P.ymd(new Date()))); };
-$('go-mobility').onclick = () => zeigeBibliothek('Mobility');
+// Home startet den gefuehrten Kurs; die Liste mit „Heute gemacht“ bleibt in der Bibliothek.
+$('go-mobility').onclick = () => starteMobKurs(0);
 $('go-maxout').onclick = starteMaxout;
 $('mo-back').onclick = () => show('home');
 $('mo-weight').oninput = renderMaxoutErgebnis;
@@ -2253,6 +2255,141 @@ $('up-abbruch').onclick = () => {
   upStopp();
   $('up-lauf').hidden = true;
   $('up-plan').hidden = false;
+};
+
+/* ========================= Mobility-Kurs =========================
+   Vier Uebungen, die Uhr fuehrt (js/mobkurs.js). Aufbau und Bedienung wie
+   Unplugged; der Ton folgt derselben Voreinstellung (leise: nur Vibration).
+   Das Log ist ein ganz normales Mobility-Log, nur mit allen Uebungen.     */
+let mkKurs = null, mkSeed = 0;
+let mkAblauf = [], mkIndex = 0, mkRest = 0, mkTimer = null, mkPausiert = false;
+
+function starteMobKurs(seed = 0) {
+  if (!config) return;
+  mkSeed = seed;
+  mkStopp();
+  mkKurs = MK.baueKurs({ uebungen: VL.ohneGesperrte(MOBILITY, config), datum: P.ymd(new Date()), seed: mkSeed });
+  $('mk-plan').hidden = false;
+  $('mk-lauf').hidden = true;
+  renderMobKurs();
+  show('mobkurs');
+}
+
+function renderMobKurs() {
+  const k = mkKurs;
+  const leer = !k.teile.length;
+  $('mk-start').hidden = leer;
+  $('mk-uebersicht').innerHTML = `<p class="lead">${escHtml(leer ? t('mk.leer')
+    : t('mk.uebersicht', { n: k.teile.length, dauer: k.minuten }))}</p>`;
+  $('mk-teile').innerHTML = k.teile.map((tl, i) => `
+    <details class="info">
+      <summary>${i + 1} · ${escHtml(tl.name)}</summary>
+      <div class="body">
+        <p class="tagline"><b>${escHtml(tl.cue)}</b></p>
+        <p>${escHtml(tl.warum)}</p>
+        <div class="kv"><span class="k">${escHtml(t('mk.dauer'))}</span>
+          <span class="v">${escHtml(`${tl.sek} s${tl.seiten ? ' ' + t('mk.jeSeite') : ''}`)}</span></div>
+      </div>
+    </details>`).join('');
+}
+
+function mkStart() {
+  mkAblauf = MK.ablauf(mkKurs);
+  mkIndex = 0;
+  mkPausiert = false;
+  $('mk-pause').textContent = t('up.pausieren');
+  $('mk-plan').hidden = true;
+  $('mk-lauf').hidden = false;
+  mkZeigeAbschnitt();
+  mkTicke();
+}
+
+function mkZeigeAbschnitt() {
+  const a = mkAblauf[mkIndex];
+  if (!a) return mkFertig();
+  mkRest = a.sekunden;
+  const arbeit = a.art === 'arbeit';
+  // In der Pause steht schon, was als Naechstes kommt — man legt sich hin, bevor die Uhr laeuft.
+  const tl = arbeit ? a.teil : a.naechster.teil;
+  const seite = arbeit ? a.seite : a.naechster.seite;
+  const seiteText = seite ? t(seite === 1 ? 'ku.links' : 'ku.rechts') : '';
+  $('mk-buehne').classList.toggle('pause', !arbeit);
+  $('mk-runde').textContent = t('mk.nr', { n: a.nr, gesamt: a.gesamt });
+  $('mk-was').textContent = arbeit ? tl.name : t('up.pause.jetzt');
+  $('mk-seite').textContent = arbeit ? seiteText : '';
+  $('mk-cue').textContent = tl.cue;
+  $('mk-danach').textContent = arbeit ? '' : t('up.danach', { name: tl.name + (seiteText ? ` · ${seiteText}` : '') });
+  $('mk-uhr').textContent = mkRest;
+}
+
+function mkTicke() {
+  clearInterval(mkTimer);
+  mkTimer = setInterval(() => {
+    if (mkPausiert) return;
+    mkRest--;
+    $('mk-uhr').textContent = Math.max(0, mkRest);
+    if (mkRest === 3) mkSignal(false);
+    if (mkRest <= 0) { mkIndex++; mkSignal(true); mkZeigeAbschnitt(); }
+  }, 1000);
+}
+
+/** Zeichen beim Wechsel: Vibration immer, Ton nur, wenn Laerm gerade in Ordnung ist. */
+function mkSignal(wechsel) {
+  if (navigator.vibrate) navigator.vibrate(wechsel ? [180, 90, 180] : 60);
+  if (!upLeise()) toene(wechsel ? [880] : [660], 120);
+}
+
+const mkStopp = () => { clearInterval(mkTimer); mkTimer = null; mkPausiert = false; };
+
+async function mkFertig() {
+  mkStopp();
+  $('mk-lauf').hidden = true;
+  $('mk-plan').hidden = false;
+  const kurs = mkKurs;
+  const log = MK.alsLog(kurs, { ymd: P.ymd(new Date()), ort: ortName() });
+  const vorherHist = state.history || [];
+  // Wie ein einzelner Mobility-Haken: steht in der Historie, ruehrt aber
+  // weder Arbeitsgewichte noch den A/B-Wechsel an (program.js, KEIN_TRAINING).
+  state = P.applyLog(state, config, log);
+  S.cache({ state });
+  alleLogs = geladeneLogs().concat([log]);
+  S.cacheLogs(alleLogs);
+
+  $('done-body').innerHTML = `
+    <div class="card">
+      <div class="kicker">${escHtml(log.date)} · ${t('hist.mobility')}</div>
+      <div class="name">${Math.floor(kurs.gesamtSekunden / 60)}:${String(kurs.gesamtSekunden % 60).padStart(2, '0')}</div>
+      <ul>${kurs.teile.map(tl =>
+        `<li><span>${escHtml(tl.name)}</span><span>${escHtml(`${tl.sek} s${tl.seiten ? ' ' + t('mk.jeSeite') : ''}`)}</span></li>`).join('')}</ul>
+    </div>
+    <p class="spruch">${escHtml(t('mk.spruch'))}</p>
+    <div id="done-aufnaeher"></div>`;
+  show('done');
+  if (!upLeise()) toene([660, 880]);
+  if (navigator.vibrate) navigator.vibrate([180, 90, 180]);
+
+  try {
+    await commit(log);
+    banner(t('mk.abgeschlossen'), 'ok');
+  } catch { S.queue(log); banner(t('msg.keinNetz'), '', 6000); }
+  mkKurs = null;
+  zeigeNeueAufnaeher(log, vorherHist);
+}
+
+$('mk-reroll').onclick = () => starteMobKurs(mkSeed + 1);
+$('mk-back').onclick = () => { mkStopp(); show('home'); };
+$('mk-start').onclick = mkStart;
+$('mk-bib').onclick = () => { mkStopp(); zeigeBibliothek('Mobility'); };
+$('mk-weiter').onclick = () => { mkIndex++; mkZeigeAbschnitt(); };
+$('mk-pause').onclick = () => {
+  mkPausiert = !mkPausiert;
+  $('mk-pause').textContent = mkPausiert ? t('up.fortsetzen') : t('up.pausieren');
+};
+$('mk-abbruch').onclick = () => {
+  if (!confirm(t('up.abbrechenFrage'))) return;
+  mkStopp();
+  $('mk-lauf').hidden = true;
+  $('mk-plan').hidden = false;
 };
 
 /* ========================= Kettlebell-Kurs =========================
@@ -3892,7 +4029,7 @@ function renderListe(logs) {
     }
     if (l.type === 'mobility') {
       return `<div class="hist mobility"><div class="d">${escHtml(l.date)} · ${t('hist.mobility')}</div>
-        <div class="l">${escHtml(mobilityName(l.uebung))}</div></div>`;
+        <div class="l">${escHtml((Array.isArray(l.uebungen) && l.uebungen.length ? l.uebungen : [l.uebung]).map(mobilityName).join(' · '))}</div></div>`;
     }
     if (l.type && l.type !== 'strength') {
       const m = l.dauerSekunden ? `${Math.floor(l.dauerSekunden / 60)}:${String(l.dauerSekunden % 60).padStart(2, '0')}` : '—';

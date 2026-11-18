@@ -1073,9 +1073,10 @@ input[type=checkbox]{accent-color:var(--akzent);width:16px;height:16px}
 }
 .up-steuer{display:flex;gap:8px;margin-top:14px}
 .up-steuer .btn{flex:1;margin:0}
-#up-abbruch{margin-top:10px}
-#up-teile{margin-top:14px}
-#up-start{margin-top:16px}
+#up-abbruch,#mk-abbruch{margin-top:10px}
+#up-teile,#mk-teile{margin-top:14px}
+#up-start,#mk-start{margin-top:16px}
+#mk-bib{margin-top:10px}
 #ku-start,#ku-fertig{margin-top:16px}
 #mp-body{padding-bottom:calc(128px + env(safe-area-inset-bottom))}
 .mp-lift{border:1px solid var(--line);background:var(--panel);border-radius:2px;padding:12px;margin-top:12px}

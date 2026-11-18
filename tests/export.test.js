@@ -71,6 +71,11 @@ const mz = X.zeilen([
 eq('eigener Mobility-Log: eine Zeile', mz.length, 2);
 eq('Mobility aus der Bibliothek', `${mz[0].art} ${mz[0].uebung}`, 'mobility mobility:couch');
 eq('Mobility in der Einheit', `${mz[1].art} ${mz[1].workout} ${mz[1].uebung}`, 'mobility A mobility:hips');
+const kz = X.zeilen([{ date: '2026-09-05', type: 'mobility', uebung: 'couch', uebungen: ['couch', 'pigeon', 'skorpion'],
+  dauerSekunden: 480, finished: '2026-09-05T07:00:00Z' }], config, { name });
+eq('Mobility-Kurs: eine Zeile je Uebung', kz.length, 3);
+eq('Mobility-Kurs: alle Uebungen', kz.map(r => r.uebung).join(), 'mobility:couch,mobility:pigeon,mobility:skorpion');
+eq('Mobility-Kurs: Dauer nur in der ersten Zeile', kz.map(r => r.dauer).join('|'), '8||');
 
 print('\n--- Datei ---');
 const csv = X.alsCsv(logs, config, { name, kopf: { datum: 'Datum', uebung: 'Übung' } });

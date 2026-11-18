@@ -236,6 +236,43 @@
   </div>
 </section>
 
+<!-- ============ MOBILITY-KURS ============ -->
+<section id="view-mobkurs" class="view" hidden>
+  <header class="head">
+    <button id="mk-back" class="icon-btn" data-i18n-aria="aria.zurueck" aria-label="Zurück">‹</button>
+    <h1 data-i18n="mk.titel">Mobility</h1>
+    <button id="mk-reroll" class="icon-btn" data-i18n-aria="aria.neuWuerfeln" aria-label="Neu würfeln">⟳</button>
+  </header>
+
+  <div class="pad" id="mk-plan">
+    <div class="directive">
+      <span class="tone technik" data-i18n="mk.tag">GEFÜHRT</span>
+      <p class="txt" data-i18n="mk.lead">Vier Übungen, die Uhr führt. Seitenwechsel und Pausen laufen von selbst.</p>
+    </div>
+    <div id="mk-uebersicht"></div>
+    <div id="mk-teile"></div>
+    <button id="mk-start" class="btn" data-i18n="up.start">Los</button>
+    <button id="mk-bib" class="btn ghost small" data-i18n="mk.bib">Alle Mobility-Übungen ansehen</button>
+  </div>
+
+  <!-- Die laufende Einheit: gross genug, um sie vom Boden aus zu lesen. -->
+  <div class="pad" id="mk-lauf" hidden>
+    <div id="mk-buehne" class="buehne">
+      <div class="runde" id="mk-runde"></div>
+      <div class="was" id="mk-was"></div>
+      <div class="seite" id="mk-seite"></div>
+      <div class="uhr num" id="mk-uhr">0</div>
+      <div class="cue" id="mk-cue"></div>
+      <div class="danach" id="mk-danach"></div>
+    </div>
+    <div class="up-steuer">
+      <button id="mk-pause" class="btn ghost" data-i18n="up.pausieren">Pause</button>
+      <button id="mk-weiter" class="btn ghost" data-i18n="up.ueberspringen">Weiter</button>
+    </div>
+    <button id="mk-abbruch" class="btn ghost small danger" data-i18n="up.abbrechen">Abbrechen</button>
+  </div>
+</section>
+
 <!-- ============ KETTLEBELL-KURS ============ -->
 <section id="view-kurs" class="view" hidden>
   <header class="head">

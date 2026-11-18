@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="App öffnen" src="https://img.shields.io/badge/App-öffnen-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-3246%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-3290%20grün-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-keiner-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Abhängigkeiten" src="https://img.shields.io/badge/Abhängigkeiten-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="Lizenz: MIT" src="https://img.shields.io/badge/Lizenz-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -181,7 +181,7 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 | **Bestwerte** | `Maximum` (nur aus Max-Out) gegen `Mindestens` (aus Arbeitssätzen, systematisch zu niedrig). |
 | **Max-Out** | Krafttest mit e1RM. Dreht den A/B-Wechsel nicht. |
 | **Wissen an der Stange** | Aufklappbar: Begründung, Cue, typischer Fehler, Brücke zum olympischen Heben. |
-| **Mobility** | Fünf Übungen, einmal pro Kalenderwoche fällig — bei der ersten Einheit (Kraft oder Jam), ganz gleich welcher. Eigener Button, jederzeit unabhängig davon nutzbar. In der Einheit lässt sich „Mobility gemacht“ abhaken, in der Bibliothek trägt **Heute gemacht** einen eigenen kleinen Eintrag ein. Mobility zählt als Mobility, nicht als Training: keine Serie, keine Tonnage, keine Übertragung zu intervals.icu. Dreimal in einer Woche bringt den Aufnäher **Gelenkig**. |
+| **Mobility** | Fünf Übungen, einmal pro Kalenderwoche fällig — bei der ersten Einheit (Kraft oder Jam), ganz gleich welcher. Der Button startet einen **geführten Kurs**: vier Übungen, die Uhr führt durch Seitenwechsel und Pausen, rund sieben Minuten, täglich wechselnd, ⟳ würfelt neu. Jederzeit unabhängig von der Woche nutzbar. In der Einheit lässt sich „Mobility gemacht“ abhaken, in der Bibliothek trägt **Heute gemacht** einen eigenen kleinen Eintrag ein. Mobility zählt als Mobility, nicht als Training: keine Serie, keine Tonnage, keine Übertragung zu intervals.icu. Dreimal in einer Woche bringt den Aufnäher **Gelenkig**. |
 | **Gefühl nach der Einheit** | Vier Stufen (Leicht/Normal/Hart/Extrem) auf dem Geschafft-Screen — macht die Ansage im Nachhinein überprüfbar. |
 | **Injury Report** | Was gerade zwickt, mit deiner eigenen Behandlung. Zwei Arten: *wiederkehrend* (kommt und geht, wird nach der Einheit kurz abgefragt, kann ausheilen) und *strukturell* (bleibt, wird nicht abgefragt, sperrt dauerhaft). Übungen, die du sperrst, würfelt der Jam nicht, das Unplugged nimmt sie nicht, Technik und Mobility lassen sie weg. Grundübungen werden nur angemerkt, nie weggelassen — daran hängt die 5×5-Mechanik. Die App stellt keine Diagnose und schlägt keine Behandlung vor. |
 | **Merch-Stand** | Ein bisschen Spiel, passend zur Bühne: eine **Kutte** mit Aufnähern (Plattenclub, 1000-lb-Club, Körpergewicht-Marken, Stimmgerät fürs regelmäßige Wiegen, Comeback, Serien, Roadcrew und Hangar 18 für die Aftershow, Duett, Faustgruß, Tourpartner und feste Verabredung fürs Training zu zweit, Kurs-Debüt, Phasen, Checks, schwerere Kugel, Pit-Serien, Kugel-Rang und Kurs zu zweit für die Kettlebell … und fürs Rad: Tourbus-Kilometer, Stairway to Heaven, Highway Star, Doom für disziplinierte Grundlage, Open Air, Crossover-Wochen mit Kraft und Rad), **Gold und Platin** fürs bewegte Gewicht als gerahmte Auszeichnungen an der Studiowand (bis Adamant bei 1000 t, dazu eine eigene Reihe Kugel-Platten aus Kurs und Mosh Pit), ein **Kurs-Endgegner** für die drei Checks, ein **Gitarrenrack** mit zehn Pixel-Gitarren, die sich über Rang und Schallplatten freischalten (kaufen kann man nichts), ein **Rang** von der Garagenband bis zur Hall of Fame und jedes Quartal ein **Tourshirt** als Pixel-Bandshirt: Stofffarbe und Emblem kommen aus dem Tournamen, vorne Siebdruck, hinten deine Trainingstage — zum Umdrehen. Nach der Einheit kommt die Setlist als Zettel mit Gaffa-Tape, auf Home steht ein Wochenregler: Kurs, Rad oder Jam springen ein, wenn 5×5 ausfällt, und auf elf geht er nur bei erfülltem Plan **und** sauberen Einheiten (5×5 ohne Fehlversuch, Kurs abgeschlossen). Belohnt wird Regelmäßigkeit, nie Menge: der Rang zählt Wochen statt Einheiten (Radwochen eingeschlossen), und eine eingetragene Verletzung **friert die Serie ein** statt sie reißen zu lassen. Alles aus den Logs berechnet, nichts gespeichert. |
@@ -469,6 +469,7 @@ Wiederholungen. Abschaltbar unter *Backstage → Verbindungen*.
 | `js/einrichten.js` | Baut aus ein paar Antworten eine gültige `config.json`. |
 | `js/persoenlich.js` | Grund, eigene Zeilen und alte Bestleistungen. |
 | `js/unplugged.js` | Körpergewichts-Intervalle, Vorrat und Ablauf. |
+| `js/mobkurs.js` | Geführter Mobility-Kurs: Auswahl, Zeiten, Ablauf. |
 | `js/moshpit.js` | Mosh Pit: Leiter, Ziel aus den Logs, Statistik. |
 | `js/curls.js` | Curls for the Girls: Setlist, Auswahl nach Ausstattung, Haar-o-Meter. |
 | `js/kurs.js` | Kettlebell-Kurs: Plan, Wochenlogik, Ablauf, Kugelvorschlag. |
@@ -517,7 +518,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-3246 Tests in 37 Dateien. Kein Build, keine Abhängigkeiten.
+3290 Tests in 38 Dateien. Kein Build, keine Abhängigkeiten.
 
 ### Browserproben (optional)
 

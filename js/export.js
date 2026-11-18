@@ -65,7 +65,11 @@ export function zeilen(logs, config = {}, { name = (art, id) => id } = {}) {
       if (l.zugabe) out.push({ ...basis, art: 'zugabe', workout: l.workout || '', uebung: l.zugabe });
       if (l.mobility) out.push({ ...basis, art: 'mobility', workout: l.workout || '', uebung: name('mobility', l.mobility) });
     } else if (typ === 'mobility') {
-      out.push({ ...basis, art: 'mobility', uebung: name('mobility', l.uebung) });
+      // Ein Kurs (js/mobkurs.js) nennt alle Uebungen; ein einzelner Haken nur `uebung`.
+      // Die Dauer gehoert zum ganzen Kurs und steht nur in der ersten Zeile.
+      const ids = Array.isArray(l.uebungen) && l.uebungen.length ? l.uebungen : [l.uebung];
+      ids.forEach((id, i) => out.push({ ...basis, art: 'mobility', uebung: name('mobility', id),
+        dauer: i === 0 ? minuten(l.dauerSekunden) : null }));
     } else if (typ === 'wod' || typ === 'unplugged' || typ === 'kurs' || typ === 'moshpit') {
       out.push({ ...basis, art: typ === 'wod' ? 'jam' : typ, notiz: l.label || '',
         dauer: minuten(l.dauerSekunden) });

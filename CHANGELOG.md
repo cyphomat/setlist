@@ -10,6 +10,18 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-18.3
+
+### Neu
+- **Mobility als geführter Kurs.** Der Mobility-Knopf auf Home öffnete nur die Liste in der Bibliothek. Jetzt startet er vier
+  Übungen, durch die die Uhr führt: je Seite erst links, dann rechts, fünf Sekunden zum Wechseln, zehn zwischen den
+  Übungen, in der Pause steht schon, was als Nächstes kommt. Rund sieben Minuten, der Bildschirm bleibt an, Vibration
+  beim Wechsel (Ton nur, wenn bei Unplugged „Egal“ gewählt ist). Je eine Übung aus Hüfte, Brust/Schulter und Fuß/Bein, die
+  vierte aus dem Rest; die Auswahl bleibt den Tag über gleich und ⟳ würfelt neu. Verletzungssperren gelten. Gespeichert wird
+  ein normaler Mobility-Eintrag mit allen Übungen und der Dauer: Wochenzähler, **Gelenkig**, Historie und CSV-Export
+  laufen weiter wie bisher. Die Liste mit „Heute gemacht“ bleibt in der Bibliothek, ein Link in der Ansicht führt hin.
+  Die Ausführungshinweise je Übung sind neu geschrieben und noch nicht fachlich gegengeprüft.
+
 ## 2026-11-18.2
 
 ### Behoben
