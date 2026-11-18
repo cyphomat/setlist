@@ -10,6 +10,16 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-18.1
+
+### Neu
+- **Für Strava kopieren.** Nach Kraft (A/B), Kettlebell-Kurs, Jam und Mosh Pit steht auf dem Geschafft-Screen ein Knopf,
+  der die Einheit als Text in die Zwischenablage legt: je Übung eine Zeile pro Satz, „Satz 2: 5 Wdh × 80 kg“. In Strava
+  fügst du ihn beim Krafttraining ein oder lässt ihn scannen. Kraft und Mosh Pit liefern die echten Wiederholungen. Kurs und Jam
+  speichern nur den Plan des Tages, der Text zeigt ihn als gemacht, mit dem eingetragenen Gewicht. Geht die
+  Zwischenablage nicht, kommt eine `.txt`. Curls und Unplugged haben im Log kein Gewicht und keine Wiederholungen, dort
+  gibt es keinen Knopf. Ob Strava genau dieses Format ohne Nacharbeit annimmt, ist nicht belegt.
+
 ## 2026-11-14.4
 
 ### Neu

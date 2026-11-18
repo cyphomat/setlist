@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-3211%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-3246%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -223,6 +223,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | **Offline** | Sessions are buffered. Tour and bike view show the last known state. |
 | **Screen stays on** | During a session, jam, Unplugged and max-out the display does not go dark, so you can tick off a set without unlocking. Afterwards the app lets the screen sleep again. |
 | **CSV export** | *Backstage → App*: every session as a table for Excel, Numbers or Sheets. Built in the browser, sent to no service; text from your data never arrives as a formula. |
+| **Copy for Strava** | On the done screen: the session as text, one set per line (“Set 2: 5 reps × 80 kg”), to paste or scan into Strava. |
 | **Self-updating** | Checks the version at start and reloads itself exactly once. |
 | **Sound and vibration** | Tone at the end of a rest and on finishing a session, on top of the vibration — the tone respects the mute switch, the vibration does not. |
 | **Seasonal** | At Christmas (1–26 Dec), Easter (Maundy Thursday to Easter Monday) and Halloween (24–31 Oct) a small banner with an animated pixel motif and one line hangs under the word of the day; for Lemmy (28 Dec) and Ozzy (22 Jul) there is a still candle instead. Switch it off under *Backstage → App*, hide it for the day with ✕; stored on the device only. One session in the window also earns a patch (Christmas gig, Egg hunt, Witching hour, One candle) that only appears on the wall once earned. |
@@ -471,6 +472,7 @@ off under *Backstage → Connections*.
 | `js/hilfs.js` | Aftershow: clean up accessory sets, last time, summary. |
 | `js/wach.js` | Keeps the screen on while you train. |
 | `js/export.js` | Sessions as CSV, safe against formulas. |
+| `js/strava.js` | One session as text to paste into Strava. |
 | `js/feuer.js` | Pixel fire (the Doom algorithm, own implementation). |
 | `js/ansager.js` | Decides what gets called out after a session. |
 | `js/signale.js` | Signals in the course: own tone and vibration per step, no speech. |
@@ -509,7 +511,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-3211 tests in 36 files. No build, no dependencies.
+3246 tests in 37 files. No build, no dependencies.
 
 ### Browser probes (optional)
 
