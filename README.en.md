@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://cyphomat.github.io/setlist/"><img alt="Open app" src="https://img.shields.io/badge/App-open-e8a23d?style=for-the-badge&labelColor=17161b"></a>
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-3246%20green-7fa65c?style=for-the-badge&labelColor=17161b">
+  <img alt="Tests" src="https://img.shields.io/badge/Tests-3290%20green-7fa65c?style=for-the-badge&labelColor=17161b">
   <img alt="Build" src="https://img.shields.io/badge/Build-none-6f93ad?style=for-the-badge&labelColor=17161b">
   <img alt="Dependencies" src="https://img.shields.io/badge/Dependencies-0-a7a3ab?style=for-the-badge&labelColor=17161b">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-c98a4b?style=for-the-badge&labelColor=17161b"></a>
@@ -181,7 +181,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | **Personal bests** | `Max` (only from a max-out) versus `At least` (from working sets, systematically too low). |
 | **Max-out** | Strength test with e1RM. Does not advance the A/B rotation. |
 | **Knowledge at the bar** | Expandable: rationale, cue, typical mistake, bridge to olympic lifting. |
-| **Mobility** | Five exercises, due once per calendar week — at the first session (strength or jam), whichever comes first. Own button, usable independently at any time. In a session you can tick “Mobility done”; in the library, **Done today** logs a small entry of its own. Mobility counts as mobility, not as training: no streak, no tonnage, nothing sent to intervals.icu. Three times in one week earns the **Limber** patch. |
+| **Mobility** | Five exercises, due once per calendar week — at the first session (strength or jam), whichever comes first. The button starts a **guided course**: four exercises, the clock leads through side changes and rests, about seven minutes, changing daily, ⟳ rerolls. Usable independently of the week at any time. In a session you can tick “Mobility done”; in the library, **Done today** logs a small entry of its own. Mobility counts as mobility, not as training: no streak, no tonnage, nothing sent to intervals.icu. Three times in one week earns the **Limber** patch. |
 | **Feel after the session** | Four levels (easy/normal/hard/brutal) on the done screen — makes the call verifiable in hindsight. |
 | **Injury report** | What is nagging, with your own treatment. Two kinds: *recurring* (comes and goes, briefly asked about after a session, can heal) and *structural* (stays, not asked about, blocks permanently). Exercises you block are not rolled by the jam, not picked by Unplugged, and left out of technique and mobility. Main lifts are only flagged, never dropped — the 5×5 mechanics hang on them. The app makes no diagnosis and suggests no treatment. |
 | **Merch stand** | A little play to match the stage: a **battle vest** with patches (plate club, 1000 lb club, bodyweight marks, Tuner for regular weigh-ins, comeback, streaks, Road crew and Hangar 18 for the aftershow, Duet, Fist bump, Tour partner and Standing date for training together, course debut, phases, checks, heavier bell, pit streaks, bell rank and course for two for the kettlebell … and for the bike: tour bus kilometres, Stairway to Heaven, Highway Star, Doom for disciplined base rides, Open Air, crossover weeks with strength and bike), **gold and platinum** records for the weight you have moved (up to Adamant at 1000 t, plus a row of bell records from course and Mosh Pit), a **course boss** for the three checks, a **guitar rack** with ten pixel guitars that unlock with rank and records (there is nothing to buy), framed on the studio wall, a **rank** from garage band to Hall of Fame, and every quarter a **tour shirt** as a pixel band shirt: fabric colour and emblem come from the tour name, screen print on the front, your training days on the back — flip it over. After a session the setlist shows up as a taped paper sheet, and the home screen has a weekly dial: course, bike or jam step in when 5×5 falls through, and it only goes to eleven when the plan is done **and** every session was clean (5×5 without a miss, course finished). Consistency earns it, never volume: the rank counts weeks, not sessions (bike weeks included), and a logged injury **freezes your streak** instead of breaking it. All calculated from the logs, nothing stored. |
@@ -463,6 +463,7 @@ off under *Backstage → Connections*.
 | `js/einrichten.js` | Builds a valid `config.json` from a few answers. |
 | `js/persoenlich.js` | Your reason, your own lines and old personal bests. |
 | `js/unplugged.js` | Bodyweight intervals, pool and run order. |
+| `js/mobkurs.js` | Guided mobility course: pick, timings, run order. |
 | `js/moshpit.js` | Mosh Pit: ladder, target from the logs, stats. |
 | `js/curls.js` | Curls for the Girls: setlist, pick by equipment, hair-o-meter. |
 | `js/kurs.js` | Kettlebell course: plan, week logic, run order, bell suggestion. |
@@ -511,7 +512,7 @@ JSC=/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc
 for t in tests/*.test.js; do $JSC --module-file=$t; done
 ```
 
-3246 tests in 37 files. No build, no dependencies.
+3290 tests in 38 files. No build, no dependencies.
 
 ### Browser probes (optional)
 
