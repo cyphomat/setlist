@@ -98,6 +98,7 @@ const show = n => {
   VIEWS.forEach(v => $('view-' + v).hidden = v !== n);
   window.scrollTo(0, 0);
   wach.setze(W.wachFuerAnsicht(n));
+  if (config) renderOrtKnopf();   // (vor dem Laden gibt es keinen Ort) jeder Kopf mit Ortsknopf zeigt den aktuellen Ort
 };
 
 let bannerTimer = null;
@@ -977,19 +978,7 @@ function startSession() {
       </div>
     </details>
     <details class="info"><summary>${t('ses.waermsaetze')}</summary>
-      <div class="body">
-        ${plan.lifts.map(l => `
-          <p class="tagline" style="margin:12px 0 4px"><b>${escHtml(l.name)}</b> → ${P.fmtWeight(l.weight)}</p>
-          ${P.waermsaetze(l.weight, ladeConfig()).map(w => {
-            const pt = P.plattenText(w.weight, ladeConfig());
-            const ptAlt = P.plattenGaengigText(w.weight, ladeConfig());
-            return `<div class="kv">
-              <span class="k">${w.saetze > 1 ? w.saetze + '×' : ''}${t('ses.wdh', { n: w.reps })}</span>
-              <span class="v"><b>${P.fmtWeight(w.weight)}</b>${pt ? ` — ${pt}` : ''}${
-                ptAlt ? `<span style="color:var(--dim)"> · ${t('ses.plattenOder')} ${ptAlt}</span>` : ''}</span></div>`;
-          }).join('')}`).join('')}
-        <p style="color:var(--dim);margin-top:12px">${t('ses.scheibenHinweis', { kg: kgFmt(ladeConfig().bar) })}</p>
-      </div>
+      <div class="body" id="waermsaetze-body">${waermsaetzeHtml(plan.lifts)}      </div>
     </details>
     <details class="info"><summary>${t('ses.technik', { name: skill.name })}</summary>
       <div class="body">
@@ -1136,6 +1125,21 @@ function korrekturHtml(info, zustand) {
         `<div class="kv"><span class="k">${escHtml(u.dosis)}</span><span class="v">${escHtml(u.name)}</span></div>`).join('')}
       ${q ? `<p class="fine" title="${escHtml(q.lang)}">${t('bib.quelle')} ${escHtml(q.kurz)}</p>` : ''}
     </div>`;
+}
+
+/** Die Aufwaermsaetze mit Scheiben am gewaehlten Ort — neu zeichenbar, wenn der Ort wechselt. */
+function waermsaetzeHtml(lifts) {
+  return `${lifts.map(l => `
+    <p class="tagline" style="margin:12px 0 4px"><b>${escHtml(l.name)}</b> → ${P.fmtWeight(l.weight)}</p>
+    ${P.waermsaetze(l.weight, ladeConfig()).map(w => {
+      const pt = P.plattenText(w.weight, ladeConfig());
+      const ptAlt = P.plattenGaengigText(w.weight, ladeConfig());
+      return `<div class="kv">
+        <span class="k">${w.saetze > 1 ? w.saetze + '×' : ''}${t('ses.wdh', { n: w.reps })}</span>
+        <span class="v"><b>${P.fmtWeight(w.weight)}</b>${pt ? ` — ${pt}` : ''}${
+          ptAlt ? `<span style="color:var(--dim)"> · ${t('ses.plattenOder')} ${ptAlt}</span>` : ''}</span></div>`;
+    }).join('')}`).join('')}
+  <p style="color:var(--dim);margin-top:12px">${t('ses.scheibenHinweis', { kg: kgFmt(ladeConfig().bar) })}</p>`;
 }
 
 function renderSession() {
@@ -3425,13 +3429,28 @@ function machbareAnzahl(geraete) {
  * Ohne eingerichtete Orte bleibt der Knopf weg. Ein Schalter mit genau
  * einer Stellung ist kein Schalter.
  */
+const ORT_KNOEPFE = ['gym-wahl', 'gym-wahl-wod', 'gym-wahl-session', 'gym-wahl-kurs', 'gym-wahl-mosh',
+  'gym-wahl-curls', 'gym-wahl-unplugged', 'gym-wahl-mobkurs'];
+
+/** Der Ort wechselt mitten in der Einheit: nur zeichnen, was am Ort haengt — der Plan bleibt. */
+function ortGewechselt() {
+  renderOrtKnopf();
+  if (!$('view-wod').hidden) { starteWod(wodSeed); return; }   // Jam vor dem Start: gleicher Seed, anderer Vorrat
+  if (!$('view-session').hidden && session) {
+    renderSession();
+    const w = $('waermsaetze-body');
+    if (w) w.innerHTML = waermsaetzeHtml(session.lifts);
+  } else if (!$('view-kurs').hidden) renderKugeln();
+  else renderWodGymHinweis();
+}
+
 function renderOrtKnopf() {
   const orte = G.gyms(config);
   const gewaehlt = gymWahl();
   const o = orte.find(x => x.id === gewaehlt);
   const text = o ? o.name : t('gym.ueberall');
 
-  for (const id of ['gym-wahl', 'gym-wahl-wod']) {
+  for (const id of ORT_KNOEPFE) {
     const b = $(id);
     if (!b) continue;
     b.hidden = !orte.length;
@@ -3462,10 +3481,7 @@ function oeffneOrtPicker() {
     b.onclick = () => {
       dlg.close();
       localStorage.setItem(GYM_KEY, b.dataset.gym);
-      renderOrtKnopf();
-      // Im Jam sofort neu wuerfeln — gleicher Seed, anderer Vorrat.
-      if (!$('view-wod').hidden) starteWod(wodSeed);
-      else renderWodGymHinweis();
+      ortGewechselt();
     };
   });
   dlg.showModal();

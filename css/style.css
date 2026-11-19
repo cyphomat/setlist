@@ -1002,6 +1002,11 @@ button.raus:active{border-color:var(--rost)}
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
 .icon-btn.ort.an{color:var(--akzent);border-color:var(--akzent);background:var(--tint-akzent)}
+/* In den Trainingsansichten teilt sich der Ort die Kopfzeile mit dem Titel
+   („Curls for the Girls“) — dort bekommt er weniger Platz als auf Home. */
+#view-home .head .icon-btn.ort,#view-wod .head .icon-btn.ort{max-width:38vw}
+.head .icon-btn.ort{max-width:30vw}
+@media (max-width:359px){.head .icon-btn.ort{max-width:25vw}}
 .ort-opts{display:flex;flex-direction:column;gap:8px}
 .ort-opts button{
   display:flex;align-items:center;justify-content:space-between;gap:14px;
