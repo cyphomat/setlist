@@ -254,7 +254,7 @@ Back squat is in both workouts and therefore climbs twice as fast.
 | **First-time setup** | No programme in the repo? Then the app asks: bar, the five lifts with a starting weight, strength days, optionally bike days — and writes a valid `config.json` from that. No JSON by hand. |
 | **Your voice** | Your reason, your own lines and old personal bests, right in the app. The reason shows up on hard days, the bests on their anniversaries. |
 | **Places and equipment** | Several gyms (home gym, box, studio …) each with their own kit. The jam only draws from what is there. With no places set up everything stays allowed. Enter bell, bar and plates and the **load calculator** (Backstage → Places) works, and the course shows under the bell what to put on — even when a weight cannot be loaded exactly. Fixed dumbbells (count × kg) and resistance bands (colours only, as their strength depends on the brand) can be entered too. |
-| **Place picker in the header** | A button shows where you are and switches places — on the home screen and in the jam. The picker lists how many jam movements are possible at each place. |
+| **Place picker in the header** | A button shows where you are and switches places — on the home screen, in the jam and during every session — if you forgot to switch before starting, tap it and the session is saved with the right place. The picker lists how many jam movements are possible at each place. |
 | **Update hint for forks** | A fork stays where it branched off. The app compares its version against the original's and says so once, with the way to update. |
 | **Language** | Interface in German or English, switchable in the backstage. |
 

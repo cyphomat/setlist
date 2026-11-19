@@ -254,7 +254,7 @@ Back Squat ist in beiden Workouts dabei und steigt darum doppelt so schnell.
 | **Ersteinrichtung** | Kein Programm im Repo? Dann fragt die App: Stange, die fünf Übungen mit Startgewicht, Krafttage, optional Radtage — und schreibt daraus eine gültige `config.json`. Kein JSON von Hand. |
 | **Deine Stimme** | Dein Grund, eigene Sprüche und alte Bestleistungen direkt in der App. Der Grund erscheint an harten Tagen, die Bestleistungen an ihren Jahrestagen. |
 | **Orte und Geräte** | Mehrere Gyms (Homegym, Box, Studio …) mit eigener Ausstattung. Der Jam würfelt nur aus dem, was dort steht. Ohne eingerichtete Orte bleibt alles erlaubt. Trägst du Kugel, Stange und Scheiben ein, rechnet der **Lastrechner** (Backstage → Orte) und der Kurs zeigt unter der Kugel, was aufgesteckt wird — auch wenn ein Gewicht nicht exakt ladbar ist. Feste Hanteln (Stück × kg) und Widerstandsbänder (nur Farben, die Stärke hängt von der Marke ab) lassen sich ebenfalls eintragen. |
-| **Ortswahl in der Kopfzeile** | Ein Knopf zeigt, wo du gerade bist, und stellt um — auf dem Startbildschirm wie im Jam. In der Auswahl steht je Ort, wie viele Jam-Bewegungen dort möglich sind. |
+| **Ortswahl in der Kopfzeile** | Ein Knopf zeigt, wo du gerade bist, und stellt um — auf dem Startbildschirm, im Jam und in jeder Einheit. Wer vor dem Start vergessen hat umzustellen, tippt ihn an, und die Einheit wird mit dem richtigen Ort gespeichert. In der Auswahl steht je Ort, wie viele Jam-Bewegungen dort möglich sind. |
 | **Update-Hinweis für Forks** | Ein Fork bleibt stehen, wo er abgezweigt ist. Die App vergleicht ihre Version mit der des Originals und sagt einmalig Bescheid, samt Weg zum Aktualisieren. |
 | **Sprache** | Oberfläche auf Deutsch oder Englisch, umschaltbar im Backstage. |
 

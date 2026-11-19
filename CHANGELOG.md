@@ -10,6 +10,15 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-19.1
+
+### Neu
+- **Das Gym lässt sich mitten im Training wechseln.** Der Ort-Knopf, bisher nur auf Home und im Jam, steht jetzt auch im Kopf
+  von Kraft, Kettlebell-Kurs, Mosh Pit, Curls, Unplugged und Mobility. Wer vergessen hat, ihn vor dem Start umzustellen,
+  tippt ihn an: Die Einheit landet mit dem richtigen Ort in der Tour. Der Plan bleibt dabei, wie er ist, abgehakte Sätze
+  gehen nicht verloren. Neu gezeichnet werden nur die Scheibenangaben (Stange und Aufwärmsätze im Kraft-Training, Kugel im
+  Kurs). Bei Curls bleibt der beim Start gewürfelte Übungsvorrat, nur der gespeicherte Ort ändert sich.
+
 ## 2026-11-18.3
 
 ### Neu
