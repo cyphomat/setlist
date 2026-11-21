@@ -1660,15 +1660,15 @@ button.tstop:hover .szene{border-color:var(--muted)}
 .plektrum.offen .plek{filter:grayscale(1) brightness(.4);opacity:.8}
 .plektrum.offen b{color:var(--muted)}
 .drop h3,.drop-neu h3{margin:2px 0 6px}
-.drop-neu{margin-bottom:10px}
-.neu{margin-bottom:10px}
+.drop-neu{margin:16px 0}
+.neu{margin:16px 0}
 .neu ul{margin:6px 0 10px;padding-left:18px}
 .neu li{margin:4px 0}
 .drop-alt{margin-top:10px}
 .drop-alt > summary{cursor:pointer;font-family:var(--display);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
 
 /* ============ Adventskalender: 24 Tuerchen (js/advent.js), Bilder aus assets/pixel/advent.png ============ */
-.advent{margin-bottom:10px}
+.advent{margin:16px 0}
 .adv-raster{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:10px 0}
 .adv-tuer{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;aspect-ratio:1;
   padding:2px;min-width:0;background:var(--sunken);border:1px solid var(--line);border-radius:2px;color:var(--fg);cursor:pointer}

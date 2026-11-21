@@ -10,6 +10,14 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-21.6
+
+### Behoben
+- **Karten auf Home lagen an der Knopfzeile an.** Die Karten „Neu in Setlist“, Drop und Adventskalender hatten oben keinen Abstand, und ihr Eckrahmen
+  (4 px nach außen) überlappte die Knöpfe, vor allem Max-Out. Jetzt haben sie 16 px Luft oben und unten.
+
+---
+
 ## 2026-11-21.5
 
 ### Neu
