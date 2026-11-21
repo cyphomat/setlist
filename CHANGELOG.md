@@ -10,6 +10,13 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-21.3
+
+### Neu
+- **Der Gurt zählt jetzt auch Mosh Pit.** Swing, Goblet-Squat und Press bekommen je ein Plektrum, verdient nach drei Tagen mit geschafftem
+  Ziel. Ein Satz muss dafür erledigt sein; sauber ist die Übung, wenn das Ziel der Einheit geschafft war. Kurs und Curls bleiben außen vor,
+  ihre Logs führen keine einzelnen Übungen. Der Kraft-Lift „press“ und die Mosh-Pit-Übung „press“ sind getrennte Plektren.
+
 ## 2026-11-21.2
 
 ### Neu
