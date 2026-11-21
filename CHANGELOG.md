@@ -10,6 +10,16 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-21.5
+
+### Neu
+- **„Neu in Setlist“ nach einem Update.** Auf Home steht eine leise Karte mit den sichtbaren Änderungen seit dem letzten Besuch, kein Popup und nie
+  in einer Einheit. Sie bleibt, bis „Gesehen“ gedrückt wird; gemerkt wird nur die Versionsnummer, pro Gerät. Wer die App zum ersten Mal öffnet,
+  sieht sie nicht. Gepflegt wird sie in `js/neu.js` (eine Zeile deutsch und englisch je Auslieferung, nur was Nutzer sehen); der Test prüft Form und
+  Reihenfolge.
+
+---
+
 ## 2026-11-21.4
 
 ### Neu
