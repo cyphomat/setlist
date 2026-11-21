@@ -10,6 +10,14 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-21.7
+
+### Behoben
+- **„Neu in Setlist“ sah aus wie eine Tabelle.** Die Zeilen erbten die Kartenregel für Tabellenzeilen (Trennlinie über jeder Zeile, großer Einzug).
+  Jetzt steht ein Satz je Zeile ohne Linie und ohne Einzug.
+
+---
+
 ## 2026-11-21.6
 
 ### Behoben
