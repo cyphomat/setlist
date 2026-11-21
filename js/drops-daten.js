@@ -7,14 +7,14 @@
 // was sich nicht belegen laesst, kommt nicht rein. Farben der Plektren sind
 // Material, keine App-Palette.
 
-const BARBELL = 'https://en.wikipedia.org/wiki/Barbell';
-const POWERLIFTING = 'https://en.wikipedia.org/wiki/Powerlifting';
-const HALL = 'https://en.wikipedia.org/wiki/Eddie_Hall';
-const MILO = 'https://en.wikipedia.org/wiki/Milo_of_Croton';
-// Dezember (ENTWURF, Fakten noch an der Quelle nachlesen):
+const BARBELL = 'https://iwf.sport/weightlifting_/equipment/';
+const POWERLIFTING = 'https://www.powerlifting.sport/about-ipf/disciplines';
+const HALL = 'https://www.guinnessworldrecords.com/world-records/441064-heaviest-strongman-deadlift';
+const MILO = 'https://www.britannica.com/biography/Milo-of-Croton';
+// Quellen gegengelesen am 21.11.2026 (Hall, Sabbath, Ace of Spades, Lemmy, Baum, Hantel, Dreikampf, Milo):
 const SABBATH = 'https://en.wikipedia.org/wiki/Black_Sabbath_(album)';
 const ACE = 'https://en.wikipedia.org/wiki/Ace_of_Spades_(song)';
-const BAUM = 'https://en.wikipedia.org/wiki/Christmas_tree';
+const BAUM = 'https://www.christianitytoday.com/history/issues/issue-92/o-tannenbaum-o-tannenbaum.html';
 const LEMMY = 'https://en.wikipedia.org/wiki/Lemmy';
 
 export const DROPS = [
@@ -49,8 +49,8 @@ export const DROPS = [
         name: { de: 'Zwanzig Kilo', en: 'Twenty kilos' },
         text: { de: 'Die olympische Männerstange wiegt zwanzig Kilo.', en: 'The Olympic men\'s bar weighs twenty kilos.' },
         fakt: {
-          de: 'Die Langhantel der Männer wiegt im Wettkampf 20 kg und ist etwa 2,20 m lang.',
-          en: 'The men\'s competition barbell weighs 20 kg and is about 2.20 m long.'
+          de: 'Die Langhantel der Männer wiegt im Gewichtheber-Wettkampf 20 kg.',
+          en: 'The men\'s barbell in weightlifting competition weighs 20 kg.'
         },
         quelle: BARBELL },
       { id: 's-drei', stufe: 's', farbe: '#2f6fa3', form: 'jazz', material: 'metall',
@@ -65,8 +65,8 @@ export const DROPS = [
         name: { de: 'Fünfhundert', en: 'Five hundred' },
         text: { de: 'Eine Zahl, an der lange niemand vorbeikam.', en: 'A number nobody got past for a long time.' },
         fakt: {
-          de: 'Eddie Hall hob 2016 als Erster 500 kg im Kreuzheben im Wettkampf.',
-          en: 'In 2016 Eddie Hall became the first to deadlift 500 kg in competition.'
+          de: 'Eddie Hall hob am 9. Juli 2016 in Leeds 500 kg im Kreuzheben, ein Strongman-Rekord laut Guinness.',
+          en: 'On 9 July 2016 in Leeds Eddie Hall deadlifted 500 kg, a strongman record according to Guinness.'
         },
         quelle: HALL }
     ],
@@ -74,8 +74,8 @@ export const DROPS = [
       name: { de: 'Milos Kalb', en: 'Milo\'s calf' },
       text: { de: 'Jeden Tag ein bisschen mehr — so geht die Legende.', en: 'A little more every day — so goes the legend.' },
       fakt: {
-        de: 'Der Legende nach trug der Ringer Milon von Kroton täglich ein Kalb, bis es ein Stier war — das älteste Bild für steigende Last.',
-        en: 'Legend has it the wrestler Milo of Croton carried a calf every day until it was a bull — the oldest picture of progressive load.'
+        de: 'Der Legende nach trug der Ringer Milon von Kroton ein Kalb täglich, bis es ausgewachsen war — das klassische Bild für steigende Last.',
+        en: 'Legend has it the wrestler Milo of Croton carried a calf every day until it was fully grown — the classic picture of progressive load.'
       },
       quelle: MILO }
   },
@@ -133,8 +133,8 @@ export const DROPS = [
         name: { de: 'Tannenbaum', en: 'Fir tree' },
         text: { de: 'Der Brauch ist älter, als er aussieht.', en: 'The custom is older than it looks.' },
         fakt: {
-          de: 'Ein Weihnachtsbaum ist erstmals 1605 in Straßburg belegt.',
-          en: 'A Christmas tree is first documented in Strasbourg in 1605.'
+          de: 'Aus Straßburg stammt um 1605 die früheste ausführliche Beschreibung eines geschmückten Weihnachtsbaums.',
+          en: 'Around 1605 Strasbourg gave us the earliest detailed written description of a decorated Christmas tree.'
         },
         quelle: BAUM },
       { id: 'e-sabbath', stufe: 'e', farbe: '#7a3b8c', form: 'std', material: 'metall',
