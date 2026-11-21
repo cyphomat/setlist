@@ -6549,20 +6549,23 @@ function dropKacheln(stand) {
 function renderDropMerch(logs) {
   const box = $('merch-drop');
   if (!box) return;
-  const drop = DR.aktuellerDrop(new Date());
-  if (!drop) { box.innerHTML = ''; return; }
+  // Alle Drops bis heute, der neueste offen: ein verdientes Plektrum bleibt sichtbar, auch wenn der Monat vorbei ist.
+  const liste = DR.dropsBis(new Date()).reverse();
+  if (!liste.length) { box.innerHTML = ''; return; }
   const sp = sprache();
-  const stand = DR.dropStand(drop, logs);
-  box.innerHTML = `
-    <div class="card drop">
-      <span class="kicker">${escHtml(DR.lokal(drop.thema, sp))}</span>
-      <h3>${escHtml(DR.lokal(drop.titel, sp))}</h3>
-      <p class="lead">${escHtml(DR.lokal(drop.text, sp))}</p>
+  box.innerHTML = liste.map((drop, i) => {
+    const stand = DR.dropStand(drop, logs);
+    const kopf = `<span class="kicker">${escHtml(DR.lokal(drop.thema, sp))}</span>
+      <h3>${escHtml(DR.lokal(drop.titel, sp))}</h3>`;
+    const koerper = `<p class="lead">${escHtml(DR.lokal(drop.text, sp))}</p>
       <p class="rack-zahl">${escHtml(t('merch.drop.stand', { tage: stand.tage, n: stand.n, gesamt: stand.gesamt }))}</p>
       <div class="gurt">${dropKacheln(stand)}</div>
       ${drop.zugabe && !stand.zugabeDa ? `<p class="fine">${escHtml(t('merch.drop.zugabeOffen'))}</p>` : ''}
-      <p class="fine">${escHtml(t('merch.drop.fine', DR.FREISCHALTUNG))}</p>
-    </div>`;
+      <p class="fine">${escHtml(t('merch.drop.fine', DR.FREISCHALTUNG))}</p>`;
+    return i === 0
+      ? `<div class="card drop">${kopf}${koerper}</div>`
+      : `<details class="card drop drop-alt"><summary>${escHtml(DR.lokal(drop.titel, sp))} · ${escHtml(t('merch.drop.kurz', { n: stand.n, gesamt: stand.gesamt }))}</summary>${kopf}${koerper}</details>`;
+  }).join('');
 }
 
 /* ---------- Adventskalender (advent.js): vom 1.12. bis Silvester auf Heute ----------
@@ -6580,9 +6583,9 @@ function renderAdventKarte() {
     const d = tuer(n);
     const offen = !!d.erledigt || aufgemacht.has(n);
     const zustand = d.erledigt ? 'done' : offen ? 'open' : d.bereit ? 'ready' : 'zu';
-    const label = `${t('adv.tuer', { n })}, ${d.erledigt ? t('adv.erledigtAm', { datum: datumLang(d.erledigt) }) : d.bereit ? t('adv.bereit') : t('adv.zu')}`;
+    const label = `${t('adv.tuer', { n })}${d.fund ? ` (${t('adv.fundKurz')})` : ''}, ${d.erledigt ? t('adv.erledigtAm', { datum: datumLang(d.erledigt) }) : d.bereit ? t('adv.bereit') : t('adv.zu')}`;
     return `<button type="button" class="adv-tuer${d.heute ? ' heute' : ''}${n === AD.TUEREN ? ' gross' : ''}" data-n="${n}" data-state="${zustand}"${d.bereit ? '' : ' disabled'}${adventSel === n ? ' aria-pressed="true"' : ''} aria-label="${escHtml(label)}">
-      <span class="adv-n">${n}</span>${offen ? `<span class="adv-pix" style="--i:${n - 1}" aria-hidden="true"></span>` : d.bereit ? `<span class="adv-hint">${escHtml(d.heute ? t('adv.heute') : '')}</span>` : ''}${d.erledigt ? '<span class="adv-stempel" aria-hidden="true">✓</span>' : ''}
+      <span class="adv-n">${n}</span>${d.fund ? '<span class="adv-fund" aria-hidden="true">◆</span>' : ''}${offen ? `<span class="adv-pix" style="--i:${n - 1}" aria-hidden="true"></span>` : d.bereit ? `<span class="adv-hint">${escHtml(d.heute ? t('adv.heute') : '')}</span>` : ''}${d.erledigt ? '<span class="adv-stempel" aria-hidden="true">✓</span>' : ''}
     </button>`;
   };
   const sel = adventSel && tuer(adventSel) && tuer(adventSel).bereit ? tuer(adventSel) : null;
@@ -6598,7 +6601,7 @@ function renderAdventKarte() {
     <p class="rack-zahl">${escHtml(t('adv.stand', { n: st.erledigt }))}</p>
     ${buehne}
     <div class="adv-raster">${AD.reihenfolge(st.jahr).map(tuerHtml).join('')}</div>
-    <p class="fine">${escHtml(t('adv.fine'))}</p>
+    <p class="fine">${escHtml(t('adv.fine'))} ${escHtml(t('adv.fundHinweis'))}</p>
   </div>`;
   box.querySelectorAll('.adv-tuer').forEach(b => {
     b.onclick = () => {

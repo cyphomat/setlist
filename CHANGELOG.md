@@ -10,6 +10,18 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-21.4
+
+### Neu
+- **Alle Drops im Merch-Stand.** Bisher stand dort nur der Drop des laufenden Monats; ein verdientes Plektrum aus einem früheren Monat war nach dem
+  Wechsel nicht mehr zu sehen, obwohl es weiter zählte. Jetzt stehen alle Drops bis heute da, der neueste offen, die früheren eingeklappt mit
+  „n von m“.
+- **Fundstück-Türchen markiert.** Im Adventskalender trägt ein ◆, hinter welchen Türchen ein Plektrum aus dem Dezember-Drop hängt.
+- **Januar-Drop „Neues Jahr, neue Last“** (ab 1.1.2027): vier gewöhnliche, zwei seltene und ein episches Plektrum und eine Zugabe, die Fakten an
+  den Quellen nachgelesen.
+
+---
+
 ## 2026-11-21.3
 
 ### Neu

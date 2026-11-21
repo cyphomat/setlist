@@ -63,6 +63,12 @@ eq('am Monatsersten der neue', D.aktuellerDrop('2026-11-01').id, '2026-11');
 eq('danach bleibt er', D.aktuellerDrop('2027-03-05').id, DROPS[DROPS.length - 1].id);
 eq('Date wird verstanden', D.aktuellerDrop(new Date(2026, 10, 15)).id, '2026-11');
 
+print('\n--- Alle Drops bis heute ---');
+eq('vor November keiner', D.dropsBis('2026-10-31').length, 0);
+eq('im Dezember zwei', D.dropsBis('2026-12-15').length, 2);
+eq('im Januar drei, aeltester zuerst', D.dropsBis('2027-01-10').map(x => x.id).join(), '2026-11,2026-12,2027-01');
+ok('der Januar-Drop hat keine Tuerchen-Plektren', !DROPS.find(x => x.id === '2027-01').plektren.some(p => p.tuer));
+
 print('\n--- Neu nach der Einheit ---');
 eq('der dritte Tag bringt vier', D.neueDropPlektren(tage(m, 2), tage(m, 3), '2026-11-20').length, 4);
 eq('der vierte nichts', D.neueDropPlektren(tage(m, 3), tage(m, 4), '2026-11-20').length, 0);
