@@ -35,6 +35,7 @@ import * as PL from './plektren.js';
 import * as DR from './drops.js';
 import * as RD from './roadie.js';
 import * as AD from './advent.js';
+import * as NEU from './neu.js';
 import * as SI from './sicherung.js';
 
 // Eingebettet in eine fremde Seite (siehe boot.js) startet die App gar nicht
@@ -362,6 +363,7 @@ function renderHome() {
   $('today').innerHTML = plakatHtml(d, plan);
   plakatGlut();
   renderAnlass();
+  renderNeuKarte();
   renderDropKarte();
   renderAdventKarte();
   renderCheckin();
@@ -1974,6 +1976,7 @@ async function pruefeVersion(manuell = false) {
     const { version } = await res.json();
     const gesehen = localStorage.getItem(VERSION_KEY);
     laufendeVersion = version;
+    renderNeuKarte();   // jetzt ist die Fassung sicher bekannt
 
     if (gesehen && gesehen !== version) {
       // Zuerst merken, dann neu laden — sonst droht eine Endlosschleife.
@@ -6566,6 +6569,30 @@ function renderDropMerch(logs) {
       ? `<div class="card drop">${kopf}${koerper}</div>`
       : `<details class="card drop drop-alt"><summary>${escHtml(DR.lokal(drop.titel, sp))} · ${escHtml(t('merch.drop.kurz', { n: stand.n, gesamt: stand.gesamt }))}</summary>${kopf}${koerper}</details>`;
   }).join('');
+}
+
+/* ---------- "Neu in Setlist" (neu.js): nach einem Update auf Heute, nie in einer Einheit ----------
+   Gemerkt wird nur die gesehene Version, pro Geraet. Wer die App zum ersten Mal oeffnet
+   (noch kein Log), hat nichts zu aktualisieren und sieht keine Karte. */
+function renderNeuKarte() {
+  const box = $('neu-karte');
+  if (!box) return;
+  const v = laufendeVersion;
+  if (!/^\d{4}-\d{2}-\d{2}/.test(v)) { box.innerHTML = ''; return; }   // Fassung noch unbekannt
+  let gesehen = NEU.gesehen();
+  if (gesehen === null) {
+    if (!geladeneLogs().length) { NEU.setzeGesehen(v); box.innerHTML = ''; return; }
+    gesehen = '';   // bestehender Nutzer vor dem ersten Mal mit dieser Karte
+  }
+  const eintraege = NEU.seit(gesehen, v);
+  if (!eintraege.length) { box.innerHTML = ''; return; }
+  const sp = sprache() === 'en' ? 'en' : 'de';
+  box.innerHTML = `<div class="card neu">
+    <span class="kicker">${escHtml(t('neu.kicker'))}</span>
+    <ul>${eintraege.flatMap(e => e[sp]).map(z => `<li>${escHtml(z)}</li>`).join('')}</ul>
+    <div class="actions"><button class="btn ghost small" data-neu-ok>${escHtml(t('neu.gesehen'))}</button></div>
+  </div>`;
+  box.querySelector('[data-neu-ok]').onclick = () => { NEU.setzeGesehen(v); renderNeuKarte(); };
 }
 
 /* ---------- Adventskalender (advent.js): vom 1.12. bis Silvester auf Heute ----------

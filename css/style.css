@@ -1661,6 +1661,9 @@ button.tstop:hover .szene{border-color:var(--muted)}
 .plektrum.offen b{color:var(--muted)}
 .drop h3,.drop-neu h3{margin:2px 0 6px}
 .drop-neu{margin-bottom:10px}
+.neu{margin-bottom:10px}
+.neu ul{margin:6px 0 10px;padding-left:18px}
+.neu li{margin:4px 0}
 .drop-alt{margin-top:10px}
 .drop-alt > summary{cursor:pointer;font-family:var(--display);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
 
