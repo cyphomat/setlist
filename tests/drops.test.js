@@ -72,4 +72,18 @@ eq('Sprache gewaehlt', D.lokal({ de: 'a', en: 'b' }, 'en'), 'b');
 eq('fehlende Sprache: Deutsch', D.lokal({ de: 'a' }, 'en'), 'a');
 eq('leer ist leer', D.lokal(null), '');
 
+print('\n--- Dezember: Plektren an Tuerchen ---');
+const dez = DROPS.find(x => x.id === '2026-12');
+ok('es gibt den Dezember-Drop', !!dez);
+const tuerP = dez.plektren.filter(p => p.tuer);
+eq('fuenf Plektren haengen an Tuerchen', tuerP.length, 5);
+ok('genau die Fundstueck-Tuerchen', tuerP.map(p => p.tuer).sort((a, b) => a - b).join() === [6, 11, 15, 19, 22].join());
+const dkraft = date => ({ date, type: 'strength', lifts: [{ lift: 'squat', weight: 100, success: true }] });
+ok('ohne Tuerchen keins verdient', D.dropStand(dez, []).plektren.filter(p => p.tuer && p.verdient).length === 0);
+const sechs = D.dropStand(dez, [dkraft('2026-12-07'), dkraft('2026-12-08')]);   // Tuerchen 6: sauberer Kraft-Tag ab dem 6.
+eq('Tuerchen 6 erledigt: Nikolausstiefel haengt', !!sechs.plektren.find(p => p.id === 't-stiefel').verdient, true);
+eq('mit dem Datum des Tuerchens', sechs.plektren.find(p => p.id === 't-stiefel').verdient, '2026-12-07');
+eq('die anderen Tuerchen bleiben zu', sechs.plektren.filter(p => p.tuer && p.verdient).length, 1);
+muss('tuer ausserhalb des Dezembers', d => { d.id = '2026-11'; d.datum = '2026-11-01'; d.plektren.push({ id: 'x-t', stufe: 'g', tuer: 3, farbe: '#112233', name: { de: 'a', en: 'b' }, text: { de: 'a', en: 'b' } }); });
+
 print(`\n========== Gesamt: ${pass} bestanden, ${fail} fehlgeschlagen ==========\n`);

@@ -12,6 +12,7 @@
 //   assets/pixel/lagerfeuer.png Tagesgegner (2 × 24×24) und Roadie (3 × 16×18), Quelle tools/pixel-lagerfeuer.mjs
 //   assets/pixel/figuren.png    je 76×82, Reihenfolge wie FIGUREN in js/kurs.js (Winkel in tools/pixel-figur.mjs)
 //   assets/pixel/anlaesse.png   je Motiv zwei Bilder 15×15, Reihenfolge wie MOTIVE in js/anlaesse.js
+//   assets/pixel/advent.png     24 Tuerchen-Motive 15×15 nebeneinander (Quelle tools/pixel-advent.mjs, Zahl wie TUEREN in js/advent.js)
 //   assets/pixel/curls.png      fuenf Maehnen und zwei Flammen 24×24 (Quelle tools/pixel-curls.mjs, Zahlen wie in js/curls.js)
 //   assets/pixel/logo.png       der Schriftzug fuer die Kopfzeile
 //   icons/icon-*.png            das App-Icon, ganzzahlig vergroessert
@@ -33,6 +34,8 @@ import { BILDER, RAENGE, ADJ, NOMEN, PLATTEN, KUGEL_PLATTEN } from '../js/merch.
 import { GITARREN as GITARREN_LISTE } from '../js/gitarren.js';
 import { GITARREN as GITARREN_SPEC, gitarrenBilder } from './pixel-gitarren.mjs';
 import { MOTIVE as ANLASS_MOTIVE, MOTIV_KANTE } from '../js/anlaesse.js';
+import { KANTE as ADV_KANTE, ANZAHL as ADV_ANZAHL, PALETTE as ADV_FARBEN, RASTER as ADV_RASTER } from './pixel-advent.mjs';
+import { TUEREN as ADV_TUEREN } from '../js/advent.js';
 import { KANTE as ANLASS_KANTE, PALETTE as ANLASS_FARBEN, motivRaster } from './pixel-anlaesse.mjs';
 import { FIGUREN } from '../js/kurs.js';
 import { MAEHNE_BILDER as CU_MAEHNE, FEUERZEUG_BILDER as CU_FEUERZEUG, BILD_KANTE as CU_KANTE } from '../js/curls.js';
@@ -424,6 +427,18 @@ const EIGENE = {
     'AAHHHHHHHAA',
     '.AAHHHHHAA.',
     '..AA...AA..'
+  ],
+  advent: [               // Adventskranz mit vier Kerzen
+    '..A..A..A..',
+    '..H..H..H..',
+    '..H..H..H..',
+    '.HHHHHHHHH.',
+    'HH.......HH',
+    'H.........H',
+    'H.........H',
+    'HH.......HH',
+    '.HHHAAAHHH.',
+    '..HHHHHHH..'
   ],
   weihnachtsgig: [        // Tannenbaum mit Stern und Kugeln
     '.....A.....',
@@ -905,7 +920,7 @@ const MOTIV = {
   'kugelrang-1': '#kr1', 'kugelrang-2': '#kr2', 'kugelrang-3': '#kr3', 'kugelrang-4': '#kr4',
   kursboss: '#kursboss', 'kurs-duett': '#kursduett', 'check-duett': '#checkduett', 'pit-duett': '#pitduett',
   'hair-1': '#haarspray', 'hair-5': '#sunset', 'hair-15': '#arena', 'hair-30': '#maehne',
-  weihnachtsgig: '#weihnachtsgig', eiersuche: '#eiersuche', geisterstunde: '#geisterstunde', kerze: '#kerze'
+  advent: '#advent', weihnachtsgig: '#weihnachtsgig', eiersuche: '#eiersuche', geisterstunde: '#geisterstunde', kerze: '#kerze'
 };
 /* Symbole, deren Farbe die Aussage ist: Blut bleibt rot. */
 const EIGENE_FARBE = new Set(['debuet']);
@@ -918,7 +933,7 @@ const KATEGORIE = {
   tour: 'tour', soundcheck: 'tour', stimm: 'tour',
   duett: 'buehne', faustgruss: 'buehne', partner: 'buehne', verabredung: 'buehne',
   kurs: 'buehne', check: 'buehne', kugel: 'buehne', pit: 'buehne', kugelrang: 'buehne', kursboss: 'buehne', hair: 'buehne',
-  weihnachtsgig: 'buehne', eiersuche: 'buehne', geisterstunde: 'buehne', kerze: 'buehne'
+  advent: 'buehne', weihnachtsgig: 'buehne', eiersuche: 'buehne', geisterstunde: 'buehne', kerze: 'buehne'
 };
 
 const raster = zeilen => {
@@ -1679,6 +1694,20 @@ function anlassBogen() {
   return b;
 }
 
+/** Die 24 Tuerchen des Adventskalenders: je ein Bild 15×15, nebeneinander. */
+if (ADV_ANZAHL !== ADV_TUEREN || ADV_RASTER.length !== ADV_TUEREN) throw new Error('Tuerchen in js/advent.js und tools/pixel-advent.mjs verschieden');
+function adventBogen() {
+  const b = leer(ADV_ANZAHL * ADV_KANTE, ADV_KANTE);
+  ADV_RASTER.forEach((raster, i) => raster.forEach((zeile, y) => [...zeile].forEach((c, x) => {
+    if (c === '.') return;
+    if (!ADV_FARBEN[c]) throw new Error(`Advent-Motiv ${i + 1}: Farbe ${c} fehlt in der Palette`);
+    setze(b, i * ADV_KANTE + x, y, rgba(ADV_FARBEN[c]));
+  })));
+  eindeutig(ADV_RASTER.map((_, i) => { const t = leer(ADV_KANTE, ADV_KANTE); klebe(t, b, 0, 0, { x: i * ADV_KANTE, y: 0, w: ADV_KANTE, h: ADV_KANTE }); return t; }),
+    ADV_RASTER.map((_, i) => `Tuerchen ${i + 1}`));
+  return b;
+}
+
 /** Curls for the Girls: Maehne des Haar-o-Meters (5 Stufen) und Feuerzeug (2 Flammen), nebeneinander. */
 if (CU_KANTE !== CU_PX_KANTE || CU_MAEHNE !== CU_PX_MAEHNE || CU_FEUERZEUG !== CU_PX_FEUERZEUG) {
   throw new Error('Bildzahl oder Kantenlaenge in js/curls.js und tools/pixel-curls.mjs verschieden');
@@ -1713,6 +1742,7 @@ const ausgaben = {
   ...Object.fromEntries(Object.entries(README_ICONS).map(([k, n]) => [`assets/readme/i-${k}.png`, readmeIcon(n)])),
   'assets/pixel/shirts.png': bogen(ADJ.flatMap(a => { if (!STOFF[a]) throw new Error(`Kein Stoff fuer ${a}`); return [shirt(STOFF[a], false), shirt(STOFF[a], true)]; }), SHIRT_W, SHIRT_H),
   'assets/pixel/anlaesse.png': anlassBogen(),
+  'assets/pixel/advent.png': adventBogen(),
   'assets/pixel/curls.png': curlsBogen(),
   'assets/pixel/embleme.png': bogen(eindeutig(NOMEN.map(emblem), NOMEN), 20, 20),
   'assets/pixel/platten.png': bogen([...PLATTEN, ...KUGEL_PLATTEN].map(p => award(p.id)), AWARD_W, AWARD_H),
@@ -1749,6 +1779,7 @@ console.log(`assets/pixel/gitarren.png ${gitarrenIds.length} × 24×56, alle ver
 console.log(`assets/pixel/shirts.png     ${ADJ.length} × 2 × ${SHIRT_W}×${SHIRT_H}`);
 console.log(`assets/pixel/embleme.png    ${NOMEN.length} × 20×20, alle verschieden`);
 console.log(`assets/pixel/anlaesse.png  ${ANLASS_MOTIVE.length} × 2 × ${ANLASS_KANTE}×${ANLASS_KANTE}`);
+console.log(`assets/pixel/advent.png   ${ADV_ANZAHL} × ${ADV_KANTE}×${ADV_KANTE}, alle verschieden`);
 console.log(`assets/pixel/curls.png     ${CU_MAEHNE} Maehnen + ${CU_FEUERZEUG} Flammen × ${CU_KANTE}×${CU_KANTE}`);
 console.log(`assets/pixel/platten.png    ${PLATTEN.length + KUGEL_PLATTEN.length} × ${AWARD_W}×${AWARD_H}`);
 console.log('assets/pixel/logo.png, icons/icon-*.png, assets/readme/*.png');

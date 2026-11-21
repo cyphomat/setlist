@@ -10,6 +10,16 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-21.2
+
+### Neu
+- **Der Adventskalender.** Vom 1. bis 24.12. geht jeden Tag ein Türchen auf, nachholen geht bis Silvester. Hinter jedem steckt eine kleine
+  Mission (eine Krafteinheit, zehn Minuten Mobility, drei Trainingstage in Folge, ein sauberer Krafttag …), und erledigt ist sie **von selbst**,
+  sobald der Log sie zeigt: ab dem Tag des Türchens bis zum 31.12. Es gibt nichts abzuhaken und nichts zu speichern, nur das Aufmachen merkt sich
+  das Gerät. Die Türchen liegen pro Jahr in fester, gemischter Reihenfolge, die 24 sitzt am Ende. Alle 24 erledigt: der Aufnäher **Advent**.
+- **Dezember-Drop „Kerzen und Kabel“.** Fünf Plektren hängen an den Türchen 6, 11, 15, 19 und 22, die übrigen kommen wie gewohnt über
+  Übungstage, dazu Fakten mit Quelle und die Zugabe.
+
 ## 2026-11-21.1
 
 ### Neu
