@@ -10,6 +10,19 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-21.1
+
+### Neu
+- **Der Gurt: ein Plektrum je Übung.** Wer einen Lift an drei verschiedenen Tagen sauber geschafft hat, hängt sein Plektrum an den Gurt im
+  Merch-Stand. Farbe und Form kommen aus der Kennung des Lifts, es wird nichts gewürfelt und nichts gespeichert: Das Plektrum wandert mit den
+  Logs. Leise Eigenschaften, nirgends beworben: Metall ab zehn sauberen Tagen, Patina ab zehn und 25 Spieltagen, Staub, wenn ein Lift länger
+  als 30 Tage ruht (einmal wieder gespielt, glänzt es).
+- **Drop des Monats.** Jeder Monat bringt ein Thema mit gewöhnlichen, seltenen und epischen Plektren (3, 8 und 14 Übungstage im Monat) und einer
+  Zugabe, die erst erscheint, wenn alle anderen hängen. Seltene und epische Plektren tragen einen Fakt mit Quelle. Der Drop ist Datensatz in
+  `js/drops-daten.js`; eine Karte auf Home weist darauf hin, bis „Gesehen“ oder „Zum Gurt“ gedrückt wurde (pro Gerät). Ein verpasster Monat lässt sich nicht nachholen.
+- **Der Roadie spricht aus dem Tag.** Der erste Tipp auf ihn zeigt den Satz des Tages (derselbe Tag, derselbe Satz), der auch auf den letzten
+  Lift eingehen kann; im Abschluss kommt ein neues Plektrum zuerst. Das hängt weiter am Schalter des Ansagers.
+
 ## 2026-11-19.1
 
 ### Neu

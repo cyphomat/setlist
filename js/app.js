@@ -31,6 +31,9 @@ import * as ANL from './anlaesse.js';
 import * as SC from './soundcheck.js';
 import * as ZU from './zusammen.js';
 import * as GT from './gitarren.js';
+import * as PL from './plektren.js';
+import * as DR from './drops.js';
+import * as RD from './roadie.js';
 import * as SI from './sicherung.js';
 
 // Eingebettet in eine fremde Seite (siehe boot.js) startet die App gar nicht
@@ -358,6 +361,7 @@ function renderHome() {
   $('today').innerHTML = plakatHtml(d, plan);
   plakatGlut();
   renderAnlass();
+  renderDropKarte();
   renderCheckin();
   $('start').onclick = startMitPausenCheck;
   renderInstrumente();
@@ -1412,7 +1416,13 @@ function comboZettel(x, y, text) {
 }
 
 /** Der Roadie neben dem Schriftzug: antippen, dann sagt er etwas. Aus mit dem Ansager. */
-let roadieBlaseTimer = null, roadieJubelTimer = null;
+let roadieBlaseTimer = null, roadieJubelTimer = null, roadieTippZaehler = 0;
+
+/** Lift-Kennung -> Name, fuer die Saetze des Roadies und die Plektren. */
+const liftNamen = () => Object.fromEntries(Object.entries((config && config.lifts) || {}).map(([id, l]) => [id, l.name || id]));
+const roadieOpt = () => ({ drops: DR.dropsBis(new Date()), namen: liftNamen() });
+/** Ein Satz des Roadies als Text: i18n-Schluessel oder ein Satz aus einem Drop mit eigener Uebersetzung. */
+const roadieText = s => (s.roh ? DR.lokal(s.roh, sprache()) : t(s.schluessel, s.werte));
 function roadieKopfAn(an) {
   const b = $('roadie-kopf'), blase = $('roadie-blase');
   if (b) b.hidden = !an;
@@ -1420,7 +1430,8 @@ function roadieKopfAn(an) {
 }
 if ($('roadie-kopf')) $('roadie-kopf').onclick = () => {
   const b = $('roadie-kopf'), blase = $('roadie-blase');
-  blase.textContent = t(LF.spruchSchluessel('allg'));
+  // Der erste Tipp je Seitenaufruf ist der Satz des Tages (aus dem Log, roadie.js), danach die allgemeinen.
+  blase.textContent = roadieTippZaehler++ === 0 ? roadieText(RD.heuteSpruch(geladeneLogs(), P.ymd(new Date()), roadieOpt())) : t(LF.spruchSchluessel('allg'));
   blase.hidden = false;
   $('motto').hidden = true;                      // der Spruch nimmt kurz den Platz des Mottos
   b.classList.add('jubel');
@@ -1435,7 +1446,16 @@ function abschlussSpruch() {
   if (!body || !ANS.istAn()) return;
   const d = document.createElement('div');
   d.className = 'lager-fertig';
-  d.innerHTML = `<span class="roadie jubel" aria-hidden="true"></span><p class="lager-blase">${escHtml(t(LF.spruchSchluessel('fertig')))}</p>`;
+  // Neues Plektrum von heute geht vor, dann der Satz zum Lift, sonst der Fertig-Spruch der Satzpause.
+  const heute = P.ymd(new Date());
+  const logs = geladeneLogs();
+  const neu = PL.plektren(logs, heute).filter(p => p.verdient === heute)
+    .map(p => liftNamen()[p.id] || p.id)
+    .concat(DR.dropsBis(new Date()).flatMap(dp => DR.dropStand(dp, logs).plektren.filter(p => p.verdient === heute).map(p => DR.lokal(p.name, sprache()))));
+  const text = neu.length ? t('rd.neu', { name: neu[0] })
+    : (letzterLog && (letzterLog.type || 'strength') === 'strength' && Math.random() < 0.5)
+      ? roadieText(RD.abschlussSpruch(letzterLog, heute, roadieOpt())) : t(LF.spruchSchluessel('fertig'));
+  d.innerHTML = `<span class="roadie jubel" aria-hidden="true"></span><p class="lager-blase">${escHtml(text)}</p>`;
   body.append(d);
 }
 
@@ -6467,6 +6487,101 @@ function gitarreHtml(g, { offen = false, zeile = null } = {}) {
   </div>`;
 }
 
+/* ---------- Gurt und Drops (plektren.js, drops.js; nichts davon wird gespeichert) ---------- */
+
+/** Ein Plektrum als Pixel-SVG; Metall, Patina und Staub kommen aus dem Log und stehen als Klassen am Bild. */
+const PLEK_FORM = {
+  std:  '2,1 10,1 11,3 11,6 8,11 6,13 4,11 1,6 1,3',
+  jazz: '3,2 9,2 10,4 8,10 6,12 4,10 2,4',
+  tri:  '1,2 11,2 6,13'
+};
+function plektrumSvg(p, titel) {
+  const form = PLEK_FORM[p.form] ? p.form : 'std';
+  return `<svg class="plek${p.metall || p.material === 'metall' ? ' metall' : ''}${p.patina ? ` p${p.patina}` : ''}${p.staub ? ' staub' : ''}" viewBox="0 0 12 14" role="img" aria-label="${escHtml(titel)}" shape-rendering="crispEdges">
+    <polygon points="${PLEK_FORM[form]}" fill="${p.farbe}" stroke="var(--line)" stroke-width="1"/>
+    <rect x="3" y="3" width="2" height="1" fill="#fff" opacity=".35"/>
+    ${p.patina ? '<rect x="6" y="5" width="3" height="1" fill="#000" opacity=".25"/>' : ''}${p.patina > 1 ? '<rect x="4" y="8" width="3" height="1" fill="#000" opacity=".3"/>' : ''}
+  </svg>`;
+}
+
+function plektrumHtml(p, name, zeile, { offen = false, extra = '' } = {}) {
+  return `<div class="plektrum${offen ? ' offen' : ''}" title="${escHtml(zeile)}">
+    ${plektrumSvg(p, name)}
+    <b>${escHtml(name)}</b>
+    <span>${escHtml(zeile)}</span>${extra}
+  </div>`;
+}
+
+function renderGurt(logs) {
+  const box = $('merch-gurt');
+  if (!box) return;
+  const namen = liftNamen();
+  const g = PL.gurt(logs);
+  if (!g.n && !g.offen.length) { box.innerHTML = `<p class="lead">${escHtml(t('merch.gurt.leer'))}</p>`; return; }
+  box.innerHTML = `
+    <p class="rack-zahl">${escHtml(t('merch.gurt.zahl', { n: g.n }))}</p>
+    <div class="gurt">${g.haengt.map(p => plektrumHtml(p, namen[p.id] || p.id, t('merch.verdient', { datum: datumLang(p.verdient) }))).join('')}
+      ${g.offen.slice(0, 3).map(p => plektrumHtml(p, namen[p.id] || p.id, t('merch.gurt.offen', { n: p.fehlt }), { offen: true })).join('')}</div>
+    <p class="fine">${escHtml(t('merch.gurt.fine'))}</p>`;
+}
+
+/** Die Plektren eines Drops als Kacheln: verdient mit Datum, sonst dunkel mit der Schwelle. */
+function dropKacheln(stand) {
+  const sp = sprache();
+  return stand.plektren.map(p => {
+    const name = DR.lokal(p.name, sp);
+    const stufe = t(`plek.stufe.${p.stufe}`);
+    const zeile = p.verdient ? `${stufe} · ${t('merch.verdient', { datum: datumLang(p.verdient) })}` : `${stufe} · ${t('merch.drop.tage', { n: DR.FREISCHALTUNG[p.stufe] })}`;
+    const extra = p.verdient
+      ? `<span class="fakt">${escHtml(DR.lokal(p.text, sp))}${p.fakt ? ` ${escHtml(DR.lokal(p.fakt, sp))} <a href="${escHtml(sicherLink(p.quelle))}" target="_blank" rel="noopener noreferrer">${escHtml(t('merch.drop.quelle'))}</a>` : ''}</span>` : '';
+    return plektrumHtml(p, name, zeile, { offen: !p.verdient, extra });
+  }).join('');
+}
+
+function renderDropMerch(logs) {
+  const box = $('merch-drop');
+  if (!box) return;
+  const drop = DR.aktuellerDrop(new Date());
+  if (!drop) { box.innerHTML = ''; return; }
+  const sp = sprache();
+  const stand = DR.dropStand(drop, logs);
+  box.innerHTML = `
+    <div class="card drop">
+      <span class="kicker">${escHtml(DR.lokal(drop.thema, sp))}</span>
+      <h3>${escHtml(DR.lokal(drop.titel, sp))}</h3>
+      <p class="lead">${escHtml(DR.lokal(drop.text, sp))}</p>
+      <p class="rack-zahl">${escHtml(t('merch.drop.stand', { tage: stand.tage, n: stand.n, gesamt: stand.gesamt }))}</p>
+      <div class="gurt">${dropKacheln(stand)}</div>
+      ${drop.zugabe && !stand.zugabeDa ? `<p class="fine">${escHtml(t('merch.drop.zugabeOffen'))}</p>` : ''}
+      <p class="fine">${escHtml(t('merch.drop.fine', DR.FREISCHALTUNG))}</p>
+    </div>`;
+}
+
+/** Die Karte des neuen Drops auf Heute: bis "Gesehen" oder "Zum Gurt" gedrueckt wurde, gemerkt pro Geraet. */
+function renderDropKarte() {
+  const box = $('drop-karte');
+  if (!box) return;
+  const drop = DR.aktuellerDrop(new Date());
+  if (!drop || DR.gesehen() === drop.id) { box.innerHTML = ''; return; }
+  const sp = sprache();
+  box.innerHTML = `<div class="card drop-neu">
+    <span class="kicker">${escHtml(t('drop.neu'))}</span>
+    <h3>${escHtml(DR.lokal(drop.titel, sp))}</h3>
+    <p class="lead">${escHtml(DR.lokal(drop.text, sp))}</p>
+    <div class="actions">
+      <button class="btn small" data-drop="gurt">${escHtml(t('drop.zumGurt'))}</button>
+      <button class="btn ghost small" data-drop="gesehen">${escHtml(t('drop.gesehen'))}</button>
+    </div>
+  </div>`;
+  box.querySelectorAll('[data-drop]').forEach(b => {
+    b.onclick = () => {
+      DR.setzeGesehen(drop.id);
+      renderDropKarte();
+      if (b.dataset.drop === 'gurt') zeigeMerch('home');
+    };
+  });
+}
+
 function patchHtml(a) {
   return `<div class="patch k-${a.kategorie}${a.verdient ? '' : ' offen'}" title="${escHtml(patchBedingung(a))}">
     ${pixHtml(a)}
@@ -7388,6 +7503,10 @@ function renderMerch(logs) {
     <p class="rack-zahl">${escHtml(t('merch.rack.zahl', { n: rk.n, gesamt: rk.gesamt }))}</p>
     <div class="rack">${rk.haengt.map(g => gitarreHtml(g)).join('')}${rk.naechste ? gitarreHtml(rk.naechste, { offen: true }) : ''}</div>
     <p class="fine">${escHtml(t('merch.rack.fine'))}</p>`;
+
+  // Gurt (ein Plektrum je Uebung) und Drop des Monats
+  renderGurt(logs);
+  renderDropMerch(logs);
 
   // Tourshirts
   const touren = M.touren(logs, heute, liste, fahrten);

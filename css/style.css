@@ -1641,6 +1641,28 @@ button.tstop:hover .szene{border-color:var(--muted)}
 .rack-neu{margin-top:10px;background:none;border:0;padding:6px 0 0}
 .gitarre-neu .gitarre b{color:var(--akzent)}
 
+/* ============ Gurt und Drops: ein Plektrum je Uebung ============
+   Pixel-SVG (plektrumSvg in app.js); Metall, Patina und Staub sind stille Eigenschaften aus dem Log. */
+.gurt{display:flex;flex-wrap:wrap;gap:14px 8px;align-items:flex-start;padding:14px 10px;
+  background:repeating-linear-gradient(90deg,var(--raster) 0 1px,transparent 1px 22px),var(--sunken);
+  border:1px solid var(--line);border-radius:2px}
+.plektrum{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;width:92px;min-width:0}
+.plektrum b{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.04em;
+  font-size:0.75rem;line-height:1.15;color:var(--fg);overflow-wrap:anywhere}
+.plektrum > span{font-size:0.6875rem;color:var(--muted);line-height:1.3}
+.plektrum .fakt{text-align:left;font-size:0.625rem}
+.plektrum .fakt a{color:var(--akzent)}
+.plek{width:36px;height:42px;filter:drop-shadow(0 3px 3px rgba(0,0,0,.45))}
+.plek.metall{filter:drop-shadow(0 3px 3px rgba(0,0,0,.45)) brightness(1.18) saturate(.7)}
+.plek.p1{filter:drop-shadow(0 3px 3px rgba(0,0,0,.45)) brightness(.92)}
+.plek.p2{filter:drop-shadow(0 3px 3px rgba(0,0,0,.45)) brightness(.82)}
+.plek.staub{opacity:.5;filter:grayscale(.8) drop-shadow(0 3px 3px rgba(0,0,0,.45))}
+.plektrum.offen .plek{filter:grayscale(1) brightness(.4);opacity:.8}
+.plektrum.offen b{color:var(--muted)}
+.drop h3,.drop-neu h3{margin:2px 0 6px}
+.drop-neu{margin-bottom:10px}
+@media (prefers-reduced-motion:reduce){.plek{transition:none}}
+
 /* ============ Anlaesse: Banner unter dem Tageswort ============
    Das Motiv liegt als Bogen (assets/pixel/anlaesse.png): je Motiv zwei Bilder
    nebeneinander, --i waehlt das Motiv, steps(2) schaltet zwischen den Bildern.
