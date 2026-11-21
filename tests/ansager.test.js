@@ -24,6 +24,10 @@ print('\n--- Kurs-Endgegner ---');
 eq('Endgegner wird angesagt', A.ansage({ kursBoss: 'Der Kugel-Titan' }).ruf, I.t('ans.kursBoss'));
 ok('Name steht darunter', A.ansage({ kursBoss: 'Der Kugel-Titan' }).unter.includes('Der Kugel-Titan'));
 eq('Monats-Tour hat Vorrang vor dem Kurs-Endgegner', A.ansage({ tour: 'Krampus', kursBoss: 'Der Kugel-Titan' }).ruf, I.t('ans.tour'));
+eq('Quest wird angesagt', A.ansage({ quest: 'Die zwölf Nächte' }).ruf, I.t('ans.quest'));
+ok('Name steht darunter (Quest)', A.ansage({ quest: 'Die zwölf Nächte' }).unter.includes('Die zwölf Nächte'));
+eq('Quest vor Gitarre und Aufnaeher', A.ansage({ quest: 'X', gitarre: 'Brett', aufnaeher: ['A'] }).ruf, I.t('ans.quest'));
+eq('Kurs-Endgegner vor der Quest', A.ansage({ kursBoss: 'X', quest: 'Y' }).ruf, I.t('ans.kursBoss'));
 eq('Kurs-Endgegner vor Gitarre und Aufnaeher', A.ansage({ kursBoss: 'X', gitarre: 'Brett', aufnaeher: ['A'] }).ruf, I.t('ans.kursBoss'));
 
 print('\n--- Vorrang ---');

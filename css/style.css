@@ -1665,6 +1665,15 @@ button.tstop:hover .szene{border-color:var(--muted)}
 /* .card li ist eine Tabellenzeile (Trennlinie, zwei Spalten): hier ist es ein Satz je Zeile */
 .neu ul{margin:8px 0 12px;padding:0}
 .neu li{display:block;border-top:0;padding:4px 0}
+.quests{display:grid;gap:10px;margin:8px 0 14px}
+.quest{padding:10px;background:var(--sunken);border:1px solid var(--line);border-radius:2px}
+.quest p{margin:4px 0 8px;font-size:0.875rem;color:var(--muted)}
+.quest.fertig{border-color:var(--akzent)}
+.qkopf{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.qkopf b{font-family:var(--display);text-transform:uppercase;letter-spacing:.04em}
+.qstufe{font-size:0.625rem;text-transform:uppercase;letter-spacing:.12em;font-family:var(--mono);color:var(--stahl)}
+.qstufe.q-l{color:var(--akzent)}
+.drop h4{margin:12px 0 0;font-family:var(--display);text-transform:uppercase;letter-spacing:.04em}
 .drop-alt{margin-top:10px}
 .drop-alt > summary{cursor:pointer;font-family:var(--display);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
 

@@ -149,7 +149,23 @@ export const DROPS = [
           de: 'Das erste Black-Sabbath-Album erschien am Freitag, dem 13. Februar 1970.',
           en: 'Black Sabbath\'s debut album came out on Friday 13 February 1970.'
         },
-        quelle: SABBATH }
+        quelle: SABBATH },
+      { id: 'q-p-zwoelf', quest: 'q-zwoelf', stufe: 'q', farbe: '#c8322b', form: 'tri', material: 'metall',
+        name: { de: 'Zwölfte Nacht', en: 'Twelfth night' },
+        text: { de: 'Zwölf Tage im Dezember, und keiner war leicht.', en: 'Twelve days in December, and none of them easy.' } },
+      { id: 'q-p-winter', quest: 'q-winter', stufe: 'q', farbe: '#8fd3ef', form: 'jazz', material: 'metall',
+        name: { de: 'Eisblume', en: 'Frost flower' },
+        text: { de: 'Wächst am Fenster, wenn man dranbleibt.', en: 'Grows on the window when you keep at it.' } }
+    ],
+    quests: [
+      { id: 'q-zwoelf', stufe: 'e',
+        name: { de: 'Die zwölf Nächte', en: 'The twelve nights' },
+        text: { de: 'Zwölf Trainingstage im Dezember.', en: 'Twelve training days in December.' },
+        regel: { typ: 'tage', n: 12 } },
+      { id: 'q-winter', stufe: 'l',
+        name: { de: 'Ohne Winterpause', en: 'No winter break' },
+        text: { de: 'Vier Wochen in Folge trainiert, jede mit mindestens einer Einheit.', en: 'Four weeks in a row, each with at least one session.' },
+        regel: { typ: 'wochen', n: 4 } }
     ],
     zugabe: { id: 'z-lemmy', stufe: 'z', farbe: '#d6a92e', form: 'std', material: 'metall',
       name: { de: 'Für Lemmy', en: 'For Lemmy' },
@@ -210,7 +226,23 @@ export const DROPS = [
           de: 'Am 5. Juli 2025 spielte Black Sabbath beim Konzert „Back to the Beginning“ im Villa Park in Birmingham zum letzten Mal, Ozzy Osbourne sang sitzend.',
           en: 'On 5 July 2025 Black Sabbath played their last show at “Back to the Beginning” at Villa Park in Birmingham, with Ozzy Osbourne singing seated.'
         },
-        quelle: FAREWELL }
+        quelle: FAREWELL },
+      { id: 'q-p-zehn', quest: 'q-zehn', stufe: 'q', farbe: '#e8c23a', form: 'std', material: 'metall',
+        name: { de: 'Zehnerkarte', en: 'Ten-punch card' },
+        text: { de: 'Zehn Tage im ersten Monat des Jahres.', en: 'Ten days in the first month of the year.' } },
+      { id: 'q-p-last', quest: 'q-last', stufe: 'q', farbe: '#7a3b8c', form: 'tri', material: 'metall',
+        name: { de: 'Schwergewicht', en: 'Heavyweight' },
+        text: { de: 'Vierzig Tonnen bewegt, Scheibe für Scheibe.', en: 'Forty tonnes moved, plate by plate.' } }
+    ],
+    quests: [
+      { id: 'q-zehn', stufe: 'e',
+        name: { de: 'Zehn im Januar', en: 'Ten in January' },
+        text: { de: 'Zehn Trainingstage im Januar.', en: 'Ten training days in January.' },
+        regel: { typ: 'tage', n: 10 } },
+      { id: 'q-last', stufe: 'l',
+        name: { de: 'Vierzig Tonnen', en: 'Forty tonnes' },
+        text: { de: 'Vierzig Tonnen bewegtes Gewicht im Januar.', en: 'Forty tonnes of moved weight in January.' },
+        regel: { typ: 'tonnen', n: 40 } }
     ],
     zugabe: { id: 'z-birmingham', stufe: 'z', farbe: '#d6a92e', form: 'std', material: 'metall',
       name: { de: 'Birmingham 1968', en: 'Birmingham 1968' },
