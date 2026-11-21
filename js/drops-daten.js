@@ -16,6 +16,11 @@ const SABBATH = 'https://en.wikipedia.org/wiki/Black_Sabbath_(album)';
 const ACE = 'https://en.wikipedia.org/wiki/Ace_of_Spades_(song)';
 const BAUM = 'https://www.christianitytoday.com/history/issues/issue-92/o-tannenbaum-o-tannenbaum.html';
 const LEMMY = 'https://en.wikipedia.org/wiki/Lemmy';
+// Januar (Quellen am 21.11.2026 gegengelesen):
+const IOMMI = 'https://en.wikipedia.org/wiki/Tony_Iommi';
+const GIRYA = 'https://us.humankinetics.com/blogs/excerpt/history-of-kettlebell-and-kettlebell-sport';
+const FAREWELL = 'https://news.pollstar.com/2025/07/07/ozzy-osbourne-bids-farewell-plays-final-show-with-black-sabbath-special-guests/';
+const SABBATH_BAND = 'https://www.britannica.com/topic/Black-Sabbath';
 
 export const DROPS = [
   {
@@ -154,5 +159,66 @@ export const DROPS = [
         en: 'Lemmy Kilmister of Motörhead died on 28 December 2015.'
       },
       quelle: LEMMY }
+  },
+  {
+    id: '2027-01',
+    datum: '2027-01-01',
+    thema: { de: 'Neustart', en: 'Fresh start' },
+    titel: { de: 'Neues Jahr, neue Last', en: 'New Year, New Load' },
+    text: {
+      de: 'Der Januar gehört den Anfängen: vier kleine Dinge fürs Training und drei Geschichten von Leuten, die trotzdem weitergemacht haben.',
+      en: 'January belongs to beginnings: four small things for training and three stories of people who carried on anyway.'
+    },
+    sprueche: [
+      { de: 'Vorsätze sind billig. Der zweite Trainingstag im Januar ist der teure.', en: 'Resolutions are cheap. The second training day in January is the expensive one.' },
+      { de: 'Kein neuer Plan nötig. Der alte, nur öfter.', en: 'No new plan needed. The old one, just more often.' },
+      { de: 'Ich hab den Kalender aufgehängt. Du musst nur noch kommen.', en: 'I hung the calendar. You only have to show up.' }
+    ],
+    plektren: [
+      { id: 'g-vorsatz', stufe: 'g', farbe: '#e8c23a', form: 'std',
+        name: { de: 'Vorsatz', en: 'Resolution' },
+        text: { de: 'Klein genug, um ihn wirklich zu halten.', en: 'Small enough to actually keep.' } },
+      { id: 'g-wandkalender', stufe: 'g', farbe: '#c8322b', form: 'jazz',
+        name: { de: 'Wandkalender', en: 'Wall calendar' },
+        text: { de: 'Jeder Trainingstag ein Kreuz.', en: 'Every training day a cross.' } },
+      { id: 'g-stoppuhr', stufe: 'g', farbe: '#6c7377', form: 'tri',
+        name: { de: 'Stoppuhr', en: 'Stopwatch' },
+        text: { de: 'Pausen sind Teil des Plans. Auch die kurzen.', en: 'Rests are part of the plan. The short ones too.' } },
+      { id: 'g-trinkflasche', stufe: 'g', farbe: '#2f6fa3', form: 'std',
+        name: { de: 'Trinkflasche', en: 'Water bottle' },
+        text: { de: 'Voll vor dem ersten Satz, leer nach dem letzten.', en: 'Full before the first set, empty after the last.' } },
+      { id: 's-fingerkappen', stufe: 's', farbe: '#d9d2c0', form: 'tri', material: 'metall',
+        name: { de: 'Fingerkappen', en: 'Fingertips' },
+        text: { de: 'Aus einer Waschmittelflasche geschmolzen.', en: 'Melted down from a detergent bottle.' },
+        fakt: {
+          de: 'Tony Iommi verlor als Teenager in einer Blechfabrik die Spitzen zweier Finger der rechten Hand und baute sich Kappen aus Plastik.',
+          en: 'As a teenager in a sheet-metal factory Tony Iommi lost the tips of two fingers on his right hand and made himself plastic caps.'
+        },
+        quelle: IOMMI },
+      { id: 's-girya', stufe: 's', farbe: '#1f1f22', form: 'std', material: 'metall',
+        name: { de: 'Girja', en: 'Girya' },
+        text: { de: 'Erst Marktgewicht, dann Sportgerät.', en: 'Market weight first, sports gear later.' },
+        fakt: {
+          de: 'Das Wort „girya“ für die Kettlebell soll 1704 erstmals in einem russischen Wörterbuch stehen; die Jahreszahl wird so häufig zitiert, ist aber nur schwach belegt.',
+          en: 'The word “girya” for the kettlebell is said to first appear in a Russian dictionary in 1704; the date is widely cited but thinly documented.'
+        },
+        quelle: GIRYA },
+      { id: 'e-villapark', stufe: 'e', farbe: '#7a3b8c', form: 'std', material: 'metall',
+        name: { de: 'Villa Park', en: 'Villa Park' },
+        text: { de: 'Ein letzter Abend, in dem alles zusammenkam.', en: 'One last evening where it all came together.' },
+        fakt: {
+          de: 'Am 5. Juli 2025 spielte Black Sabbath beim Konzert „Back to the Beginning“ im Villa Park in Birmingham zum letzten Mal, Ozzy Osbourne sang sitzend.',
+          en: 'On 5 July 2025 Black Sabbath played their last show at “Back to the Beginning” at Villa Park in Birmingham, with Ozzy Osbourne singing seated.'
+        },
+        quelle: FAREWELL }
+    ],
+    zugabe: { id: 'z-birmingham', stufe: 'z', farbe: '#d6a92e', form: 'std', material: 'metall',
+      name: { de: 'Birmingham 1968', en: 'Birmingham 1968' },
+      text: { de: 'Jeder Anfang ist erst mal ein Proberaum.', en: 'Every beginning is first a rehearsal room.' },
+      fakt: {
+        de: 'Black Sabbath entstand 1968 in Birmingham, zunächst unter anderen Namen, bis sich die Band 1969 so nannte.',
+        en: 'Black Sabbath formed in Birmingham in 1968 under other names before settling on the name in 1969.'
+      },
+      quelle: SABBATH_BAND }
   }
 ];
