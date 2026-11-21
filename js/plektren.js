@@ -1,4 +1,4 @@
-// Der Gurt: ein Plektrum je Uebung, das du dir nicht kaufst, sondern spielst.
+// Der Gurt: ein Plektrum je Uebung (Kraft-Lifts und Mosh Pit), das du dir nicht kaufst, sondern spielst.
 //
 // Nichts hier wird gespeichert. Ein Lift gilt als geuebt, wenn er an
 // SAUBER_TAGE verschiedenen Tagen alle Saetze geschafft hat; das Plektrum traegt
@@ -35,18 +35,25 @@ export function aussehen(id) {
 
 /**
  * Je Uebung: Spieltage und saubere Tage. Es zaehlen Kraft-Einheiten
- * (`type` fehlt oder 'strength'); sauber ist ein Lift mit success === true.
+ * (`type` fehlt oder 'strength'; sauber ist ein Lift mit success === true) und
+ * Mosh Pit (Kennung `mp-<lift>`; gespielt, wenn ein Satz erledigt wurde, sauber
+ * bei geschafft === true). Kurs und Curls haben keine einzelnen Uebungen im Log.
  */
 export function uebungen(logs = []) {
   const m = new Map();
+  const merke = (id, date, sauber) => {
+    const u = m.get(id) || { id, gespielt: new Set(), sauber: new Set() };
+    u.gespielt.add(date);
+    if (sauber) u.sauber.add(date);
+    m.set(id, u);
+  };
   for (const l of logs) {
-    if (!l || !l.date || (l.type || 'strength') !== 'strength' || !Array.isArray(l.lifts)) continue;
-    for (const e of l.lifts) {
-      if (!e || !e.lift) continue;
-      const u = m.get(e.lift) || { id: e.lift, gespielt: new Set(), sauber: new Set() };
-      u.gespielt.add(l.date);
-      if (e.success === true) u.sauber.add(l.date);
-      m.set(e.lift, u);
+    if (!l || !l.date) continue;
+    const typ = l.type || 'strength';
+    if (typ === 'strength' && Array.isArray(l.lifts)) {
+      for (const e of l.lifts) if (e && e.lift) merke(e.lift, l.date, e.success === true);
+    } else if (typ === 'moshpit' && Array.isArray(l.uebungen)) {
+      for (const e of l.uebungen) if (e && e.lift && Number(e.erledigt) > 0) merke(`mp-${e.lift}`, l.date, e.geschafft === true);
     }
   }
   return m;

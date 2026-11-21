@@ -35,6 +35,18 @@ eq('eins haengt', g.n, 1);
 eq('eins ist offen', g.offen.length, 1);
 eq('das offene ist die Bankdruecken', g.offen[0].id, 'bench');
 
+print('\n--- Mosh Pit ---');
+const mosh = (date, lift, erledigt = 3, geschafft = true) => ({ date, type: 'moshpit', uebungen: [{ lift, kg: 16, reps: 15, erledigt, geschafft }] });
+const mp = (n, lift, g) => Array.from({ length: n }, (_, i) => mosh(tag(i), lift, 3, g));
+eq('eine Uebung im Mosh Pit gibt eine Kennung mp-<lift>', P.plektren(mp(1, 'swing2'), tag(1))[0].id, 'mp-swing2');
+eq('drei saubere Tage: das Plektrum haengt', hol(P.plektren(mp(3, 'goblet'), tag(3)), 'mp-goblet').verdient, tag(2));
+eq('nicht geschafft zaehlt nicht als sauber', hol(P.plektren(mp(5, 'goblet', false), tag(5)), 'mp-goblet').sauber, 0);
+eq('aber als gespielt', hol(P.plektren(mp(5, 'goblet', false), tag(5)), 'mp-goblet').gespielt, 5);
+eq('ohne erledigten Satz gar nicht gespielt', P.plektren([mosh(tag(0), 'press', 0, false)]).length, 0);
+eq('press im Mosh Pit ist nicht der Kraft-Lift press', P.plektren([...mp(3, 'press'), einheit(tag(0), 'press')], tag(3)).length, 2);
+eq('Kurs und Curls bringen nichts', P.plektren([{ date: tag(0), type: 'kurs' }, { date: tag(1), type: 'curls' }]).length, 0);
+eq('Mosh Pit wirkt im Gurt', P.gurt(mp(3, 'swing2'), tag(3)).n, 1);
+
 print('\n--- Leise Eigenschaften ---');
 eq('Metall erst ab zehn', hol(P.plektren(tage(9), tag(9)), 'squat').metall, false);
 eq('zehn sauber: Metall', hol(P.plektren(tage(10), tag(10)), 'squat').metall, true);

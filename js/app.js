@@ -1421,7 +1421,11 @@ function comboZettel(x, y, text) {
 let roadieBlaseTimer = null, roadieJubelTimer = null, roadieTippZaehler = 0;
 
 /** Lift-Kennung -> Name, fuer die Saetze des Roadies und die Plektren. */
-const liftNamen = () => Object.fromEntries(Object.entries((config && config.lifts) || {}).map(([id, l]) => [id, l.name || id]));
+const liftNamen = () => ({
+  ...Object.fromEntries(Object.entries((config && config.lifts) || {}).map(([id, l]) => [id, l.name || id])),
+  // Mosh Pit: Kennung mp-<lift> (plektren.js), Name wie in der Einheit
+  ...Object.fromEntries(MP.LIFTS.filter(l => KU.UEBUNGEN[l.id]).map(l => [`mp-${l.id}`, KU.UEBUNGEN[l.id].name]))
+});
 const roadieOpt = () => ({ drops: DR.dropsBis(new Date()), namen: liftNamen() });
 /** Ein Satz des Roadies als Text: i18n-Schluessel oder ein Satz aus einem Drop mit eigener Uebersetzung. */
 const roadieText = s => (s.roh ? DR.lokal(s.roh, sprache()) : t(s.schluessel, s.werte));
