@@ -1661,6 +1661,26 @@ button.tstop:hover .szene{border-color:var(--muted)}
 .plektrum.offen b{color:var(--muted)}
 .drop h3,.drop-neu h3{margin:2px 0 6px}
 .drop-neu{margin-bottom:10px}
+
+/* ============ Adventskalender: 24 Tuerchen (js/advent.js), Bilder aus assets/pixel/advent.png ============ */
+.advent{margin-bottom:10px}
+.adv-raster{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:10px 0}
+.adv-tuer{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;aspect-ratio:1;
+  padding:2px;min-width:0;background:var(--sunken);border:1px solid var(--line);border-radius:2px;color:var(--fg);cursor:pointer}
+.adv-tuer[data-state="zu"]{opacity:.45;cursor:default}
+.adv-tuer[data-state="ready"]{border-color:var(--akzent)}
+.adv-tuer.heute{box-shadow:0 0 0 2px var(--akzent)}
+.adv-tuer.gross .adv-n{color:var(--akzent)}
+.adv-tuer[aria-pressed="true"]{border-color:var(--akzent);background:var(--raster)}
+.adv-n{font-family:var(--display);font-size:0.875rem;line-height:1}
+.adv-hint{font-size:0.5625rem;text-transform:uppercase;color:var(--akzent)}
+.adv-pix{display:block;width:70%;aspect-ratio:1;background:url('../assets/pixel/advent.png') no-repeat;
+  background-size:2400% 100%;background-position:calc(var(--i) * 100% / 23) 0;image-rendering:pixelated}
+.adv-pix.gross{width:60px;flex:none}
+.adv-stempel{position:absolute;top:1px;right:3px;font-size:0.75rem;color:var(--akzent)}
+.adv-buehne{display:flex;gap:12px;align-items:center;padding:10px;margin:8px 0;background:var(--sunken);border:1px solid var(--line);border-radius:2px}
+.adv-buehne p{margin:4px 0}
+@media (prefers-reduced-motion:reduce){.adv-tuer{transition:none}}
 @media (prefers-reduced-motion:reduce){.plek{transition:none}}
 
 /* ============ Anlaesse: Banner unter dem Tageswort ============

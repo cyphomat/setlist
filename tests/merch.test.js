@@ -744,7 +744,7 @@ print('\n--- Pixelbilder ---');
 {
   const voll = M.katalog({ ...config, lifts: { ...config.lifts, squat: { ...config.lifts.squat, reference: 100 } } },
     { mitGewicht: true, mitRad: true, mitHoehe: true, mitPlan: true, mitZusammen: true, mitKurs: true, mitPit: true, mitCurls: true, mitKursZusammen: true, mitPitZusammen: true,
-      anlaesse: Object.keys(M.ANLASS_AUFNAEHER) });
+      anlaesse: Object.keys(M.ANLASS_AUFNAEHER), advent: true });
   const ohne = voll.filter(a => M.bildIndex(a) < 0).map(a => a.id);
   eq('jeder Aufnaeher hat ein Bild', ohne.join(), '');
   const indizes = voll.map(a => M.bildIndex(a));

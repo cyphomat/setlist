@@ -34,6 +34,7 @@ import * as GT from './gitarren.js';
 import * as PL from './plektren.js';
 import * as DR from './drops.js';
 import * as RD from './roadie.js';
+import * as AD from './advent.js';
 import * as SI from './sicherung.js';
 
 // Eingebettet in eine fremde Seite (siehe boot.js) startet die App gar nicht
@@ -362,6 +363,7 @@ function renderHome() {
   plakatGlut();
   renderAnlass();
   renderDropKarte();
+  renderAdventKarte();
   renderCheckin();
   $('start').onclick = startMitPausenCheck;
   renderInstrumente();
@@ -1452,7 +1454,9 @@ function abschlussSpruch() {
   const neu = PL.plektren(logs, heute).filter(p => p.verdient === heute)
     .map(p => liftNamen()[p.id] || p.id)
     .concat(DR.dropsBis(new Date()).flatMap(dp => DR.dropStand(dp, logs).plektren.filter(p => p.verdient === heute).map(p => DR.lokal(p.name, sprache()))));
+  const tuer = AD.stand(logs, new Date()).tueren.find(x => x.erledigt === heute);
   const text = neu.length ? t('rd.neu', { name: neu[0] })
+    : tuer ? t('rd.advent', { n: tuer.n })
     : (letzterLog && (letzterLog.type || 'strength') === 'strength' && Math.random() < 0.5)
       ? roadieText(RD.abschlussSpruch(letzterLog, heute, roadieOpt())) : t(LF.spruchSchluessel('fertig'));
   d.innerHTML = `<span class="roadie jubel" aria-hidden="true"></span><p class="lager-blase">${escHtml(text)}</p>`;
@@ -6531,7 +6535,7 @@ function dropKacheln(stand) {
   return stand.plektren.map(p => {
     const name = DR.lokal(p.name, sp);
     const stufe = t(`plek.stufe.${p.stufe}`);
-    const zeile = p.verdient ? `${stufe} · ${t('merch.verdient', { datum: datumLang(p.verdient) })}` : `${stufe} · ${t('merch.drop.tage', { n: DR.FREISCHALTUNG[p.stufe] })}`;
+    const zeile = p.verdient ? `${stufe} · ${t('merch.verdient', { datum: datumLang(p.verdient) })}` : `${stufe} · ${p.tuer ? t('merch.drop.tuer', { n: p.tuer }) : t('merch.drop.tage', { n: DR.FREISCHALTUNG[p.stufe] })}`;
     const extra = p.verdient
       ? `<span class="fakt">${escHtml(DR.lokal(p.text, sp))}${p.fakt ? ` ${escHtml(DR.lokal(p.fakt, sp))} <a href="${escHtml(sicherLink(p.quelle))}" target="_blank" rel="noopener noreferrer">${escHtml(t('merch.drop.quelle'))}</a>` : ''}</span>` : '';
     return plektrumHtml(p, name, zeile, { offen: !p.verdient, extra });
@@ -6555,6 +6559,53 @@ function renderDropMerch(logs) {
       ${drop.zugabe && !stand.zugabeDa ? `<p class="fine">${escHtml(t('merch.drop.zugabeOffen'))}</p>` : ''}
       <p class="fine">${escHtml(t('merch.drop.fine', DR.FREISCHALTUNG))}</p>
     </div>`;
+}
+
+/* ---------- Adventskalender (advent.js): vom 1.12. bis Silvester auf Heute ----------
+   Erledigt wird von selbst, sobald der Log die Mission zeigt; hier wird nur gezeichnet.
+   Aufgemacht merkt sich das Geraet (AD.auf), sonst nichts. */
+let adventSel = null;
+function renderAdventKarte() {
+  const box = $('advent-karte');
+  if (!box) return;
+  const st = AD.stand(geladeneLogs(), new Date());
+  if (!st.tag) { box.innerHTML = ''; return; }
+  const aufgemacht = new Set(AD.auf(st.jahr));
+  const tuer = n => st.tueren[n - 1];
+  const tuerHtml = n => {
+    const d = tuer(n);
+    const offen = !!d.erledigt || aufgemacht.has(n);
+    const zustand = d.erledigt ? 'done' : offen ? 'open' : d.bereit ? 'ready' : 'zu';
+    const label = `${t('adv.tuer', { n })}, ${d.erledigt ? t('adv.erledigtAm', { datum: datumLang(d.erledigt) }) : d.bereit ? t('adv.bereit') : t('adv.zu')}`;
+    return `<button type="button" class="adv-tuer${d.heute ? ' heute' : ''}${n === AD.TUEREN ? ' gross' : ''}" data-n="${n}" data-state="${zustand}"${d.bereit ? '' : ' disabled'}${adventSel === n ? ' aria-pressed="true"' : ''} aria-label="${escHtml(label)}">
+      <span class="adv-n">${n}</span>${offen ? `<span class="adv-pix" style="--i:${n - 1}" aria-hidden="true"></span>` : d.bereit ? `<span class="adv-hint">${escHtml(d.heute ? t('adv.heute') : '')}</span>` : ''}${d.erledigt ? '<span class="adv-stempel" aria-hidden="true">✓</span>' : ''}
+    </button>`;
+  };
+  const sel = adventSel && tuer(adventSel) && tuer(adventSel).bereit ? tuer(adventSel) : null;
+  const buehne = sel ? `<div class="adv-buehne">
+      <span class="adv-pix gross" style="--i:${sel.n - 1}" aria-hidden="true"></span>
+      <div><b>${escHtml(t('adv.tuer', { n: sel.n }))}</b>
+        <p>${escHtml(t(`adv.m.${sel.n}`))}</p>
+        <p class="fine">${escHtml(sel.erledigt ? t('adv.erledigtAm', { datum: datumLang(sel.erledigt) }) : t('adv.offen'))}${sel.fund ? ` · ${escHtml(t('adv.fund'))}` : ''}</p>
+        <button type="button" class="btn ghost small" data-adv-zu>${escHtml(t('adv.schliessen'))}</button></div>
+    </div>` : '';
+  box.innerHTML = `<div class="card advent">
+    <span class="kicker">${escHtml(t('adv.titel'))}</span>
+    <p class="rack-zahl">${escHtml(t('adv.stand', { n: st.erledigt }))}</p>
+    ${buehne}
+    <div class="adv-raster">${AD.reihenfolge(st.jahr).map(tuerHtml).join('')}</div>
+    <p class="fine">${escHtml(t('adv.fine'))}</p>
+  </div>`;
+  box.querySelectorAll('.adv-tuer').forEach(b => {
+    b.onclick = () => {
+      const n = +b.dataset.n;
+      AD.setzeAuf(st.jahr, n);
+      adventSel = adventSel === n ? null : n;
+      renderAdventKarte();
+    };
+  });
+  const zu = box.querySelector('[data-adv-zu]');
+  if (zu) zu.onclick = () => { adventSel = null; renderAdventKarte(); };
 }
 
 /** Die Karte des neuen Drops auf Heute: bis "Gesehen" oder "Zum Gurt" gedrueckt wurde, gemerkt pro Geraet. */

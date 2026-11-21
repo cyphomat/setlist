@@ -23,6 +23,7 @@ import { kursLogs, TESTS, tests as kursTests } from './kurs.js';
 import { moshLogs } from './moshpit.js';
 import { curlsLogs } from './curls.js';
 import * as AN from './anlaesse.js';
+import { ersterKomplett } from './advent.js';
 
 /** Was als Gig zaehlt: alles, wofuer man ins Studio gegangen ist — und jede Fahrt. */
 export const GIG_TYPEN = ['strength', 'wod', 'unplugged', 'kurs', 'moshpit', 'maxout'];
@@ -151,7 +152,7 @@ const CHECKS = Object.entries(TESTS).map(([woche, id]) => ({ woche: Number(woche
  * `gruppe` ist die Leiter: an der Wand steht je Gruppe nur der naechste
  * fehlende, damit keine Weste voller leerer Kreise entsteht.
  */
-export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHoehe = false, mitPlan = false, mitZusammen = false, mitKurs = false, mitPit = false, mitCurls = false, mitKursZusammen = false, mitPitZusammen = false, anlaesse = [] } = {}) {
+export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHoehe = false, mitPlan = false, mitZusammen = false, mitKurs = false, mitPit = false, mitCurls = false, mitKursZusammen = false, mitPitZusammen = false, anlaesse = [], advent = false } = {}) {
   const lifts = config.lifts || {};
   const bar = config.bar || 20;
   const out = [];
@@ -231,6 +232,8 @@ export function katalog(config = {}, { mitGewicht = false, mitRad = false, mitHo
   // Wer nie Curls gespielt hat, bekommt keine leeren Kreise dafuer.
   if (mitCurls) for (const n of HAIR_STUFEN) p(`hair-${n}`, 'buehne', 'hair', `merch.p.hair-${n}`, { n });
   for (const id of Object.keys(ANLASS_AUFNAEHER)) if (anlaesse.includes(id)) p(id, 'buehne', id, `merch.p.${id}`);
+  // Advent: wie die Anlass-Aufnaeher erst da, wenn alle 24 Tuerchen erledigt sind (js/advent.js).
+  if (advent) p('advent', 'buehne', 'advent', 'merch.p.advent');
   return out;
 }
 
@@ -307,8 +310,10 @@ export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Dat
   const kl = kursLogs(logs), ml = moshLogs(logs), cl = curlsLogs(logs);
   // Gig-Tage vorab: ob ein Anlass-Aufnaeher im Katalog steht, haengt daran.
   const anlassTage = anlassAufnaeher([...logs.filter(istGig).map(l => l.date), ...rad.map(f => f.date)]);
+  const adventTag = ersterKomplett(logs);
   const kat = katalog(config, {
     anlaesse: Object.keys(anlassTage),
+    advent: !!adventTag,
     mitGewicht: reihe.length > 0,
     mitRad: rad.length > 0,
     mitHoehe: rad.some(f => f.hm != null),
@@ -323,6 +328,7 @@ export function aufnaeher(logs = [], config = {}, wellness = [], heute = new Dat
   const gibt = new Set(kat.map(k => k.id));
   const verdient = {};
   const setze = (id, datum) => { if (gibt.has(id) && !verdient[id]) verdient[id] = datum; };
+  if (adventTag) setze('advent', adventTag);
 
   const lifts = config.lifts || {};
   const bar = config.bar || 20;
@@ -627,7 +633,7 @@ export const BILDER = [
   'pit-start', 'pit-sprung', ...PIT_SERIE_STUFEN.map(n => `pit-serie-${n}`),
   ...HAIR_STUFEN.map(n => `hair-${n}`),
   ...KUGEL_RAENGE.map((r, k) => `kugelrang-${k + 1}`), 'kursboss', 'kurs-duett', 'check-duett', 'pit-duett',
-  ...Object.keys(ANLASS_AUFNAEHER),
+  ...Object.keys(ANLASS_AUFNAEHER), 'advent',
   ...PLATTEN_STUFEN.map(n => `platten-figur-${n}`), 'koerper-figur'
 ];
 

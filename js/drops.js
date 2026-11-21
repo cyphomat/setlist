@@ -8,10 +8,14 @@
 // zaehlen. Nichts wird gespeichert, ausser dass die Karte gesehen wurde — und
 // das nur auf dem Geraet.
 //
+// Ein Plektrum kann statt an Uebungstagen an einem Tuerchen des Adventskalenders
+// haengen (Feld `tuer`, nur im Dezember-Drop; js/advent.js).
+//
 // Reine Funktionen, kein I/O (bis auf gesehen/setzeGesehen unten).
 
 import { istTraining } from './program.js';
 import { DROPS } from './drops-daten.js';
+import { erledigt as adventErledigt, TUEREN } from './advent.js';
 
 export const FREISCHALTUNG = { g: 3, s: 8, e: 14 };
 /** Die Zugabe erscheint erst, wenn alle anderen Plektren des Drops verdient sind. */
@@ -39,12 +43,15 @@ export function pruefeDrop(d) {
     if (!STUFEN.includes(p.stufe)) f.push(`${p.id}: Stufe ${p.stufe}`);
     text(p.name, `${p.id}.name`); text(p.text, `${p.id}.text`);
     if (!/^#[0-9a-fA-F]{6}$/.test(p.farbe || '')) f.push(`${p.id}: Farbe`);
+    if (p.tuer !== undefined && !(Number.isInteger(p.tuer) && p.tuer >= 1 && p.tuer <= TUEREN && d.id.endsWith('-12'))) f.push(`${p.id}: tuer nur 1-${TUEREN} im Dezember-Drop`);
     if (p.stufe === 's' || p.stufe === 'e' || p.stufe === 'z') {
       text(p.fakt, `${p.id}.fakt`);
       if (!/^https:\/\/\S+$/.test(p.quelle || '')) f.push(`${p.id}: https-Quelle fehlt`);
     }
   }
   if (d.zugabe && d.zugabe.stufe !== 'z') f.push('zugabe hat Stufe z');
+  const tuerIds = alle.filter(p => p.tuer !== undefined).map(p => p.tuer);
+  if (new Set(tuerIds).size !== tuerIds.length) f.push('tuer doppelt vergeben');
   return f;
 }
 
@@ -60,7 +67,8 @@ export function tageImMonat(logs = [], monat) {
  */
 export function dropStand(drop, logs = []) {
   const tage = tageImMonat(logs, drop.id);
-  const mit = p => ({ ...p, verdient: tage.length >= FREISCHALTUNG[p.stufe] ? tage[FREISCHALTUNG[p.stufe] - 1] : null });
+  const tueren = (drop.plektren || []).some(p => p.tuer) ? adventErledigt(logs, +drop.id.slice(0, 4)) : {};
+  const mit = p => ({ ...p, verdient: p.tuer ? (tueren[p.tuer] || null) : tage.length >= FREISCHALTUNG[p.stufe] ? tage[FREISCHALTUNG[p.stufe] - 1] : null });
   const normal = (drop.plektren || []).map(mit);
   let zugabe = null;
   if (drop.zugabe && normal.length && normal.every(p => p.verdient)) {
