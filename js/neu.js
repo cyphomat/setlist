@@ -20,6 +20,9 @@ export const MAX_ZEILEN = 3;      // so viele Auslieferungen zeigt die Karte hoe
 export const MAX_LAENGE = 120;    // Zeichen je Zeile
 
 export const NEU = [
+  { v: '2026-11-21.8',
+    de: ['Quests: jeden Monat zwei, eine epische und eine legendäre, mit eigenem Plektrum als Lohn. Zu sehen im Merch-Stand.'],
+    en: ['Quests: two each month, one epic and one legendary, each with its own pick as a reward. See them in the merch stand.'] },
   { v: '2026-11-21.5',
     de: ['Diese Karte: nach einem Update steht hier, was neu ist.'],
     en: ['This card: after an update it tells you what is new.'] },

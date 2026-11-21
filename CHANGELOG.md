@@ -10,6 +10,17 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-21.8
+
+### Neu
+- **Quests.** Jeder Drop trägt zwei Quests: eine epische und eine legendäre, mit einer Regel, die der Log von selbst prüft (Trainingstage im Monat,
+  Wochen in Folge, bewegte Tonnen, ein sauberer Lift ab einem Zielgewicht). Der Lohn ist ein eigenes Quest-Plektrum, das es sonst nirgends gibt.
+  Gezählt werden nur Tage im Monat des Drops; ein verpasster Monat lässt sich nicht nachholen. Zu sehen sind sie im Merch-Stand mit Fortschritt,
+  und der Ansager sagt eine erfüllte Quest an (pro Gerät nur einmal). Dezember: „Die zwölf Nächte“ (12 Trainingstage) und „Ohne Winterpause“ (4 Wochen
+  in Folge); Januar: „Zehn im Januar“ und „Vierzig Tonnen“. Die Zugabe eines Drops hängt nicht an den Quests.
+
+---
+
 ## 2026-11-21.7
 
 ### Behoben

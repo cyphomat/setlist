@@ -6542,11 +6542,23 @@ function dropKacheln(stand) {
   return stand.plektren.map(p => {
     const name = DR.lokal(p.name, sp);
     const stufe = t(`plek.stufe.${p.stufe}`);
-    const zeile = p.verdient ? `${stufe} · ${t('merch.verdient', { datum: datumLang(p.verdient) })}` : `${stufe} · ${p.tuer ? t('merch.drop.tuer', { n: p.tuer }) : t('merch.drop.tage', { n: DR.FREISCHALTUNG[p.stufe] })}`;
+    const zeile = p.verdient ? `${stufe} · ${t('merch.verdient', { datum: datumLang(p.verdient) })}` : `${stufe} · ${p.quest ? t('merch.drop.quest') : p.tuer ? t('merch.drop.tuer', { n: p.tuer }) : t('merch.drop.tage', { n: DR.FREISCHALTUNG[p.stufe] })}`;
     const extra = p.verdient
       ? `<span class="fakt">${escHtml(DR.lokal(p.text, sp))}${p.fakt ? ` ${escHtml(DR.lokal(p.fakt, sp))} <a href="${escHtml(sicherLink(p.quelle))}" target="_blank" rel="noopener noreferrer">${escHtml(t('merch.drop.quelle'))}</a>` : ''}</span>` : '';
     return plektrumHtml(p, name, zeile, { offen: !p.verdient, extra });
   }).join('');
+}
+
+/** Eine Quest des Monats: Name, Stufe, Fortschritt (aus dem Log, quests.js). */
+function questHtml(q, sp) {
+  const pct = Math.round(100 * q.ist / q.ziel);
+  const stand = q.erledigt ? t('merch.verdient', { datum: datumLang(q.erledigt) }) : t('q.stand', { ist: q.ist, ziel: q.ziel, einheit: t(`q.u.${q.regel.typ}`) });
+  return `<div class="quest${q.erledigt ? ' fertig' : ''}">
+    <div class="qkopf"><b>${escHtml(DR.lokal(q.name, sp))}</b><span class="qstufe q-${q.stufe}">${escHtml(t(`q.stufe.${q.stufe}`))}</span></div>
+    <p>${escHtml(DR.lokal(q.text, sp))}</p>
+    <div class="bar"><i style="width:${pct}%"></i></div>
+    <span class="fine">${escHtml(stand)}</span>
+  </div>`;
 }
 
 function renderDropMerch(logs) {
@@ -6561,6 +6573,7 @@ function renderDropMerch(logs) {
     const kopf = `<span class="kicker">${escHtml(DR.lokal(drop.thema, sp))}</span>
       <h3>${escHtml(DR.lokal(drop.titel, sp))}</h3>`;
     const koerper = `<p class="lead">${escHtml(DR.lokal(drop.text, sp))}</p>
+      ${stand.quests.length ? `<h4>${escHtml(t('merch.quests'))}</h4><div class="quests">${stand.quests.map(q => questHtml(q, sp)).join('')}</div>` : ''}
       <p class="rack-zahl">${escHtml(t('merch.drop.stand', { tage: stand.tage, n: stand.n, gesamt: stand.gesamt }))}</p>
       <div class="gurt">${dropKacheln(stand)}</div>
       ${drop.zugabe && !stand.zugabeDa ? `<p class="fine">${escHtml(t('merch.drop.zugabeOffen'))}</p>` : ''}
@@ -6785,7 +6798,14 @@ function ansagen(log, info) {
   const kraft = (log.type || 'strength') === 'strength' && Array.isArray(log.lifts);
   const wins = kraft ? letzteErfolge : [];
   const ref = wins.find(w => w.art === 'referenz'), rund = wins.find(w => w.art === 'rund');
+  // Quest des Monats heute erfuellt und noch nicht angesagt (pro Geraet gemerkt, damit eine zweite Einheit nichts doppelt feiert)
+  let quest = null;
+  try {
+    const q = DR.questsErledigtAm(geladeneLogs(), log.date).find(x => !DR.questAngesagt(x.id));
+    if (q) { quest = DR.lokal(q.name, sprache()); DR.setzeQuestAngesagt(q.id); }
+  } catch { /* dann eben ohne */ }
   zeigeAnsage(ANS.ansage({
+    quest,
     rang: info && info.rang ? t(`merch.r.${info.rang}`) : null,
     tour: info && info.tour,
     kursBoss: info && info.kursBoss,

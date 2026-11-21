@@ -8,6 +8,7 @@
 // zaehlen. Nichts wird gespeichert, ausser dass die Karte gesehen wurde — und
 // das nur auf dem Geraet.
 //
+// Ein Drop kann Quests tragen (js/quests.js); ihr Lohn ist ein Plektrum mit Feld `quest` und Stufe 'q'.
 // Ein Plektrum kann statt an Uebungstagen an einem Tuerchen des Adventskalenders
 // haengen (Feld `tuer`, nur im Dezember-Drop; js/advent.js).
 //
@@ -16,10 +17,11 @@
 import { istTraining } from './program.js';
 import { DROPS } from './drops-daten.js';
 import { erledigt as adventErledigt, TUEREN } from './advent.js';
+import { stand as questStand, pruefeRegel, STUFEN as QUEST_STUFEN } from './quests.js';
 
 export const FREISCHALTUNG = { g: 3, s: 8, e: 14 };
 /** Die Zugabe erscheint erst, wenn alle anderen Plektren des Drops verdient sind. */
-export const STUFEN = ['g', 's', 'e', 'z'];
+export const STUFEN = ['g', 's', 'e', 'z', 'q'];   // q: Lohn einer Quest, nur ueber sie zu haben
 export const GESEHEN = 'setlist.dropGesehen';
 
 /** Ein Text mit Uebersetzung: { de, en }. Fehlt die Sprache, gilt Deutsch. */
@@ -50,6 +52,19 @@ export function pruefeDrop(d) {
     }
   }
   if (d.zugabe && d.zugabe.stufe !== 'z') f.push('zugabe hat Stufe z');
+  const qIds = new Set();
+  for (const q of d.quests || []) {
+    if (!q.id || qIds.has(q.id)) f.push(`quest: id doppelt oder leer: ${q.id}`);
+    qIds.add(q.id);
+    if (!QUEST_STUFEN.includes(q.stufe)) f.push(`${q.id}: Quest-Stufe e oder l`);
+    text(q.name, `${q.id}.name`); text(q.text, `${q.id}.text`);
+    pruefeRegel(q.regel).forEach(x => f.push(`${q.id}: ${x}`));
+    if (alle.filter(p => p.quest === q.id).length !== 1) f.push(`${q.id}: genau ein Plektrum als Lohn noetig`);
+  }
+  for (const p of alle) {
+    if (p.quest !== undefined && !qIds.has(p.quest)) f.push(`${p.id}: Quest ${p.quest} gibt es nicht`);
+    if (p.stufe === 'q' && p.quest === undefined) f.push(`${p.id}: Stufe q nur mit quest`);
+  }
   const tuerIds = alle.filter(p => p.tuer !== undefined).map(p => p.tuer);
   if (new Set(tuerIds).size !== tuerIds.length) f.push('tuer doppelt vergeben');
   return f;
@@ -68,15 +83,19 @@ export function tageImMonat(logs = [], monat) {
 export function dropStand(drop, logs = []) {
   const tage = tageImMonat(logs, drop.id);
   const tueren = (drop.plektren || []).some(p => p.tuer) ? adventErledigt(logs, +drop.id.slice(0, 4)) : {};
-  const mit = p => ({ ...p, verdient: p.tuer ? (tueren[p.tuer] || null) : tage.length >= FREISCHALTUNG[p.stufe] ? tage[FREISCHALTUNG[p.stufe] - 1] : null });
+  const quests = (drop.quests || []).map(q => ({ ...q, ...questStand(q, logs, drop.id) }));
+  const qErledigt = Object.fromEntries(quests.map(q => [q.id, q.erledigt]));
+  const mit = p => ({ ...p, verdient: p.quest ? (qErledigt[p.quest] || null) : p.tuer ? (tueren[p.tuer] || null) : tage.length >= FREISCHALTUNG[p.stufe] ? tage[FREISCHALTUNG[p.stufe] - 1] : null });
   const normal = (drop.plektren || []).map(mit);
   let zugabe = null;
-  if (drop.zugabe && normal.length && normal.every(p => p.verdient)) {
-    zugabe = { ...drop.zugabe, verdient: normal.map(p => p.verdient).sort().pop() };
+  // Die Zugabe haengt nicht an den Quests: sie waere sonst nur mit dem Schwersten zu haben.
+  const ohneQuest = normal.filter(p => !p.quest);
+  if (drop.zugabe && ohneQuest.length && ohneQuest.every(p => p.verdient)) {
+    zugabe = { ...drop.zugabe, verdient: ohneQuest.map(p => p.verdient).sort().pop() };
   }
   const liste = zugabe ? [...normal, zugabe] : normal;
   return { drop, tage: tage.length, plektren: liste, n: liste.filter(p => p.verdient).length, gesamt: normal.length,
-    komplett: normal.length > 0 && normal.every(p => p.verdient), zugabeDa: !!zugabe };
+    komplett: ohneQuest.length > 0 && ohneQuest.every(p => p.verdient), zugabeDa: !!zugabe, quests };
 }
 
 /** Der Drop dieses Monats — oder der juengste davor, bis ein neuer kommt. */
@@ -99,6 +118,18 @@ export function neueDropPlektren(vorherLogs = [], nachherLogs = [], heute = new 
     for (const p of dropStand(d, nachherLogs).plektren) if (p.verdient && !alt.has(p.id)) neu.push({ ...p, drop: d.id });
   }
   return neu;
+}
+
+/** Quests, die am Tag `iso` erfuellt wurden, ueber alle Drops bis heute: { id, name, drop }. */
+export function questsErledigtAm(logs = [], iso, heute = new Date(), drops = DROPS) {
+  return dropsBis(heute, drops).flatMap(d => dropStand(d, logs).quests.filter(q => q.erledigt === iso).map(q => ({ id: q.id, name: q.name, drop: d.id })));
+}
+
+/** Schon angesagte Quests, pro Geraet: damit eine zweite Einheit am selben Tag nichts doppelt feiert. */
+export const ANGESAGT = 'setlist.questAngesagt';
+export function questAngesagt(id) { try { return (JSON.parse(localStorage.getItem(ANGESAGT) || '[]')).includes(id); } catch { return false; } }
+export function setzeQuestAngesagt(id) {
+  try { const l = JSON.parse(localStorage.getItem(ANGESAGT) || '[]'); if (!l.includes(id)) localStorage.setItem(ANGESAGT, JSON.stringify([...l, id])); } catch { /* egal */ }
 }
 
 /** "Gesehen" pro Geraet: nur die Kennung des zuletzt gesehenen Drops. */
