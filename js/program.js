@@ -11,7 +11,7 @@ export function roundTo(weight, step) {
  * Nein auf seine eigene Frage. Nichts davon haelt eine Serie am Leben oder
  * zaehlt als Einheit.
  */
-export const KEIN_TRAINING = ['anpassung', 'mobility', 'checkin'];
+export const KEIN_TRAINING = ['anpassung', 'mobility', 'checkin', 'talent'];
 export const istTraining = l => !!(l && l.date && !KEIN_TRAINING.includes(l.type));
 
 /** Startzustand allein aus der Programmdefinition. */
@@ -132,6 +132,9 @@ export function applyLog(state, config, log) {
     next.history = [...(next.history || []), eintrag].slice(-100);
     return next;
   }
+
+  // Ein Talent geben ist Spiel, kein Training: nichts davon landet in Zustand oder Historie.
+  if (log.type === 'talent') return next;
 
   // Ein WOD ist Beiwerk, kein Programmschritt: es taucht in der Historie auf,
   // darf aber weder Arbeitsgewichte noch den A/B-Wechsel anfassen. Sonst

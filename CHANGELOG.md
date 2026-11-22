@@ -10,6 +10,21 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-22.3
+
+### Neu
+- **Talente.** Ein Baum aus Ästen und Knoten, den du mit Punkten freischaltest; zu sehen als Zusammenfassung im Merch-Stand und auf einer eigenen Seite.
+  Anfangs vier Äste (Kraft, Kugel, Beweglichkeit, Disziplin). Neue Äste und Knoten kommen mit den Drops (Feld `aeste`); der Dezember bringt den Ast
+  „Winter“ und einen vierten Knoten für die Disziplin, der Januar einen dritten für die Kugel.
+- **Punkte aus dem Log.** Eine erfüllte epische Quest gibt 1 Punkt, eine legendäre 2, jedes Fundstück-Türchen im Advent 1, der ganze Kalender 3, und
+  selten gibt es einen nach einem Training (jeder zwölfte Trainingstag, über einen Hash des Datums gewählt, also nicht gewürfelt).
+- **Wirkung nur auf Quests.** Ein Knoten gibt einen Titel oder erleichtert ein Quest-Ziel (Tonnen, Lift-Gewicht, Mobility als Trainingstag,
+  verzeihbare Lücke in einer Wochen-Folge, der letzte Tag des Vormonats). Plan, Rang, Gewichte und Serie bleiben unberührt.
+- **Neue Log-Art `talent`.** Ausgegeben wird mit einem Eintrag, append-only und ohne Einfluss auf Serie, Rang oder Plan (`KEIN_TRAINING`, `applyLog`
+  lässt ihn aus der Historie). Neu verteilen gibt es nicht.
+
+---
+
 ## 2026-11-22.2
 
 ### Geändert
