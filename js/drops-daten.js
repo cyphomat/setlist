@@ -175,14 +175,14 @@ export const DROPS = [
     ],
     aeste: [
       { id: 'disziplin', knoten: [
-        { id: 'disziplin-4', name: { de: 'Weihnachtsfrieden', en: 'Christmas truce' },
+        { id: 'disziplin-4', kosten: 4, name: { de: 'Weihnachtsfrieden', en: 'Christmas truce' },
           text: { de: 'Eine weitere Lücke in einer Wochen-Folge wird verziehen.', en: 'One more gap in a weeks-in-a-row quest is forgiven.' },
           wirkung: { typ: 'lueckeWoche', wert: 1 } }
       ] },
       { id: 'winter', name: { de: 'Winter', en: 'Winter' }, knoten: [
         { id: 'winter-1', name: { de: 'Frostfest', en: 'Frostproof' },
           text: { de: 'Draußen kalt, drinnen Eisen.', en: 'Cold outside, iron inside.' }, wirkung: { typ: 'titel' } },
-        { id: 'winter-2', name: { de: 'Winterspeck', en: 'Winter coat' },
+        { id: 'winter-2', kosten: 2, name: { de: 'Winterspeck', en: 'Winter coat' },
           text: { de: 'Tonnen-Quests brauchen 5 % weniger.', en: 'Tonnage quests need 5 % less.' }, wirkung: { typ: 'tonnenFaktor', wert: 0.95 } }
       ] }
     ],
@@ -265,7 +265,7 @@ export const DROPS = [
     ],
     aeste: [
       { id: 'kugel', knoten: [
-        { id: 'kugel-3', name: { de: 'Rundum schwer', en: 'Heavy all round' },
+        { id: 'kugel-3', kosten: 3, name: { de: 'Rundum schwer', en: 'Heavy all round' },
           text: { de: 'Tonnen-Quests brauchen 5 % weniger.', en: 'Tonnage quests need 5 % less.' }, wirkung: { typ: 'tonnenFaktor', wert: 0.95 } }
       ] }
     ],

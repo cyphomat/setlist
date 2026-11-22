@@ -20,6 +20,9 @@ export const MAX_ZEILEN = 3;      // so viele Auslieferungen zeigt die Karte hoe
 export const MAX_LAENGE = 120;    // Zeichen je Zeile
 
 export const NEU = [
+  { v: '2026-11-22.4',
+    de: ['Talente kosten jetzt so viele Punkte, wie ihre Stufe im Ast ist: 1, 2, 3 …'],
+    en: ['Talents now cost as many points as their tier in the branch: 1, 2, 3 …'] },
   { v: '2026-11-22.3',
     de: ['Talente: ein Baum, den du mit Punkten aus Quests, Advent und seltenen Trainings freischaltest.'],
     en: ['Talents: a tree you unlock with points from quests, advent and the odd session.'] },

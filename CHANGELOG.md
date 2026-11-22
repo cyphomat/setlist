@@ -10,6 +10,15 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-22.4
+
+### Geändert
+- **Talente werden teurer.** Ein Knoten kostet jetzt so viele Punkte, wie er in seinem Ast steht (1, 2, 3 …; der vierte Disziplin-Knoten 4). Auf der
+  Talente-Seite steht der Preis an jedem Knoten. Wer schon Knoten ab der zweiten Stufe hat, behält sie; die freien Punkte werden mit den neuen Preisen
+  neu gerechnet und können dadurch bei null stehen, bis neue dazukommen.
+
+---
+
 ## 2026-11-22.3
 
 ### Neu
