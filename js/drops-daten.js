@@ -73,7 +73,23 @@ export const DROPS = [
           de: 'Eddie Hall hob am 9. Juli 2016 in Leeds 500 kg im Kreuzheben, ein Strongman-Rekord laut Guinness.',
           en: 'On 9 July 2016 in Leeds Eddie Hall deadlifted 500 kg, a strongman record according to Guinness.'
         },
-        quelle: HALL }
+        quelle: HALL },
+      { id: 'q-p-nov-zehn', quest: 'q-nov-zehn', stufe: 'q', farbe: '#b9c0c6', form: 'std', material: 'metall',
+        name: { de: 'Zehnerpack', en: 'Ten-pack' },
+        text: { de: 'Zehn Tage im November, Scheibe für Scheibe.', en: 'Ten days in November, plate by plate.' } },
+      { id: 'q-p-nov-pause', quest: 'q-nov-pause', stufe: 'q', farbe: '#2f6fa3', form: 'tri', material: 'metall',
+        name: { de: 'Durchhalter', en: 'Stayer' },
+        text: { de: 'Drei Wochen in Folge, kein Tag Ausrede.', en: 'Three weeks in a row, not one day of excuses.' } }
+    ],
+    quests: [
+      { id: 'q-nov-zehn', stufe: 'e',
+        name: { de: 'Zehn im November', en: 'Ten in November' },
+        text: { de: 'Zehn Trainingstage im November.', en: 'Ten training days in November.' },
+        regel: { typ: 'tage', n: 10 } },
+      { id: 'q-nov-pause', stufe: 'l',
+        name: { de: 'Ohne Pause', en: 'No pause' },
+        text: { de: 'Drei Wochen in Folge trainiert, jede mit mindestens einer Einheit.', en: 'Three weeks in a row, each with at least one session.' },
+        regel: { typ: 'wochen', n: 3 } }
     ],
     zugabe: { id: 'z-milo', stufe: 'z', farbe: '#d6a92e', form: 'std', material: 'metall',
       name: { de: 'Milos Kalb', en: 'Milo\'s calf' },

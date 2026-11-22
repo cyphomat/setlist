@@ -10,6 +10,14 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-22.1
+
+### Neu
+- **Quests auch im November.** Der laufende Drop bekommt zwei: „Zehn im November“ (10 Trainingstage, episch) und „Ohne Pause“ (3 Wochen in Folge,
+  legendär), mit je einem eigenen Quest-Plektrum als Lohn. Gezählt werden die Tage ab dem 1.11.
+
+---
+
 ## 2026-11-21.8
 
 ### Neu
