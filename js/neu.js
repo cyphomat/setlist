@@ -20,6 +20,9 @@ export const MAX_ZEILEN = 3;      // so viele Auslieferungen zeigt die Karte hoe
 export const MAX_LAENGE = 120;    // Zeichen je Zeile
 
 export const NEU = [
+  { v: '2026-11-22.2',
+    de: ['November-Quests einfacher: „Fünf im November“ (5 Trainingstage) und „Ohne Pause“ (2 Wochen in Folge).'],
+    en: ['November quests made easier: “Five in November” (5 training days) and “No pause” (2 weeks in a row).'] },
   { v: '2026-11-22.1',
     de: ['Der November-Drop hat jetzt auch zwei Quests: „Zehn im November“ und „Ohne Pause“.'],
     en: ['The November drop now has two quests as well: “Ten in November” and “No pause”.'] },

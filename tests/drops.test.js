@@ -67,9 +67,9 @@ print('\n--- Quests im November ---');
 const nov = DROPS.find(x => x.id === '2026-11');
 eq('der November hat zwei Quests', nov.quests.length, 2);
 ok('jede hat ihr Lohn-Plektrum', nov.quests.every(q => nov.plektren.filter(p => p.quest === q.id).length === 1));
-const novTage = Array.from({ length: 10 }, (_, i) => ({ date: `2026-11-${String(i + 1).padStart(2, '0')}`, type: 'strength', lifts: [{ lift: 'squat', weight: 100, success: true }] }));
-eq('zehn Tage: die Quest ist erledigt', D.dropStand(nov, novTage).quests.find(q => q.id === 'q-nov-zehn').erledigt, '2026-11-10');
-eq('und ihr Plektrum haengt', !!D.dropStand(nov, novTage).plektren.find(p => p.id === 'q-p-nov-zehn').verdient, true);
+const novTage = Array.from({ length: 5 }, (_, i) => ({ date: `2026-11-${String(i + 1).padStart(2, '0')}`, type: 'strength', lifts: [{ lift: 'squat', weight: 100, success: true }] }));
+eq('fuenf Tage: die Quest ist erledigt', D.dropStand(nov, novTage).quests.find(q => q.id === 'q-nov-fuenf').erledigt, '2026-11-05');
+eq('und ihr Plektrum haengt', !!D.dropStand(nov, novTage).plektren.find(p => p.id === 'q-p-nov-fuenf').verdient, true);
 
 print('\n--- Quests im Drop ---');
 const dez2 = DROPS.find(x => x.id === '2026-12');
