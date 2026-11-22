@@ -20,6 +20,9 @@ export const MAX_ZEILEN = 3;      // so viele Auslieferungen zeigt die Karte hoe
 export const MAX_LAENGE = 120;    // Zeichen je Zeile
 
 export const NEU = [
+  { v: '2026-11-22.1',
+    de: ['Der November-Drop hat jetzt auch zwei Quests: „Zehn im November“ und „Ohne Pause“.'],
+    en: ['The November drop now has two quests as well: “Ten in November” and “No pause”.'] },
   { v: '2026-11-21.8',
     de: ['Quests: jeden Monat zwei, eine epische und eine legendäre, mit eigenem Plektrum als Lohn. Zu sehen im Merch-Stand.'],
     en: ['Quests: two each month, one epic and one legendary, each with its own pick as a reward. See them in the merch stand.'] },
