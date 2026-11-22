@@ -18,6 +18,7 @@ import { istTraining } from './program.js';
 import { DROPS } from './drops-daten.js';
 import { erledigt as adventErledigt, TUEREN } from './advent.js';
 import { stand as questStand, pruefeRegel, STUFEN as QUEST_STUFEN } from './quests.js';
+import { pruefeAeste, BASIS } from './talente.js';
 
 export const FREISCHALTUNG = { g: 3, s: 8, e: 14 };
 /** Die Zugabe erscheint erst, wenn alle anderen Plektren des Drops verdient sind. */
@@ -52,6 +53,7 @@ export function pruefeDrop(d) {
     }
   }
   if (d.zugabe && d.zugabe.stufe !== 'z') f.push('zugabe hat Stufe z');
+  if (d.aeste) f.push(...pruefeAeste(d.aeste, new Set(BASIS.flatMap(a => a.knoten.map(k => k.id)))));
   const qIds = new Set();
   for (const q of d.quests || []) {
     if (!q.id || qIds.has(q.id)) f.push(`quest: id doppelt oder leer: ${q.id}`);
@@ -80,10 +82,10 @@ export function tageImMonat(logs = [], monat) {
  * Die Zugabe gibt es erst, wenn alle anderen verdient sind, und zaehlt in
  * `n` von `gesamt` vorher nicht mit.
  */
-export function dropStand(drop, logs = []) {
+export function dropStand(drop, logs = [], { wirkungen = {} } = {}) {
   const tage = tageImMonat(logs, drop.id);
   const tueren = (drop.plektren || []).some(p => p.tuer) ? adventErledigt(logs, +drop.id.slice(0, 4)) : {};
-  const quests = (drop.quests || []).map(q => ({ ...q, ...questStand(q, logs, drop.id) }));
+  const quests = (drop.quests || []).map(q => ({ ...q, ...questStand(q, logs, drop.id, wirkungen) }));
   const qErledigt = Object.fromEntries(quests.map(q => [q.id, q.erledigt]));
   const mit = p => ({ ...p, verdient: p.quest ? (qErledigt[p.quest] || null) : p.tuer ? (tueren[p.tuer] || null) : tage.length >= FREISCHALTUNG[p.stufe] ? tage[FREISCHALTUNG[p.stufe] - 1] : null });
   const normal = (drop.plektren || []).map(mit);
@@ -121,8 +123,8 @@ export function neueDropPlektren(vorherLogs = [], nachherLogs = [], heute = new 
 }
 
 /** Quests, die am Tag `iso` erfuellt wurden, ueber alle Drops bis heute: { id, name, drop }. */
-export function questsErledigtAm(logs = [], iso, heute = new Date(), drops = DROPS) {
-  return dropsBis(heute, drops).flatMap(d => dropStand(d, logs).quests.filter(q => q.erledigt === iso).map(q => ({ id: q.id, name: q.name, drop: d.id })));
+export function questsErledigtAm(logs = [], iso, heute = new Date(), drops = DROPS, wirkungen = {}) {
+  return dropsBis(heute, drops).flatMap(d => dropStand(d, logs, { wirkungen }).quests.filter(q => q.erledigt === iso).map(q => ({ id: q.id, name: q.name, drop: d.id })));
 }
 
 /** Schon angesagte Quests, pro Geraet: damit eine zweite Einheit am selben Tag nichts doppelt feiert. */

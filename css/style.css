@@ -1674,6 +1674,15 @@ button.tstop:hover .szene{border-color:var(--muted)}
 .qstufe{font-size:0.625rem;text-transform:uppercase;letter-spacing:.12em;font-family:var(--mono);color:var(--stahl)}
 .qstufe.q-l{color:var(--akzent)}
 .drop h4{margin:12px 0 0;font-family:var(--display);text-transform:uppercase;letter-spacing:.04em}
+.talente{margin-bottom:12px}
+.tal-zeile{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.tal-punkte b{font-family:var(--display);font-size:1.75rem;color:var(--akzent)}
+.tal-ast{display:grid;gap:8px;margin:6px 0 14px}
+.tal-knoten{padding:10px;background:var(--sunken);border:1px solid var(--line);border-radius:2px}
+.tal-knoten b{font-family:var(--display);text-transform:uppercase;letter-spacing:.04em}
+.tal-knoten p{margin:4px 0 8px;font-size:0.875rem;color:var(--muted)}
+.tal-knoten.da{border-color:var(--akzent)}
+.tal-knoten.zu{opacity:.55}
 .drop-alt{margin-top:10px}
 .drop-alt > summary{cursor:pointer;font-family:var(--display);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
 

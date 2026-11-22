@@ -20,6 +20,9 @@ export const MAX_ZEILEN = 3;      // so viele Auslieferungen zeigt die Karte hoe
 export const MAX_LAENGE = 120;    // Zeichen je Zeile
 
 export const NEU = [
+  { v: '2026-11-22.3',
+    de: ['Talente: ein Baum, den du mit Punkten aus Quests, Advent und seltenen Trainings freischaltest.'],
+    en: ['Talents: a tree you unlock with points from quests, advent and the odd session.'] },
   { v: '2026-11-22.2',
     de: ['November-Quests einfacher: „Fünf im November“ (5 Trainingstage) und „Ohne Pause“ (2 Wochen in Folge).'],
     en: ['November quests made easier: “Five in November” (5 training days) and “No pause” (2 weeks in a row).'] },

@@ -173,6 +173,19 @@ export const DROPS = [
         name: { de: 'Eisblume', en: 'Frost flower' },
         text: { de: 'Wächst am Fenster, wenn man dranbleibt.', en: 'Grows on the window when you keep at it.' } }
     ],
+    aeste: [
+      { id: 'disziplin', knoten: [
+        { id: 'disziplin-4', name: { de: 'Weihnachtsfrieden', en: 'Christmas truce' },
+          text: { de: 'Eine weitere Lücke in einer Wochen-Folge wird verziehen.', en: 'One more gap in a weeks-in-a-row quest is forgiven.' },
+          wirkung: { typ: 'lueckeWoche', wert: 1 } }
+      ] },
+      { id: 'winter', name: { de: 'Winter', en: 'Winter' }, knoten: [
+        { id: 'winter-1', name: { de: 'Frostfest', en: 'Frostproof' },
+          text: { de: 'Draußen kalt, drinnen Eisen.', en: 'Cold outside, iron inside.' }, wirkung: { typ: 'titel' } },
+        { id: 'winter-2', name: { de: 'Winterspeck', en: 'Winter coat' },
+          text: { de: 'Tonnen-Quests brauchen 5 % weniger.', en: 'Tonnage quests need 5 % less.' }, wirkung: { typ: 'tonnenFaktor', wert: 0.95 } }
+      ] }
+    ],
     quests: [
       { id: 'q-zwoelf', stufe: 'e',
         name: { de: 'Die zwölf Nächte', en: 'The twelve nights' },
@@ -249,6 +262,12 @@ export const DROPS = [
       { id: 'q-p-last', quest: 'q-last', stufe: 'q', farbe: '#7a3b8c', form: 'tri', material: 'metall',
         name: { de: 'Schwergewicht', en: 'Heavyweight' },
         text: { de: 'Vierzig Tonnen bewegt, Scheibe für Scheibe.', en: 'Forty tonnes moved, plate by plate.' } }
+    ],
+    aeste: [
+      { id: 'kugel', knoten: [
+        { id: 'kugel-3', name: { de: 'Rundum schwer', en: 'Heavy all round' },
+          text: { de: 'Tonnen-Quests brauchen 5 % weniger.', en: 'Tonnage quests need 5 % less.' }, wirkung: { typ: 'tonnenFaktor', wert: 0.95 } }
+      ] }
     ],
     quests: [
       { id: 'q-zehn', stufe: 'e',

@@ -36,6 +36,8 @@ import * as DR from './drops.js';
 import * as RD from './roadie.js';
 import * as AD from './advent.js';
 import * as NEU from './neu.js';
+import * as TA from './talente.js';
+import * as PK from './punkte.js';
 import * as SI from './sicherung.js';
 
 // Eingebettet in eine fremde Seite (siehe boot.js) startet die App gar nicht
@@ -88,7 +90,7 @@ const $ = id => document.getElementById(id);
 uebersetzeStatisch();
 const VERSION_KEY = 'setlist.version';
 let laufendeVersion = localStorage.getItem(VERSION_KEY) || '—';
-const VIEWS = ['setup', 'einrichten', 'home', 'session', 'wod', 'unplugged', 'mobkurs', 'kurs', 'mosh', 'curls', 'maxout', 'done', 'history', 'bibliothek', 'merch', 'backstage', 'soundcheck'];
+const VIEWS = ['setup', 'einrichten', 'home', 'session', 'wod', 'unplugged', 'mobkurs', 'kurs', 'mosh', 'curls', 'maxout', 'done', 'history', 'bibliothek', 'merch', 'talente', 'backstage', 'soundcheck'];
 // Waehrend Einheit, Jam, Unplugged und Max-Out bleibt der Bildschirm an —
 // am Ansichtswechsel festgemacht, damit kein Ausgang (Fertig, Abbrechen,
 // Zurueck) das Freigeben vergessen kann.
@@ -1459,9 +1461,10 @@ function abschlussSpruch() {
   const logs = geladeneLogs();
   const neu = PL.plektren(logs, heute).filter(p => p.verdient === heute)
     .map(p => liftNamen()[p.id] || p.id)
-    .concat(DR.dropsBis(new Date()).flatMap(dp => DR.dropStand(dp, logs).plektren.filter(p => p.verdient === heute).map(p => DR.lokal(p.name, sprache()))));
+    .concat(DR.dropsBis(new Date()).flatMap(dp => DR.dropStand(dp, logs, { wirkungen: talentStand(logs).w }).plektren.filter(p => p.verdient === heute).map(p => DR.lokal(p.name, sprache()))));
   const tuer = AD.stand(logs, new Date()).tueren.find(x => x.erledigt === heute);
   const text = neu.length ? t('rd.neu', { name: neu[0] })
+    : PK.glueckstage(logs).includes(heute) ? t('rd.punkt')
     : tuer ? t('rd.advent', { n: tuer.n })
     : (letzterLog && (letzterLog.type || 'strength') === 'strength' && Math.random() < 0.5)
       ? roadieText(RD.abschlussSpruch(letzterLog, heute, roadieOpt())) : t(LF.spruchSchluessel('fertig'));
@@ -1604,6 +1607,7 @@ async function commit(log) {
   if (log.type === 'anpassung') return commitAnpassung(log);
   if (log.type === 'mobility') return commitMobility(log);
   if (log.type === 'checkin') return commitCheckin(log);
+  if (log.type === 'talent') return commitTalent(log);
   if (log.type === 'soundcheck') return commitSoundcheck(log);
   if (log.type === 'zusammen') return commitZusammen(log);
   let path = `${S.LOG_DIR}/${log.date}.json`;
@@ -1795,7 +1799,8 @@ async function rebuild() {
     banner(t('msg.berechne'), '', 0);
     const logs = await S.readAllLogs();
     state = P.deriveState(config, logs);
-    letzterLog = logs.length ? logs.sort((a, b) => a.date.localeCompare(b.date))[logs.length - 1] : null;
+    const einheiten = logs.filter(l => l.type !== 'talent').sort((a, b) => a.date.localeCompare(b.date));
+    letzterLog = einheiten.length ? einheiten[einheiten.length - 1] : null;
     const cur = await S.readFile('state.json');
     await S.writeFile('state.json', state, `Neuberechnung aus ${logs.length} Einheiten`, cur ? cur.sha : null);
     S.cache({ state });
@@ -1854,6 +1859,7 @@ $('hist-back').onclick = () => { renderOrtKnopf(); show('home'); };
 $('go-bibliothek').onclick = () => zeigeBibliothek();
 $('go-merch').onclick = () => zeigeMerch('home');
 $('hist-merch').onclick = () => zeigeMerch('history');
+$('talente-back').onclick = () => zeigeMerch(merchVon);
 $('merch-back').onclick = () => {
   if (merchVon === 'history') { show('history'); return; }
   renderOrtKnopf();
@@ -4051,6 +4057,7 @@ function renderCharts(logs) {
 function renderListe(logs) {
   const sortiert = [...logs].sort((a, b) => b.date.localeCompare(a.date));
   $('history-body').innerHTML = sortiert.length ? sortiert.map(l => {
+    if (l.type === 'talent') return '';   // Talente sind Spiel, keine Einheit
     if (l.type === 'maxout') {
       // Ein Pruefwert-Test traegt `check` und steht in keiner
       // Lift-Konfiguration — sonst staende hier "UNDEFINED".
@@ -6568,8 +6575,9 @@ function renderDropMerch(logs) {
   const liste = DR.dropsBis(new Date()).reverse();
   if (!liste.length) { box.innerHTML = ''; return; }
   const sp = sprache();
+  const wirkungen = talentStand(logs).w;   // Talente erleichtern Quests
   box.innerHTML = liste.map((drop, i) => {
-    const stand = DR.dropStand(drop, logs);
+    const stand = DR.dropStand(drop, logs, { wirkungen });
     const kopf = `<span class="kicker">${escHtml(DR.lokal(drop.thema, sp))}</span>
       <h3>${escHtml(DR.lokal(drop.titel, sp))}</h3>`;
     const koerper = `<p class="lead">${escHtml(DR.lokal(drop.text, sp))}</p>
@@ -6606,6 +6614,91 @@ function renderNeuKarte() {
     <div class="actions"><button class="btn ghost small" data-neu-ok>${escHtml(t('neu.gesehen'))}</button></div>
   </div>`;
   box.querySelector('[data-neu-ok]').onclick = () => { NEU.setzeGesehen(v); renderNeuKarte(); };
+}
+
+/* ---------- Talente (talente.js, punkte.js): Punkte aus dem Log, ausgegeben per Log-Eintrag `talent` ----------
+   Ein Knoten wirkt nur auf die Quests (quests.js), nie auf das Training. Der Stand wird jedes Mal
+   aus den Logs gerechnet; gespeichert ist nur, was ausgegeben wurde. */
+function talentStand(logs, heute = new Date()) {
+  const liste = TA.aeste(DR.dropsBis(heute));
+  const haben = TA.besitz(logs, liste);
+  const w = TA.wirkungen(haben, liste);
+  const pk = PK.punkte(logs, heute, w);
+  return { liste, haben, w, pk, frei: PK.verfuegbar(pk.gesamt, haben) };
+}
+const astName = (a, sp) => DR.lokal(a.name, sp);
+
+function renderTalenteMerch(logs) {
+  const box = $('merch-talente');
+  if (!box) return;
+  const ts = talentStand(logs), sp = sprache();
+  const titel = ts.w.titel.map(n => DR.lokal(n, sp));
+  box.innerHTML = `<div class="card talente">
+    <div class="tal-zeile"><span class="tal-punkte"><b>${ts.frei}</b> ${escHtml(t('tal.frei'))}</span>
+      <span class="fine">${escHtml(t('tal.verdient', { n: ts.pk.gesamt }))}</span></div>
+    <ul>${TA.stufen(ts.haben, ts.liste).map(s => `<li><span>${escHtml(astName(s, sp))}</span><span>${s.frei}/${s.gesamt}</span></li>`).join('')}</ul>
+    ${titel.length ? `<p class="fine">${escHtml(t('tal.titelZeile', { liste: titel.join(' · ') }))}</p>` : ''}
+    <div class="actions"><button class="btn small" id="tal-alle">${escHtml(t('tal.alle'))}</button></div>
+  </div>`;
+  $('tal-alle').onclick = zeigeTalente;
+}
+
+function zeigeTalente() {
+  show('talente');
+  renderTalente();
+}
+
+function renderTalente() {
+  const box = $('talente-body');
+  if (!box) return;
+  const logs = alleLogs.length ? alleLogs : geladeneLogs();
+  const ts = talentStand(logs), sp = sprache();
+  const alle = new Map(ts.liste.flatMap(a => a.knoten).map(k => [k.id, k]));
+  const haben = new Map(ts.haben.map(h => [h.id, h]));
+  const titel = ts.w.titel.map(n => DR.lokal(n, sp));
+  const knotenHtml = k => {
+    const h = haben.get(k.id), sperre = TA.sperre(k.id, ts.haben, ts.liste, ts.frei);
+    const status = h ? t('tal.da', { datum: datumLang(h.datum) })
+      : sperre === 'braucht' ? t('tal.braucht', { name: DR.lokal(alle.get(k.braucht).name, sp) })
+      : sperre === 'punkte' ? t('tal.zuWenig') : '';
+    return `<div class="tal-knoten${h ? ' da' : sperre === 'braucht' ? ' zu' : ''}">
+      <b>${escHtml(DR.lokal(k.name, sp))}</b>
+      <p>${escHtml(DR.lokal(k.text, sp))}</p>
+      ${status ? `<span class="fine">${escHtml(status)}</span>` : ''}
+      ${sperre === null ? `<button class="btn small" data-talent="${escHtml(k.id)}">${escHtml(t('tal.freischalten', { n: k.kosten || 1 }))}</button>` : ''}
+    </div>`;
+  };
+  const letzte = ts.pk.liste.slice(-5).reverse();
+  box.innerHTML = `<div class="card talente">
+    <div class="tal-zeile"><span class="tal-punkte"><b>${ts.frei}</b> ${escHtml(t('tal.frei'))}</span>
+      <span class="fine">${escHtml(t('tal.verdient', { n: ts.pk.gesamt }))}</span></div>
+    ${titel.length ? `<p class="fine">${escHtml(t('tal.titelZeile', { liste: titel.join(' · ') }))}</p>` : ''}
+    <p class="fine">${escHtml(t('tal.fine'))}</p>
+    ${letzte.length ? `<ul>${letzte.map(p => `<li><span>${escHtml(datumLang(p.datum))} · ${escHtml(t(`tal.q.${p.art}`))}</span><span>+${p.punkte}</span></li>`).join('')}</ul>` : ''}
+  </div>
+  ${ts.liste.map(a => `<h2>${escHtml(astName(a, sp))}</h2><div class="tal-ast">${a.knoten.map(knotenHtml).join('')}</div>`).join('')}
+  <p class="fine">${escHtml(t('tal.endgueltig'))}</p>`;
+  box.querySelectorAll('[data-talent]').forEach(b => { b.onclick = () => kaufeTalent(b.dataset.talent); });
+}
+
+async function commitTalent(log) {
+  let path = `${S.LOG_DIR}/${log.date}-talent-${log.knoten}.json`;
+  let n = 2;
+  while (await S.readFile(path)) path = `${S.LOG_DIR}/${log.date}-talent-${log.knoten}-${n++}.json`;
+  await S.writeFile(path, log, `Talent ${log.knoten} am ${log.date}`);
+  return path;
+}
+
+async function kaufeTalent(id) {
+  const logs = alleLogs.length ? alleLogs : geladeneLogs();
+  const ts = talentStand(logs);
+  if (TA.sperre(id, ts.haben, ts.liste, ts.frei)) { renderTalente(); return; }   // inzwischen nicht mehr frei
+  const log = TA.eintrag(id, P.ymd(new Date()));
+  alleLogs = logs.concat([log]);
+  S.cacheLogs(alleLogs);
+  renderTalente();
+  try { await commit(log); banner(t('tal.erledigt'), 'ok', 2500); }
+  catch { S.queue(log); banner(t('msg.keinNetz'), '', 5000); }
 }
 
 /* ---------- Adventskalender (advent.js): vom 1.12. bis Silvester auf Heute ----------
@@ -6801,7 +6894,7 @@ function ansagen(log, info) {
   // Quest des Monats heute erfuellt und noch nicht angesagt (pro Geraet gemerkt, damit eine zweite Einheit nichts doppelt feiert)
   let quest = null;
   try {
-    const q = DR.questsErledigtAm(geladeneLogs(), log.date).find(x => !DR.questAngesagt(x.id));
+    const q = DR.questsErledigtAm(geladeneLogs(), log.date, new Date(), undefined, talentStand(geladeneLogs()).w).find(x => !DR.questAngesagt(x.id));
     if (q) { quest = DR.lokal(q.name, sprache()); DR.setzeQuestAngesagt(q.id); }
   } catch { /* dann eben ohne */ }
   zeigeAnsage(ANS.ansage({
@@ -7612,6 +7705,7 @@ function renderMerch(logs) {
   // Gurt (ein Plektrum je Uebung) und Drop des Monats
   renderGurt(logs);
   renderDropMerch(logs);
+  renderTalenteMerch(logs);
 
   // Tourshirts
   const touren = M.touren(logs, heute, liste, fahrten);
