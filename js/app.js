@@ -6664,7 +6664,7 @@ function renderTalente() {
     return `<div class="tal-knoten${h ? ' da' : sperre === 'braucht' ? ' zu' : ''}">
       <b>${escHtml(DR.lokal(k.name, sp))}</b>
       <p>${escHtml(DR.lokal(k.text, sp))}</p>
-      ${status ? `<span class="fine">${escHtml(status)}</span>` : ''}
+      <span class="fine">${escHtml([h ? '' : t('tal.kosten', { n: k.kosten || 1 }), status].filter(Boolean).join(' · '))}</span>
       ${sperre === null ? `<button class="btn small" data-talent="${escHtml(k.id)}">${escHtml(t('tal.freischalten', { n: k.kosten || 1 }))}</button>` : ''}
     </div>`;
   };

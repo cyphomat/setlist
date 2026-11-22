@@ -18,26 +18,26 @@ const ZAHL = ['tonnenFaktor', 'liftMinus', 'lueckeWoche'];
 
 const t = (de, en) => ({ de, en });
 
-/** Die Aeste von Anfang an. Weitere kommen mit den Drops. */
+/** Die Aeste von Anfang an. Weitere kommen mit den Drops. Ein Knoten kostet so viele Punkte, wie er in seinem Ast steht (1, 2, 3 …). */
 export const BASIS = [
   { id: 'kraft', name: t('Kraft', 'Strength'), knoten: [
     { id: 'kraft-1', name: t('Eisenträger', 'Iron bearer'), text: t('Der erste Schritt am Eisen.', 'The first step at the iron.'), wirkung: { typ: 'titel' } },
-    { id: 'kraft-2', name: t('Schwere Hände', 'Heavy hands'), text: t('Tonnen-Quests brauchen 10 % weniger.', 'Tonnage quests need 10 % less.'), wirkung: { typ: 'tonnenFaktor', wert: 0.9 } },
-    { id: 'kraft-3', name: t('Eisenherz', 'Iron heart'), text: t('Lift-Quests akzeptieren 2,5 kg weniger.', 'Lift quests accept 2.5 kg less.'), wirkung: { typ: 'liftMinus', wert: 2.5 } }
+    { id: 'kraft-2', kosten: 2, name: t('Schwere Hände', 'Heavy hands'), text: t('Tonnen-Quests brauchen 10 % weniger.', 'Tonnage quests need 10 % less.'), wirkung: { typ: 'tonnenFaktor', wert: 0.9 } },
+    { id: 'kraft-3', kosten: 3, name: t('Eisenherz', 'Iron heart'), text: t('Lift-Quests akzeptieren 2,5 kg weniger.', 'Lift quests accept 2.5 kg less.'), wirkung: { typ: 'liftMinus', wert: 2.5 } }
   ] },
   { id: 'kugel', name: t('Kugel', 'Bell'), knoten: [
     { id: 'kugel-1', name: t('Kugelwerfer', 'Bell thrower'), text: t('Die Kugel kennt dich.', 'The bell knows you.'), wirkung: { typ: 'titel' } },
-    { id: 'kugel-2', name: t('Doppelter Schwung', 'Double swing'), text: t('Die Tonnen aus Kurs und Mosh Pit zählen in Tonnen-Quests doppelt.', 'Tonnes from course and Mosh Pit count double in tonnage quests.'), wirkung: { typ: 'kugelDoppelt' } }
+    { id: 'kugel-2', kosten: 2, name: t('Doppelter Schwung', 'Double swing'), text: t('Die Tonnen aus Kurs und Mosh Pit zählen in Tonnen-Quests doppelt.', 'Tonnes from course and Mosh Pit count double in tonnage quests.'), wirkung: { typ: 'kugelDoppelt' } }
   ] },
   { id: 'beweglich', name: t('Beweglichkeit', 'Mobility'), knoten: [
     { id: 'beweglich-1', name: t('Gelenkig', 'Supple'), text: t('Wer sich dehnt, bricht nicht.', 'Who stretches does not break.'), wirkung: { typ: 'titel' } },
-    { id: 'beweglich-2', name: t('Beweglicher Tag', 'Supple day'), text: t('Mobility-Tage zählen in Quests als Trainingstage.', 'Mobility days count as training days in quests.'), wirkung: { typ: 'mobilitaetZaehlt' } },
-    { id: 'beweglich-3', name: t('Beweglichkeits-Woche', 'Supple week'), text: t('Zwei Mobility-Tage halten in einer Woche die Folge von Wochen-Quests.', 'Two mobility days keep a week in a weeks-in-a-row quest.'), wirkung: { typ: 'mobilitaetWoche' } }
+    { id: 'beweglich-2', kosten: 2, name: t('Beweglicher Tag', 'Supple day'), text: t('Mobility-Tage zählen in Quests als Trainingstage.', 'Mobility days count as training days in quests.'), wirkung: { typ: 'mobilitaetZaehlt' } },
+    { id: 'beweglich-3', kosten: 3, name: t('Beweglichkeits-Woche', 'Supple week'), text: t('Zwei Mobility-Tage halten in einer Woche die Folge von Wochen-Quests.', 'Two mobility days keep a week in a weeks-in-a-row quest.'), wirkung: { typ: 'mobilitaetWoche' } }
   ] },
   { id: 'disziplin', name: t('Disziplin', 'Discipline'), knoten: [
     { id: 'disziplin-1', name: t('Stehaufmann', 'Roly-poly'), text: t('Hinfallen gehört dazu.', 'Falling is part of it.'), wirkung: { typ: 'titel' } },
-    { id: 'disziplin-2', name: t('Ruhetag', 'Rest day'), text: t('Eine Lücke in einer Wochen-Folge wird verziehen.', 'One gap in a weeks-in-a-row quest is forgiven.'), wirkung: { typ: 'lueckeWoche', wert: 1 } },
-    { id: 'disziplin-3', name: t('Vorlauf', 'Run-up'), text: t('Der letzte Tag des Vormonats zählt für Quests mit.', 'The last day of the previous month counts for quests.'), wirkung: { typ: 'vortag' } }
+    { id: 'disziplin-2', kosten: 2, name: t('Ruhetag', 'Rest day'), text: t('Eine Lücke in einer Wochen-Folge wird verziehen.', 'One gap in a weeks-in-a-row quest is forgiven.'), wirkung: { typ: 'lueckeWoche', wert: 1 } },
+    { id: 'disziplin-3', kosten: 3, name: t('Vorlauf', 'Run-up'), text: t('Der letzte Tag des Vormonats zählt für Quests mit.', 'The last day of the previous month counts for quests.'), wirkung: { typ: 'vortag' } }
   ] }
 ];
 

@@ -73,6 +73,16 @@ eq('Vorlauf', T.wirkungen(hab(['disziplin-1', 'disziplin-2', 'disziplin-3']), al
 eq('Titel sammeln sich', T.wirkungen(hab(['kraft-1', 'kugel-1']), alle).titel.length, 2);
 eq('Doppelter Schwung', T.wirkungen(hab(['kugel-1', 'kugel-2']), alle).kugelDoppelt, true);
 
+print('\n--- Kosten ---');
+const kosten = id => alle.flatMap(x => x.knoten).find(k => k.id === id).kosten || 1;
+eq('der erste Knoten kostet 1', kosten('kraft-1'), 1);
+eq('der zweite kostet 2', kosten('kraft-2'), 2);
+eq('der dritte kostet 3', kosten('kraft-3'), 3);
+ok('in jedem Ast kostet ein Knoten mindestens so viel wie der davor', alle.every(a => a.knoten.every((k, i) => !i || (k.kosten || 1) >= (a.knoten[i - 1].kosten || 1))));
+eq('Kosten stehen im Besitz', T.besitz([eintrag('kraft-1', '2026-11-20'), eintrag('kraft-2', '2026-11-21')], alle)[1].kosten, 2);
+eq('zu wenig Punkte fuer den teuren Knoten', T.sperre('kraft-2', T.besitz([eintrag('kraft-1')], alle), alle, 1), 'punkte');
+eq('mit genug Punkten frei', T.sperre('kraft-2', T.besitz([eintrag('kraft-1')], alle), alle, 2), null);
+
 print('\n--- Stufen und Sperren ---');
 const st = T.stufen(hab(['kraft-1', 'kraft-2']), alle);
 eq('Kraft: zwei von drei', st.find(s => s.id === 'kraft').frei, 2);
