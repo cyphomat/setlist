@@ -10,6 +10,14 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-22.2
+
+### Geändert
+- **November-Quests einfacher.** „Fünf im November“ (5 statt 10 Trainingstage) und „Ohne Pause“ (2 statt 3 Wochen in Folge), damit sich schnell zeigt,
+  dass die Quests funktionieren. Die Quest-Plektren heißen jetzt „Fünferpack“ und „Durchhalter“ (Text angepasst).
+
+---
+
 ## 2026-11-22.1
 
 ### Neu
