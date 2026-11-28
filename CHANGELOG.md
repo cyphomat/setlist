@@ -10,6 +10,16 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-28.3
+
+### Neu
+- **Kuttenansicht.** Im Merch-Stand über der Aufnäher-Liste: die Kutte als Pixelweste zum Umdrehen. Vorne hängen die zwölf zuletzt verdienten Aufnäher
+  (darunter steht, wie viele es insgesamt sind), hinten der Rocker „Setlist“, der getragene Rückenpatch und die Szene deines Rangs. Der Knopf
+  „Rückseite zeigen“ dreht sie um; mit „Bewegung reduzieren“ springt sie ohne Drehung. Alles aus den Logs gerechnet, nichts gespeichert
+  (`js/kuttenansicht.js`, die Weste aus `tools/pixel-kutte.mjs`).
+
+---
+
 ## 2026-11-28.2
 
 ### Neu
