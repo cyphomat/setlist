@@ -1292,6 +1292,16 @@ button.tstop:hover .szene{border-color:var(--muted)}
    Pixel-Shirts aus assets/pixel/shirts.png (je Stoff vorne | hinten),
    das Emblem aus embleme.png. Der Druck waechst mit dem Shirt (cqw), die
    Tinte ist --tape: hell auf jedem der dunklen Stoffe, in beiden Themen. */
+/* Rueckenpatches: sechs grosse Aufnaeher, verdient oder als grauer Umriss */
+.bp-wand{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(150px,100%),1fr));gap:12px}
+.bp-karte{background:var(--panel);border:1px solid var(--line);border-radius:2px;padding:12px;display:flex;flex-direction:column;gap:4px;align-items:flex-start;min-width:0}
+.bp-karte b{color:var(--fg)}
+.bp-karte.getragen{border-color:var(--akzent)}
+.bpix{width:96px;height:96px;background:url('../assets/pixel/backpatches.png') no-repeat;
+  background-size:calc(var(--n) * 96px) 96px;background-position:calc(var(--i) * -96px) 0;image-rendering:pixelated;
+  filter:drop-shadow(0 2px 2px rgba(0,0,0,.45))}
+.bp-karte.offen .bpix{filter:grayscale(1) brightness(.55);opacity:.7}
+.bp-karte .btn{margin-top:6px}
 /* Jahresalbum: eine Woche mit Einheit ist ein Track */
 .album{background:var(--panel);border:1px solid var(--line);border-radius:2px;padding:14px;margin:0 0 14px;min-width:0}
 .albkopf{display:flex;gap:14px;align-items:center}
