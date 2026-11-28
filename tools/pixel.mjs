@@ -13,6 +13,7 @@
 //   assets/pixel/figuren.png    je 76×82, Reihenfolge wie FIGUREN in js/kurs.js (Winkel in tools/pixel-figur.mjs)
 //   assets/pixel/anlaesse.png   je Motiv zwei Bilder 15×15, Reihenfolge wie MOTIVE in js/anlaesse.js
 //   assets/pixel/advent.png     24 Tuerchen-Motive 15×15 nebeneinander (Quelle tools/pixel-advent.mjs, Zahl wie TUEREN in js/advent.js)
+//   assets/pixel/kutte.png      Weste vorne und hinten 130×150 (Quelle tools/pixel-kutte.mjs)
 //   assets/pixel/backpatches.png sechs Rueckenpatches 48×48 (Quelle tools/pixel-backpatches.mjs, Reihenfolge wie BACKPATCHES in js/backpatches.js)
 //   assets/pixel/curls.png      fuenf Maehnen und zwei Flammen 24×24 (Quelle tools/pixel-curls.mjs, Zahlen wie in js/curls.js)
 //   assets/pixel/logo.png       der Schriftzug fuer die Kopfzeile
@@ -39,6 +40,7 @@ import { KANTE as ADV_KANTE, ANZAHL as ADV_ANZAHL, PALETTE as ADV_FARBEN, RASTER
 import { TUEREN as ADV_TUEREN } from '../js/advent.js';
 import { KANTE as ANLASS_KANTE, PALETTE as ANLASS_FARBEN, motivRaster } from './pixel-anlaesse.mjs';
 import { FIGUREN } from '../js/kurs.js';
+import { B as KT_B, H as KT_H, PALETTE as KT_FARBEN, raster as ktRaster } from './pixel-kutte.mjs';
 import { BACKPATCHES } from '../js/backpatches.js';
 import { KANTE as BP_KANTE, BILDER as BP_BILDER, raster as bpRaster, palette as bpPalette } from './pixel-backpatches.mjs';
 import { MAEHNE_BILDER as CU_MAEHNE, FEUERZEUG_BILDER as CU_FEUERZEUG, BILD_KANTE as CU_KANTE } from '../js/curls.js';
@@ -1728,6 +1730,21 @@ function curlsBogen() {
   return b;
 }
 
+function kutteBogen() {
+  const bilder = ktRaster().map((zeilen, i) => {
+    const k = leer(KT_B, KT_H);
+    if (zeilen.length !== KT_H || zeilen.some(z => z.length !== KT_B)) throw new Error(`Kutte ${i}: Raster muss ${KT_B}×${KT_H} sein`);
+    zeilen.forEach((zeile, y) => [...zeile].forEach((c, x) => {
+      if (c === '.') return;
+      if (!KT_FARBEN[c]) throw new Error(`Kutte ${i}: Farbe ${c} fehlt in der Palette`);
+      setze(k, x, y, rgba(KT_FARBEN[c]));
+    }));
+    return k;
+  });
+  eindeutig(bilder, ['vorne', 'hinten']);
+  return bogen(bilder, KT_B, KT_H);
+}
+
 function backpatchBogen() {
   if (BP_BILDER.map(b => b.id).join() !== BACKPATCHES.join()) {
     throw new Error(`Rueckenpatches in tools/pixel-backpatches.mjs (${BP_BILDER.map(b => b.id)}) und js/backpatches.js (${BACKPATCHES}) passen nicht zusammen`);
@@ -1746,6 +1763,7 @@ function backpatchBogen() {
 }
 
 const ausgaben = {
+  'assets/pixel/kutte.png': kutteBogen(),
   'assets/pixel/backpatches.png': backpatchBogen(),
   'assets/pixel/aufnaeher.png': bogen(eindeutig(BILDER.map(aufnaeher), BILDER), 24, 24),
   'assets/pixel/gitarren.png': bogen(eindeutig(gitarrenBilder(), gitarrenIds), 24, 56),
@@ -1802,6 +1820,7 @@ console.log(`assets/pixel/embleme.png    ${NOMEN.length} × 20×20, alle verschi
 console.log(`assets/pixel/anlaesse.png  ${ANLASS_MOTIVE.length} × 2 × ${ANLASS_KANTE}×${ANLASS_KANTE}`);
 console.log(`assets/pixel/advent.png   ${ADV_ANZAHL} × ${ADV_KANTE}×${ADV_KANTE}, alle verschieden`);
 console.log(`assets/pixel/curls.png     ${CU_MAEHNE} Maehnen + ${CU_FEUERZEUG} Flammen × ${CU_KANTE}×${CU_KANTE}`);
+console.log(`assets/pixel/kutte.png         2 × ${KT_B}×${KT_H} (vorne, hinten)`);
 console.log(`assets/pixel/backpatches.png ${BACKPATCHES.length} × ${BP_KANTE}×${BP_KANTE}, alle verschieden`);
 console.log(`assets/pixel/platten.png    ${PLATTEN.length + KUGEL_PLATTEN.length} × ${AWARD_W}×${AWARD_H}`);
 console.log('assets/pixel/logo.png, icons/icon-*.png, assets/readme/*.png');

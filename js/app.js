@@ -40,6 +40,7 @@ import * as TA from './talente.js';
 import * as PK from './punkte.js';
 import * as AL from './album.js';
 import * as BP from './backpatches.js';
+import * as KV from './kuttenansicht.js';
 import * as SI from './sicherung.js';
 
 // Eingebettet in eine fremde Seite (siehe boot.js) startet die App gar nicht
@@ -7439,6 +7440,44 @@ $('umzug').onclick = umziehen;
 /* ============================ Rueckenpatches ============================
    Sechs grosse Patches (js/backpatches.js), aus den Logs gerechnet. Nur die
    Wahl, welcher hinten haengt, bleibt auf dem Geraet.                      */
+/* ============================ Kuttenansicht ============================
+   Die Weste zum Umdrehen (js/kuttenansicht.js): vorne die neuesten Aufnaeher,
+   hinten Rocker, getragener Rueckenpatch und die Szene des Rangs. Gerechnet,
+   nicht gespeichert; die Weste ist ein Pixelbild, doppelt angezeigt.        */
+function kutteMini(liste, bpListe, rang) {
+  const box = $('merch-kv');
+  if (!box) return;
+  const v = KV.vorne(liste, a => M.bildIndex(a) >= 0);
+  const hinten = BP.getragen(bpListe, bpWahl());
+  const px = (x, y) => `left:${x * 2}px;top:${y * 2}px`;
+  const patches = v.plaetze.map(p => {
+    const a = liste.find(x => x.id === p.id);
+    return `<span class="kvpix" style="${px(p.x, p.y)};--i:${M.bildIndex(a)};--n:${M.BILDER.length}" title="${escHtml(patchName(a))}"></span>`;
+  }).join('');
+  const H = KV.HINTEN;
+  const rangName = t(`merch.r.${rang.id}`);
+  box.innerHTML = `<div class="kv">
+    <div class="kv-buehne"><div class="kv-dreh">
+      <div class="kv-seite vorne" role="img" aria-label="${escHtml(t('kv.vorne.bild', { n: v.ids.length }))}">
+        ${patches}
+      </div>
+      <div class="kv-seite hinten" aria-hidden="true">
+        <span class="kv-rocker" style="${px(H.rocker.x, H.rocker.y)};width:${H.rocker.b * 2}px;height:${H.rocker.h * 2}px">${escHtml(t('kv.rocker'))}</span>
+        ${hinten ? `<span class="bpix kv-bp" style="${px(H.patch.x, H.patch.y)};--i:${BP.BACKPATCHES.indexOf(hinten)};--n:${BP.BACKPATCHES.length}"></span>` : ''}
+        <span class="szene kv-rang" style="${px(H.rang.x, H.rang.y)};width:${H.rang.b * 2}px;--i:${rang.stufe};--n:${M.RAENGE.length}"></span>
+      </div>
+    </div></div>
+    <p class="fine kv-zahl">${escHtml(t(v.ids.length ? 'kv.zahl' : 'kv.leer', { n: v.ids.length, gesamt: v.gesamt, rang: rangName }))}</p>
+    <button type="button" class="btn small kv-wenden" aria-pressed="false">${escHtml(t('kv.wenden'))} ↻</button>
+  </div>`;
+  const b = box.querySelector('.kv-wenden');
+  b.onclick = () => {
+    const hint = box.querySelector('.kv').classList.toggle('gewendet');
+    b.setAttribute('aria-pressed', String(hint));
+    b.textContent = `${t(hint ? 'kv.vorne' : 'kv.wenden')} ↻`;
+  };
+}
+
 const BP_KEY = 'setlist.rueckenpatch';
 function bpWahl() { try { return localStorage.getItem(BP_KEY) || null; } catch { return null; } }
 function bpMerke(id) { try { localStorage.setItem(BP_KEY, id); } catch { /* ohne Speicher bleibt es beim letzten verdienten */ } }
@@ -7634,7 +7673,7 @@ async function zeigeMerch(von = 'home') {
   merchVon = von;
   rangGewaehlt = null;
   show('merch');
-  const leeren = () => ['merch-rang', 'merch-monat', 'merch-kutte', 'merch-rueck', 'merch-platten', 'merch-shirts', 'merch-album', 'merch-bilanz']
+  const leeren = () => ['merch-rang', 'merch-monat', 'merch-kv', 'merch-kutte', 'merch-rueck', 'merch-platten', 'merch-shirts', 'merch-album', 'merch-bilanz']
     .forEach(id => { $(id).innerHTML = ''; });
   if (!config) {
     leeren();
@@ -7728,7 +7767,9 @@ function renderMerch(logs) {
     <p class="fine">${t('merch.kutte.fine')}</p>`;
 
   // Rueckenpatches
-  rueckenpatches(BP.rueckenpatches(logs, config, { fahrten, heute, soundchecks }));
+  const bpListe = BP.rueckenpatches(logs, config, { fahrten, heute, soundchecks });
+  rueckenpatches(bpListe);
+  kutteMini(liste, bpListe, M.rang(logs, fahrten));
 
   // Schallplatten
   const s = M.schallplatten(logs);

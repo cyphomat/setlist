@@ -1292,6 +1292,24 @@ button.tstop:hover .szene{border-color:var(--muted)}
    Pixel-Shirts aus assets/pixel/shirts.png (je Stoff vorne | hinten),
    das Emblem aus embleme.png. Der Druck waechst mit dem Shirt (cqw), die
    Tinte ist --tape: hell auf jedem der dunklen Stoffe, in beiden Themen. */
+/* Kuttenansicht: die Weste zum Umdrehen (assets/pixel/kutte.png, doppelt angezeigt) */
+.kv{display:flex;flex-direction:column;align-items:center;gap:8px;margin:0 0 14px}
+.kv-buehne{width:260px;height:300px;max-width:100%;perspective:900px}
+.kv-dreh{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.3,.7,.3,1)}
+.kv.gewendet .kv-dreh{transform:rotateY(180deg)}
+.kv-seite{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  background:url('../assets/pixel/kutte.png') no-repeat;background-size:520px 300px;image-rendering:pixelated}
+.kv-seite.vorne{background-position:0 0}
+.kv-seite.hinten{background-position:-260px 0;transform:rotateY(180deg)}
+.kvpix{position:absolute;width:48px;height:48px;background:url('../assets/pixel/aufnaeher.png') no-repeat;
+  background-size:calc(var(--n) * 48px) 48px;background-position:calc(var(--i) * -48px) 0;image-rendering:pixelated;
+  filter:drop-shadow(0 2px 2px rgba(0,0,0,.45))}
+.kv-bp,.kv-rang{position:absolute}
+.kv-rocker{position:absolute;display:flex;align-items:center;justify-content:center;font-family:'Anton',var(--display);
+  font-size:1.125rem;letter-spacing:.08em;text-transform:uppercase;color:var(--tape)}
+.kv .kv-wenden{align-self:center;width:auto;min-width:220px;max-width:100%}
+.kv-zahl{margin:0;text-align:center}
+@media (prefers-reduced-motion:reduce){.kv-dreh{transition:none}}
 /* Rueckenpatches: sechs grosse Aufnaeher, verdient oder als grauer Umriss */
 .bp-wand{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(150px,100%),1fr));gap:12px}
 .bp-karte{background:var(--panel);border:1px solid var(--line);border-radius:2px;padding:12px;display:flex;flex-direction:column;gap:4px;align-items:flex-start;min-width:0}
