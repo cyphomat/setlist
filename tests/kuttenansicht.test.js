@@ -17,8 +17,9 @@ ok('Plaetze sind ganzzahlig', KV.PLAETZE.every(p => Number.isInteger(p.x) && Num
 print('\n--- Hinten ---');
 const h = KV.HINTEN;
 ok('der Patch liegt im Bild', h.patch.x + h.patch.kante <= KV.BREITE && h.patch.y + h.patch.kante <= KV.HOEHE);
-ok('die Szene liegt im Bild', h.rang.x + h.rang.b <= KV.BREITE && h.rang.y + h.rang.h <= KV.HOEHE);
-ok('Rocker, Patch und Szene liegen untereinander', h.rocker.y + h.rocker.h <= h.patch.y && h.patch.y + h.patch.kante <= h.rang.y);
+ok('der Rocker liegt im Bild', h.rocker.x + h.rocker.b <= KV.BREITE && h.rocker.y + h.rocker.h <= KV.HOEHE);
+ok('der Rocker liegt ueber dem Patch', h.rocker.y + h.rocker.h <= h.patch.y);
+ok('der Patch sitzt waagerecht in der Mitte', h.patch.x * 2 + h.patch.kante === KV.BREITE - 0 || Math.abs(h.patch.x + h.patch.kante / 2 - KV.BREITE / 2) <= 1);
 eq('Patch ist 48 Pixel gross (96 angezeigt)', h.patch.kante, 48);
 
 print('\n--- Auswahl ---');

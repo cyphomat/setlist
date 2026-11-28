@@ -15,6 +15,8 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 ### Geändert
 - **Kuttenansicht heller.** Die Weste ist jetzt ausgewaschenes Denim mit heller Naht und hellen Nieten, damit sie sich von den dunkelblauen Aufnähern
   und vom Hintergrund abhebt. Die obere Reihe der Aufnäher hängt etwas tiefer und ragt nicht mehr über den Armausschnitt.
+- **Rückseite der Kutte.** Der Rocker sagt jetzt „Lift Heavy Shit“. Die Rang-Szene ist von der Rückseite weg (der Rang steht unter der Weste); der
+  Rückenpatch sitzt in der Mitte, und ohne Patch steht dort, wie man den ersten verdient.
 
 ---
 
