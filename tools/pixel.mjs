@@ -13,6 +13,7 @@
 //   assets/pixel/figuren.png    je 76×82, Reihenfolge wie FIGUREN in js/kurs.js (Winkel in tools/pixel-figur.mjs)
 //   assets/pixel/anlaesse.png   je Motiv zwei Bilder 15×15, Reihenfolge wie MOTIVE in js/anlaesse.js
 //   assets/pixel/advent.png     24 Tuerchen-Motive 15×15 nebeneinander (Quelle tools/pixel-advent.mjs, Zahl wie TUEREN in js/advent.js)
+//   assets/pixel/backpatches.png sechs Rueckenpatches 48×48 (Quelle tools/pixel-backpatches.mjs, Reihenfolge wie BACKPATCHES in js/backpatches.js)
 //   assets/pixel/curls.png      fuenf Maehnen und zwei Flammen 24×24 (Quelle tools/pixel-curls.mjs, Zahlen wie in js/curls.js)
 //   assets/pixel/logo.png       der Schriftzug fuer die Kopfzeile
 //   icons/icon-*.png            das App-Icon, ganzzahlig vergroessert
@@ -38,6 +39,8 @@ import { KANTE as ADV_KANTE, ANZAHL as ADV_ANZAHL, PALETTE as ADV_FARBEN, RASTER
 import { TUEREN as ADV_TUEREN } from '../js/advent.js';
 import { KANTE as ANLASS_KANTE, PALETTE as ANLASS_FARBEN, motivRaster } from './pixel-anlaesse.mjs';
 import { FIGUREN } from '../js/kurs.js';
+import { BACKPATCHES } from '../js/backpatches.js';
+import { KANTE as BP_KANTE, BILDER as BP_BILDER, raster as bpRaster, palette as bpPalette } from './pixel-backpatches.mjs';
 import { MAEHNE_BILDER as CU_MAEHNE, FEUERZEUG_BILDER as CU_FEUERZEUG, BILD_KANTE as CU_KANTE } from '../js/curls.js';
 import { KANTE as CU_PX_KANTE, PALETTE as CU_FARBEN, MAEHNE_BILDER as CU_PX_MAEHNE, FEUERZEUG_BILDER as CU_PX_FEUERZEUG, curlsRaster } from './pixel-curls.mjs';
 import { HINGE, GETUP, SWING2, SWING1, GOBLET, PRESS, figurBilder, FIGUR_B, FIGUR_H } from './pixel-figur.mjs';
@@ -1725,7 +1728,25 @@ function curlsBogen() {
   return b;
 }
 
+function backpatchBogen() {
+  if (BP_BILDER.map(b => b.id).join() !== BACKPATCHES.join()) {
+    throw new Error(`Rueckenpatches in tools/pixel-backpatches.mjs (${BP_BILDER.map(b => b.id)}) und js/backpatches.js (${BACKPATCHES}) passen nicht zusammen`);
+  }
+  const kacheln = BP_BILDER.map(bild => {
+    const farben = bpPalette(bild), k = leer(BP_KANTE, BP_KANTE);
+    bpRaster(bild).forEach((zeile, y) => [...zeile].forEach((c, x) => {
+      if (c === '.') return;
+      if (!farben[c]) throw new Error(`Rueckenpatch ${bild.id}: Farbe ${c} fehlt in der Palette`);
+      setze(k, x, y, rgba(farben[c]));
+    }));
+    return k;
+  });
+  eindeutig(kacheln, BACKPATCHES);
+  return bogen(kacheln, BP_KANTE, BP_KANTE);
+}
+
 const ausgaben = {
+  'assets/pixel/backpatches.png': backpatchBogen(),
   'assets/pixel/aufnaeher.png': bogen(eindeutig(BILDER.map(aufnaeher), BILDER), 24, 24),
   'assets/pixel/gitarren.png': bogen(eindeutig(gitarrenBilder(), gitarrenIds), 24, 56),
   'assets/pixel/boss.png': endgegner(),
@@ -1781,5 +1802,6 @@ console.log(`assets/pixel/embleme.png    ${NOMEN.length} × 20×20, alle verschi
 console.log(`assets/pixel/anlaesse.png  ${ANLASS_MOTIVE.length} × 2 × ${ANLASS_KANTE}×${ANLASS_KANTE}`);
 console.log(`assets/pixel/advent.png   ${ADV_ANZAHL} × ${ADV_KANTE}×${ADV_KANTE}, alle verschieden`);
 console.log(`assets/pixel/curls.png     ${CU_MAEHNE} Maehnen + ${CU_FEUERZEUG} Flammen × ${CU_KANTE}×${CU_KANTE}`);
+console.log(`assets/pixel/backpatches.png ${BACKPATCHES.length} × ${BP_KANTE}×${BP_KANTE}, alle verschieden`);
 console.log(`assets/pixel/platten.png    ${PLATTEN.length + KUGEL_PLATTEN.length} × ${AWARD_W}×${AWARD_H}`);
 console.log('assets/pixel/logo.png, icons/icon-*.png, assets/readme/*.png');

@@ -126,6 +126,25 @@ export function wirkungen(haben = [], liste = BASIS) {
   return w;
 }
 
+/**
+ * Die Meisterschaft: ein Ast ist gemeistert, wenn alle seine Basis-Knoten da sind.
+ * Knoten, die spaeter mit einem Drop dazukommen, zaehlen nicht mit — sonst
+ * verlore man einen Titel, den man schon hatte. Kein eigener Knoten, keine Kosten:
+ * so bleibt die Kette (`braucht`) der Aeste unberuehrt. Nur die vier Basis-Aeste.
+ * [{ id, name, titel, fertig, datum }] — `datum` ist der Tag des letzten Basis-Knotens.
+ */
+export function meisterschaft(haben = []) {
+  return BASIS.map(a => {
+    const da = a.knoten.map(k => haben.find(h => h.id === k.id));
+    const fertig = da.every(Boolean);
+    return {
+      id: a.id, name: a.name, fertig,
+      titel: t(`Meister der ${a.name.de}`, `Master of ${a.name.en}`),
+      datum: fertig ? da.map(h => h.datum).sort().pop() : null
+    };
+  });
+}
+
 /** Je Ast: wie viele Knoten sind frei, von wie vielen. */
 export function stufen(haben = [], liste = BASIS) {
   return liste.map(a => ({ id: a.id, name: a.name, frei: a.knoten.filter(k => haben.some(h => h.id === k.id)).length, gesamt: a.knoten.length }));

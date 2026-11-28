@@ -39,6 +39,7 @@ import * as NEU from './neu.js';
 import * as TA from './talente.js';
 import * as PK from './punkte.js';
 import * as AL from './album.js';
+import * as BP from './backpatches.js';
 import * as SI from './sicherung.js';
 
 // Eingebettet in eine fremde Seite (siehe boot.js) startet die App gar nicht
@@ -6634,11 +6635,13 @@ function renderTalenteMerch(logs) {
   if (!box) return;
   const ts = talentStand(logs), sp = sprache();
   const titel = ts.w.titel.map(n => DR.lokal(n, sp));
+  const meister = TA.meisterschaft(ts.haben).filter(m => m.fertig).map(m => DR.lokal(m.titel, sp));
   box.innerHTML = `<div class="card talente">
     <div class="tal-zeile"><span class="tal-punkte"><b>${ts.frei}</b> ${escHtml(t('tal.frei'))}</span>
       <span class="fine">${escHtml(t('tal.verdient', { n: ts.pk.gesamt }))}</span></div>
     <ul>${TA.stufen(ts.haben, ts.liste).map(s => `<li><span>${escHtml(astName(s, sp))}</span><span>${s.frei}/${s.gesamt}</span></li>`).join('')}</ul>
     ${titel.length ? `<p class="fine">${escHtml(t('tal.titelZeile', { liste: titel.join(' · ') }))}</p>` : ''}
+    ${meister.length ? `<p class="fine">${escHtml(t('tal.meister', { liste: meister.join(' · ') }))}</p>` : ''}
     <div class="actions"><button class="btn small" id="tal-alle">${escHtml(t('tal.alle'))}</button></div>
   </div>`;
   $('tal-alle').onclick = zeigeTalente;
@@ -7433,6 +7436,33 @@ $('umzug').onclick = umziehen;
    (SETLIST, Emblem, Tourname), hinten die Tourdaten wie auf jedem echten
    Tourshirt. Der Knopf dreht es um; die volle Liste mit Art und Ort steht
    darunter zum Aufklappen.                                              */
+/* ============================ Rueckenpatches ============================
+   Sechs grosse Patches (js/backpatches.js), aus den Logs gerechnet. Nur die
+   Wahl, welcher hinten haengt, bleibt auf dem Geraet.                      */
+const BP_KEY = 'setlist.rueckenpatch';
+function bpWahl() { try { return localStorage.getItem(BP_KEY) || null; } catch { return null; } }
+function bpMerke(id) { try { localStorage.setItem(BP_KEY, id); } catch { /* ohne Speicher bleibt es beim letzten verdienten */ } }
+function rueckenpatches(liste) {
+  const box = $('merch-rueck');
+  if (!box) return;
+  const hinten = BP.getragen(liste, bpWahl());
+  box.innerHTML = `<div class="bp-wand">${liste.map(p => {
+    const i = BP.BACKPATCHES.indexOf(p.id), da = !!p.verdient;
+    const stand = t(`bp.stand.${p.einheit}`, { ist: p.ist.toLocaleString(locale()), ziel: p.ziel.toLocaleString(locale()) });
+    return `<div class="bp-karte${da ? '' : ' offen'}${p.id === hinten ? ' getragen' : ''}" data-bp="${p.id}">
+      <span class="bpix" style="--i:${i};--n:${BP.BACKPATCHES.length}" aria-hidden="true"></span>
+      <b>${escHtml(t(`bp.name.${p.id}`))}</b>
+      <span class="fine">${escHtml(t(`bp.was.${p.id}`, { n: p.ziel.toLocaleString(locale()) }))}</span>
+      <span class="fine">${escHtml(da ? t('bp.verdient', { datum: datumLang(p.verdient) }) : stand)}</span>
+      ${da ? `<button type="button" class="btn small bp-tragen" aria-pressed="${p.id === hinten}"${p.id === hinten ? ' disabled' : ''}>${escHtml(t(p.id === hinten ? 'bp.getragen' : 'bp.tragen'))}</button>` : ''}
+    </div>`;
+  }).join('')}</div>
+  <p class="fine">${escHtml(hinten ? t('bp.fine') : `${t('bp.keiner')} ${t('bp.fine')}`)}</p>`;
+  box.querySelectorAll('.bp-tragen').forEach(b => {
+    b.onclick = () => { bpMerke(b.closest('.bp-karte').dataset.bp); rueckenpatches(liste); };
+  });
+}
+
 /* ============================ Jahresalbum ============================
    Eine Woche mit Einheit ist ein Track (js/album.js). Gerechnet, nicht
    gespeichert; bis zum 31.12. eine Vorschau.                            */
@@ -7604,7 +7634,7 @@ async function zeigeMerch(von = 'home') {
   merchVon = von;
   rangGewaehlt = null;
   show('merch');
-  const leeren = () => ['merch-rang', 'merch-monat', 'merch-kutte', 'merch-platten', 'merch-shirts', 'merch-album', 'merch-bilanz']
+  const leeren = () => ['merch-rang', 'merch-monat', 'merch-kutte', 'merch-rueck', 'merch-platten', 'merch-shirts', 'merch-album', 'merch-bilanz']
     .forEach(id => { $(id).innerHTML = ''; });
   if (!config) {
     leeren();
@@ -7696,6 +7726,9 @@ function renderMerch(logs) {
   }).join('');
   $('merch-kutte').innerHTML = `<div class="kutte">${teile}</div>
     <p class="fine">${t('merch.kutte.fine')}</p>`;
+
+  // Rueckenpatches
+  rueckenpatches(BP.rueckenpatches(logs, config, { fahrten, heute, soundchecks }));
 
   // Schallplatten
   const s = M.schallplatten(logs);

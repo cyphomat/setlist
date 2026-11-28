@@ -10,6 +10,18 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-28.2
+
+### Neu
+- **Rückenpatches.** Sechs große Aufnäher hinten auf der Kutte, jeder die Spitze einer Leiter, die es schon gibt: Headliner und Legende (Rang),
+  Adamant (1000 t), Endgegnerjäger (12 besiegte Monate), Dauerbrenner (26 Wochen Soundcheck in Folge) und Meister (alle vier Äste gemeistert).
+  Im Merch-Stand unter der Kutte; verdiente stehen farbig da, die übrigen als grauer Umriss mit Stand. Welcher hinten hängt, merkt sich nur dieses
+  Gerät, der Rest fällt aus dem Log (`js/backpatches.js`, Motive aus `tools/pixel-backpatches.mjs`).
+- **Meisterschaft im Talentbaum.** Ein Ast ist gemeistert, wenn alle seine Basis-Talente da sind; das gibt den Titel „Meister der Kraft“ (Kugel,
+  Beweglichkeit, Disziplin). Kein neuer Knoten und keine Kosten; Talente, die später mit einem Drop dazukommen, zählen nicht mit, damit kein Titel verloren geht.
+
+---
+
 ## 2026-11-28.1
 
 ### Neu
