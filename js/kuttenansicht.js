@@ -1,6 +1,5 @@
 // Die Kuttenansicht im Merch-Stand: die Weste zum Umdrehen. Vorne die zuletzt
-// verdienten Aufnaeher, hinten der Rocker, der getragene Rueckenpatch und die
-// Szene des Rangs.
+// verdienten Aufnaeher, hinten der Rocker und der getragene Rueckenpatch.
 //
 // Nur die Auswahl und die Plaetze stehen hier; gerechnet wird alles aus den
 // Logs (merch.js, backpatches.js) und nirgends gespeichert. Die Weste selbst ist
@@ -19,14 +18,13 @@ export const MAX_VORNE = 12;
 // Zwei Spalten links, zwei rechts, drei Reihen. Die Reihenfolge ist die der
 // Belegung: aussen links, aussen rechts, innen links, innen rechts.
 const SPALTEN = [8, 98, 32, 74];
-const REIHEN = [26, 60, 94];
+const REIHEN = [40, 70, 100];
 export const PLAETZE = REIHEN.flatMap(y => SPALTEN.map(x => ({ x, y })));
 
-/** Der Rocker hinten, die Mitte fuer den Rueckenpatch und die Szene des Rangs: Lage im Bild. */
+/** Hinten: der Rocker oben, der Rueckenpatch in der Mitte des Stoffs. Lage im Bild. */
 export const HINTEN = {
   rocker: { x: 22, y: 14, b: 86, h: 18 },
-  patch: { x: 41, y: 36, kante: 48 },
-  rang: { x: 17, y: 90, b: 96, h: 48 }
+  patch: { x: 41, y: 66, kante: 48 }
 };
 
 /**

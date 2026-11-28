@@ -7464,7 +7464,7 @@ function kutteMini(liste, bpListe, rang) {
       <div class="kv-seite hinten" aria-hidden="true">
         <span class="kv-rocker" style="${px(H.rocker.x, H.rocker.y)};width:${H.rocker.b * 2}px;height:${H.rocker.h * 2}px">${escHtml(t('kv.rocker'))}</span>
         ${hinten ? `<span class="bpix kv-bp" style="${px(H.patch.x, H.patch.y)};--i:${BP.BACKPATCHES.indexOf(hinten)};--n:${BP.BACKPATCHES.length}"></span>` : ''}
-        <span class="szene kv-rang" style="${px(H.rang.x, H.rang.y)};width:${H.rang.b * 2}px;--i:${rang.stufe};--n:${M.RAENGE.length}"></span>
+        ${hinten ? '' : `<span class="kv-leer">${escHtml(t('bp.keiner'))}</span>`}
       </div>
     </div></div>
     <p class="fine kv-zahl">${escHtml(t(v.ids.length ? 'kv.zahl' : 'kv.leer', { n: v.ids.length, gesamt: v.gesamt, rang: rangName }))}</p>
