@@ -531,6 +531,9 @@ function renderWeek() {
     : t({ kurs: 'ku.titel', moshpit: 'home.mosh', wod: 'home.jam', unplugged: 'home.unplugged', maxout: 'merch.art.maxout', rad: 'merch.art.rad' }[e.art]);
   const feinheit = e => e.art === 'rad' && (e.minutes || e.km)
     ? `<span class="ride-done">${escHtml(e.minutes)} MIN · ${escHtml(e.km)} KM</span>` : '';
+  // Was am selben Tag noch war (z. B. eine Fahrt neben dem Kurs): zaehlt nicht mit, wird aber genannt.
+  const dazuZeile = e => (e.dazu || []).map(d => `<span class="ride-done">+ ${escHtml(artName(d))}${d.minutes || d.km ? ` · ${escHtml(d.minutes)} MIN · ${escHtml(d.km)} KM` : ''}</span>`).join(' ');
+  const details = e => [feinheit(e), dazuZeile(e)].filter(Boolean).join(' · ');
   const zeile = (klasse, nr, was, detail) => `<div class="tag ${klasse}">
         <span class="day">${escHtml(nr)}</span>
         <span class="what">${was}<span class="detail">${detail}</span></span></div>`;
@@ -550,7 +553,7 @@ function renderWeek() {
   for (let i = 0; i < w.soll; i++) {
     const e = w.plaetze[i];
     if (e) {
-      plaetze.push(zeile('erledigt', i + 1, `✓ ${escHtml(artName(e))} · ${escHtml(tagName(e.date))}`, feinheit(e)));
+      plaetze.push(zeile('erledigt', i + 1, `✓ ${escHtml(artName(e))} · ${escHtml(tagName(e.date))}`, details(e)));
     } else {
       const uebungen = config.workouts[workout].map(s => config.lifts[s.lift].name).join(' · ');
       plaetze.push(zeile(heuteOffen ? 'heute' : '', i + 1, escHtml(`Workout ${workout}`),
@@ -560,7 +563,7 @@ function renderWeek() {
     }
   }
   const extras = w.extras.map(e => zeile('extra', '+', `✓ ${escHtml(artName(e))} · ${escHtml(tagName(e.date))}`,
-    `${feinheit(e)}${feinheit(e) ? ' · ' : ''}${escHtml(t('wk.extra'))}`));
+    `${details(e)}${details(e) ? ' · ' : ''}${escHtml(t('wk.extra'))}`));
 
   // Rad-Tipps: was der Plan fuer die Woche vorschlaegt, ohne Haken und ohne Tag.
   const tipps = plan.filter(s => s.type === 'ride').map(s => {

@@ -328,6 +328,18 @@ print('\n--- Wochenliste ---');
     stand([{ date: '2026-09-29', type: 'mobility' }, { date: '2026-09-30', type: 'checkin' }]).plaetze.length, 0);
   eq('Fahrt der letzten Woche zaehlt nicht', stand([], [], [fahrt('2026-09-25')]).plaetze.length, 0);
 
+  const kf = stand([kurs('2026-09-29')], [], [fahrt('2026-09-29')]);
+  eq('Fahrt neben dem Kurs: Platz bleibt der Kurs', kf.plaetze[0].art, 'kurs');
+  eq('die Fahrt steht unter dazu', JSON.stringify(kf.plaetze[0].dazu), JSON.stringify([{ art: 'rad', minutes: 45, km: 20 }]));
+  eq('Zaehlung unveraendert: eine Einheit, ein Platz offen', [kf.plaetze.length, kf.offen].join(), '1,1');
+  eq('zwei Fahrten am selben Tag neben dem Kurs werden addiert',
+    JSON.stringify(stand([kurs('2026-09-29')], [], [fahrt('2026-09-29'), { date: '2026-09-29', minutes: 10, km: 3.5 }]).plaetze[0].dazu), JSON.stringify([{ art: 'rad', minutes: 55, km: 23.5 }]));
+  eq('allein am Tag: kein dazu', 'dazu' in stand([kurs('2026-09-29')]).plaetze[0], false);
+  eq('Log und Historie derselben Einheit sind kein dazu',
+    'dazu' in stand([kraft('2026-09-29', [satz('squat', 60)])], [{ date: '2026-09-29', type: 'strength', workout: 'A' }]).plaetze[0], false);
+  eq('5x5 neben Kurs und Fahrt: Kurs und Rad in Rangfolge',
+    stand([kurs('2026-09-29'), kraft('2026-09-29', [satz('squat', 60)])], [], [fahrt('2026-09-29')]).plaetze[0].dazu.map(d => d.art).join(), 'kurs,rad');
+
   const sa = new Date(2026, 9, 3);      // Sa 03.10.: noch Sa und So
   const spaet = M.wochenStand([], config, sa, [], {});
   eq('Sa: zwei Tage uebrig, zwei offen: knapp', [spaet.tageUebrig, spaet.knapp].join(), '2,true');

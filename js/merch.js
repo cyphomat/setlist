@@ -883,7 +883,23 @@ export function wochenEinheiten(logs = [], heute = new Date(), history = [], fah
     // Bei gleicher Art gewinnt der reichere Eintrag (ein Log kennt das Workout, die Historie auch)
     if (!alt || rang(e) < rang(alt) || (rang(e) === rang(alt) && !alt.workout && e.workout)) jeTag.set(e.date, e);
   }
-  return [...jeTag.values()].sort((a, b) => a.date.localeCompare(b.date));
+  // Was am selben Tag noch war, zaehlt nicht mit, wird aber genannt (`dazu`): eine Fahrt neben dem
+  // Kurs ist keine zweite Einheit, soll aber nicht verschwiegen werden. Nur andere Arten — Log und
+  // Historie desselben Tages sind dieselbe Einheit. Mehrere Fahrten eines Tages werden addiert.
+  const dazu = new Map();
+  for (const e of alle) {
+    const gewinner = jeTag.get(e.date);
+    if (e.art === gewinner.art) continue;
+    const liste = dazu.get(e.date) || new Map();
+    const da = liste.get(e.art);
+    if (!da) liste.set(e.art, e.art === 'rad' ? { art: 'rad', minutes: e.minutes || 0, km: e.km || 0 } : { art: e.art });
+    else if (e.art === 'rad') { da.minutes += e.minutes || 0; da.km = Math.round((da.km + (e.km || 0)) * 10) / 10; }
+    dazu.set(e.date, liste);
+  }
+  return [...jeTag.values()].sort((a, b) => a.date.localeCompare(b.date)).map(e => {
+    const d = dazu.get(e.date);
+    return d ? { ...e, dazu: [...d.values()].sort((a, b) => REGLER_ARTEN.indexOf(a.art) - REGLER_ARTEN.indexOf(b.art)) } : e;
+  });
 }
 
 /**
