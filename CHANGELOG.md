@@ -10,6 +10,15 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-28.5
+
+### Geändert
+- **Wochenkarte nennt, was am selben Tag noch war.** Ein Tag zählt weiter als eine Einheit. Eine Fahrt neben dem Kurs (oder 5×5, Jam …) fiel dabei bisher
+  komplett aus der Karte. Jetzt steht sie unter dem Platz: `✓ Kettlebell-Kurs · Sa` mit `+ Rad · 62 MIN · 18.5 KM`. Zählung, Wochenregler und Plätze
+  ändern sich nicht; mehrere Fahrten eines Tages werden addiert.
+
+---
+
 ## 2026-11-28.4
 
 ### Geändert
