@@ -38,6 +38,7 @@ import * as AD from './advent.js';
 import * as NEU from './neu.js';
 import * as TA from './talente.js';
 import * as PK from './punkte.js';
+import * as AL from './album.js';
 import * as SI from './sicherung.js';
 
 // Eingebettet in eine fremde Seite (siehe boot.js) startet die App gar nicht
@@ -7432,6 +7433,29 @@ $('umzug').onclick = umziehen;
    (SETLIST, Emblem, Tourname), hinten die Tourdaten wie auf jedem echten
    Tourshirt. Der Knopf dreht es um; die volle Liste mit Art und Ort steht
    darunter zum Aufklappen.                                              */
+/* ============================ Jahresalbum ============================
+   Eine Woche mit Einheit ist ein Track (js/album.js). Gerechnet, nicht
+   gespeichert; bis zum 31.12. eine Vorschau.                            */
+function albumHtml(a) {
+  const l = a.liner, t1 = n => n.toLocaleString(locale(), { maximumFractionDigits: 1 });
+  const zeile = [tn('album.wochen', l.wochen), tn('album.einheiten', l.einheiten), `${t1(l.tonnen)} t`,
+    l.encores ? tn('album.encores', l.encores) : '', l.bosse ? tn('album.bosse', l.bosse) : ''].filter(Boolean).join(' · ');
+  return `<article class="album" data-jahr="${a.jahr}">
+    <div class="albkopf">${AL.coverSvg(a.cover)}
+      <div class="albtt"><b>${escHtml(t('album.name', { jahr: a.jahr }))}</b>
+        <span>${escHtml(zeile)}</span>
+        <span class="albstatus">${escHtml(t(a.status === 'fertig' ? 'album.fertig' : 'album.vorschau', { jahr: a.jahr }))}</span></div>
+    </div>
+    <details class="albtracks"><summary>${escHtml(t('album.tracks'))}</summary>
+      <ol>${a.tracks.map(k => `<li><span class="albnr">${String(k.nr).padStart(2, '0')}</span>
+        <span class="albt">${escHtml(k.titel)}${k.encore ? ` <i>(${escHtml(t('album.encore'))})</i>` : ''}</span>
+        <span class="albkw">${escHtml(t('album.kw', { n: k.kw }))}</span><span class="albd">${escHtml(k.dauer)}</span>
+        ${k.boss || k.soundcheck ? `<span class="albdet">${[k.boss ? t('album.boss') : '', k.soundcheck ? t('album.soundcheck') : ''].filter(Boolean).map(escHtml).join(' · ')}</span>` : ''}</li>`).join('')}
+      </ol>
+    </details>
+  </article>`;
+}
+
 const SHIRT_DATEN = 33;   // was hinten aufs Shirt passt, drei Spalten
 function shirtHtml(tr) {
   const zeit = `Q${tr.quartal} ${tr.jahr}`;
@@ -7580,7 +7604,7 @@ async function zeigeMerch(von = 'home') {
   merchVon = von;
   rangGewaehlt = null;
   show('merch');
-  const leeren = () => ['merch-rang', 'merch-monat', 'merch-kutte', 'merch-platten', 'merch-shirts', 'merch-bilanz']
+  const leeren = () => ['merch-rang', 'merch-monat', 'merch-kutte', 'merch-platten', 'merch-shirts', 'merch-album', 'merch-bilanz']
     .forEach(id => { $(id).innerHTML = ''; });
   if (!config) {
     leeren();
@@ -7720,6 +7744,11 @@ function renderMerch(logs) {
       b.textContent = `${t(hinten ? 'merch.shirt.vorne' : 'merch.shirt.wenden')} ↻`;
     };
   });
+
+  // Jahresalbum: dieses und letztes Jahr, aus den Logs gerechnet
+  $('merch-album').innerHTML = [heute.getFullYear(), heute.getFullYear() - 1]
+    .map(j => AL.album(logs, config, j, { heute, fahrten, soundchecks })).filter(Boolean).map(albumHtml).join('')
+    || `<p class="lead">${escHtml(t('album.leer'))}</p>`;
 
   // Tour-Bilanz: dieses und letztes Jahr
   const jahr = heute.getFullYear();
