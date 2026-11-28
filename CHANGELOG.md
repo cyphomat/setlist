@@ -10,6 +10,16 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-28.1
+
+### Neu
+- **Jahresalbum.** Im Merch-Stand unter den Tourshirts: jede Woche mit mindestens einer Einheit ist ein Track, mit Songtitel, Spieldauer und einem
+  Pixel-Cover. Ein Encore steht am Track, wenn der Wochenregler auf elf stand; dazu der Wochen-Soundcheck und ein gefallener Monats-Endgegner.
+  Wochen ohne Einheit fehlen einfach. Bis zum 31.12. ist es eine Vorschau. Alles wird aus den Logs gerechnet und nichts gespeichert
+  (`js/album.js`).
+
+---
+
 ## 2026-11-22.4
 
 ### Geändert
