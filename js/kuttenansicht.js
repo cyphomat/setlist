@@ -19,7 +19,7 @@ export const MAX_VORNE = 12;
 // Zwei Spalten links, zwei rechts, drei Reihen. Die Reihenfolge ist die der
 // Belegung: aussen links, aussen rechts, innen links, innen rechts.
 const SPALTEN = [8, 98, 32, 74];
-const REIHEN = [26, 60, 94];
+const REIHEN = [40, 70, 100];
 export const PLAETZE = REIHEN.flatMap(y => SPALTEN.map(x => ({ x, y })));
 
 /** Der Rocker hinten, die Mitte fuer den Rueckenpatch und die Szene des Rangs: Lage im Bild. */

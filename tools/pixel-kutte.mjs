@@ -12,12 +12,12 @@ export const B = 130;
 export const H = 150;
 
 export const PALETTE = {
-  T: '1f2a36',   // Jeans
-  t: '243241',   // Jeans, Twill
+  T: '4a6178',   // Jeans, ausgewaschen
+  t: '55708a',   // Jeans, Twill
   O: '0b0f14',   // Kontur
-  S: '45627a',   // Naht
-  K: '141216',   // Hemd, vorne in der Mitte
-  C: 'c0c6cc',   // Niete
+  S: 'b4cfe0',   // Naht, hell
+  K: '211f26',   // Hemd, vorne in der Mitte
+  C: 'e6dfcd',   // Niete
   B: '0e0c09'    // Rockerband
 };
 

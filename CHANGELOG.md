@@ -10,6 +10,14 @@ sonst merkt die installierte App nichts von einer neuen Fassung.
 
 ---
 
+## 2026-11-28.4
+
+### Geändert
+- **Kuttenansicht heller.** Die Weste ist jetzt ausgewaschenes Denim mit heller Naht und hellen Nieten, damit sie sich von den dunkelblauen Aufnähern
+  und vom Hintergrund abhebt. Die obere Reihe der Aufnäher hängt etwas tiefer und ragt nicht mehr über den Armausschnitt.
+
+---
+
 ## 2026-11-28.3
 
 ### Neu
